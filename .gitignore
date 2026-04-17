@@ -22,6 +22,13 @@ bin/*.sav
 bin/Gothic.ini
 out/*
 
+# runtime artifacts when launching from repo root during dev
+/log.txt
+/crash.log
+/dbg.bin
+/*.sav
+/Gothic.ini
+
 # internal
 .vs/
 internal/
