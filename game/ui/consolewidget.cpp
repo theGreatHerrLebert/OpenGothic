@@ -178,14 +178,6 @@ void ConsoleWidget::keyDownEvent(KeyEvent& e) {
     return;
     }
 
-  if(e.key==Event::K_C && (e.modifier&Event::M_Command)==Event::M_Command) {
-    log.emplace_back("");
-    cursPos = 0;
-    currCmd = "";
-    histPos = size_t(-1);
-    return;
-    }
-
   if(e.key==Event::K_Back) {
     if(0<cursPos && cursPos<=log.back().size()) {
       log.back().erase(--cursPos,1);
@@ -219,9 +211,11 @@ void ConsoleWidget::keyDownEvent(KeyEvent& e) {
     return;
     }
 
+  // Accept any printable ASCII so the console can host symbol-heavy input
+  // (e.g. the Python REPL via `py ...`). Non-character keys (arrows, F-keys,
+  // return, backspace, etc.) are handled above and never reach this point.
   char ch = '\0';
-  if(('a'<=e.code && e.code<='z') || ('A'<=e.code && e.code<='Z')  ||
-     ('0'<=e.code && e.code<='9') || e.code==' ' || e.code=='.' || e.code=='_' || e.code=='-')
+  if(e.code>=0x20 && e.code<0x7F)
     ch = char(e.code);
   if(ch=='\0')
     return;
