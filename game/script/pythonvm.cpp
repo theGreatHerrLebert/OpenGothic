@@ -180,3 +180,30 @@ PythonVM::EvalResult PythonVM::eval(std::string_view source) {
     }
   return res;
   }
+
+std::vector<std::string> PythonVM::complete(std::string_view fragment) {
+  std::vector<std::string> out;
+  if(!impl->ready)
+    return out;
+  try {
+    py::object rlc       = py::module_::import("rlcompleter");
+    py::object completer = rlc.attr("Completer")(*impl->globals);
+    std::string text(fragment);
+    for(int state = 0; state < 64; ++state) {
+      py::object r = completer.attr("complete")(text, state);
+      if(r.is_none())
+        break;
+      out.push_back(py::cast<std::string>(r));
+      }
+    // Drain any noise rlcompleter wrote to the captured stdout.
+    try {
+      impl->capture->attr("seek")(0);
+      impl->capture->attr("truncate")(0);
+      }
+    catch(...) {}
+    }
+  catch(const std::exception&) {
+    // Autocomplete failure shouldn't disrupt typing — swallow silently.
+    }
+  return out;
+  }
