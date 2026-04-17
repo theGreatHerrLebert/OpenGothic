@@ -69,6 +69,35 @@ Return values of INT / FLOAT / STRING come back as the matching Python
 type. INSTANCE returns are reported as the underlying symbol index for
 now — correlating them back to `PyNpc` wrappers is future work.
 
+## External REPL bridge (opt-in)
+
+Launch Gothic with `OPENGOTHIC_PY_BRIDGE=1` to enable a filesystem REPL
+bridge — an external process can send Python snippets into the running
+game without going through the Marvin console:
+
+```sh
+OPENGOTHIC_PY_BRIDGE=1 ./build/opengothic/Gothic2Notr -g "$HOME/Games/GothicII-Gold"
+
+# From another terminal / tool:
+scripts/pyeval 'gothic.player.position'
+scripts/pyeval 'gothic.player.set_hp(50)'
+scripts/pyeval 'sum(n.hp for n in gothic.world.npcs if n.alive)'
+```
+
+Semantics are identical to typing into Marvin — the snippet runs on the
+main thread via `PythonVM::eval()`. The bridge is polled from
+`World::tick()`, so **a world must be loaded** before requests are
+processed (main menu is idle).
+
+Bridge layout: `/tmp/opengothic-$USER-bridge/{in,processing,out}`. Write
+to `in/<id>.py`, read reply from `out/<id>.out` (first line is `OK` or
+`ERR`, body follows). Override the root with
+`OPENGOTHIC_PY_BRIDGE_DIR=/some/path` on both sides.
+
+Security: opt-in, user-scoped path. Don't enable on a machine other
+users can access unless you're comfortable giving them `exec` on the
+game's Python runtime.
+
 ## Thread safety
 
 Mutations are safe only from the main thread. The Marvin console pump

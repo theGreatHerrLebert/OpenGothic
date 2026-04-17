@@ -1,4 +1,5 @@
 #include "pythonvm.h"
+#include "pybridge.h"
 
 #include <pybind11/embed.h>
 #include <pybind11/pybind11.h>
@@ -61,6 +62,11 @@ if _gothic_scripts.is_dir():
 
     impl->ready = true;
     Tempest::Log::i("[python] interpreter initialized");
+
+    // Activates the OPENGOTHIC_PY_BRIDGE filesystem REPL if the env var is
+    // set. No-op otherwise — must come after the interpreter is live so any
+    // bridge requests are eval-ready.
+    PyBridge::inst().init();
 
     // If $CWD/python/init.py exists, run it in the persistent globals so any
     // helpers the user defined there are visible to F2 immediately. Errors
@@ -229,6 +235,9 @@ PythonVM::EvalResult PythonVM::eval(std::string_view source) {
 void PythonVM::tick(uint64_t dt) {
   if(!impl->ready)
     return;
+  // Drain any external bridge requests first, so a file-queued command
+  // processes on the same tick it arrived.
+  PyBridge::inst().poll();
   try {
     py::module_ gothic = py::module_::import("gothic");
     py::object  cbs    = gothic.attr("_tick_callbacks");

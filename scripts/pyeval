@@ -1,0 +1,52 @@
+#!/usr/bin/env bash
+# Send a Python snippet to a running OpenGothic instance that has the
+# filesystem REPL bridge enabled (launched with OPENGOTHIC_PY_BRIDGE=1),
+# wait for the response, and print it to stdout.
+#
+#   scripts/pyeval 'gothic.player.position'
+#   scripts/pyeval '1+1'
+#   scripts/pyeval 'for i in range(3): print(i)'
+#
+# Exit codes:
+#   0 — Python returned OK; stdout is its output (and/or repr of the result).
+#   1 — Python raised; stdout is the traceback / partial output.
+#   2 — bridge directory missing (game not running? env var not set?).
+#   3 — timeout waiting for a reply.
+set -euo pipefail
+
+BRIDGE_ROOT="${OPENGOTHIC_PY_BRIDGE_DIR:-/tmp/opengothic-${USER}-bridge}"
+if [ ! -d "$BRIDGE_ROOT/in" ]; then
+  echo "pybridge: $BRIDGE_ROOT/in does not exist." >&2
+  echo "         Start Gothic with OPENGOTHIC_PY_BRIDGE=1 first." >&2
+  exit 2
+fi
+
+if [ "$#" -eq 0 ]; then
+  echo "usage: $(basename "$0") <python-source>" >&2
+  exit 2
+fi
+
+REQ_ID="$(date +%s)-$$-$RANDOM"
+INCOMING="$BRIDGE_ROOT/in/$REQ_ID.py"
+REPLY="$BRIDGE_ROOT/out/$REQ_ID.out"
+
+# Write atomically: stage .tmp then rename so the engine can't observe
+# a partial file.
+printf '%s' "$*" > "$INCOMING.tmp"
+mv "$INCOMING.tmp" "$INCOMING"
+
+# Poll for the reply. 10s timeout at 50ms intervals = 200 attempts.
+for _ in $(seq 1 200); do
+  if [ -f "$REPLY" ]; then
+    # First line is "OK" or "ERR"; body follows.
+    STATUS="$(head -n 1 "$REPLY")"
+    tail -n +2 "$REPLY"
+    rm -f "$REPLY"
+    [ "$STATUS" = "OK" ] && exit 0 || exit 1
+  fi
+  sleep 0.05
+done
+
+echo "pybridge: TIMEOUT after 10s waiting for $REPLY" >&2
+echo "          (is the game paused? bridge dir: $BRIDGE_ROOT)" >&2
+exit 3
