@@ -23,6 +23,7 @@
 #include "gothic.h"
 #include "build.h"
 #include "commandline.h"
+#include "script/pythonvm.h"
 
 #include <dmusic.h>
 
@@ -139,6 +140,8 @@ int main(int argc,const char** argv) {
   Gothic               gothic;
   GameMusic            music;
   gothic.setupGlobalScripts();
+
+  PythonVM::inst().init();
 
   MainWindow           wx(device);
   Tempest::Application app;

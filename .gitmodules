@@ -13,3 +13,6 @@
 [submodule "lib/dmusic"]
 	path = lib/dmusic
 	url = https://github.com/GothicKit/dmusic.git
+[submodule "lib/pybind11"]
+	path = lib/pybind11
+	url = https://github.com/pybind/pybind11.git

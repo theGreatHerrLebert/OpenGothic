@@ -10,6 +10,7 @@
 #include "world/triggers/abstracttrigger.h"
 #include "camera.h"
 #include "gothic.h"
+#include "script/pythonvm.h"
 
 static bool startsWith(std::string_view str, std::string_view needle) {
   if(needle.size()>str.size())
@@ -149,6 +150,8 @@ Marvin::Marvin() {
     {"toggle gi",                  C_ToggleGI},
     {"toggle vsm",                 C_ToggleVsm},
     {"toggle rtsm",                C_ToggleRtsm},
+
+    {"py %s",                      C_ExecPython},
     };
   }
 
@@ -254,6 +257,28 @@ bool Marvin::autoComplete(std::string& v) {
   }
 
 bool Marvin::exec(std::string_view v) {
+  // Python REPL bypasses the tokenizer so `py 1 + 1` and multi-arg expressions
+  // reach the interpreter with whitespace intact. The `py %s` cmd-table entry
+  // exists only for autocomplete.
+  {
+    std::string_view trimmed = v;
+    while(!trimmed.empty() && trimmed.front()==' ')
+      trimmed = trimmed.substr(1);
+    while(!trimmed.empty() && trimmed.back()==' ')
+      trimmed = trimmed.substr(0, trimmed.size()-1);
+    if(startsWith(trimmed, "py ") || compareNoCase(trimmed, "py")) {
+      std::string_view src = trimmed.size() > 2 ? trimmed.substr(3) : std::string_view{};
+      while(!src.empty() && src.front()==' ')
+        src = src.substr(1);
+      auto r = PythonVM::inst().eval(src);
+      if(!r.output.empty())
+        print(r.output);
+      if(!r.error.empty())
+        print(r.error);
+      return true;
+      }
+  }
+
   auto ret = recognize(v);
   switch(ret.cmd.type) {
     case C_None:
@@ -471,6 +496,11 @@ bool Marvin::exec(std::string_view v) {
       return true;
     case C_ToggleRtsm:
       Gothic::inst().toggleRtsm();
+      return true;
+
+    case C_ExecPython:
+      // Handled above by raw-prefix bypass; this case exists only for
+      // switch exhaustiveness.
       return true;
     }
 

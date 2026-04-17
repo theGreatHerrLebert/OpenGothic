@@ -168,6 +168,28 @@ endif()
 include_directories(lib/bullet3/src)
 target_link_libraries(${PROJECT_NAME} BulletDynamics BulletCollision LinearMath)
 
+# Python embed + pybind11 (Marvin console >>> REPL)
+find_package(Python3 REQUIRED COMPONENTS Interpreter Development Development.Embed)
+# Force pybind11 to reuse the Python3 we just resolved (via modern
+# find_package(Python3)) instead of its legacy FindPythonLibsNew, which
+# otherwise picks up a different interpreter and creates an ABI mismatch.
+set(PYBIND11_FINDPYTHON ON CACHE INTERNAL "")
+add_subdirectory(lib/pybind11)
+target_link_libraries(${PROJECT_NAME} Python3::Python pybind11::embed)
+
+# Silence -Wconversion / -Wdeprecated-declarations in pybind11 / CPython headers.
+target_include_directories(${PROJECT_NAME} SYSTEM PRIVATE
+    ${Python3_INCLUDE_DIRS}
+    ${CMAKE_SOURCE_DIR}/lib/pybind11/include)
+
+if(NOT MSVC)
+  set_source_files_properties(
+    game/script/pythonvm.cpp
+    game/script/pybindings.cpp
+    PROPERTIES COMPILE_FLAGS
+    "-Wno-error -Wno-conversion -Wno-deprecated-declarations -Wno-unused-parameter -Wno-shadow")
+endif()
+
 # script for launching in binary directory
 if(WIN32)
     add_custom_command(

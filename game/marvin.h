@@ -66,6 +66,9 @@ class Marvin {
       C_ToggleGI,
       C_ToggleVsm,
       C_ToggleRtsm,
+
+      // python REPL
+      C_ExecPython,
       };
 
     struct Cmd {
