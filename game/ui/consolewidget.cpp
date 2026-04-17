@@ -8,6 +8,7 @@
 
 #include "mainwindow.h"
 #include "utils/gthfont.h"
+#include "utils/clipboard.h"
 #include "resources.h"
 #include "gothic.h"
 #include "build.h"
@@ -211,6 +212,27 @@ void ConsoleWidget::keyDownEvent(KeyEvent& e) {
     else
       log.back() = currCmd;
     cursPos = log.back().size();
+    return;
+    }
+
+  // Cmd/Ctrl+V — paste clipboard contents at the cursor. Newlines are
+  // collapsed to spaces so multi-line pastes flatten into one editable line.
+  if(e.key==Event::K_V && (e.modifier&Event::M_Command)==Event::M_Command) {
+    std::string pasted = Clipboard::paste();
+    if(!pasted.empty()) {
+      for(char& c : pasted)
+        if(c=='\n' || c=='\r' || c=='\t')
+          c = ' ';
+      log.back().insert(cursPos, pasted);
+      cursPos += pasted.size();
+      }
+    return;
+    }
+
+  // Cmd/Ctrl+C — copy the current input line.
+  if(e.key==Event::K_C && (e.modifier&Event::M_Command)==Event::M_Command) {
+    if(!log.back().empty())
+      Clipboard::copy(log.back());
     return;
     }
 
