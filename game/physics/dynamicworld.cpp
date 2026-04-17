@@ -48,6 +48,7 @@ struct DynamicWorld::NpcBody : btRigidBody {
   float         h        = 0;
   float         gPadd    = 0.f;
   float         stepSz   = 0.f;
+  float         heading  = 0.f; // radians, rotation about +Y (vertical)
   bool          enable   = true;
   size_t        frozen   = size_t(-1);
   uint64_t      lastMove = 0;
@@ -70,13 +71,29 @@ struct DynamicWorld::NpcBody : btRigidBody {
     return Tempest::Vec3(pos.x, pos.y+padd, pos.z);
     }
 
-  void setPosition(const Tempest::Vec3& p) {
-    auto m = p + Tempest::Vec3(0,groundOffset(),0);
-    pos = p;
+  // Apply pos and heading to the Bullet transform. Heading is a rotation
+  // about the vertical axis so non-rotationally-symmetric shapes (like the
+  // oriented box used for landscape collision) correctly swept-test against
+  // walls as the NPC turns — fixing the "wolf dips head into wall when
+  // rotating against it" class of bugs (issue #182).
+  void applyTransform() {
+    auto m = pos + Tempest::Vec3(0,groundOffset(),0);
     btTransform trans;
-    trans.setIdentity();
+    btQuaternion q;
+    q.setRotation(btVector3(0,1,0), heading);
+    trans.setRotation(q);
     trans.setOrigin(CollisionWorld::toMeters(m));
     setWorldTransform(trans);
+    }
+
+  void setPosition(const Tempest::Vec3& p) {
+    pos = p;
+    applyTransform();
+    }
+
+  void setHeading(float h) {
+    heading = h;
+    applyTransform();
     }
   };
 
@@ -102,8 +119,6 @@ struct DynamicWorld::NpcBodyList final {
 
     //NOTE: it seem vanilla uses elipsoids at some point, at least for npc-2-npc collisions
     btCollisionShape* shape = new HumShape(radius, cHeight);
-    //btCollisionShape* shape = new btCylinderShape(CollisionWorld::toMeters(Tempest::Vec3(radius, height*0.5f, radius)));
-    //btCollisionShape* shape = new btCapsuleShape(CollisionWorld::toMeters(radius), CollisionWorld::toMeters(height));
     NpcBody*          obj   = new NpcBody(shape);
 
     btTransform trans;
@@ -992,6 +1007,30 @@ std::string_view DynamicWorld::validateSectorName(std::string_view name) const {
   return landMesh->validateSectorName(name);
   }
 
+bool DynamicWorld::testRotatedBoxCollision(const Tempest::Vec3& centerPos,
+                                           const Tempest::Vec3& halfExt,
+                                           float                headingRad) const {
+  // Build a throwaway box body and contact-test it. Not added to the world;
+  // Bullet's contactTest queries the broadphase using the object's AABB at
+  // call time, so we just need a well-formed btRigidBody + shape.
+  btBoxShape shape(CollisionWorld::toMeters(halfExt));
+
+  btRigidBody::btRigidBodyConstructionInfo info(0, nullptr, &shape);
+  btRigidBody body(info);
+  body.setUserIndex(DynamicWorld::C_Null);
+
+  btTransform trans;
+  btQuaternion q;
+  q.setRotation(btVector3(0,1,0), headingRad);
+  trans.setRotation(q);
+  trans.setOrigin(CollisionWorld::toMeters(centerPos));
+  body.setWorldTransform(trans);
+
+  Tempest::Vec3 norm;
+  Interactive*  vob = nullptr;
+  return world->hasCollision(body, norm, vob);
+  }
+
 bool DynamicWorld::hasCollision(const NpcItem& it, CollisionTest& out) {
   bool ret = false;
   if(npcList->hasCollision(it,out.normal,out.npc)){
@@ -1019,6 +1058,14 @@ DynamicWorld::NpcItem::~NpcItem() {
 void DynamicWorld::NpcItem::setPosition(const Tempest::Vec3& pos) {
   if(obj) {
     implSetPosition(pos);
+    owner->npcList->onMove(*obj);
+    owner->bulletList->onMoveNpc(*obj,*owner->npcList);
+    }
+  }
+
+void DynamicWorld::NpcItem::setHeading(float angleRad) {
+  if(obj) {
+    obj->setHeading(angleRad);
     owner->npcList->onMove(*obj);
     owner->bulletList->onMoveNpc(*obj,*owner->npcList);
     }

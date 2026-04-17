@@ -442,8 +442,40 @@ void Npc::setDirection(const Tempest::Vec3& pos) {
   }
 
 void Npc::setDirection(float rotation) {
+  // Rotation-gate (issue #182): capsule is rotationally symmetric, so the
+  // visible body can dip into walls when the NPC rotates against them.
+  // Probe a would-be oriented box at the new heading; if it overlaps
+  // geometry AND the current heading does not, refuse. Allowing rotation
+  // when the current pose already overlaps is important — translational
+  // motion can leave the body slightly in a wall, and we still need to
+  // let the player/AI turn out of it.
+  //
+  // Box is anchored at the capsule's waist-level center (groundOffset)
+  // and sized to the waist/chest span, not the full visible body. A
+  // floor-skimming box would trigger preHit during jumps/falls and
+  // silently disable the gate.
+  if(std::abs(rotation - angle) > 0.01f) {
+    if(auto sk = visual.visualSkeleton()) {
+      const auto& bb    = sk->bboxCol;
+      const float halfX = std::max(std::abs(bb[0].x), std::abs(bb[1].x));
+      const float halfZ = std::max(std::abs(bb[0].z), std::abs(bb[1].z));
+      const float halfY = (bb[1].y - bb[0].y) * 0.5f;
+      const auto  halfExt = Tempest::Vec3(halfX, halfY, halfZ);
+      const float newRad = rotation * float(M_PI) / 180.f;
+      const float curRad = rotationRad();
+      const auto  center = centerPosition();
+      if(auto* phys = owner.physic()) {
+        const bool curHits = phys->testRotatedBoxCollision(center, halfExt, curRad);
+        const bool newHits = phys->testRotatedBoxCollision(center, halfExt, newRad);
+        if(!curHits && newHits)
+          return; // Strictly worsens overlap — cancel rotation.
+        }
+      }
+    }
+
   angle = rotation;
   durtyTranform |= TR_Rot;
+  physic.setHeading(rotationRad());
   }
 
 void Npc::setDirectionY(float rotation) {
@@ -4254,18 +4286,77 @@ bool Npc::tryTranslate(const Vec3& to) {
   }
 
 bool Npc::tryTranslate(const Vec3& to, DynamicWorld::CollisionTest& out) {
-  switch(physic.tryMove(to, out)) {
-    case DynamicWorld::MoveCode::MC_Fail:
-      return false;
-    case DynamicWorld::MoveCode::MC_Partial:
-      setViewPosition(out.partial);
-      return true;
-    case DynamicWorld::MoveCode::MC_Skip:
-    case DynamicWorld::MoveCode::MC_OK:
-      setViewPosition(to);
-      return true;
+  // Translation-gate (issue #182): the capsule can clear a move that still
+  // leaves the visible body overlapping geometry — the nose-dive into a
+  // wall when you walk face-first at it. After the capsule decides a move
+  // is legal, probe a would-be oriented box at the new feet position and,
+  // if it strictly worsens visual overlap, revert. Mirrors the rotation
+  // gate in setDirection().
+  //
+  // Two carve-outs learned from the collision telemetry trace:
+  //   * vertical-only moves (gravity, jumping) — the capsule already
+  //     handles ground correctly, and our box false-positives on small
+  //     feet-level bumps (rocks, roots) as the NPC's Y changes.
+  //   * very small XZ moves — animation root-motion against a wall
+  //     produces tons of 1–3cm deltas per frame. The capsule's own
+  //     resolver already caps them; re-rejecting each one doesn't
+  //     change the outcome but spams CPU.
+  const Vec3  oldPos   = physic.position();
+  const Vec3  wantedDp = to - oldPos;
+  const float xzMag2   = wantedDp.x*wantedDp.x + wantedDp.z*wantedDp.z;
+  const bool  runGate  = xzMag2 >= 16.f; // 4cm threshold, squared
+
+  const float heading = rotationRad();
+  bool   haveGate = false;
+  Vec3   halfExt;
+  float  yOffset = 0.f; // centerPosition().y - position().y, computed once
+  bool   preHit  = false;
+  if(runGate) if(auto sk = visual.visualSkeleton()) {
+    const auto& bb = sk->bboxCol;
+    const float halfX = std::max(std::abs(bb[0].x), std::abs(bb[1].x));
+    const float halfZ = std::max(std::abs(bb[0].z), std::abs(bb[1].z));
+    const float halfY = (bb[1].y - bb[0].y) * 0.5f;
+    halfExt  = Vec3(halfX, halfY, halfZ);
+    yOffset  = centerPosition().y - position().y;
+    if(auto* phys = owner.physic()) {
+      const Vec3 oldCenter(oldPos.x, oldPos.y + yOffset, oldPos.z);
+      preHit   = phys->testRotatedBoxCollision(oldCenter, halfExt, heading);
+      haveGate = true;
+      }
     }
-  return false;
+
+  auto code = physic.tryMove(to, out);
+  auto finish = [&](DynamicWorld::MoveCode c) {
+    switch(c) {
+      case DynamicWorld::MoveCode::MC_Fail:
+        return false;
+      case DynamicWorld::MoveCode::MC_Partial:
+        setViewPosition(out.partial);
+        return true;
+      case DynamicWorld::MoveCode::MC_Skip:
+      case DynamicWorld::MoveCode::MC_OK:
+        setViewPosition(to);
+        return true;
+      }
+    return false;
+    };
+
+  if(code == DynamicWorld::MoveCode::MC_Fail ||
+     code == DynamicWorld::MoveCode::MC_Skip || !haveGate) {
+    return finish(code);
+    }
+
+  // Post-check at the capsule's actual resting position.
+  const Vec3 newFeet = physic.position();
+  const Vec3 newCenter(newFeet.x, newFeet.y + yOffset, newFeet.z);
+  const bool postHit = owner.physic()->testRotatedBoxCollision(newCenter, halfExt, heading);
+  if(!preHit && postHit) {
+    // Movement passed the capsule test but the visible body would dip into
+    // geometry — roll the capsule back and report failure.
+    physic.setPosition(oldPos);
+    return false;
+    }
+  return finish(code);
   }
 
 Npc::JumpStatus Npc::tryJump() {
