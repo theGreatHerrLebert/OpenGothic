@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <string_view>
@@ -19,6 +20,11 @@ class PythonVM final {
     void                     shutdown();
     EvalResult               eval(std::string_view source);
     std::vector<std::string> complete(std::string_view fragment);
+
+    // Invoked by World::tick(dt). Dispatches to any callbacks registered
+    // from Python via gothic.on_tick(fn). No-op if the interpreter hasn't
+    // been initialized yet.
+    void                     tick(uint64_t dt);
 
   private:
     PythonVM();

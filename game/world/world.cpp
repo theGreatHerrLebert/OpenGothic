@@ -21,6 +21,7 @@
 #include "gothic.h"
 #include "focus.h"
 #include "resources.h"
+#include "script/pythonvm.h"
 
 const char* materialTag(ItemMaterial src) {
   switch(src) {
@@ -382,6 +383,8 @@ void World::tick(uint64_t dt) {
   if(auto pl = player())
     wsound.tick(*pl);
   globFx->tick(dt);
+  // Fan out to Python-registered per-tick callbacks (no-op if none).
+  PythonVM::inst().tick(dt);
   }
 
 uint64_t World::tickCount() const {

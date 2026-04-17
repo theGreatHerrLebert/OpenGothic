@@ -153,6 +153,29 @@ PYBIND11_EMBEDDED_MODULE(gothic, m) {
       .def_property_readonly("hp_max",   &PyPlayer::hpMax)
       .def_property_readonly("alive",    &PyPlayer::alive)
       .def_property_readonly("name",     &PyPlayer::name)
+      .def("set_position",
+           [](const PyPlayer&, float x, float y, float z) {
+             auto* p = requirePlayer();
+             p->setPosition(x, y, z);
+             p->updateTransform();
+             },
+           py::arg("x"), py::arg("y"), py::arg("z"),
+           "Teleport the player to (x, y, z). Main-thread only.")
+      .def("heal",
+           [](const PyPlayer&) {
+             auto* p = requirePlayer();
+             p->changeAttribute(ATR_HITPOINTS, p->attribute(ATR_HITPOINTSMAX),
+                                false);
+             },
+           "Restore HP to maximum.")
+      .def("set_hp",
+           [](const PyPlayer&, int hp) {
+             auto* p   = requirePlayer();
+             int   cur = p->attribute(ATR_HITPOINTS);
+             p->changeAttribute(ATR_HITPOINTS, hp - cur, false);
+             },
+           py::arg("hp"),
+           "Set HP directly (clamped by the engine).")
       .def("__repr__", &PyPlayer::repr);
 
   py::class_<PyNpc>(m, "Npc")
@@ -162,6 +185,23 @@ PYBIND11_EMBEDDED_MODULE(gothic, m) {
       .def_property_readonly("hp",        &PyNpc::hp)
       .def_property_readonly("hp_max",    &PyNpc::hpMax)
       .def_property_readonly("alive",     &PyNpc::alive)
+      .def("set_position",
+           [](const PyNpc& self, float x, float y, float z) {
+             Npc* n = requireWorld()->npcById(self.id);
+             if(n == nullptr)
+               throw std::runtime_error("npc no longer exists");
+             n->setPosition(x, y, z);
+             n->updateTransform();
+             },
+           py::arg("x"), py::arg("y"), py::arg("z"))
+      .def("heal",
+           [](const PyNpc& self) {
+             Npc* n = requireWorld()->npcById(self.id);
+             if(n == nullptr)
+               throw std::runtime_error("npc no longer exists");
+             n->changeAttribute(ATR_HITPOINTS,
+                                n->attribute(ATR_HITPOINTSMAX), false);
+             })
       .def("__repr__", &PyNpc::repr);
 
   py::class_<PyWorld>(m, "World")
@@ -175,6 +215,30 @@ PYBIND11_EMBEDDED_MODULE(gothic, m) {
 
   m.attr("player") = PyPlayer{};
   m.attr("world")  = PyWorld{};
+
+  // Per-tick callback registry — consumed by PythonVM::tick() which is
+  // invoked from World::tick().
+  m.attr("_tick_callbacks") = py::list();
+
+  m.def("on_tick",
+        [](py::object fn) {
+          py::module_ g   = py::module_::import("gothic");
+          py::list    cbs = g.attr("_tick_callbacks").cast<py::list>();
+          cbs.append(fn);
+          return py::int_(py::len(cbs) - 1);
+          },
+        py::arg("fn"),
+        "Register a function to be called every simulation tick with dt "
+        "(ms) as its argument. Returns the callback's index. Callbacks that "
+        "raise are logged but do not tear down the game.");
+
+  m.def("clear_tick_callbacks",
+        []() {
+          py::module_ g   = py::module_::import("gothic");
+          py::list    cbs = g.attr("_tick_callbacks").cast<py::list>();
+          cbs.attr("clear")();
+          },
+        "Remove all registered tick callbacks.");
 
   m.def("reload",
         [](const std::string& name) {
@@ -208,7 +272,27 @@ PYBIND11_EMBEDDED_MODULE(gothic, m) {
 
         for(auto handle : args) {
           py::object v = py::reinterpret_borrow<py::object>(handle);
-          if(py::isinstance<py::bool_>(v))
+          // PyPlayer / PyNpc must be checked before bool/int/float because
+          // pybind-bound classes can look like int-ish to duck-typed checks.
+          if(py::isinstance<PyPlayer>(v)) {
+            auto* p = Gothic::inst().player();
+            if(p == nullptr)
+              throw std::runtime_error(
+                  "no active player to pass as Daedalus instance");
+            vm.push_instance(
+                std::static_pointer_cast<zenkit::DaedalusInstance>(
+                    p->handlePtr()));
+            }
+          else if(py::isinstance<PyNpc>(v)) {
+            auto pyn = py::cast<PyNpc>(v);
+            Npc* n   = requireWorld()->npcById(pyn.id);
+            if(n == nullptr)
+              throw std::runtime_error("npc no longer exists");
+            vm.push_instance(
+                std::static_pointer_cast<zenkit::DaedalusInstance>(
+                    n->handlePtr()));
+            }
+          else if(py::isinstance<py::bool_>(v))
             vm.push_int(py::cast<bool>(v) ? 1 : 0);
           else if(py::isinstance<py::int_>(v))
             vm.push_int(py::cast<int32_t>(v));
@@ -219,7 +303,7 @@ PYBIND11_EMBEDDED_MODULE(gothic, m) {
           else
             throw std::runtime_error(
                 "unsupported Daedalus argument type; "
-                "supported: int, float, bool, str");
+                "supported: int, float, bool, str, gothic.Player, gothic.Npc");
           }
 
         vm.unsafe_call(sym);

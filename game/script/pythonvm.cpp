@@ -226,6 +226,39 @@ PythonVM::EvalResult PythonVM::eval(std::string_view source) {
   return res;
   }
 
+void PythonVM::tick(uint64_t dt) {
+  if(!impl->ready)
+    return;
+  try {
+    py::module_ gothic = py::module_::import("gothic");
+    py::object  cbs    = gothic.attr("_tick_callbacks");
+    const size_t n     = py::len(cbs);
+    if(n == 0)
+      return;
+    for(size_t i = 0; i < n; ++i) {
+      try {
+        cbs[py::int_(i)](dt);
+        }
+      catch(py::error_already_set&) {
+        // A broken tick callback must not tear down the game. Log and move on.
+        Tempest::Log::e("[python] tick callback raised: ", formatException().c_str());
+        }
+      }
+    // Anything tick callbacks printed accumulates in our captured stdout.
+    // Route it to log.txt — the Marvin console isn't open during ticks.
+    std::string out = drainCapture(*impl->capture);
+    if(!out.empty()) {
+      while(!out.empty() && (out.back()=='\n' || out.back()=='\r'))
+        out.pop_back();
+      if(!out.empty())
+        Tempest::Log::i("[python] ", out.c_str());
+      }
+    }
+  catch(const std::exception&) {
+    // gothic module missing, etc. — swallow silently.
+    }
+  }
+
 std::vector<std::string> PythonVM::complete(std::string_view fragment) {
   std::vector<std::string> out;
   if(!impl->ready)
