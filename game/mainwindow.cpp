@@ -1139,9 +1139,43 @@ void MainWindow::loadGame(std::string_view slot) {
   update();
   }
 
+// Nearest-neighbour downscale of a Pixmap to fit within `maxW`×`maxH`
+// (issue #916). High-DPI/retina displays produce screenshots with multi-
+// megapixel counts that dominate save-file write time (~7s on 3008×1692
+// Mac). The save slot thumbnails in the UI are only a few hundred pixels
+// wide, so we can safely shrink to roughly that before writing the PNG.
+static Tempest::Pixmap downscalePixmap(const Tempest::Pixmap& src,
+                                       uint32_t maxW, uint32_t maxH) {
+  if(src.w() <= maxW && src.h() <= maxH)
+    return src;
+  const float    scale = std::max(float(src.w())/float(maxW),
+                                  float(src.h())/float(maxH));
+  const uint32_t dstW  = std::max<uint32_t>(1, uint32_t(float(src.w())/scale));
+  const uint32_t dstH  = std::max<uint32_t>(1, uint32_t(float(src.h())/scale));
+
+  Tempest::Pixmap dst(dstW, dstH, src.format());
+  const uint32_t bpp  = src.bpp();
+  const uint8_t* sBuf = static_cast<const uint8_t*>(src.data());
+  uint8_t*       dBuf = static_cast<uint8_t*>(dst.data());
+  for(uint32_t y = 0; y < dstH; ++y) {
+    const uint32_t sy = (y*src.h())/dstH;
+    const uint8_t* sRow = sBuf + sy*src.w()*bpp;
+    uint8_t*       dRow = dBuf + y*dstW*bpp;
+    for(uint32_t x = 0; x < dstW; ++x) {
+      const uint32_t sx = (x*src.w())/dstW;
+      std::memcpy(dRow + x*bpp, sRow + sx*bpp, bpp);
+      }
+    }
+  return dst;
+  }
+
 void MainWindow::saveGame(std::string_view slot, std::string_view name) {
   auto tex = renderer.screenshoot(cmdId);
   auto pm  = device.readPixels(textureCast<const Texture2d&>(tex));
+  // Shrink preview — see downscalePixmap comment. 640×360 is large enough
+  // for the slot thumbnail at any UI scale and small enough that PNG
+  // encode + disk write stays well under a second.
+  pm = downscalePixmap(pm, 640, 360);
 
   if(dialogs.isActive())
     return;
