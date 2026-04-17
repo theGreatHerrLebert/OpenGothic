@@ -175,4 +175,17 @@ PYBIND11_EMBEDDED_MODULE(gothic, m) {
 
   m.attr("player") = PyPlayer{};
   m.attr("world")  = PyWorld{};
+
+  m.def("reload",
+        [](const std::string& name) {
+          py::module_ sys        = py::module_::import("sys");
+          py::dict    modules    = sys.attr("modules");
+          if(!modules.contains(py::str(name)))
+            throw std::runtime_error("module not loaded: " + name);
+          py::module_ importlib  = py::module_::import("importlib");
+          return importlib.attr("reload")(modules[py::str(name)]);
+          },
+        py::arg("name"),
+        "Reload a previously-imported module from disk "
+        "(shorthand for importlib.reload).");
   }

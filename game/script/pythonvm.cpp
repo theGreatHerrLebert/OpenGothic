@@ -48,8 +48,53 @@ sys.stderr = _gothic_capture
     (*impl->globals)["__builtins__"] = py::module_::import("builtins");
     (*impl->globals)["gothic"]       = py::module_::import("gothic");
 
+    // Add $CWD/python to sys.path so user modules (e.g. python/tools.py) are
+    // importable from the REPL: `py import tools; tools.foo()`.
+    py::exec(R"(
+import sys, pathlib
+_gothic_scripts = pathlib.Path.cwd() / "python"
+if _gothic_scripts.is_dir():
+    _p = str(_gothic_scripts)
+    if _p not in sys.path:
+        sys.path.insert(0, _p)
+)");
+
     impl->ready = true;
     Tempest::Log::i("[python] interpreter initialized");
+
+    // If $CWD/python/init.py exists, run it in the persistent globals so any
+    // helpers the user defined there are visible to F2 immediately. Errors
+    // here must not tear down the interpreter — log and move on.
+    try {
+      py::exec(R"(
+import pathlib
+_gothic_init = pathlib.Path.cwd() / "python" / "init.py"
+if _gothic_init.is_file():
+    with open(_gothic_init, "r") as _f:
+        _src = _f.read()
+    exec(compile(_src, str(_gothic_init), "exec"), globals())
+    print(f"[python] loaded {_gothic_init}")
+)", *impl->globals);
+      // Drain anything init.py printed so it doesn't leak into the next
+      // Marvin `py ...` output.
+      try {
+        py::str s = impl->capture->attr("getvalue")();
+        std::string msg(py::cast<std::string_view>(s));
+        if(!msg.empty())
+          Tempest::Log::i(msg);
+        impl->capture->attr("seek")(0);
+        impl->capture->attr("truncate")(0);
+        }
+      catch(...) {}
+      }
+    catch(const std::exception& e) {
+      Tempest::Log::e("[python] init.py failed: ", e.what());
+      try {
+        impl->capture->attr("seek")(0);
+        impl->capture->attr("truncate")(0);
+        }
+      catch(...) {}
+      }
     }
   catch(const std::exception& e) {
     Tempest::Log::e("[python] init failed: ", e.what());
