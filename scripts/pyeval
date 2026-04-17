@@ -35,8 +35,13 @@ REPLY="$BRIDGE_ROOT/out/$REQ_ID.out"
 printf '%s' "$*" > "$INCOMING.tmp"
 mv "$INCOMING.tmp" "$INCOMING"
 
-# Poll for the reply. 10s timeout at 50ms intervals = 200 attempts.
-for _ in $(seq 1 200); do
+# Poll for the reply. Default cadence: 20ms, so round-trip ~= engine-tick
+# + ~20ms client grain. Override with OPENGOTHIC_PY_BRIDGE_POLL (seconds)
+# for faster feedback (CPU cost) or slower (laptop battery).
+POLL="${OPENGOTHIC_PY_BRIDGE_POLL:-0.02}"
+# Timeout budget: 10 seconds.
+MAX_ATTEMPTS="$(python3 -c "print(int(10 / float('$POLL')))")"
+for _ in $(seq 1 "$MAX_ATTEMPTS"); do
   if [ -f "$REPLY" ]; then
     # First line is "OK" or "ERR"; body follows.
     STATUS="$(head -n 1 "$REPLY")"
@@ -44,7 +49,7 @@ for _ in $(seq 1 200); do
     rm -f "$REPLY"
     [ "$STATUS" = "OK" ] && exit 0 || exit 1
   fi
-  sleep 0.05
+  sleep "$POLL"
 done
 
 echo "pybridge: TIMEOUT after 10s waiting for $REPLY" >&2

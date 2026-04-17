@@ -189,24 +189,30 @@ PythonVM::EvalResult PythonVM::eval(std::string_view source) {
       haveResult = true;
       }
     catch(py::error_already_set& e) {
-      if(e.matches(PyExc_SyntaxError)) {
-        // Fall back to single-input mode: behaves like the interactive Python
-        // REPL, so `import sys; sys.version` executes the import AND prints
-        // the sys.version value via sys.displayhook (which writes to our
-        // captured stdout).
+      if(!e.matches(PyExc_SyntaxError))
+        throw;
+      PyErr_Clear();
+
+      // Fallback tier 1: Py_single_input — one logical line or a compound
+      // statement. Auto-prints bare expressions via sys.displayhook, so
+      // `import sys; sys.version` prints the version.
+      py::object code = py::reinterpret_steal<py::object>(
+          Py_CompileString(src.c_str(), "<marvin>", Py_single_input));
+      if(!code) {
+        // Fallback tier 2: Py_file_input — full multi-statement script.
+        // Bare expressions are intentionally silent in this mode; caller
+        // uses explicit print(...) if they want output. This is what
+        // unblocks multi-line scripts sent via the filesystem bridge.
         PyErr_Clear();
-        py::object code = py::reinterpret_steal<py::object>(
-            Py_CompileString(src.c_str(), "<marvin>", Py_single_input));
+        code = py::reinterpret_steal<py::object>(
+            Py_CompileString(src.c_str(), "<marvin>", Py_file_input));
         if(!code)
           throw py::error_already_set();
-        py::object r = py::reinterpret_steal<py::object>(
-            PyEval_EvalCode(code.ptr(), globals, globals));
-        if(!r)
-          throw py::error_already_set();
         }
-      else {
-        throw;
-        }
+      py::object r = py::reinterpret_steal<py::object>(
+          PyEval_EvalCode(code.ptr(), globals, globals));
+      if(!r)
+        throw py::error_already_set();
       }
 
     res.output = drainCapture(*impl->capture);
