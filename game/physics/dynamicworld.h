@@ -84,6 +84,7 @@ class DynamicWorld final {
           }
 
         void  setPosition(const Tempest::Vec3& pos);
+        void  setHeading (float angleRad);
         const Tempest::Vec3& position() const;
 
         void  debugDraw(DbgPainter& p) const;
@@ -259,6 +260,15 @@ class DynamicWorld final {
 
     static float   materialFriction(zenkit::MaterialGroup mat);
     static float   materialDensity (zenkit::MaterialGroup mat);
+
+    // Rotation-gate for issue #182: tests whether an oriented box at
+    // `centerPos` with half-extents `halfExt` (in cm) rotated by
+    // `headingRad` around +Y would overlap landscape/VOBs. Used by Npc
+    // to prevent the "visible body dips into wall when rotating" class of
+    // bugs without changing the existing capsule-based movement path.
+    bool           testRotatedBoxCollision(const Tempest::Vec3& centerPos,
+                                           const Tempest::Vec3& halfExt,
+                                           float                headingRad) const;
 
     static float   rayBox(const Tempest::Vec3& orig, const Tempest::Vec3& dir, const float TMax,
                           const Tempest::Matrix4x4& obj, const Tempest::Vec3& min, const Tempest::Vec3& max,
