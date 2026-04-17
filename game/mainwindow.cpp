@@ -21,6 +21,7 @@
 #include "game/serialize.h"
 #include "game/globaleffects.h"
 #include "utils/gthfont.h"
+#include "world/objects/item.h"
 #include "utils/dbgpainter.h"
 
 #include "commandline.h"
@@ -55,6 +56,7 @@ MainWindow::MainWindow(Device& device)
   barHp      = Resources::loadTexture("BAR_HEALTH.TGA");
   barMisc    = Resources::loadTexture("BAR_MISC.TGA");
   barMana    = Resources::loadTexture("BAR_MANA.TGA");
+  beltSlot   = Resources::loadTexture("INV_SLOT.TGA");
 
   focusImg   = Resources::loadTexture("FOCUS_HIGHLIGHT.TGA");
 
@@ -228,6 +230,12 @@ void MainWindow::paintEvent(PaintEvent& event) {
             drawBar(p,barHp, 10, h()-10, hp, AlignLeft | AlignBottom);
           if(showManaBar)
             drawBar(p,barMana, w()-10, h()-10, mp, AlignRight | AlignBottom);
+
+          // Belt: always-visible hotkey HUD. Hidden when the inventory is
+          // up (redundant there) or when a dialog's running. Cutscene
+          // coverage happens naturally — the camera typically occludes HUD.
+          if(!inventory.isActive() && !dialogs.isActive())
+            drawBelt(p, *pl);
           if(showSwimBar) {
             uint32_t gl = pl->guild();
             auto     v  = float(pl->world().script().guildVal().dive_time[gl]);
@@ -694,6 +702,75 @@ void MainWindow::drawBar(Painter &p, const Tempest::Texture2d* bar, int x, int y
   p.setBrush(*bar);
   p.drawRect(x+int(pd),y+dy,int(float(destW-pd*2)*v),int(destHin),
              0,0,bar->w(),bar->h());
+  }
+
+// Bottom-center belt: 10 hotkey slots mirroring Gothic's key bindings
+// (1=melee, 2=ranged, 3-9 and 0 = assignable quick-use items). Always
+// visible in-world so players don't have to memorize slot assignments.
+// V1 shows slot numbers and short item labels; 3D icons can be layered in
+// later via InventoryRenderer.
+void MainWindow::drawBelt(Painter &p, Npc& player) {
+  if(beltSlot == nullptr)
+    return;
+
+  // currentMeleeWeapon/currentRangedWeapon are non-const in Inventory (they
+  // return Item*). Cast away const for the read-only call; we only dereference
+  // the pointer, no mutation happens.
+  auto& inv = const_cast<Inventory&>(player.inventory());
+  const Item* slots[10] = {
+    inv.currentMeleeWeapon(),    // 1
+    inv.currentRangedWeapon(),   // 2
+    inv.currentSpell(0),         // 3
+    inv.currentSpell(1),         // 4
+    inv.currentSpell(2),         // 5
+    inv.currentSpell(3),         // 6
+    inv.currentSpell(4),         // 7
+    inv.currentSpell(5),         // 8
+    inv.currentSpell(6),         // 9
+    inv.currentSpell(7),         // 0  (slot 10)
+    };
+  const char keyLabel[10] = {'1','2','3','4','5','6','7','8','9','0'};
+
+  const float scale = Gothic::interfaceScale(this);
+  const int   box   = int(44*scale);
+  const int   gap   = int(4*scale);
+  const int   total = 10*box + 9*gap;
+  const int   x0    = (w() - total) / 2;
+  const int   y0    = h() - box - int(12*scale);
+
+  const GthFont& fnt    = Resources::font(scale);
+  const GthFont& fntKey = Resources::font(Resources::FontType::Hi, scale);
+
+  for(int i = 0; i < 10; ++i) {
+    const int  sx   = x0 + i*(box+gap);
+    const bool any  = slots[i] != nullptr;
+
+    p.setBrush(*beltSlot);
+    p.drawRect(sx, y0, box, box, 0, 0, beltSlot->w(), beltSlot->h());
+
+    // Key label in the top-left corner (Hi font so it reads over the
+    // slot texture).
+    char lbl[2] = {keyLabel[i], 0};
+    fntKey.drawText(p, sx + int(3*scale), y0 + int(fntKey.pixelSize()) + int(1*scale), lbl);
+
+    // If there's an item in this slot, show a short label centered.
+    if(any) {
+      // Prefer description (specific name, e.g. "Fireball") over the
+      // group label (e.g. "Scroll") — matches the info-panel behavior
+      // and solves the scroll-naming quirk without changing the real
+      // displayName.
+      auto desc = slots[i]->description();
+      if(desc.empty())
+        desc = slots[i]->displayName();
+      // Trim to keep within the slot.
+      auto maxChars = size_t(std::max<int>(1, (box-6) / std::max(1, fnt.pixelSize()/2)));
+      std::string short_(desc.substr(0, std::min(desc.size(), maxChars)));
+      const int tw = fnt.textSize(short_).w;
+      const int tx = sx + (box - tw) / 2;
+      const int ty = y0 + box - int(4*scale);
+      fnt.drawText(p, tx, ty, short_);
+      }
+    }
   }
 
 void MainWindow::drawMsg(Tempest::Painter& p) {

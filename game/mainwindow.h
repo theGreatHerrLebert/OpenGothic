@@ -69,6 +69,7 @@ class MainWindow : public Tempest::Window {
     void paintFocus     (Tempest::Painter& p, Tempest::Rect rect);
 
     void drawBar(Tempest::Painter& p, const Tempest::Texture2d *bar, int x, int y, float v, Tempest::AlignFlag flg);
+    void drawBelt(Tempest::Painter& p, Npc& player);
     void drawMsg(Tempest::Painter& p);
     void drawProgress(Tempest::Painter& p, int x, int y, int w, int h, float v);
     void drawLoading (Tempest::Painter& p,int x,int y,int w,int h);
@@ -134,6 +135,7 @@ class MainWindow : public Tempest::Window {
     const Tempest::Texture2d* barHp  =nullptr;
     const Tempest::Texture2d* barMisc=nullptr;
     const Tempest::Texture2d* barMana=nullptr;
+    const Tempest::Texture2d* beltSlot=nullptr;
 
     const Tempest::Texture2d* focusImg=nullptr;
 
