@@ -10,8 +10,41 @@
 #include "world/world.h"
 #include "utils/gthfont.h"
 #include "utils/keycodec.h"
+#include "game/constants.h"
 #include "gothic.h"
 #include "resources.h"
+
+namespace {
+// Map each user-facing category into a bitmask of ItmFlags values.
+// CategoryFilter::All → 0, which Page::matches() treats as "accept any".
+uint32_t categoryMaskFor(InventoryMenu::CategoryFilter c) {
+  using CF = InventoryMenu::CategoryFilter;
+  switch(c) {
+    case CF::All:         return 0;
+    case CF::Weapons:     return ITM_CAT_NF  | ITM_CAT_FF    | ITM_CAT_MUN;
+    case CF::Armor:       return ITM_CAT_ARMOR;
+    case CF::Magic:       return ITM_CAT_RUNE | ITM_CAT_MAGIC;
+    case CF::Consumables: return ITM_CAT_POTION | ITM_CAT_FOOD;
+    case CF::Other:       return ITM_CAT_NONE | ITM_CAT_DOCS | ITM_CAT_LIGHT;
+    case CF::Count_:      return 0;
+    }
+  return 0;
+  }
+
+std::string_view categoryLabel(InventoryMenu::CategoryFilter c) {
+  using CF = InventoryMenu::CategoryFilter;
+  switch(c) {
+    case CF::All:         return "all";
+    case CF::Weapons:     return "weapons";
+    case CF::Armor:       return "armor";
+    case CF::Magic:       return "magic";
+    case CF::Consumables: return "consumables";
+    case CF::Other:       return "other";
+    case CF::Count_:      return "";
+    }
+  return "";
+  }
+} // namespace
 
 using namespace Tempest;
 
@@ -20,7 +53,8 @@ struct InventoryMenu::Page {
   Page(const Page&)=delete;
   virtual ~Page()=default;
 
-  std::string                 filter; // lowercase substring; empty == no filter
+  std::string                 filter;     // lowercase substring; empty == no filter
+  uint32_t                    categoryMask = 0; // 0 == accept all categories
 
   void                        setFilter(std::string_view q) {
     filter.assign(q);
@@ -28,7 +62,20 @@ struct InventoryMenu::Page {
       c = char(std::tolower(uint8_t(c)));
     }
 
+  void                        setCategoryMask(uint32_t mask) {
+    categoryMask = mask;
+    }
+
+  bool                        matchesCategory(const Inventory::Iterator& it) const {
+    if(categoryMask == 0)
+      return true;
+    const uint32_t flag = static_cast<uint32_t>(it->mainFlag());
+    return (flag & categoryMask) != 0;
+    }
+
   bool                        matches(const Inventory::Iterator& it) const {
+    if(!matchesCategory(it))
+      return false;
     if(filter.empty())
       return true;
     std::string name(it->displayName());
@@ -130,8 +177,9 @@ void InventoryMenu::close() {
   takeTimer.stop();
   state  = State::Closed;
   searchQuery.clear();
-  if(pagePl)  pagePl->setFilter({});
-  if(pageOth) pageOth->setFilter({});
+  categoryFilter = CategoryFilter::All;
+  if(pagePl)  { pagePl->setFilter({});  pagePl->setCategoryMask(0); }
+  if(pageOth) { pageOth->setFilter({}); pageOth->setCategoryMask(0); }
   }
 
 void InventoryMenu::open(Npc &pl) {
@@ -348,6 +396,24 @@ void InventoryMenu::keyDownEvent(KeyEvent &e) {
     searchQuery.pop_back();
     if(pagePl)  pagePl->setFilter(searchQuery);
     if(pageOth) pageOth->setFilter(searchQuery);
+    activePageSel().sel    = 0;
+    activePageSel().scroll = 0;
+    adjustScroll();
+    update();
+    return;
+    }
+
+  // Category cycling (only when no active search — once searching, `,`
+  // and `.` fall through and extend the query as text). `,` retreats,
+  // `.` advances; wraps both ways through CategoryFilter::Count_ states.
+  if(searchQuery.empty() && (e.code==',' || e.code=='.')) {
+    const int  n   = int(CategoryFilter::Count_);
+    const int  cur = int(categoryFilter);
+    const int  nxt = (e.code=='.') ? (cur + 1) % n : (cur + n - 1) % n;
+    categoryFilter = CategoryFilter(nxt);
+    const uint32_t mask = categoryMaskFor(categoryFilter);
+    if(pagePl)  pagePl->setCategoryMask(mask);
+    if(pageOth) pageOth->setCategoryMask(mask);
     activePageSel().sel    = 0;
     activePageSel().scroll = 0;
     adjustScroll();
@@ -663,17 +729,28 @@ void InventoryMenu::drawAll(Painter &p, Npc &player, DrawPass pass) {
   if(pass==DrawPass::Back)
     drawInfo(p);
 
-  // Search bar: only drawn when a query exists, so the default look
-  // stays untouched. Minimal footprint — one line, bottom-left — to
-  // preserve Gothic's "don't cover the world" layout.
-  if(pass==DrawPass::Back && !searchQuery.empty()) {
+  // Search + category indicator: only drawn when at least one filter is
+  // active, so the default look stays untouched. Minimal footprint —
+  // one line, bottom-left — preserves Gothic's "don't cover the world"
+  // layout. Format: "[category]  search: query_" with either part
+  // omitted when not in use.
+  if(pass==DrawPass::Back &&
+     (!searchQuery.empty() || categoryFilter != CategoryFilter::All)) {
     const float    scale = Gothic::interfaceScale(this);
     const GthFont& font  = Resources::font(scale);
-    std::string    line  = "search: ";
-    line.append(searchQuery);
-    line.push_back('_');
-    const int pad  = int(12*scale);
-    const int tY   = h() - pad - font.pixelSize();
+    std::string    line;
+    if(categoryFilter != CategoryFilter::All) {
+      line.push_back('[');
+      line.append(categoryLabel(categoryFilter));
+      line.append("]  ");
+      }
+    if(!searchQuery.empty()) {
+      line.append("search: ");
+      line.append(searchQuery);
+      line.push_back('_');
+      }
+    const int pad = int(12*scale);
+    const int tY  = h() - pad - font.pixelSize();
     font.drawText(p, pad, tY + font.pixelSize(), line);
     }
   }

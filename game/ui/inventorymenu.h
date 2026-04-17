@@ -28,6 +28,19 @@ class InventoryMenu : public Tempest::Widget {
       LockPicking
       };
 
+    // Category filter cycled via `,` / `.` while the inventory is open.
+    // Each value maps to a bitmask of ItmFlags values in the .cpp; the
+    // order here determines cycle direction (`.` advances, `,` retreats).
+    enum class CategoryFilter:uint8_t {
+      All = 0,
+      Weapons,
+      Armor,
+      Magic,
+      Consumables,
+      Other,
+      Count_
+      };
+
     enum class LootMode:uint8_t {
       Normal=0,
       Stack,
@@ -104,6 +117,7 @@ class InventoryMenu : public Tempest::Widget {
     // with Gothic's "don't stop the world" ethos — tiny UI footprint,
     // filters but never modal.
     std::string               searchQuery;
+    CategoryFilter            categoryFilter = CategoryFilter::All;
 
     size_t                    rowsCount() const;
 
