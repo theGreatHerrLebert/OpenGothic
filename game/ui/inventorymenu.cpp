@@ -723,35 +723,55 @@ void InventoryMenu::drawAll(Painter &p, Npc &player, DrawPass pass) {
   if(state!=State::Ransack) {
     if(pass==DrawPass::Back)
       drawGold (p,player,w()-padd-2*slotSize().w,70);
-    drawItems(p,pass,*pagePl,pageLocal[1],w()-padd-wcount*slotSize().w,iy,wcount,hcount);
+    const int plX = w()-padd-wcount*slotSize().w;
+    const int plW = wcount*slotSize().w;
+    if(pass==DrawPass::Back) {
+      const float scale = Gothic::interfaceScale(this);
+      drawFilterBar(p, plX, iy - int(24*scale) - Resources::font(scale).pixelSize(), plW);
+      }
+    drawItems(p,pass,*pagePl,pageLocal[1],plX,iy,wcount,hcount);
     }
 
   if(pass==DrawPass::Back)
     drawInfo(p);
+  }
 
-  // Search + category indicator: only drawn when at least one filter is
-  // active, so the default look stays untouched. Minimal footprint —
-  // one line, bottom-left — preserves Gothic's "don't cover the world"
-  // layout. Format: "[category]  search: query_" with either part
-  // omitted when not in use.
-  if(pass==DrawPass::Back &&
-     (!searchQuery.empty() || categoryFilter != CategoryFilter::All)) {
-    const float    scale = Gothic::interfaceScale(this);
-    const GthFont& font  = Resources::font(scale);
-    std::string    line;
-    if(categoryFilter != CategoryFilter::All) {
-      line.push_back('[');
-      line.append(categoryLabel(categoryFilter));
-      line.append("]  ");
+// Filter bar renders above the inventory grid — the strip between the
+// gold display and the first slot row. Always shows the category tabs
+// (discoverable UI for the `,` / `.` cycle); the "search: ..." fragment
+// appears to the right of the tabs only when a query is active so the
+// default layout stays identical to vanilla Gothic.
+void InventoryMenu::drawFilterBar(Painter &p, int x, int y, int width) {
+  const float    scale  = Gothic::interfaceScale(this);
+  const GthFont& font   = Resources::font(scale);
+  const GthFont& fontHi = Resources::font(Resources::FontType::Hi, scale);
+  const int      baseline = y + font.pixelSize();
+
+  // Category tabs with the active one highlighted (Hi variant).
+  int              cx      = x;
+  std::string_view sep     = " | ";
+  const int        sepW    = font.textSize(sep).w;
+  for(int i = 0; i < int(CategoryFilter::Count_); ++i) {
+    const auto cf    = CategoryFilter(i);
+    const auto label = categoryLabel(cf);
+    const GthFont& f = (cf == categoryFilter) ? fontHi : font;
+    if(i > 0) {
+      font.drawText(p, cx, baseline, sep);
+      cx += sepW;
       }
-    if(!searchQuery.empty()) {
-      line.append("search: ");
-      line.append(searchQuery);
-      line.push_back('_');
-      }
-    const int pad = int(12*scale);
-    const int tY  = h() - pad - font.pixelSize();
-    font.drawText(p, pad, tY + font.pixelSize(), line);
+    f.drawText(p, cx, baseline, label);
+    cx += f.textSize(label).w;
+    }
+
+  if(!searchQuery.empty()) {
+    std::string s = "search: ";
+    s.append(searchQuery);
+    s.push_back('_');
+    const int sw = font.textSize(std::string_view(s)).w;
+    int       sx = x + width - sw;
+    if(sx < cx + int(16*scale))
+      sx = cx + int(16*scale);
+    font.drawText(p, sx, baseline, s);
     }
   }
 
