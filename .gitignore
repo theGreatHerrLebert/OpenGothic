@@ -29,6 +29,10 @@ out/*
 /*.sav
 /Gothic.ini
 
+# Python bytecode cache for python/ scripts
+__pycache__/
+*.pyc
+
 # internal
 .vs/
 internal/
