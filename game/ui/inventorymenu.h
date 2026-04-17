@@ -99,6 +99,12 @@ class InventoryMenu : public Tempest::Widget {
     size_t                    columsCount = 5;
     int32_t                   scrollDelta = 0;
 
+    // Live search across all categories. Populated by alphanumeric key
+    // presses while the inventory is open; cleared on close. Kept in-line
+    // with Gothic's "don't stop the world" ethos — tiny UI footprint,
+    // filters but never modal.
+    std::string               searchQuery;
+
     size_t                    rowsCount() const;
 
     Tempest::Size             slotSize() const;

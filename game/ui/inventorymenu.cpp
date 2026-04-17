@@ -20,22 +20,47 @@ struct InventoryMenu::Page {
   Page(const Page&)=delete;
   virtual ~Page()=default;
 
+  std::string                 filter; // lowercase substring; empty == no filter
+
+  void                        setFilter(std::string_view q) {
+    filter.assign(q);
+    for(auto& c : filter)
+      c = char(std::tolower(uint8_t(c)));
+    }
+
+  bool                        matches(const Inventory::Iterator& it) const {
+    if(filter.empty())
+      return true;
+    std::string name(it->displayName());
+    for(auto& c : name)
+      c = char(std::tolower(uint8_t(c)));
+    return name.find(filter) != std::string::npos;
+    }
+
   size_t                      size() const {
     if(is(nullptr))
       return 0;
     size_t ret = 0;
     auto it = iterator();
     while(it.isValid()) {
-      ret++;
+      if(matches(it))
+        ret++;
       ++it;
       }
     return ret;
     }
   Inventory::Iterator         get(size_t id) const {
-    auto it = iterator();
-    for(size_t i=0; i<id && it.isValid(); ++i)
+    auto   it   = iterator();
+    size_t seen = 0;
+    while(it.isValid()) {
+      if(matches(it)) {
+        if(seen == id)
+          return it;
+        ++seen;
+        }
       ++it;
-    return it;
+      }
+    return it; // invalid
     }
 
   virtual bool                is(const Inventory* i) const { return i==nullptr; }
@@ -104,6 +129,9 @@ void InventoryMenu::close() {
   renderer.reset(true);
   takeTimer.stop();
   state  = State::Closed;
+  searchQuery.clear();
+  if(pagePl)  pagePl->setFilter({});
+  if(pageOth) pageOth->setFilter({});
   }
 
 void InventoryMenu::open(Npc &pl) {
@@ -300,6 +328,53 @@ void InventoryMenu::moveDown() {
 void InventoryMenu::keyDownEvent(KeyEvent &e) {
   if(state==State::Closed || state==State::LockPicking){
     e.ignore();
+    return;
+    }
+
+  // --- search input -------------------------------------------------------
+  // Esc clears an active search before closing the menu.
+  if(e.key==KeyEvent::K_ESCAPE && !searchQuery.empty()) {
+    searchQuery.clear();
+    if(pagePl)  pagePl->setFilter({});
+    if(pageOth) pageOth->setFilter({});
+    activePageSel().sel    = 0;
+    activePageSel().scroll = 0;
+    adjustScroll();
+    update();
+    return;
+    }
+  // Backspace: edit current query.
+  if(e.key==KeyEvent::K_Back && !searchQuery.empty()) {
+    searchQuery.pop_back();
+    if(pagePl)  pagePl->setFilter(searchQuery);
+    if(pageOth) pageOth->setFilter(searchQuery);
+    activePageSel().sel    = 0;
+    activePageSel().scroll = 0;
+    adjustScroll();
+    update();
+    return;
+    }
+  // Letters (other than Z/X, which are loot-mode shortcuts) start or extend
+  // the search. Once a search is active, every printable key — including
+  // Z/X/space/digits — extends it instead of triggering loot/hotkey actions,
+  // so the query behaves like a focused text field without needing a
+  // modal "search mode" that would violate Gothic's non-blocking ethos.
+  const bool inSearch   = !searchQuery.empty();
+  const bool letterKey  = (KeyEvent::K_A<=e.key && e.key<=KeyEvent::K_Z);
+  const bool reservedLoot = (e.key==KeyEvent::K_Z || e.key==KeyEvent::K_X ||
+                             e.key==KeyEvent::K_Space);
+  const bool digitKey   = (KeyEvent::K_0<=e.key && e.key<=KeyEvent::K_9);
+  const bool accept = (letterKey && !reservedLoot) ||
+                      (inSearch && (letterKey || digitKey ||
+                                    e.key==KeyEvent::K_Space));
+  if(accept && e.code>=0x20 && e.code<0x7F) {
+    searchQuery.push_back(char(std::tolower(uint8_t(e.code))));
+    if(pagePl)  pagePl->setFilter(searchQuery);
+    if(pageOth) pageOth->setFilter(searchQuery);
+    activePageSel().sel    = 0;
+    activePageSel().scroll = 0;
+    adjustScroll();
+    update();
     return;
     }
 
@@ -587,6 +662,20 @@ void InventoryMenu::drawAll(Painter &p, Npc &player, DrawPass pass) {
 
   if(pass==DrawPass::Back)
     drawInfo(p);
+
+  // Search bar: only drawn when a query exists, so the default look
+  // stays untouched. Minimal footprint — one line, bottom-left — to
+  // preserve Gothic's "don't cover the world" layout.
+  if(pass==DrawPass::Back && !searchQuery.empty()) {
+    const float    scale = Gothic::interfaceScale(this);
+    const GthFont& font  = Resources::font(scale);
+    std::string    line  = "search: ";
+    line.append(searchQuery);
+    line.push_back('_');
+    const int pad  = int(12*scale);
+    const int tY   = h() - pad - font.pixelSize();
+    font.drawText(p, pad, tY + font.pixelSize(), line);
+    }
   }
 
 void InventoryMenu::drawItems(Painter &p, DrawPass pass,
@@ -600,11 +689,16 @@ void InventoryMenu::drawItems(Painter &p, DrawPass pass,
                0,0,tex->w(),tex->h());
     }
 
+  // Advance past `scroll` full rows of FILTERED items. Without the
+  // matches() check the raw iterator would outrun the filtered index
+  // as soon as a search is active.
   auto   it = inv.iterator();
   size_t id = 0;
-  for(size_t i=0; it.isValid() && i<sel.scroll*size_t(wcount); ++i) {
+  const size_t startAt = sel.scroll*size_t(wcount);
+  while(it.isValid() && id<startAt) {
+    if(inv.matches(it))
+      ++id;
     ++it;
-    ++id;
     }
   for(int i=0;i<hcount;++i) {
     for(int r=0;r<wcount;++r) {
@@ -614,6 +708,9 @@ void InventoryMenu::drawItems(Painter &p, DrawPass pass,
         p.drawRect(x,y,slotSize().w,slotSize().h,
                    0,0,slot->w(),slot->h());
         }
+      // Walk to the next matching item (if any).
+      while(it.isValid() && !inv.matches(it))
+        ++it;
       if(it.isValid()) {
         drawSlot(p,pass, it,inv,sel, x,y, id);
         ++it;
