@@ -224,13 +224,21 @@ PythonVM::EvalResult PythonVM::eval(std::string_view source) {
     res.ok = true;
     }
   catch(py::error_already_set& e) {
-    // Restore the error into Python's state so traceback.format_exception
-    // can read it. pybind11's error_already_set ctor consumes the error on
-    // construction, so without restore() formatException() would see nothing.
-    e.restore();
-    res.error = formatException();
-    if(res.error.empty() || res.error.find("NoneType") != std::string::npos)
-      res.error = e.what();  // fallback to pybind's own formatting
+    // pybind11 populates e.what() with a readable type+message on construction,
+    // so use that as the primary source. formatException() (via traceback
+    // module) has proven flaky — different pybind/Python combinations leave
+    // varying amounts of state behind, so treat it as a best-effort nicer
+    // rendering, not a requirement.
+    res.error = e.what();
+    try {
+      e.restore();
+      std::string pretty = formatException();
+      if(!pretty.empty() && pretty.find("NoneType") == std::string::npos)
+        res.error = pretty;
+      }
+    catch(...) {}
+    if(res.error.empty())
+      res.error = "<python raised, but formatter returned nothing>";
     // Also include anything the failed code had already written to stdout.
     std::string partial = drainCapture(*impl->capture);
     if(!partial.empty()) {
