@@ -5,6 +5,7 @@
 #include "game/constants.h"
 #include "game/gamesession.h"
 #include "game/gametime.h"
+#include "resources.h"
 #include "world/world.h"
 #include "world/objects/npc.h"
 
@@ -239,6 +240,22 @@ PYBIND11_EMBEDDED_MODULE(gothic, m) {
           cbs.attr("clear")();
           },
         "Remove all registered tick callbacks.");
+
+  m.def("announce",
+        [](const std::string& text, float duration, int x, int y) {
+          auto& font = Resources::font(1.0f);
+          Gothic::inst().onPrintScreen(text,
+                                       x, y,
+                                       static_cast<int>(duration),
+                                       font);
+          },
+        py::arg("text"),
+        py::arg("duration") = 3.0f,
+        py::arg("x")        = 2,
+        py::arg("y")        = 4,
+        "Show a transient on-screen message for `duration` seconds. "
+        "Default position is top-left. Great for tick callbacks that "
+        "want to surface something to the player.");
 
   m.def("reload",
         [](const std::string& name) {
