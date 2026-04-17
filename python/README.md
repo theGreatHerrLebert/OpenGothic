@@ -30,6 +30,28 @@ highlights:
   …)
 - `gothic.reload(name)` — hot-reload a previously-imported module.
 
+### `gothic.daedalus` — bridge to the live Daedalus VM
+
+Instead of rebinding every engine extern in C++, we expose a single
+gateway. Any Daedalus function registered by name — engine externs *or*
+shipped game scripts — is callable from Python:
+
+```python
+gothic.daedalus.call("Hlp_GetCurrentHour")       # returns an int
+gothic.daedalus.call("Wld_SetTime", 12, 0)        # no return
+gothic.daedalus.get("hero")                       # symbol index of hero
+gothic.daedalus.get("FIGHT_STRAFEDISTANCE")       # INT/FLOAT/STRING global
+gothic.daedalus.set("FIGHT_STRAFEDISTANCE", 500)
+```
+
+Argument marshaling supports `int`, `float`, `bool`, `str`. Instance
+arguments (`C_NPC`, `C_ITEM`) are **not** yet supported — that's the
+next layer. Return values of INT / FLOAT / STRING come back as the
+matching Python type; INSTANCE returns are reported as the underlying
+symbol index for now.
+
+## Thread safety
+
 Mutations are safe only from the main thread. The Marvin console pump
 is on the main thread, so anything you type into `py …` is fine. Don't
 call engine mutations from worker threads.

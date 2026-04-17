@@ -188,4 +188,107 @@ PYBIND11_EMBEDDED_MODULE(gothic, m) {
         py::arg("name"),
         "Reload a previously-imported module from disk "
         "(shorthand for importlib.reload).");
+
+  // ---- gothic.daedalus: bridge to the live Daedalus VM ---------------------
+  // Instead of re-implementing each Daedalus extern as a native binding, we
+  // expose a single call/get/set gateway. Python gains immediate access to
+  // *every* engine extern and every shipped game script function by name.
+  py::module_ daedalus = m.def_submodule(
+      "daedalus",
+      "Bridge to the live Daedalus VM. Invoke script functions and read or "
+      "write global symbols by name.");
+
+  daedalus.def(
+      "call",
+      [](const std::string& name, py::args args) -> py::object {
+        auto& vm  = requireWorld()->script().getVm();
+        auto* sym = vm.find_symbol_by_name(name);
+        if(sym == nullptr)
+          throw std::runtime_error("Daedalus symbol not found: " + name);
+
+        for(auto handle : args) {
+          py::object v = py::reinterpret_borrow<py::object>(handle);
+          if(py::isinstance<py::bool_>(v))
+            vm.push_int(py::cast<bool>(v) ? 1 : 0);
+          else if(py::isinstance<py::int_>(v))
+            vm.push_int(py::cast<int32_t>(v));
+          else if(py::isinstance<py::float_>(v))
+            vm.push_float(py::cast<float>(v));
+          else if(py::isinstance<py::str>(v))
+            vm.push_string(py::cast<std::string>(v));
+          else
+            throw std::runtime_error(
+                "unsupported Daedalus argument type; "
+                "supported: int, float, bool, str");
+          }
+
+        vm.unsafe_call(sym);
+
+        if(!sym->has_return())
+          return py::none();
+        switch(sym->rtype()) {
+          case zenkit::DaedalusDataType::INT:    return py::cast(vm.pop_int());
+          case zenkit::DaedalusDataType::FLOAT:  return py::cast(vm.pop_float());
+          case zenkit::DaedalusDataType::STRING: return py::cast(vm.pop_string());
+          default:                               return py::none();
+          }
+        },
+      "Call a Daedalus function by name. Args must be int, float, bool or "
+      "str. Return value (if any) comes back as the matching Python type.");
+
+  daedalus.def(
+      "get",
+      [](const std::string& name, uint16_t index) -> py::object {
+        auto& vm  = requireWorld()->script().getVm();
+        auto* sym = vm.find_symbol_by_name(name);
+        if(sym == nullptr)
+          throw std::runtime_error("Daedalus symbol not found: " + name);
+        switch(sym->type()) {
+          case zenkit::DaedalusDataType::INT:
+            return py::cast(sym->get_int(index));
+          case zenkit::DaedalusDataType::FLOAT:
+            return py::cast(sym->get_float(index));
+          case zenkit::DaedalusDataType::STRING:
+            return py::cast(std::string(sym->get_string(index)));
+          case zenkit::DaedalusDataType::INSTANCE: {
+            auto inst = sym->get_instance();
+            return inst ? py::cast(static_cast<int>(inst->symbol_index()))
+                        : py::none();
+            }
+          default:
+            return py::none();
+          }
+        },
+      py::arg("name"),
+      py::arg("index") = uint16_t{0},
+      "Read a Daedalus global or instance variable by name. Returns int, "
+      "float or str; INSTANCE variables come back as the underlying symbol "
+      "index, None if unset.");
+
+  daedalus.def(
+      "set",
+      [](const std::string& name, py::object value) {
+        auto& vm  = requireWorld()->script().getVm();
+        auto* sym = vm.find_symbol_by_name(name);
+        if(sym == nullptr)
+          throw std::runtime_error("Daedalus symbol not found: " + name);
+        switch(sym->type()) {
+          case zenkit::DaedalusDataType::INT:
+            sym->set_int(py::cast<int32_t>(value));
+            break;
+          case zenkit::DaedalusDataType::FLOAT:
+            sym->set_float(py::cast<float>(value));
+            break;
+          case zenkit::DaedalusDataType::STRING:
+            sym->set_string(py::cast<std::string>(value));
+            break;
+          default:
+            throw std::runtime_error(
+                "Daedalus set(): only INT, FLOAT, STRING are writable");
+          }
+        },
+      py::arg("name"),
+      py::arg("value"),
+      "Write a Daedalus global variable by name. Only INT, FLOAT and STRING "
+      "variables are writable from here.");
   }
