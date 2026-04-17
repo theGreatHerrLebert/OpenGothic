@@ -8,4 +8,12 @@ Use this as a dotfile for your Gothic sessions: import your helpers,
 set up aliases, preload utility modules.
 """
 
-from tools import where, living_npcs, noon, midnight
+from tools import (
+    where,
+    living_npcs,
+    noon,
+    midnight,
+    warp,
+    full_heal,
+    watch_hp,
+)

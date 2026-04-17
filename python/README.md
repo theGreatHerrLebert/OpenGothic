@@ -25,10 +25,17 @@ there are available the moment you open the console.
 See `game/script/pybindings.cpp` for the full surface. Current
 highlights:
 
-- `gothic.player` — the active hero (`position`, `hp`, `alive`, …)
-- `gothic.world` — the loaded world (`time`, `npcs`, `set_time(h, m)`,
-  …)
+- `gothic.player` — the active hero. Read: `position`, `rotation`,
+  `hp`, `hp_max`, `alive`, `name`. Mutate: `set_position(x, y, z)`,
+  `set_hp(hp)`, `heal()`.
+- `gothic.world` — the loaded world. Read: `time`, `day`, `tick_count`,
+  `npc_count`, `npcs`. Mutate: `set_time(h, m)`.
+- `gothic.Npc` — other NPCs (`position`, `name`, `hp`, `alive`,
+  `set_position`, `heal`).
 - `gothic.reload(name)` — hot-reload a previously-imported module.
+- `gothic.on_tick(fn)` / `gothic.clear_tick_callbacks()` — register a
+  Python callable that runs every simulation tick with `dt` (ms) as
+  argument. Callbacks that raise are logged, not fatal.
 
 ### `gothic.daedalus` — bridge to the live Daedalus VM
 
@@ -44,11 +51,23 @@ gothic.daedalus.get("FIGHT_STRAFEDISTANCE")       # INT/FLOAT/STRING global
 gothic.daedalus.set("FIGHT_STRAFEDISTANCE", 500)
 ```
 
-Argument marshaling supports `int`, `float`, `bool`, `str`. Instance
-arguments (`C_NPC`, `C_ITEM`) are **not** yet supported — that's the
-next layer. Return values of INT / FLOAT / STRING come back as the
-matching Python type; INSTANCE returns are reported as the underlying
-symbol index for now.
+Argument marshaling supports `int`, `float`, `bool`, `str`,
+`gothic.Player`, and `gothic.Npc`. NPC-shaped args get pushed as live
+Daedalus instances, so externs like `Npc_ChangeAttribute(slf, atr, v)`
+work:
+
+```python
+gothic.daedalus.call(
+    "Npc_ChangeAttribute",
+    gothic.player,
+    0,    # ATR_HITPOINTS
+    -10,  # delta
+)
+```
+
+Return values of INT / FLOAT / STRING come back as the matching Python
+type. INSTANCE returns are reported as the underlying symbol index for
+now — correlating them back to `PyNpc` wrappers is future work.
 
 ## Thread safety
 

@@ -33,3 +33,37 @@ def noon():
 def midnight():
     """Jump the in-game clock to 00:00."""
     gothic.world.set_time(0, 0)
+
+
+def warp(x, y, z):
+    """Teleport the player to world coordinates (x, y, z)."""
+    gothic.player.set_position(x, y, z)
+
+
+def full_heal():
+    """Restore the player's HP to maximum."""
+    gothic.player.heal()
+
+
+def watch_hp(interval_ms=2000):
+    """Demo on_tick: print the player's HP at ~interval_ms intervals.
+
+    Returns the registered callback index so you could later:
+        gothic.clear_tick_callbacks()  # clear everything
+    """
+    state = {"accum": 0, "last": None}
+
+    def _tick(dt):
+        state["accum"] += dt
+        if state["accum"] < interval_ms:
+            return
+        state["accum"] = 0
+        try:
+            hp = gothic.player.hp
+        except RuntimeError:
+            return  # no active player (menu, load)
+        if hp != state["last"]:
+            print(f"hp: {hp}")
+            state["last"] = hp
+
+    return gothic.on_tick(_tick)
