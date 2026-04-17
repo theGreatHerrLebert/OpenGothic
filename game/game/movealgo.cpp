@@ -823,7 +823,7 @@ void MoveAlgo::setState(State f) {
 
 void MoveAlgo::assertStateChange(State f) {
   // assert possible transitions
-  const bool dead = npc.isDead();
+  [[maybe_unused]] const bool dead = npc.isDead();
   switch(flags) {
     case Run:
       assert(f!=Falling);
