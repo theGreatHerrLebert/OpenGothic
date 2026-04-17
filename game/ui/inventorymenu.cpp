@@ -721,36 +721,49 @@ void InventoryMenu::drawAll(Painter &p, Npc &player, DrawPass pass) {
     }
 
   if(state!=State::Ransack) {
-    if(pass==DrawPass::Back)
-      drawGold (p,player,w()-padd-2*slotSize().w,70);
-    const int plX = w()-padd-wcount*slotSize().w;
-    const int plW = wcount*slotSize().w;
+    const int goldX = w()-padd-2*slotSize().w;
     if(pass==DrawPass::Back) {
       const float scale = Gothic::interfaceScale(this);
-      drawFilterBar(p, plX, iy - int(24*scale) - Resources::font(scale).pixelSize(), plW);
+      // Tabs right-align to just before the gold box, same y as gold.
+      drawFilterBar(p, goldX - int(16*scale), 70);
+      drawGold(p, player, goldX, 70);
       }
-    drawItems(p,pass,*pagePl,pageLocal[1],plX,iy,wcount,hcount);
+    drawItems(p,pass,*pagePl,pageLocal[1],
+              w()-padd-wcount*slotSize().w,iy,wcount,hcount);
     }
 
   if(pass==DrawPass::Back)
     drawInfo(p);
   }
 
-// Filter bar renders above the inventory grid — the strip between the
-// gold display and the first slot row. Always shows the category tabs
-// (discoverable UI for the `,` / `.` cycle); the "search: ..." fragment
-// appears to the right of the tabs only when a query is active so the
-// default layout stays identical to vanilla Gothic.
-void InventoryMenu::drawFilterBar(Painter &p, int x, int y, int width) {
+// Filter bar renders on the same y as the gold display, right-anchored at
+// `rightX` so the rightmost tab sits flush with the gold box (with the
+// small gap the caller bakes into `rightX`). Free to extend further left
+// than the inventory grid — horizontal space above the grid is
+// unconstrained. Category tabs always visible (discoverable); search
+// query, when active, renders on the line directly below, also
+// right-aligned to the same anchor.
+void InventoryMenu::drawFilterBar(Painter &p, int rightX, int y) {
   const float    scale  = Gothic::interfaceScale(this);
   const GthFont& font   = Resources::font(scale);
   const GthFont& fontHi = Resources::font(Resources::FontType::Hi, scale);
   const int      baseline = y + font.pixelSize();
 
-  // Category tabs with the active one highlighted (Hi variant).
-  int              cx      = x;
-  std::string_view sep     = " | ";
-  const int        sepW    = font.textSize(sep).w;
+  std::string_view sep  = " | ";
+  const int        sepW = font.textSize(sep).w;
+
+  // Measure the whole tab run first so we can start at the correct x.
+  int totalW = 0;
+  for(int i = 0; i < int(CategoryFilter::Count_); ++i) {
+    const auto cf    = CategoryFilter(i);
+    const auto label = categoryLabel(cf);
+    const GthFont& f = (cf == categoryFilter) ? fontHi : font;
+    totalW += f.textSize(label).w;
+    if(i > 0)
+      totalW += sepW;
+    }
+
+  int cx = rightX - totalW;
   for(int i = 0; i < int(CategoryFilter::Count_); ++i) {
     const auto cf    = CategoryFilter(i);
     const auto label = categoryLabel(cf);
@@ -768,10 +781,7 @@ void InventoryMenu::drawFilterBar(Painter &p, int x, int y, int width) {
     s.append(searchQuery);
     s.push_back('_');
     const int sw = font.textSize(std::string_view(s)).w;
-    int       sx = x + width - sw;
-    if(sx < cx + int(16*scale))
-      sx = cx + int(16*scale);
-    font.drawText(p, sx, baseline, s);
+    font.drawText(p, rightX - sw, baseline + font.pixelSize(), s);
     }
   }
 
