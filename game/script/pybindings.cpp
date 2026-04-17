@@ -7,6 +7,7 @@
 #include "game/gametime.h"
 #include "resources.h"
 #include "world/world.h"
+#include "world/objects/item.h"
 #include "world/objects/npc.h"
 
 namespace py = pybind11;
@@ -42,6 +43,22 @@ struct PyPlayer {
     return !p->isDead() && !p->isUnconscious();
     }
   std::string name() const  { return std::string(requirePlayer()->displayName()); }
+
+  py::list items() const {
+    auto*    p  = requirePlayer();
+    py::list out;
+    auto     it = p->inventory().iterator(Inventory::T_Inventory);
+    while(it.isValid()) {
+      py::dict d;
+      d["name"]     = std::string(it->displayName());
+      d["count"]    = it.count();
+      d["equipped"] = it.isEquipped();
+      out.append(d);
+      ++it;
+      }
+    return out;
+    }
+
   std::string repr() const  {
     auto* p = requirePlayer();
     auto  v = p->position();
@@ -154,6 +171,9 @@ PYBIND11_EMBEDDED_MODULE(gothic, m) {
       .def_property_readonly("hp_max",   &PyPlayer::hpMax)
       .def_property_readonly("alive",    &PyPlayer::alive)
       .def_property_readonly("name",     &PyPlayer::name)
+      .def_property_readonly("items",    &PyPlayer::items,
+                             "List of dicts {name, count, equipped} for "
+                             "every item in the player's inventory.")
       .def("set_position",
            [](const PyPlayer&, float x, float y, float z) {
              auto* p = requirePlayer();
