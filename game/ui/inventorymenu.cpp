@@ -78,10 +78,22 @@ struct InventoryMenu::Page {
       return false;
     if(filter.empty())
       return true;
+    // Match on the visible name first (cheap, most specific).
     std::string name(it->displayName());
     for(auto& c : name)
       c = char(std::tolower(uint8_t(c)));
-    return name.find(filter) != std::string::npos;
+    if(name.find(filter) != std::string::npos)
+      return true;
+    // Fall back to description: Gothic 2's English localization names
+    // every spell scroll identically ("Scroll"), so a user searching for
+    // "fireball" won't find it in the display name — but it lives in the
+    // scroll's description (e.g. "Scroll of Fireball"). Broadening the
+    // match here fixes that class of surprise without changing the
+    // on-screen labels.
+    std::string desc(it->description());
+    for(auto& c : desc)
+      c = char(std::tolower(uint8_t(c)));
+    return desc.find(filter) != std::string::npos;
     }
 
   size_t                      size() const {
