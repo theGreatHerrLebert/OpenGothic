@@ -5,12 +5,17 @@
 
 #include <Tempest/Log>
 
+#include <optional>
+
 namespace py = pybind11;
 
+// py::dict and py::object invoke the Python C API at construction (PyDict_New
+// etc.), so they must not be default-constructed before Py_Initialize has run.
+// std::optional keeps the members dormant until init() populates them.
 struct PythonVM::Impl {
   std::unique_ptr<py::scoped_interpreter> interp;
-  py::dict                                globals;
-  py::object                              capture;  // io.StringIO bound to sys.stdout/stderr
+  std::optional<py::dict>                 globals;
+  std::optional<py::object>               capture;
   bool                                    ready = false;
   };
 
@@ -36,12 +41,12 @@ _gothic_capture = io.StringIO()
 sys.stdout = _gothic_capture
 sys.stderr = _gothic_capture
 )");
-    impl->capture = py::module_::import("sys").attr("stdout");
+    impl->capture.emplace(py::module_::import("sys").attr("stdout"));
 
     // Persistent globals so `x = 1` in one `py` line is visible in the next.
-    impl->globals = py::dict();
-    impl->globals["__builtins__"] = py::module_::import("builtins");
-    impl->globals["gothic"]       = py::module_::import("gothic");
+    impl->globals.emplace();
+    (*impl->globals)["__builtins__"] = py::module_::import("builtins");
+    (*impl->globals)["gothic"]       = py::module_::import("gothic");
 
     impl->ready = true;
     Tempest::Log::i("[python] interpreter initialized");
@@ -56,8 +61,8 @@ sys.stderr = _gothic_capture
 void PythonVM::shutdown() {
   if(!impl->ready)
     return;
-  impl->globals.release();
-  impl->capture.release();
+  impl->globals.reset();
+  impl->capture.reset();
   impl->interp.reset();
   impl->ready = false;
   }
@@ -113,6 +118,7 @@ PythonVM::EvalResult PythonVM::eval(std::string_view source) {
     return res;
     }
 
+  PyObject* globals = impl->globals->ptr();
   try {
     py::object result;
     bool       haveResult = false;
@@ -123,21 +129,24 @@ PythonVM::EvalResult PythonVM::eval(std::string_view source) {
       if(!code)
         throw py::error_already_set();
       result = py::reinterpret_steal<py::object>(
-          PyEval_EvalCode(code.ptr(), impl->globals.ptr(), impl->globals.ptr()));
+          PyEval_EvalCode(code.ptr(), globals, globals));
       if(!result)
         throw py::error_already_set();
       haveResult = true;
       }
     catch(py::error_already_set& e) {
       if(e.matches(PyExc_SyntaxError)) {
-        // Fall back to statement mode for `import x`, assignments, loops...
+        // Fall back to single-input mode: behaves like the interactive Python
+        // REPL, so `import sys; sys.version` executes the import AND prints
+        // the sys.version value via sys.displayhook (which writes to our
+        // captured stdout).
         PyErr_Clear();
         py::object code = py::reinterpret_steal<py::object>(
-            Py_CompileString(src.c_str(), "<marvin>", Py_file_input));
+            Py_CompileString(src.c_str(), "<marvin>", Py_single_input));
         if(!code)
           throw py::error_already_set();
         py::object r = py::reinterpret_steal<py::object>(
-            PyEval_EvalCode(code.ptr(), impl->globals.ptr(), impl->globals.ptr()));
+            PyEval_EvalCode(code.ptr(), globals, globals));
         if(!r)
           throw py::error_already_set();
         }
@@ -146,7 +155,7 @@ PythonVM::EvalResult PythonVM::eval(std::string_view source) {
         }
       }
 
-    res.output = drainCapture(impl->capture);
+    res.output = drainCapture(*impl->capture);
     if(haveResult && !result.is_none()) {
       if(!res.output.empty() && res.output.back()!='\n')
         res.output += '\n';
@@ -157,7 +166,7 @@ PythonVM::EvalResult PythonVM::eval(std::string_view source) {
   catch(py::error_already_set&) {
     res.error  = formatException();
     // Also include anything the failed code had already written to stdout.
-    std::string partial = drainCapture(impl->capture);
+    std::string partial = drainCapture(*impl->capture);
     if(!partial.empty()) {
       if(!res.output.empty() && res.output.back()!='\n')
         res.output += '\n';
