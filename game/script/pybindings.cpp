@@ -350,6 +350,61 @@ PYBIND11_EMBEDDED_MODULE(gothic, m) {
       "index, None if unset.");
 
   daedalus.def(
+      "symbols",
+      [](py::object pattern, py::object kind) -> py::list {
+        auto&       vm  = requireWorld()->script().getVm();
+        std::string pat;
+        if(!pattern.is_none())
+          pat = py::cast<std::string>(pattern);
+        std::string k;
+        if(!kind.is_none())
+          k = py::cast<std::string>(kind);
+
+        auto keep = [&](const zenkit::DaedalusSymbol& sym) -> bool {
+          if(!pat.empty()) {
+            // case-insensitive substring
+            std::string n = sym.name();
+            std::string P = pat;
+            for(auto& c : n) c = char(std::tolower(uint8_t(c)));
+            for(auto& c : P) c = char(std::tolower(uint8_t(c)));
+            if(n.find(P) == std::string::npos)
+              return false;
+            }
+          if(!k.empty()) {
+            if(k == "extern"  && !sym.is_external())              return false;
+            if(k == "func")
+              return sym.type() == zenkit::DaedalusDataType::FUNCTION;
+            if(k == "var") {
+              auto t = sym.type();
+              return t == zenkit::DaedalusDataType::INT   ||
+                     t == zenkit::DaedalusDataType::FLOAT ||
+                     t == zenkit::DaedalusDataType::STRING;
+              }
+            }
+          return true;
+          };
+
+        py::list out;
+        for(auto& sym : vm.symbols()) {
+          if(!keep(sym))
+            continue;
+          py::dict d;
+          d["name"]     = sym.name();
+          d["type"]     = static_cast<int>(sym.type());
+          d["rtype"]    = static_cast<int>(sym.rtype());
+          d["count"]    = sym.count();
+          d["external"] = sym.is_external();
+          d["has_return"] = sym.has_return();
+          out.append(d);
+          }
+        return out;
+        },
+      py::arg("pattern") = py::none(),
+      py::arg("kind")    = py::none(),
+      "Enumerate Daedalus symbols. Optional case-insensitive substring "
+      "`pattern`; optional `kind` in {'extern', 'func', 'var'}.");
+
+  daedalus.def(
       "set",
       [](const std::string& name, py::object value) {
         auto& vm  = requireWorld()->script().getVm();

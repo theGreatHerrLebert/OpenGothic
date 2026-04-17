@@ -139,10 +139,13 @@ static std::string formatException() {
     PyErr_NormalizeException(&et, &ev, &etb);
     if(etb != nullptr)
       PyException_SetTraceback(ev, etb);
-    py::object lines = tb.attr("format_exception")(
-        py::reinterpret_steal<py::object>(et ? et : Py_None),
-        py::reinterpret_steal<py::object>(ev ? ev : Py_None),
-        py::reinterpret_steal<py::object>(etb ? etb : Py_None));
+    // Never steal a ref on Py_None — it's a global singleton; stealing would
+    // eventually decref it to 0 and corrupt the interpreter. Use py::none()
+    // for the missing components, steal only the real ones.
+    py::object oet  = et  ? py::reinterpret_steal<py::object>(et)  : py::none();
+    py::object oev  = ev  ? py::reinterpret_steal<py::object>(ev)  : py::none();
+    py::object oetb = etb ? py::reinterpret_steal<py::object>(etb) : py::none();
+    py::object lines = tb.attr("format_exception")(oet, oev, oetb);
     std::string out;
     for(auto line : lines)
       out += py::cast<std::string>(line);
