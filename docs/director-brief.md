@@ -25,6 +25,8 @@ not to generate quests. Most of the time, the right decision is to do nothing.
   asking someone who knows, tricking someone who would not tell, confronting the
   culprit, or finding evidence. Approaches can close each other off.
 - A clue must never get the player in trouble for finding it.
+- A character's physical state must match the committed truth, including what they
+  wear. Someone who left his robe behind does not still wear one.
 - Only NPCs in the safe list returned by `get_story_state` may be removed. Attaching a
   dialogue replaces all of that NPC's other conversations, so use only safe NPCs or
   NPCs with no scripted role.

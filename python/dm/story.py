@@ -106,6 +106,8 @@ def _check_return(args, state):
         raise PlanError(f"NPC was not removed by a story: {name}")
     if len(args["position"]) != 3:
         raise PlanError("position must be x, y, z")
+    if "armor" in args and gothic.world.instance_kind(args["armor"]) != "item":
+        raise PlanError(f"not an item instance: {args['armor']}")
 
 
 def _fold_return(args, state):
@@ -117,6 +119,8 @@ def _world_return(args):
     npc = gothic.world.spawn(args["instance"])
     npc.set_position(*args["position"])
     npc.stand_here()
+    if "armor" in args:
+        npc.wear(args["armor"])
     if "display_name" in args:
         npc.display_name = args["display_name"]
     return lambda: gothic.world.remove_npc(npc)

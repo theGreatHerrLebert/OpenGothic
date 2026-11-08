@@ -141,6 +141,9 @@ struct PyPlayer {
     }
   };
 
+std::string instanceClass(World& w, const std::string& name, size_t& id);
+std::string upper(std::string s);
+
 // ---------- PyNpc ----------
 // Holds the Npc object itself. A World's npc index shifts when NPCs are added
 // or removed, so the index is only a lookup hint and is never trusted alone.
@@ -211,6 +214,17 @@ struct PyNpc {
     if(wp==nullptr || fn==size_t(-1))
       throw std::runtime_error("cannot give this NPC a standing routine");
     n->standAtRoutine(uint32_t(fn), wp->name);
+    }
+
+  // Gives the NPC this armour and puts it on, replacing what they wear.
+  void wear(const std::string& instance) {
+    auto*  n  = fetch();
+    auto*  w  = requireWorld();
+    size_t id = 0;
+    if(instanceClass(*w, upper(instance), id)!="C_ITEM")
+      throw std::invalid_argument("not an item instance: " + instance);
+    n->addItem(id, 1);
+    n->useItem(id, Item::NSLOT, true);
     }
 
   void stop() {
@@ -492,6 +506,8 @@ PYBIND11_EMBEDDED_MODULE(gothic, m) {
       .def("start_dialog",
            [](const PyNpc& self) { self.fetch()->startDialog(*requirePlayer()); },
            "Start a conversation with the player through normal perception.")
+      .def("wear", &PyNpc::wear, py::arg("instance"),
+           "Give the NPC an armour item and put it on.")
       .def("stand_here", &PyNpc::standHere,
            "Replace the daily routine with standing at the nearest waypoint.")
       .def("stop", &PyNpc::stop,
