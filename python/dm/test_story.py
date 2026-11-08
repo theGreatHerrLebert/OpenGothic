@@ -228,6 +228,20 @@ def test_player():
     assert d.lines == ["Hallo.", "Größe."] and flags == ["met"]
     assert d.choices == ["Mehr", "Tschüss"]
     player.on_tick()
+
+    # asking the same question again gets the answer again
+    d.selection = 0
+    player.on_tick()
+    player.on_tick()
+    assert d.lines == ["Hallo.", "Größe.", "Größe."] and flags == ["met"]
+    player.on_tick()
+    assert d.choices == ["Zurück"]
+    player.on_tick()
+    d.selection = 0
+    player.on_tick()
+    player.on_tick()
+    assert d.lines[-1] == "Größe." and len(d.lines) == 3
+    player.on_tick()
     d.selection = 1
     player.on_tick()
     assert not d.is_open()
@@ -235,7 +249,7 @@ def test_player():
     # a new conversation starts fresh
     d.who, d.opened, d.open = Npc("NOV_B"), True, True
     player.on_tick()
-    assert d.lines[-1] == "Hallo." and len(d.lines) == 3
+    assert d.lines[-1] == "Hallo." and len(d.lines) == 4
     d.close()
     player.on_tick()
 

@@ -62,19 +62,22 @@ class Player:
         self.on_flag = on_flag
         self.graph = None
         self.node = None
-        self.seen = set()
+        self.path = []
+        self.flagged = set()
         self.stage = "idle"
 
     def _enter(self, key):
         self.node = self.graph["nodes"][key]
-        if key in self.seen:
+        if key in self.path:
             # Stepping back to something already said only shows its choices.
+            del self.path[self.path.index(key) + 1:]
             self.stage = "offer"
             return
-        self.seen.add(key)
+        self.path.append(key)
         self.stage = "say"
         flag = self.node.get("sets")
-        if flag:
+        if flag and flag not in self.flagged:
+            self.flagged.add(flag)
             self.on_flag(flag)
 
     def on_tick(self):
@@ -85,7 +88,8 @@ class Player:
             if self.graph is None:
                 self.stage = "idle"
                 return
-            self.seen = set()
+            self.path = []
+            self.flagged = set()
             self._enter(self.graph["start"])
 
         if self.stage == "idle":
