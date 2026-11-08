@@ -130,6 +130,13 @@ void Inventory::implLoad(Npc* owner, World& world, Serialize &s) {
     shield = readPtr(s);
   for(auto& i:numslot)
     i = readPtr(s);
+  if(s.version()>55) {
+    for(auto& i:quickItems) {
+      uint32_t cls = 0;
+      s.read(cls);
+      i = cls;
+      }
+    }
 
   uint8_t id=255;
   s.read(id);
@@ -177,6 +184,8 @@ void Inventory::save(Serialize &fout) const {
   fout.write(indexOf(shield));
   for(auto& i:numslot)
     fout.write(indexOf(i));
+  for(auto i:quickItems)
+    fout.write(uint32_t(i));
 
   uint8_t id=255;
   if(active==&melee)
@@ -818,16 +827,32 @@ void Inventory::setStateItem(size_t cls) {
 
 bool Inventory::equipNumSlot(Item *next, uint8_t slotHint, Npc &owner, bool force) {
   if(slotHint!=Item::NSLOT) {
-    return setSlot(numslot[slotHint-3],next,owner,force);
+    const bool ret = setSlot(numslot[slotHint-3],next,owner,force);
+    if(ret)
+      quickItems[slotHint-3] = 0;
+    return ret;
     }
 
-  for(auto& i:numslot) {
-    if(i==nullptr) {
-      setSlot(i,next,owner,force);
+  for(size_t i=0; i<8; ++i) {
+    if(numslot[i]==nullptr && quickItems[i]==0) {
+      setSlot(numslot[i],next,owner,force);
       return true;
       }
     }
   return false;
+  }
+
+void Inventory::setQuickItem(uint8_t s, size_t cls, Npc& owner) {
+  if(quickItems[s]==cls) {
+    quickItems[s] = 0; // same key again clears the slot
+    return;
+    }
+  if(numslot[s]!=nullptr)
+    unequip(numslot[s],owner);
+  for(auto& i:quickItems)
+    if(i==cls)
+      i = 0;
+  quickItems[s] = cls;
   }
 
 void Inventory::applyArmor(Item &it, Npc &owner, int32_t sgn) {

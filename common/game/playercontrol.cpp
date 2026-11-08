@@ -99,6 +99,11 @@ void PlayerControl::onKeyPressed(KeyCodec::Action a, Tempest::KeyEvent::KeyType 
 
     if(a>=Action::WeaponMage3 && a<=Action::WeaponMage10) {
       int id = (a-Action::WeaponMage3+3);
+      if(const size_t cls = pl->inventory().quickItem(uint8_t(id-3)); cls!=0) {
+        if(pl->itemCount(cls)>0 && pl->canSwitchWeapon() && pl->interactive()==nullptr && !dlg.isActive())
+          pl->useItem(cls);
+        return;
+        }
       if(ws==WeaponState::Mage && slot==id)
         wctrl[WeaponClose] = true; else
         wctrl[id         ] = true;

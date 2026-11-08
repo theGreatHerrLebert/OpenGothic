@@ -279,6 +279,10 @@ bool Item::isSpell() const {
   return false;
   }
 
+bool Item::isConsumable() const {
+  return (mainFlag() & (ITM_CAT_POTION | ITM_CAT_FOOD))!=0;
+  }
+
 bool Item::isRune() const {
   return isSpellOrRune() && !isSpell();
   }

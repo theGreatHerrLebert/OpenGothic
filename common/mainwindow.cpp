@@ -164,6 +164,7 @@ void MainWindow::setupUi() {
 
 void MainWindow::paintEvent(PaintEvent& event) {
   Painter p(event);
+  inventory.resetBeltIcons();
   auto world = Gothic::inst().world();
   auto st    = Gothic::inst().checkLoading();
   const auto area = clientRect();
@@ -233,10 +234,10 @@ void MainWindow::paintEvent(PaintEvent& event) {
           if(showManaBar)
             drawBar(p,barMana, w()-std::max(10,margins().right), h()-std::max(10,margins().bottom), mp, AlignRight | AlignBottom);
 
-          // Belt: always-visible hotkey HUD. Hidden when the inventory is
-          // up (redundant there) or when a dialog's running. Cutscene
-          // coverage happens naturally — the camera typically occludes HUD.
-          if(!inventory.isActive() && !dialogs.isActive())
+          // Belt: always-visible hotkey HUD, also over the inventory so slot
+          // assignments show immediately. Its 3D icons render above the UI
+          // layer, so hide it under anything that should cover it.
+          if(!dialogs.isActive() && !rootMenu.isActive() && !document.isActive() && !chapter.isActive())
             drawBelt(p, *pl);
           if(showSwimBar) {
             uint32_t gl = pl->guild();
@@ -750,6 +751,14 @@ void MainWindow::drawBelt(Painter &p, Npc& player) {
     inv.currentSpell(6),         // 9
     inv.currentSpell(7),         // 0  (slot 10)
     };
+  // Consumable quick slots share keys 3..0 with spells. The count stays visible
+  // at zero because the assignment outlives the item.
+  size_t quick[10] = {};
+  for(uint8_t i = 0; i < 8; ++i) {
+    quick[i+2] = inv.quickItem(i);
+    if(quick[i+2] != 0)
+      slots[i+2] = inv.getItem(quick[i+2]);
+    }
   const char keyLabel[10] = {'1','2','3','4','5','6','7','8','9','0'};
 
   const float scale = Gothic::interfaceScale(this);
@@ -774,22 +783,15 @@ void MainWindow::drawBelt(Painter &p, Npc& player) {
     char lbl[2] = {keyLabel[i], 0};
     fntKey.drawText(p, sx + int(3*scale), y0 + int(fntKey.pixelSize()) + int(1*scale), lbl);
 
-    // If there's an item in this slot, show a short label centered.
+    if(quick[i] != 0) {
+      const auto cnt = std::to_string(inv.itemCount(quick[i]));
+      const int  cw  = fnt.textSize(cnt).w;
+      fnt.drawText(p, sx + box - cw - int(3*scale), y0 + box - int(4*scale), cnt);
+      }
+
     if(any) {
-      // Prefer description (specific name, e.g. "Fireball") over the
-      // group label (e.g. "Scroll") — matches the info-panel behavior
-      // and solves the scroll-naming quirk without changing the real
-      // displayName.
-      auto desc = slots[i]->description();
-      if(desc.empty())
-        desc = slots[i]->displayName();
-      // Trim to keep within the slot.
-      auto maxChars = size_t(std::max<int>(1, (box-6) / std::max(1, fnt.pixelSize()/2)));
-      std::string short_(desc.substr(0, std::min(desc.size(), maxChars)));
-      const int tw = fnt.textSize(short_).w;
-      const int tx = sx + (box - tw) / 2;
-      const int ty = y0 + box - int(4*scale);
-      fnt.drawText(p, tx, ty, short_);
+      const int inset = int(6*scale);
+      inventory.drawBeltIcon(sx+inset, y0+inset, box-2*inset, box-2*inset, *slots[i]);
       }
     }
   }

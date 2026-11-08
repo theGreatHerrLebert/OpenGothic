@@ -346,6 +346,7 @@ class Npc final {
     void      onWldItemRemoved(const Item& itm);
     void      delItem    (size_t id, uint32_t amount);
     void      useItem    (size_t item);
+    void      setQuickItem(uint8_t slot, size_t item);
     void      useItem    (size_t item, uint8_t slotHint, bool force);
     void      setCurrentItem(size_t item);
     void      unequipItem(size_t item);

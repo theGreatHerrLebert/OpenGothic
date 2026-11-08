@@ -557,7 +557,7 @@ void Renderer::draw(Attachment& result, Encoder<CommandBuffer>& cmd, uint8_t fId
   cmd.setDebugMarker("UI");
   uiLayer.draw(cmd);
 
-  if(inventory.isOpen()!=InventoryMenu::State::Closed) {
+  if(!video.isActive() && (inventory.isOpen()!=InventoryMenu::State::Closed || inventory.hasBeltIcons())) {
     auto& zb = (zbufferUi.isEmpty() ? zbuffer : zbufferUi);
     cmd.setFramebuffer({{result, Tempest::Preserve, Tempest::Preserve}},{zb, 1.f, Tempest::Preserve});
     cmd.setDebugMarker("Inventory");

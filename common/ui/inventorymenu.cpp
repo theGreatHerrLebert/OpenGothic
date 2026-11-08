@@ -556,9 +556,14 @@ void InventoryMenu::mouseWheelEvent(MouseEvent &e) {
   adjustScroll();
   }
 
+int InventoryMenu::bottomGap() const {
+  // room for the hotkey belt, which stays visible over the inventory
+  return std::max(20,margins().bottom) + int(60*Gothic::interfaceScale(this));
+  }
+
 size_t InventoryMenu::rowsCount() const {
   const int iy=std::max(headerTop,margins().top)+headerHeight()+headerSpacing;
-  return size_t((h()-iy-infoHeight()-std::max(20,margins().bottom))/slotSize().h);
+  return size_t((h()-iy-infoHeight()-bottomGap())/slotSize().h);
   }
 
 int InventoryMenu::headerHeight() const {
@@ -625,6 +630,11 @@ void InventoryMenu::onItemAction(uint8_t slotHint) {
 
   if(state==State::Equip) {
     const size_t clsId = it->clsId();
+    if(slotHint!=Item::NSLOT && it->isConsumable()) {
+      // number key assigns to the quick slot; select still consumes below
+      player->setQuickItem(uint8_t(slotHint-3),clsId);
+      return;
+      }
     if(it.isEquipped() && slotHint==Item::NSLOT) {
       player->unequipItem(clsId);
       } else {
@@ -934,7 +944,7 @@ void InventoryMenu::drawInfo(Painter &p) {
   const int   dw    = std::min(area.w, int(720*scale));
   const int   dh    = infoHeight();
   const int   x     = SafeArea::center(w(),dw,margins().left,margins().right);
-  const int   y     = h()-dh-std::max(20,margins().bottom);
+  const int   y     = h()-dh-bottomGap();
 
   auto& pg  = activePage();
   auto& sel = activePageSel();
@@ -981,4 +991,15 @@ void InventoryMenu::drawInfo(Painter &p) {
 
 void InventoryMenu::draw(Tempest::Encoder<CommandBuffer>& cmd) {
   renderer.draw(cmd);
+  beltRenderer.draw(cmd);
+  }
+
+void InventoryMenu::resetBeltIcons() {
+  beltRenderer.reset();
+  beltIcons = false;
+  }
+
+void InventoryMenu::drawBeltIcon(int x, int y, int w, int h, const Item& item) {
+  beltRenderer.drawItem(x,y,w,h,item);
+  beltIcons = true;
   }

@@ -64,6 +64,9 @@ class InventoryMenu : public Tempest::Widget {
 
     void  tick(uint64_t dt);
     void  draw(Tempest::Encoder<Tempest::CommandBuffer>& cmd);
+    void  resetBeltIcons();
+    void  drawBeltIcon(int x, int y, int w, int h, const Item& item);
+    bool  hasBeltIcons() const { return beltIcons; }
     void  paintNumOverlay(Tempest::PaintEvent& e);
 
     void  keyDownEvent  (Tempest::KeyEvent&   e) override;
@@ -108,6 +111,8 @@ class InventoryMenu : public Tempest::Widget {
     size_t                    takeCount  =0;
     LootMode                  lootMode   =LootMode::Normal;
     InventoryRenderer         renderer;
+    InventoryRenderer         beltRenderer;
+    bool                      beltIcons = false;
 
     size_t                    columsCount = 5;
     int32_t                   scrollDelta = 0;
@@ -138,6 +143,7 @@ class InventoryMenu : public Tempest::Widget {
     void          onItemAction(uint8_t slotHint);
     void          onTakeStuff();
     void          adjustScroll();
+    int           bottomGap() const;
     void          drawAll   (Tempest::Painter& p, Npc& player, DrawPass pass);
     void          drawItems (Tempest::Painter& p, DrawPass pass, const Page &inv, const PageLocal &sel, int x, int y, int wcount, int hcount);
     void          drawSlot  (Tempest::Painter& p, DrawPass pass, const Inventory::Iterator& it,

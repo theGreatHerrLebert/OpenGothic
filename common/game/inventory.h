@@ -110,6 +110,11 @@ class Inventory final {
     const Item*  currentSpell(uint8_t s) const { return numslot[s]; }
     Item*  findByFlags(ItmFlags f, uint32_t num) const;
 
+    // Consumable assigned to number key 3..0 (index 0..7), or 0 if none.
+    // Stored by item class so the slot survives running out of the item.
+    size_t quickItem(uint8_t s) const { return quickItems[s]; }
+    void   setQuickItem(uint8_t s, size_t cls, Npc& owner);
+
     uint8_t currentSpellSlot() const;
     bool    hasStateItem() const;
 
@@ -170,6 +175,7 @@ class Inventory final {
     Item*                              range      = nullptr;
     Item*                              shield     = nullptr;
     Item*                              numslot[8] = {};
+    size_t                             quickItems[8] = {};
     std::vector<MdlSlot>               mdlSlots;
     MdlSlot                            ammotSlot, stateSlot;
     int32_t                            curItem=0;

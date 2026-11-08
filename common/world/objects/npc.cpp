@@ -3664,6 +3664,10 @@ void Npc::useItem(size_t item, uint8_t slotHint, bool force) {
   invent.use(item,*this,slotHint,force);
   }
 
+void Npc::setQuickItem(uint8_t slot, size_t item) {
+  invent.setQuickItem(slot,item,*this);
+  }
+
 void Npc::setCurrentItem(size_t item) {
   invent.setCurrentItem(item);
   }

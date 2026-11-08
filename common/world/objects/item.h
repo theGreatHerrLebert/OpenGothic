@@ -70,6 +70,7 @@ class Item : public Vob {
     bool                isSpellOrRune() const;
     bool                isSpell() const;
     bool                isRune() const;
+    bool                isConsumable() const;
     int32_t             spellId() const;
     int32_t             swordLength() const;
 
