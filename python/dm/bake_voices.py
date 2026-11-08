@@ -2,11 +2,14 @@
 
     bake_voices.py refs <GOTHIC install> 15 09 ...
     bake_voices.py bake <graphs.json>
+    bake_voices.py level
 
 graphs.json maps a name to a graph. Run `bake` with the TTS virtualenv's python.
 """
 
+import array
 import json
+import math
 import os
 import pathlib
 import re
@@ -14,12 +17,15 @@ import struct
 import subprocess
 import sys
 import tempfile
+import wave
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 import voices  # noqa: E402
 
 TTS_DIR = voices.RUNTIME_DIR / "tts"
 MODEL = "mlx-community/Qwen3-TTS-12Hz-1.7B-Base-bf16"
+LOUDNESS_BOOST = 1.0  # relative to the original recording of the voice
+PEAK_LIMIT = 32000    # keeps scaled audio from clipping
 
 
 def read_vdf_index(path):
@@ -66,6 +72,41 @@ def extract_refs(game, wanted):
         print(voice, key)
 
 
+def _samples(path):
+    with wave.open(str(path), "rb") as w:
+        params = w.getparams()
+        if params.sampwidth != 2:
+            raise ValueError(f"expected 16-bit audio: {path}")
+        return params, array.array("h", w.readframes(params.nframes))
+
+
+def _rms(samples):
+    return math.sqrt(sum(v * v for v in samples) / max(len(samples), 1))
+
+
+def level_match(path, voice):
+    """Scale a generated line to the loudness of that voice's original recording."""
+    _, reference = _samples(voices.REF_DIR / f"{voice}.wav")
+    params, samples = _samples(path)
+    peak = max((abs(v) for v in samples), default=0)
+    if not peak or not _rms(samples):
+        return 1.0
+    gain = min(_rms(reference) / _rms(samples) * LOUDNESS_BOOST, PEAK_LIMIT / peak)
+    scaled = array.array("h", (int(v * gain) for v in samples))
+    with wave.open(str(path), "wb") as w:
+        w.setparams(params)
+        w.writeframes(scaled.tobytes())
+    return gain
+
+
+def level_all():
+    for voice_dir in sorted(voices.VOICE_DIR.iterdir()):
+        if voice_dir.name == "refs" or not voice_dir.is_dir():
+            continue
+        gains = [level_match(p, voice_dir.name) for p in voice_dir.glob("*.wav")]
+        print(voice_dir.name, len(gains), "avg gain %.2f" % (sum(gains) / max(len(gains), 1)))
+
+
 def spoken_lines(graph):
     voice = graph.get("voice")
     for node in graph["nodes"].values():
@@ -94,11 +135,14 @@ def bake(path):
                            check=True, env=env, capture_output=True)
             produced = sorted(pathlib.Path(tmp).glob("line*.wav"))
             pathlib.Path(produced[0]).replace(target)
+        level_match(target, voice)
         print(f"{n}/{len(todo)} {voice} {text[:50]}", flush=True)
 
 
 if __name__ == "__main__":
     if sys.argv[1] == "refs":
         extract_refs(sys.argv[2], sys.argv[3:])
+    elif sys.argv[1] == "level":
+        level_all()
     else:
         bake(sys.argv[2])
