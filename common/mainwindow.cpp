@@ -122,6 +122,7 @@ MainWindow::~MainWindow() {
   device.waitIdle();
   takeWidget(&dialogs);
   takeWidget(&inventory);
+  Gothic::inst().setDialogMenu(nullptr);
   takeWidget(&chapter);
   takeWidget(&document);
   takeWidget(&video);
@@ -152,6 +153,7 @@ void MainWindow::setupUi() {
 
   rootMenu.setMainMenu();
 
+  Gothic::inst().setDialogMenu(&dialogs);
   Gothic::inst().onDialogPipe  .bind(&dialogs,&DialogMenu::openPipe);
   Gothic::inst().isNpcInDialogFn = std::bind(&DialogMenu::isNpcInDialog, &dialogs, std::placeholders::_1);
 

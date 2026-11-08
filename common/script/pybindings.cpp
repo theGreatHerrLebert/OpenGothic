@@ -6,6 +6,7 @@
 #include "game/gamesession.h"
 #include "game/gametime.h"
 #include "resources.h"
+#include "ui/dialogmenu.h"
 #include "world/world.h"
 #include "world/objects/item.h"
 #include "world/objects/npc.h"
@@ -74,15 +75,70 @@ struct PyPlayer {
   };
 
 // ---------- PyNpc ----------
+// Holds the Npc object itself. A World's npc index shifts when NPCs are added
+// or removed, so the index is only a lookup hint and is never trusted alone.
 struct PyNpc {
-  uint32_t id = 0;
+  Npc*     ptr   = nullptr;
+  World*   world = nullptr;
+  uint32_t hint  = 0;
+  uint32_t sym   = 0;
+
+  static PyNpc wrap(World& w, Npc& n, uint32_t index) {
+    PyNpc r;
+    r.ptr   = &n;
+    r.world = &w;
+    r.hint  = index;
+    r.sym   = n.instanceSymbol();
+    return r;
+    }
+
+  static PyNpc wrap(World& w, Npc& n) {
+    const uint32_t cnt = w.npcCount();
+    for(uint32_t i=0; i<cnt; ++i)
+      if(w.npcById(i)==&n)
+        return wrap(w,n,i);
+    throw std::runtime_error("npc is not in the active world");
+    }
+
+  bool locate() const {
+    auto* w = requireWorld();
+    if(w!=world)
+      return false;
+    const uint32_t cnt = w->npcCount();
+    if(hint<cnt && w->npcById(hint)==ptr)
+      return ptr->instanceSymbol()==sym;
+    for(uint32_t i=0; i<cnt; ++i)
+      if(w->npcById(i)==ptr) {
+        const_cast<PyNpc*>(this)->hint = i;
+        return ptr->instanceSymbol()==sym;
+        }
+    return false;
+    }
 
   Npc* fetch() const {
-    auto* w = requireWorld();
-    auto* n = w->npcById(id);
-    if(n == nullptr)
+    if(!locate())
       throw std::runtime_error("npc no longer exists");
-    return n;
+    return ptr;
+    }
+
+  uint32_t index() const {
+    fetch();
+    return hint;
+    }
+
+  std::string instance() const {
+    auto* s = requireWorld()->script().findSymbol(size_t(fetch()->instanceSymbol()));
+    return s!=nullptr ? std::string(s->name()) : std::string();
+    }
+
+  void setName(const std::string& v) { fetch()->handle().name[0] = v; }
+
+  // Keeps the routine and perception intact: removing them makes an NPC
+  // untalkable.
+  void stop() {
+    auto* n = fetch();
+    n->clearAiQueue();
+    n->stopWalking();
     }
 
   py::tuple position() const {
@@ -101,13 +157,11 @@ struct PyNpc {
       auto* n = fetch();
       char buf[160];
       std::snprintf(buf, sizeof(buf), "<gothic.Npc id=%u name=%.64s>",
-                    id, std::string(n->displayName()).c_str());
+                    hint, std::string(n->displayName()).c_str());
       return buf;
       }
     catch(const std::exception&) {
-      char buf[64];
-      std::snprintf(buf, sizeof(buf), "<gothic.Npc id=%u stale>", id);
-      return buf;
+      return "<gothic.Npc stale>";
       }
     }
   };
@@ -133,13 +187,59 @@ struct PyWorld {
     uint32_t n  = w->npcCount();
     py::list out;
     for(uint32_t i = 0; i < n; ++i) {
-      if(w->npcById(i) != nullptr) {
-        PyNpc item;
-        item.id = i;
-        out.append(item);
-        }
+      if(auto* n = w->npcById(i))
+        out.append(PyNpc::wrap(*w, *n, i));
       }
     return out;
+    }
+
+  // Spawns next to the player unless a waypoint is given.
+  PyNpc spawn(const std::string& instance, const std::string& waypoint) {
+    auto*       w    = requireWorld();
+    auto&       sc   = w->script();
+    std::string name = instance;
+    for(auto& c:name)
+      c = char(std::toupper(uint8_t(c)));
+
+    const size_t id = sc.findSymbolIndex(name);
+    auto*        sym = id==size_t(-1) ? nullptr : sc.findSymbol(id);
+    if(sym==nullptr || sym->parent()==uint32_t(-1) ||
+       sym->type()!=zenkit::DaedalusDataType::INSTANCE || sym->address()==0)
+      throw std::invalid_argument("not an NPC instance: " + instance);
+    const auto* cls = sym;
+    while(cls!=nullptr && cls->parent()!=uint32_t(-1))
+      cls = sc.findSymbol(cls->parent());
+    if(cls==nullptr || cls->name()!="C_NPC")
+      throw std::invalid_argument("not an NPC instance: " + instance);
+
+    Npc* n = nullptr;
+    if(!waypoint.empty()) {
+      n = w->addNpc(id, std::string_view(waypoint));
+      } else {
+      auto* pl  = requirePlayer();
+      auto  pos = pl->position();
+      const float a = pl->rotationRad();
+      pos.x += -std::sin(a)*150.f;
+      pos.z +=  std::cos(a)*150.f;
+      n = w->addNpc(id, pos);
+      }
+    if(n==nullptr)
+      throw std::runtime_error("spawn failed: " + instance);
+    return PyNpc::wrap(*w, *n);
+    }
+
+  py::object findNpc(const std::string& instance, size_t nth) {
+    auto*       w    = requireWorld();
+    std::string name = instance;
+    for(auto& c:name)
+      c = char(std::toupper(uint8_t(c)));
+    const size_t id = w->script().findSymbolIndex(name);
+    if(id==size_t(-1))
+      return py::none();
+    auto* n = w->findNpcByInstance(id, nth);
+    if(n==nullptr)
+      return py::none();
+    return py::cast(PyNpc::wrap(*w, *n));
     }
 
   std::string repr() const {
@@ -157,6 +257,13 @@ struct PyWorld {
       }
     }
   };
+
+DialogMenu& requireDialog() {
+  auto* d = Gothic::inst().dialogMenu();
+  if(d==nullptr)
+    throw std::runtime_error("dialogue UI is not available");
+  return *d;
+  }
 
 } // anonymous namespace
 
@@ -200,7 +307,17 @@ PYBIND11_EMBEDDED_MODULE(gothic, m) {
       .def("__repr__", &PyPlayer::repr);
 
   py::class_<PyNpc>(m, "Npc")
-      .def_readonly("id",                 &PyNpc::id)
+      .def_property_readonly("id",        &PyNpc::index,
+                             "Current world index. Changes over time; keep the "
+                             "Npc object or `instance` instead.")
+      .def_property_readonly("instance",  &PyNpc::instance,
+                             "Daedalus instance name, stable across saves.")
+      .def_property("display_name", &PyNpc::name, &PyNpc::setName)
+      .def("start_dialog",
+           [](const PyNpc& self) { self.fetch()->startDialog(*requirePlayer()); },
+           "Start a conversation with the player through normal perception.")
+      .def("stop", &PyNpc::stop,
+           "Clear queued AI actions and stop walking. Keeps the NPC talkable.")
       .def_property_readonly("position",  &PyNpc::position)
       .def_property_readonly("name",      &PyNpc::name)
       .def_property_readonly("hp",        &PyNpc::hp)
@@ -208,18 +325,14 @@ PYBIND11_EMBEDDED_MODULE(gothic, m) {
       .def_property_readonly("alive",     &PyNpc::alive)
       .def("set_position",
            [](const PyNpc& self, float x, float y, float z) {
-             Npc* n = requireWorld()->npcById(self.id);
-             if(n == nullptr)
-               throw std::runtime_error("npc no longer exists");
+             Npc* n = self.fetch();
              n->setPosition(x, y, z);
              n->updateTransform();
              },
            py::arg("x"), py::arg("y"), py::arg("z"))
       .def("heal",
            [](const PyNpc& self) {
-             Npc* n = requireWorld()->npcById(self.id);
-             if(n == nullptr)
-               throw std::runtime_error("npc no longer exists");
+             Npc* n = self.fetch();
              n->changeAttribute(ATR_HITPOINTS,
                                 n->attribute(ATR_HITPOINTSMAX), false);
              })
@@ -232,10 +345,47 @@ PYBIND11_EMBEDDED_MODULE(gothic, m) {
       .def_property_readonly("npc_count",  &PyWorld::npcCount)
       .def_property_readonly("npcs",       &PyWorld::npcs)
       .def("set_time", &PyWorld::setTime, py::arg("hour"), py::arg("minute"))
+      .def("spawn", &PyWorld::spawn, py::arg("instance"), py::arg("waypoint") = "",
+           "Create an NPC by Daedalus instance name, near the player unless a "
+           "waypoint is given. Main-thread only.")
+      .def("find_npc", &PyWorld::findNpc, py::arg("instance"), py::arg("nth") = 0,
+           "Find a live NPC by Daedalus instance name, or None.")
       .def("__repr__", &PyWorld::repr);
 
   m.attr("player") = PyPlayer{};
   m.attr("world")  = PyWorld{};
+
+  py::module_ dialog = m.def_submodule(
+      "dialog", "Drive the native dialogue UI for one bound NPC from Python.");
+  dialog.def("bind",
+             [](const PyNpc& npc) { requireDialog().agentBind(npc.fetch()); },
+             py::arg("npc"),
+             "Talking to this NPC opens an empty Python-driven dialogue.");
+  dialog.def("unbind", []() { requireDialog().agentBind(nullptr); });
+  dialog.def("is_open", []() { return requireDialog().agentActive(); });
+  dialog.def("just_opened", []() { return requireDialog().agentTakeOpened(); },
+             "True once after the player starts the dialogue.");
+  dialog.def("busy", []() { return requireDialog().agentBusy(); },
+             "True while a line is still being shown.");
+  dialog.def("say",
+             [](const std::string& text, bool player, int ms) {
+               if(ms<=0)
+                 ms = std::max(2000, int(text.size())*70);
+               return requireDialog().agentSay(text, player, uint64_t(ms));
+               },
+             py::arg("text"), py::arg("player") = false, py::arg("ms") = 0,
+             "Show a subtitle line. Returns False if the UI is busy; retry "
+             "on a later tick.");
+  dialog.def("set_choices",
+             [](const std::vector<std::string>& c) { requireDialog().agentSetChoices(c); },
+             py::arg("choices"));
+  dialog.def("poll_selection",
+             []() -> py::object {
+               const int s = requireDialog().agentTakeSelection();
+               return s<0 ? py::none() : py::cast(s);
+               },
+             "Index of the choice just picked, or None. Reports once.");
+  dialog.def("close", []() { requireDialog().agentClose(); });
 
   // Per-tick callback registry — consumed by PythonVM::tick() which is
   // invoked from World::tick().
@@ -322,7 +472,7 @@ PYBIND11_EMBEDDED_MODULE(gothic, m) {
             }
           else if(py::isinstance<PyNpc>(v)) {
             auto pyn = py::cast<PyNpc>(v);
-            Npc* n   = requireWorld()->npcById(pyn.id);
+            Npc* n   = pyn.locate() ? pyn.ptr : nullptr;
             if(n == nullptr)
               throw std::runtime_error("npc no longer exists");
             vm.push_instance(

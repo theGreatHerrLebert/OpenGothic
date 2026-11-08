@@ -34,6 +34,17 @@ class DialogMenu : public Tempest::Widget {
     bool isActive() const;
     bool hasContent() const;
 
+    // Agent mode: talking to the bound NPC opens an empty dialogue driven from
+    // Python instead of the NPC's scripted C_INFO entries.
+    void agentBind(Npc* npc);
+    bool agentActive() const { return agentMode; }
+    bool agentTakeOpened();
+    bool agentSay(std::string_view text, bool isPlayer, uint64_t timeMs);
+    void agentSetChoices(const std::vector<std::string>& titles);
+    int  agentTakeSelection();
+    bool agentBusy() const;
+    void agentClose();
+
     void print      (std::string_view msg);
     void printScreen(std::string_view msg, int x, int y, int time, const GthFont &font);
     void drawMsg    (Tempest::Painter& p, int offsetY);
@@ -141,6 +152,11 @@ class DialogMenu : public Tempest::Widget {
     std::vector<PScreen>                pscreen;
     PScreen                             printMsg[MAX_PRINT];
     uint64_t                            remPrint=0;
+
+    Npc*                                agentNpc      = nullptr;
+    bool                                agentMode     = false;
+    bool                                agentOpened   = false;
+    int                                 agentSelected = -1;
 
     bool                                dlgAnimation        = true;
     bool                                showSubtitles       = true;

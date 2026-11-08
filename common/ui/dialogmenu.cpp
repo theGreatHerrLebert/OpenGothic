@@ -100,7 +100,7 @@ void DialogMenu::tick(uint64_t dt) {
     if(dlgTrade && !haveToWaitOutput()) {
       startTrade();
       }
-    else if(choice.size()==0 && state!=State::Idle && !haveToWaitOutput()) {
+    else if(choice.size()==0 && state!=State::Idle && !agentMode && !haveToWaitOutput()) {
       close();
       }
     } else {
@@ -167,6 +167,66 @@ void DialogMenu::clear() {
 void DialogMenu::onWorldChanged() {
   close();
   clear();
+  agentNpc = nullptr;
+  }
+
+void DialogMenu::agentBind(Npc* npc) {
+  if(agentMode && npc!=agentNpc)
+    agentClose();
+  agentNpc = npc;
+  }
+
+bool DialogMenu::agentTakeOpened() {
+  const bool ret = agentOpened;
+  agentOpened = false;
+  return ret;
+  }
+
+bool DialogMenu::agentBusy() const {
+  return current.time>0 || haveToWaitOutput();
+  }
+
+bool DialogMenu::agentSay(std::string_view text, bool isPlayer, uint64_t timeMs) {
+  if(!agentMode || agentBusy() || pl==nullptr || other==nullptr)
+    return false;
+
+  Npc& speaker = isPlayer ? *pl : *other;
+  Npc& hearer  = isPlayer ? *other : *pl;
+  hearer.stopDlgAnim();
+
+  current.txt     = std::string(text);
+  current.msgTime = timeMs;
+  current.time    = timeMs + (dlgAnimation ? ANIM_TIME*2 : 0);
+  currentSnd      = Tempest::SoundEffect();
+  curentIsPl      = isPlayer;
+  speaker.setAiOutputBarrier(timeMs,false);
+  update();
+  return true;
+  }
+
+void DialogMenu::agentSetChoices(const std::vector<std::string>& titles) {
+  if(!agentMode)
+    return;
+  choice.clear();
+  for(auto& t:titles) {
+    GameScript::DlgChoice c;
+    c.title = t;
+    choice.push_back(std::move(c));
+    }
+  dlgSel = 0;
+  update();
+  }
+
+int DialogMenu::agentTakeSelection() {
+  const int ret = agentSelected;
+  agentSelected = -1;
+  return ret;
+  }
+
+void DialogMenu::agentClose() {
+  if(!agentMode)
+    return;
+  close();
   }
 
 bool DialogMenu::isMobsiDialog() const {
@@ -269,6 +329,20 @@ bool DialogMenu::hasContent() const {
   }
 
 bool DialogMenu::onStart(Npc &p, Npc &ot) {
+  if(agentNpc==&ot) {
+    agentMode      = true;
+    agentOpened    = true;
+    agentSelected  = -1;
+    choice.clear();
+    state          = State::Active;
+    depth          = 0;
+    curentIsPl     = true;
+    choiceAnimTime = 0;
+    dlgSel         = 0;
+    update();
+    return true;
+    }
+
   choice         = ot.dialogChoices(p,except,state==State::PreStart);
   state          = State::Active;
   depth          = 0;
@@ -357,6 +431,9 @@ void DialogMenu::close() {
   other=nullptr;
   depth=0;
   dlgTrade=false;
+  agentMode=false;
+  agentOpened=false;
+  agentSelected=-1;
   current.time=0;
   choice.clear();
   state=State::Idle;
@@ -538,6 +615,16 @@ bool DialogMenu::isChoiceMenuActive() const {
 
 void DialogMenu::onSelect() {
   if(current.time>0 || haveToWaitOutput()){
+    return;
+    }
+
+  if(agentMode) {
+    if(dlgSel<choice.size()) {
+      agentSelected = int(dlgSel);
+      choice.clear();
+      choiceAnimTime = dlgAnimation ? ANIM_TIME : 0;
+      update();
+      }
     return;
     }
 

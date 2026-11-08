@@ -18,6 +18,7 @@
 #include "sound/soundfx.h"
 
 class VersionInfo;
+class DialogMenu;
 class CameraDefinitions;
 class SoundDefinitions;
 class VisualFxDefinitions;
@@ -45,6 +46,9 @@ class GameModDescriptor {
 
 class Gothic final {
   public:
+    void        setDialogMenu(DialogMenu* m) { dlgMenu = m; }
+    DialogMenu* dialogMenu() const           { return dlgMenu; }
+
     Gothic(GameModDescriptor desc = {});
     ~Gothic();
 
@@ -221,6 +225,7 @@ class Gothic final {
     static void                           flushSettings();
 
   private:
+    DialogMenu*                           dlgMenu = nullptr;
     VersionInfo                             vinfo;
     Options                                 opts;
     std::mt19937                            randGen;
