@@ -99,6 +99,28 @@ def _world_remove(args):
     return None
 
 
+def _check_return(args, state):
+    _require(args, "instance", "position")
+    name = _npc_instance(args["instance"])
+    if name not in state["removed"]:
+        raise PlanError(f"NPC was not removed by a story: {name}")
+    if len(args["position"]) != 3:
+        raise PlanError("position must be x, y, z")
+
+
+def _fold_return(args, state):
+    state["removed"].remove(args["instance"].upper())
+    state.setdefault("returning", []).append(args["instance"].upper())
+
+
+def _world_return(args):
+    npc = gothic.world.spawn(args["instance"])
+    npc.set_position(*args["position"])
+    if "display_name" in args:
+        npc.display_name = args["display_name"]
+    return lambda: gothic.world.remove_npc(npc)
+
+
 def _check_place(args, state):
     _require(args, "instance", "waypoint")
     if gothic.world.instance_kind(args["instance"]) != "item":
@@ -114,9 +136,10 @@ def _world_place(args):
 def _check_graph(args, state):
     _require(args, "npc", "graph")
     name = _npc_instance(args["npc"])
-    _live_npc(name)
     if name in state["removed"]:
         raise PlanError(f"NPC has been removed: {name}")
+    if name not in state.get("returning", []):
+        _live_npc(name)
     problem = graphs.validate(args["graph"])
     if problem:
         raise PlanError(f"bad dialogue graph: {problem}")
@@ -151,6 +174,7 @@ def _noop(args, state):
 OPS = {
     "commit_fact": (_check_fact, _fold_fact, None),
     "remove_npc": (_check_remove, _fold_remove, _world_remove),
+    "return_npc": (_check_return, _fold_return, _world_return),
     "place_item": (_check_place, _noop, _world_place),
     "attach_dialogue_graph": (_check_graph, _fold_graph, _world_graph),
     "set_flag": (_check_flag, _fold_flag, None),

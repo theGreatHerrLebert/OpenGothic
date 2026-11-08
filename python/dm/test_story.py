@@ -46,6 +46,12 @@ class World:
             raise RuntimeError("engine refused")
         del self.npcs[npc.instance]
 
+    def spawn(self, instance):
+        npc = Npc(instance.upper())
+        npc.set_position = lambda *p: setattr(npc, "at", p)
+        self.npcs[instance.upper()] = npc
+        return npc
+
     def place_item(self, instance, waypoint):
         self.placed.append((instance, waypoint))
         return Handle(self, (instance, waypoint))
@@ -162,6 +168,21 @@ def test_apply_and_rollback():
     assert s.log == [] and s.state == st.empty_state()
 
 
+def test_return_npc():
+    fake.world.__init__()
+    fake.dialog.__init__()
+    s = st.Story()
+    rejected(s, [{"op": "return_npc", "instance": "NOV_A", "position": [1, 2, 3]}], "not removed")
+    s.apply_plan({"reason": "gone", "ops": [{"op": "remove_npc", "instance": "NOV_A"}]})
+    s.apply_plan({"reason": "back", "ops": [
+        {"op": "return_npc", "instance": "NOV_A", "position": [1, 2, 3]},
+        {"op": "attach_dialogue_graph", "npc": "NOV_A", "graph": GOOD},
+    ]})
+    assert fake.world.npcs["NOV_A"].at == (1, 2, 3)
+    assert s.state["removed"] == [] and "NOV_A" in s.state["graphs"]
+    assert fake.dialog.bound == ["NOV_A"]
+
+
 def test_queue_waits_for_safe_point():
     fake.world.__init__()
     fake.dialog.reset()
@@ -264,7 +285,7 @@ def test_player():
     d.say = real_say
 
 
-for test in (test_graph_validation, test_validation, test_apply_and_rollback,
+for test in (test_graph_validation, test_validation, test_apply_and_rollback, test_return_npc,
              test_queue_waits_for_safe_point, test_save_load_does_not_reapply_world,
              test_player):
     test()
