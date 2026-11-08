@@ -26,7 +26,11 @@ class PythonVM final {
     // been initialized yet.
     void                     tick(uint64_t dt);
 
+    void                     onWorldLoading() { ++worldGen; }
+    uint64_t                 worldGeneration() const { return worldGen; }
+
   private:
+    uint64_t worldGen = 0;
     PythonVM();
     ~PythonVM();
     PythonVM(const PythonVM&) = delete;

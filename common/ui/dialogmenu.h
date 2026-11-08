@@ -38,6 +38,7 @@ class DialogMenu : public Tempest::Widget {
     // Python instead of the NPC's scripted C_INFO entries.
     void agentBind(Npc* npc);
     bool agentActive() const { return agentMode; }
+    Npc* partner() const { return (state!=State::Idle && other!=pl) ? other : nullptr; }
     bool agentTakeOpened();
     bool agentSay(std::string_view text, bool isPlayer, uint64_t timeMs);
     void agentSetChoices(const std::vector<std::string>& titles);

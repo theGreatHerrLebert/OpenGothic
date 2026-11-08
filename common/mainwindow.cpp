@@ -1,5 +1,7 @@
 #include "mainwindow.h"
 
+#include "script/pythonvm.h"
+
 #include <Tempest/Except>
 #include <Tempest/Painter>
 
@@ -1226,6 +1228,7 @@ void MainWindow::onVideo(std::string_view fname) {
   }
 
 void MainWindow::onStartLoading() {
+  PythonVM::inst().onWorldLoading();
   player   .clearInput();
   inventory.onWorldChanged();
   dialogs  .onWorldChanged();

@@ -29,6 +29,9 @@ out/*
 /*.sav
 /Gothic.ini
 
+# AI game master runtime logs
+python/dm_runtime/
+
 # Python bytecode cache for python/ scripts
 __pycache__/
 *.pyc

@@ -6,7 +6,9 @@
 #include "game/gamesession.h"
 #include "game/gametime.h"
 #include "resources.h"
+#include "script/pythonvm.h"
 #include "ui/dialogmenu.h"
+#include "world/waypoint.h"
 #include "world/world.h"
 #include "world/objects/item.h"
 #include "world/objects/npc.h"
@@ -45,6 +47,15 @@ struct PyPlayer {
     }
   std::string name() const  { return std::string(requirePlayer()->displayName()); }
 
+  std::string waypoint() const {
+    auto* wp = requireWorld()->findWayPoint(requirePlayer()->position());
+    return wp!=nullptr ? wp->name : std::string();
+    }
+
+  std::string room() const {
+    return std::string(requireWorld()->roomAt(requirePlayer()->position()));
+    }
+
   py::list items() const {
     auto*    p  = requirePlayer();
     py::list out;
@@ -52,6 +63,8 @@ struct PyPlayer {
     while(it.isValid()) {
       py::dict d;
       d["name"]     = std::string(it->displayName());
+      auto* sym = requireWorld()->script().findSymbol(it->clsId());
+      d["instance"] = sym!=nullptr ? std::string(sym->name()) : std::string();
       d["count"]    = it.count();
       d["equipped"] = it.isEquipped();
       out.append(d);
@@ -228,6 +241,19 @@ struct PyWorld {
     return PyNpc::wrap(*w, *n);
     }
 
+  py::list npcsNear(float radius) {
+    auto*    w  = requireWorld();
+    auto*    pl = requirePlayer();
+    py::list out;
+    w->detectNpc(pl->position(), radius, [&](Npc& n) {
+      if(!n.isPlayer())
+        out.append(PyNpc::wrap(*w, n));
+      });
+    return out;
+    }
+
+  uint64_t generation() const { return PythonVM::inst().worldGeneration(); }
+
   py::object findNpc(const std::string& instance, size_t nth) {
     auto*       w    = requireWorld();
     std::string name = instance;
@@ -278,6 +304,10 @@ PYBIND11_EMBEDDED_MODULE(gothic, m) {
       .def_property_readonly("hp_max",   &PyPlayer::hpMax)
       .def_property_readonly("alive",    &PyPlayer::alive)
       .def_property_readonly("name",     &PyPlayer::name)
+      .def_property_readonly("waypoint", &PyPlayer::waypoint,
+                             "Name of the nearest waypoint.")
+      .def_property_readonly("room",     &PyPlayer::room,
+                             "Portal room name, empty when outdoors.")
       .def_property_readonly("items",    &PyPlayer::items,
                              "List of dicts {name, count, equipped} for "
                              "every item in the player's inventory.")
@@ -348,6 +378,10 @@ PYBIND11_EMBEDDED_MODULE(gothic, m) {
       .def("spawn", &PyWorld::spawn, py::arg("instance"), py::arg("waypoint") = "",
            "Create an NPC by Daedalus instance name, near the player unless a "
            "waypoint is given. Main-thread only.")
+      .def("npcs_near", &PyWorld::npcsNear, py::arg("radius"),
+           "NPCs within radius of the player, excluding the player.")
+      .def_property_readonly("generation", &PyWorld::generation,
+                             "Changes every time a world starts loading.")
       .def("find_npc", &PyWorld::findNpc, py::arg("instance"), py::arg("nth") = 0,
            "Find a live NPC by Daedalus instance name, or None.")
       .def("__repr__", &PyWorld::repr);
@@ -385,6 +419,13 @@ PYBIND11_EMBEDDED_MODULE(gothic, m) {
                return s<0 ? py::none() : py::cast(s);
                },
              "Index of the choice just picked, or None. Reports once.");
+  dialog.def("partner",
+             []() -> py::object {
+               auto* n = requireDialog().partner();
+               auto* w = requireWorld();
+               return n==nullptr ? py::none() : py::cast(PyNpc::wrap(*w, *n));
+               },
+             "NPC the player is talking to in any dialogue, or None.");
   dialog.def("close", []() { requireDialog().agentClose(); });
 
   // Per-tick callback registry — consumed by PythonVM::tick() which is
