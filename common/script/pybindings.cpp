@@ -468,3 +468,5 @@ PYBIND11_EMBEDDED_MODULE(gothic, m) {
       "Write a Daedalus global variable by name. Only INT, FLOAT and STRING "
       "variables are writable from here.");
   }
+
+void pybindingsLinkAnchor() {}

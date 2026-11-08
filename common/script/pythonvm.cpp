@@ -10,6 +10,10 @@
 
 namespace py = pybind11;
 
+// Defined in pybindings.cpp. Referencing it keeps that object file, and the
+// static registration of the `gothic` module, when linking the static library.
+void pybindingsLinkAnchor();
+
 // py::dict and py::object invoke the Python C API at construction (PyDict_New
 // etc.), so they must not be default-constructed before Py_Initialize has run.
 // std::optional keeps the members dormant until init() populates them.
@@ -32,6 +36,7 @@ void PythonVM::init() {
   if(impl->ready)
     return;
   try {
+    pybindingsLinkAnchor();
     impl->interp = std::make_unique<py::scoped_interpreter>();
 
     // Install a StringIO-backed sink for sys.stdout / sys.stderr so REPL output
