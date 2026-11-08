@@ -49,6 +49,7 @@ class World:
     def spawn(self, instance):
         npc = Npc(instance.upper())
         npc.set_position = lambda *p: setattr(npc, "at", p)
+        npc.stand_here = lambda: None
         self.npcs[instance.upper()] = npc
         return npc
 

@@ -71,6 +71,8 @@ class Item : public Vob {
     bool                isSpell() const;
     bool                isRune() const;
     bool                isConsumable() const;
+    bool                isStoryItem() const { return storyItem; }
+    void                setStoryItem(bool v) { storyItem = v; }
     int32_t             spellId() const;
     int32_t             swordLength() const;
 
@@ -105,6 +107,7 @@ class Item : public Vob {
     uint32_t                       amount   = 0;
     uint8_t                        equipped = 0;
     uint8_t                        itSlot   = NSLOT;
+    bool                           storyItem = false;
 
     MeshObjects::Mesh              visual;
     DynamicWorld::Item             physic;

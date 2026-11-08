@@ -58,6 +58,8 @@ Item::Item(World &owner, Serialize &fin, Type type)
   fin.read(h->inv_zbias,h->inv_rot_x,h->inv_rot_y,h->inv_rot_z,h->inv_animate);
   fin.read(amount);
   fin.read(pos,equipped,itSlot);
+  if(fin.version()>56)
+    fin.read(storyItem);
   fin.read(mat);
 
   if(type!=T_Inventory) {
@@ -128,6 +130,7 @@ void Item::save(Serialize &fout) const {
   fout.write(h.inv_zbias,h.inv_rot_x,h.inv_rot_y,h.inv_rot_z,h.inv_animate);
   fout.write(amount);
   fout.write(pos,equipped,itSlot);
+  fout.write(storyItem);
   fout.write(localTransform());
   }
 

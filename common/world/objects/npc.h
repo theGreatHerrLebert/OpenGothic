@@ -315,6 +315,7 @@ class Npc final {
     void      setStateTime(int64_t time);
 
     void      addRoutine(gtime s, gtime e, uint32_t callback, std::string_view point);
+    void      standAtRoutine(uint32_t callback, std::string_view point);
     void      excRoutine(size_t callback);
     void      multSpeed(float s);
 

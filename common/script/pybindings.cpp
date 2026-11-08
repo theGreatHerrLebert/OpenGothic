@@ -202,6 +202,17 @@ struct PyNpc {
 
   // Keeps the routine and perception intact: removing them makes an NPC
   // untalkable.
+  // Replaces the daily routine with standing at the nearest waypoint.
+  void standHere() {
+    auto* n  = fetch();
+    auto* w  = requireWorld();
+    auto* wp = w->findWayPoint(n->position());
+    const size_t fn = w->script().findSymbolIndex("ZS_STAND_ARMSCROSSED");
+    if(wp==nullptr || fn==size_t(-1))
+      throw std::runtime_error("cannot give this NPC a standing routine");
+    n->standAtRoutine(uint32_t(fn), wp->name);
+    }
+
   void stop() {
     auto* n = fetch();
     n->clearAiQueue();
@@ -299,7 +310,11 @@ struct PyWorld {
 
     Npc* n = nullptr;
     if(!waypoint.empty()) {
-      n = w->addNpc(id, std::string_view(waypoint));
+      // addNpc(at) parks an NPC with no routine in dead storage, so use the position
+      auto* wp = w->findPoint(waypoint,false);
+      if(wp==nullptr)
+        throw std::invalid_argument("no such waypoint: " + waypoint);
+      n = w->addNpc(id, wp->position());
       } else {
       auto* pl  = requirePlayer();
       auto  pos = pl->position();
@@ -337,6 +352,7 @@ struct PyWorld {
     auto* it = w->addItem(id, std::string_view(waypoint));
     if(it==nullptr)
       throw std::runtime_error("could not place item: " + instance);
+    it->setStoryItem(true);
     PyItem r;
     r.ptr = it;
     return r;
@@ -454,6 +470,8 @@ PYBIND11_EMBEDDED_MODULE(gothic, m) {
       .def("start_dialog",
            [](const PyNpc& self) { self.fetch()->startDialog(*requirePlayer()); },
            "Start a conversation with the player through normal perception.")
+      .def("stand_here", &PyNpc::standHere,
+           "Replace the daily routine with standing at the nearest waypoint.")
       .def("stop", &PyNpc::stop,
            "Clear queued AI actions and stop walking. Keeps the NPC talkable.")
       .def_property_readonly("position",  &PyNpc::position)

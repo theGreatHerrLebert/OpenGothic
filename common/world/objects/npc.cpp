@@ -3459,8 +3459,9 @@ Item* Npc::takeItem(Item& item) {
   if(it==nullptr)
     return nullptr;
 
+  const bool storyItem = ptr!=nullptr && ptr->isStoryItem();
   it = addItem(std::move(ptr));
-  if(isPlayer() && it!=nullptr)
+  if(isPlayer() && it!=nullptr && !storyItem)
     owner.sendPassivePerc(*this,*this,*it,PERC_ASSESSTHEFT);
 
   implAniWait(uint64_t(sq->totalTime()));
@@ -4373,6 +4374,13 @@ uint64_t Npc::stateTime() const {
 
 void Npc::setStateTime(int64_t time) {
   aiState.sTime = owner.tickCount()-uint64_t(time);
+  }
+
+void Npc::standAtRoutine(uint32_t callback, std::string_view point) {
+  routines.clear();
+  addRoutine(gtime(8,0), gtime(20,0), callback, point);
+  addRoutine(gtime(20,0), gtime(8,0), callback, point);
+  clearState(true);
   }
 
 void Npc::addRoutine(gtime s, gtime e, uint32_t callback, std::string_view point) {

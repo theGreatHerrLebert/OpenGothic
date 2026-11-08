@@ -116,6 +116,7 @@ def _fold_return(args, state):
 def _world_return(args):
     npc = gothic.world.spawn(args["instance"])
     npc.set_position(*args["position"])
+    npc.stand_here()
     if "display_name" in args:
         npc.display_name = args["display_name"]
     return lambda: gothic.world.remove_npc(npc)
