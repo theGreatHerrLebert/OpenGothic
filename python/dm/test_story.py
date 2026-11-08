@@ -224,11 +224,20 @@ def test_player():
     d.selection = 0
     player.on_tick()
     player.on_tick()
-    player.on_tick()
+    # stepping back shows the choices again without repeating the line
+    assert d.lines == ["Hallo.", "Größe."] and flags == ["met"]
+    assert d.choices == ["Mehr", "Tschüss"]
     player.on_tick()
     d.selection = 1
     player.on_tick()
     assert not d.is_open()
+
+    # a new conversation starts fresh
+    d.who, d.opened, d.open = Npc("NOV_B"), True, True
+    player.on_tick()
+    assert d.lines[-1] == "Hallo." and len(d.lines) == 3
+    d.close()
+    player.on_tick()
 
     # a line refused while the UI is busy is retried
     d.reset()
