@@ -20,9 +20,24 @@ import gothic
 POLL_MS = 1000
 SETTLE_POLLS = 3    # polls at one waypoint before counting as having arrived
 NEAR_RADIUS = 1500  # world units; 100 units is about one metre
+ITEM_QUIET_POLLS = 5      # item changes merge until this many quiet polls pass
+NEAR_COOLDOWN_POLLS = 300 # an NPC must be out of range this long to count again
 
 RUNTIME_DIR = pathlib.Path(__file__).resolve().parent.parent / "dm_runtime"
 LOG_PATH = RUNTIME_DIR / "events.jsonl"
+
+
+def place_of(waypoint):
+    """Group a waypoint name into a place, e.g. NW_XARDAS_TOWER_IN1_02 -> XARDAS_TOWER."""
+    tokens = waypoint.split("_")
+    if tokens and tokens[0] in ("NW", "OW", "ADW", "DRAGON"):
+        tokens = tokens[1:]
+    kept = []
+    for token in tokens:
+        if len(kept) == 2 or any(c.isdigit() for c in token):
+            break
+        kept.append(token)
+    return "_".join(kept) or waypoint
 
 
 def _item_counts():
@@ -73,18 +88,25 @@ class Observer:
 
     def _reset(self, snap):
         self.base = snap
-        self.arrived = snap["waypoint"]
-        self.settling = snap["waypoint"]
+        self.place = place_of(snap["waypoint"])
+        self.settling = self.place
         self.settle_count = 0
+        self.polls = 0
+        self.item_delta = collections.Counter()
+        self.item_quiet = 0
+        self.last_near = {key: 0 for key in snap["near"]}
 
     def poll(self):
         generation = gothic.world.generation
         snap = self._snapshot()
         if generation != self.generation or self.base is None:
             self.generation = generation
+            if self.base is not None:
+                self._flush_items()
             self._reset(snap)
             self._emit("world_loaded", waypoint=snap["waypoint"])
             return
+        self.polls += 1
         self._diff(self.base, snap)
         self.base = snap
 
@@ -98,24 +120,17 @@ class Observer:
             if new["room"]:
                 self._emit("room_entered", room=new["room"])
 
-        self._track_arrival(new["waypoint"])
+        self._track_place(place_of(new["waypoint"]))
+        self._track_items(old, new)
 
         if new["partner_key"] != old["partner_key"]:
+            self._flush_items()
             if old["partner_key"]:
                 self._emit("talk_ended", instance=old["partner_key"])
             if new["partner"]:
                 self._emit("talk_started", **_npc_ref(new["partner"]))
 
-        for instance in set(old["items"]) | set(new["items"]):
-            delta = new["items"][instance] - old["items"][instance]
-            if delta > 0:
-                self._emit("item_gained", instance=instance, count=delta)
-            elif delta < 0:
-                self._emit("item_lost", instance=instance, count=-delta)
-
-        for instance in new["alive"] - old["alive"]:
-            if instance not in old["near"]:
-                self._emit("npc_near", **_npc_ref(new["near"][instance]))
+        self._track_near(new)
 
         for instance in old["alive"] - new["alive"]:
             if instance in new["near"]:
@@ -124,15 +139,42 @@ class Observer:
         if new["down"] and not old["down"]:
             self._emit("player_down")
 
-    def _track_arrival(self, waypoint):
-        if waypoint != self.settling:
-            self.settling = waypoint
+    def _track_place(self, place):
+        if place != self.settling:
+            self.settling = place
             self.settle_count = 0
             return
         self.settle_count += 1
-        if self.settle_count >= SETTLE_POLLS and waypoint != self.arrived:
-            self.arrived = waypoint
-            self._emit("arrived", waypoint=waypoint)
+        if self.settle_count >= SETTLE_POLLS and place != self.place:
+            self.place = place
+            self._emit("place_entered", place=place)
+
+    def _track_items(self, old, new):
+        changed = False
+        for instance in set(old["items"]) | set(new["items"]):
+            delta = new["items"][instance] - old["items"][instance]
+            if delta:
+                self.item_delta[instance] += delta
+                changed = True
+        self.item_quiet = 0 if changed else self.item_quiet + 1
+        if self.item_quiet >= ITEM_QUIET_POLLS:
+            self._flush_items()
+
+    def _flush_items(self):
+        gained = {k: v for k, v in self.item_delta.items() if v > 0}
+        lost = {k: -v for k, v in self.item_delta.items() if v < 0}
+        self.item_delta.clear()
+        if gained:
+            self._emit("items_gained", items=gained)
+        if lost:
+            self._emit("items_lost", items=lost)
+
+    def _track_near(self, new):
+        for instance, npc in new["near"].items():
+            last = self.last_near.get(instance)
+            if npc.alive and (last is None or self.polls - last >= NEAR_COOLDOWN_POLLS):
+                self._emit("npc_near", **_npc_ref(npc))
+            self.last_near[instance] = self.polls
 
     def on_tick(self, dt):
         self.elapsed += dt
