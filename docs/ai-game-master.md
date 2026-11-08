@@ -96,6 +96,28 @@ overwritten, and what happens to an NPC removed by a log that no longer applies.
 Conversations are pre-baked as graphs and committed before the player arrives,
 which avoids visible LLM latency. They display in the native dialogue UI.
 
+## Story logic: two graphs
+
+Playtesting showed that a story must be logically consistent before any line is
+written. `python/dm/knowledge.py` enforces this with two graphs:
+
+- **Knowledge graph (acyclic).** Facts, plus "needs" edges between them. A cycle
+  means a mystery that cannot be solved, so it is rejected.
+- **Conversation graph (cycles allowed).** Lines and choices declare the facts
+  they use and teach. Every reachable combination of node and player knowledge
+  is explored, so problems on any path are found.
+
+The checker rejects a line that refers to something not yet established on that
+path (including who a pronoun means), a hero line about something the player has
+not learned, an NPC stating what they could not know, a fact learned before what
+it depends on, and an essential fact with no source. Each essential fact should
+have at least two independent sources, so one missed NPC cannot end a story.
+
+The writing order follows from this: the Director produces the knowledge graph,
+the checker proves it solvable, conversations are written against it, a German
+editing pass reviews each line in context and for natural Gothic-flavoured
+speech, and audio is generated last.
+
 ## Known constraints
 
 - **Voice.** Gothic is fully voiced and generated lines are silent subtitles.
@@ -137,7 +159,7 @@ like.
 2. Rebuild `spawn` and the dialogue bridge on stable handles.
 3. Add the event stream.
 4. Add story operations, the log, replay, and save integration.
-5. Build the dependency map and Validator.
+5. Build the dependency map and the Validator, including the two-graph checks.
 6. Run the experiment with a human Director.
 7. Add the LLM Director.
 
