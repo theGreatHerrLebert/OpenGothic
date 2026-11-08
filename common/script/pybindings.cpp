@@ -17,6 +17,60 @@ namespace py = pybind11;
 
 namespace {
 
+// The engine and its fonts use Windows-1252 bytes; Python strings are Unicode.
+// Every string crossing this boundary goes through one of these two functions.
+const char16_t kCp1252High[32] = {
+  0x20AC,0x0081,0x201A,0x0192,0x201E,0x2026,0x2020,0x2021,0x02C6,0x2030,0x0160,0x2039,0x0152,0x008D,0x017D,0x008F,
+  0x0090,0x2018,0x2019,0x201C,0x201D,0x2022,0x2013,0x2014,0x02DC,0x2122,0x0161,0x203A,0x0153,0x009D,0x017E,0x0178,
+  };
+
+std::string toPy(std::string_view in) {
+  std::string out;
+  out.reserve(in.size());
+  for(char ch:in) {
+    const uint8_t b = uint8_t(ch);
+    const uint32_t cp = (b>=0x80 && b<0xA0) ? kCp1252High[b-0x80] : b;
+    if(cp<0x80) {
+      out.push_back(char(cp));
+      } else if(cp<0x800) {
+      out.push_back(char(0xC0 | (cp>>6)));
+      out.push_back(char(0x80 | (cp&0x3F)));
+      } else {
+      out.push_back(char(0xE0 | (cp>>12)));
+      out.push_back(char(0x80 | ((cp>>6)&0x3F)));
+      out.push_back(char(0x80 | (cp&0x3F)));
+      }
+    }
+  return out;
+  }
+
+std::string toEngine(std::string_view in) {
+  std::string out;
+  out.reserve(in.size());
+  for(size_t i=0; i<in.size();) {
+    const uint8_t b = uint8_t(in[i]);
+    uint32_t cp  = b;
+    size_t   len = 1;
+    if(b>=0xF0)      { len=4; cp=b&0x07u; }
+    else if(b>=0xE0) { len=3; cp=b&0x0Fu; }
+    else if(b>=0xC0) { len=2; cp=b&0x1Fu; }
+    for(size_t r=1; r<len && i+r<in.size(); ++r)
+      cp = (cp<<6) | (uint8_t(in[i+r])&0x3Fu);
+    i += len;
+
+    char mapped = '?';
+    if(cp<0x80 || (cp>=0xA0 && cp<=0xFF)) {
+      mapped = char(cp);
+      } else {
+      for(uint32_t h=0; h<32; ++h)
+        if(kCp1252High[h]==cp)
+          mapped = char(0x80+h);
+      }
+    out.push_back(mapped);
+    }
+  return out;
+  }
+
 World* requireWorld() {
   auto* w = Gothic::inst().world();
   if(w == nullptr)
@@ -45,7 +99,7 @@ struct PyPlayer {
     auto* p = requirePlayer();
     return !p->isDead() && !p->isUnconscious();
     }
-  std::string name() const  { return std::string(requirePlayer()->displayName()); }
+  std::string name() const  { return toPy(requirePlayer()->displayName()); }
 
   std::string waypoint() const {
     auto* wp = requireWorld()->findWayPoint(requirePlayer()->position());
@@ -62,7 +116,7 @@ struct PyPlayer {
     auto     it = p->inventory().iterator(Inventory::T_Inventory);
     while(it.isValid()) {
       py::dict d;
-      d["name"]     = std::string(it->displayName());
+      d["name"]     = toPy(it->displayName());
       auto* sym = requireWorld()->script().findSymbol(it->clsId());
       d["instance"] = sym!=nullptr ? std::string(sym->name()) : std::string();
       d["count"]    = it.count();
@@ -79,7 +133,7 @@ struct PyPlayer {
     char  buf[160];
     std::snprintf(buf, sizeof(buf),
                   "<gothic.Player name=%.64s hp=%d/%d pos=(%.1f, %.1f, %.1f)>",
-                  std::string(p->displayName()).c_str(),
+                  toPy(p->displayName()).c_str(),
                   p->attribute(ATR_HITPOINTS),
                   p->attribute(ATR_HITPOINTSMAX),
                   v.x, v.y, v.z);
@@ -144,7 +198,7 @@ struct PyNpc {
     return s!=nullptr ? std::string(s->name()) : std::string();
     }
 
-  void setName(const std::string& v) { fetch()->handle().name[0] = v; }
+  void setName(const std::string& v) { fetch()->handle().name[0] = toEngine(v); }
 
   // Keeps the routine and perception intact: removing them makes an NPC
   // untalkable.
@@ -158,7 +212,7 @@ struct PyNpc {
     auto  v = fetch()->position();
     return py::make_tuple(v.x, v.y, v.z);
     }
-  std::string name() const { return std::string(fetch()->displayName()); }
+  std::string name() const { return toPy(fetch()->displayName()); }
   int  hp() const          { return fetch()->attribute(ATR_HITPOINTS); }
   int  hpMax() const       { return fetch()->attribute(ATR_HITPOINTSMAX); }
   bool alive() const {
@@ -170,7 +224,7 @@ struct PyNpc {
       auto* n = fetch();
       char buf[160];
       std::snprintf(buf, sizeof(buf), "<gothic.Npc id=%u name=%.64s>",
-                    hint, std::string(n->displayName()).c_str());
+                    hint, toPy(n->displayName()).c_str());
       return buf;
       }
     catch(const std::exception&) {
@@ -405,13 +459,18 @@ PYBIND11_EMBEDDED_MODULE(gothic, m) {
              [](const std::string& text, bool player, int ms) {
                if(ms<=0)
                  ms = std::max(2000, int(text.size())*70);
-               return requireDialog().agentSay(text, player, uint64_t(ms));
+               return requireDialog().agentSay(toEngine(text), player, uint64_t(ms));
                },
              py::arg("text"), py::arg("player") = false, py::arg("ms") = 0,
              "Show a subtitle line. Returns False if the UI is busy; retry "
              "on a later tick.");
   dialog.def("set_choices",
-             [](const std::vector<std::string>& c) { requireDialog().agentSetChoices(c); },
+             [](const std::vector<std::string>& c) {
+               std::vector<std::string> titles;
+               for(auto& t:c)
+                 titles.push_back(toEngine(t));
+               requireDialog().agentSetChoices(titles);
+               },
              py::arg("choices"));
   dialog.def("poll_selection",
              []() -> py::object {
@@ -455,7 +514,7 @@ PYBIND11_EMBEDDED_MODULE(gothic, m) {
   m.def("announce",
         [](const std::string& text, float duration, int x, int y) {
           auto& font = Resources::font(1.0f);
-          Gothic::inst().onPrintScreen(text,
+          Gothic::inst().onPrintScreen(toEngine(text),
                                        x, y,
                                        static_cast<int>(duration),
                                        font);
@@ -527,7 +586,7 @@ PYBIND11_EMBEDDED_MODULE(gothic, m) {
           else if(py::isinstance<py::float_>(v))
             vm.push_float(py::cast<float>(v));
           else if(py::isinstance<py::str>(v))
-            vm.push_string(py::cast<std::string>(v));
+            vm.push_string(toEngine(py::cast<std::string>(v)));
           else
             throw std::runtime_error(
                 "unsupported Daedalus argument type; "
@@ -541,7 +600,7 @@ PYBIND11_EMBEDDED_MODULE(gothic, m) {
         switch(sym->rtype()) {
           case zenkit::DaedalusDataType::INT:    return py::cast(vm.pop_int());
           case zenkit::DaedalusDataType::FLOAT:  return py::cast(vm.pop_float());
-          case zenkit::DaedalusDataType::STRING: return py::cast(vm.pop_string());
+          case zenkit::DaedalusDataType::STRING: return py::cast(toPy(vm.pop_string()));
           default:                               return py::none();
           }
         },
@@ -561,7 +620,7 @@ PYBIND11_EMBEDDED_MODULE(gothic, m) {
           case zenkit::DaedalusDataType::FLOAT:
             return py::cast(sym->get_float(index));
           case zenkit::DaedalusDataType::STRING:
-            return py::cast(std::string(sym->get_string(index)));
+            return py::cast(toPy(sym->get_string(index)));
           case zenkit::DaedalusDataType::INSTANCE: {
             auto inst = sym->get_instance();
             return inst ? py::cast(static_cast<int>(inst->symbol_index()))
@@ -647,7 +706,7 @@ PYBIND11_EMBEDDED_MODULE(gothic, m) {
             sym->set_float(py::cast<float>(value));
             break;
           case zenkit::DaedalusDataType::STRING:
-            sym->set_string(py::cast<std::string>(value));
+            sym->set_string(toEngine(py::cast<std::string>(value)));
             break;
           default:
             throw std::runtime_error(
