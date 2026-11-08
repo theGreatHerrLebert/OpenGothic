@@ -165,6 +165,20 @@ static std::string formatException() {
     }
   }
 
+void PythonVM::notify(const char* listName, std::string_view arg) {
+  if(!impl->ready)
+    return;
+  try {
+    py::object cbs = py::module_::import("gothic").attr(listName);
+    for(auto cb : cbs)
+      cb(std::string(arg));
+    }
+  catch(py::error_already_set& e) {
+    e.restore();
+    Tempest::Log::e("[python] ", listName, " raised: ", formatException().c_str());
+    }
+  }
+
 PythonVM::EvalResult PythonVM::eval(std::string_view source) {
   EvalResult res;
   if(!impl->ready) {

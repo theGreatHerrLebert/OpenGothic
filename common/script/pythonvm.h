@@ -27,6 +27,9 @@ class PythonVM final {
     void                     tick(uint64_t dt);
 
     void                     onWorldLoading() { ++worldGen; }
+
+    // Calls the Python callbacks in gothic.<listName> with `arg`.
+    void                     notify(const char* listName, std::string_view arg);
     uint64_t                 worldGeneration() const { return worldGen; }
 
   private:

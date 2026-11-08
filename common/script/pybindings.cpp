@@ -233,6 +233,36 @@ struct PyNpc {
     }
   };
 
+// Only valid until the world changes; used to undo a placement within a plan.
+struct PyItem {
+  Item* ptr = nullptr;
+  void remove() {
+    if(ptr!=nullptr)
+      requireWorld()->removeItem(*ptr);
+    ptr = nullptr;
+    }
+  };
+
+// Returns the root Daedalus class of an instance symbol, or "".
+std::string instanceClass(World& w, const std::string& name, size_t& id) {
+  auto& sc = w.script();
+  id = sc.findSymbolIndex(name);
+  auto* sym = id==size_t(-1) ? nullptr : sc.findSymbol(id);
+  if(sym==nullptr || sym->parent()==uint32_t(-1) ||
+     sym->type()!=zenkit::DaedalusDataType::INSTANCE || sym->address()==0)
+    return "";
+  const auto* cls = sym;
+  while(cls!=nullptr && cls->parent()!=uint32_t(-1))
+    cls = sc.findSymbol(cls->parent());
+  return cls!=nullptr ? std::string(cls->name()) : std::string();
+  }
+
+std::string upper(std::string s) {
+  for(auto& c:s)
+    c = char(std::toupper(uint8_t(c)));
+  return s;
+  }
+
 // ---------- PyWorld ----------
 struct PyWorld {
   py::tuple time() const {
@@ -262,21 +292,9 @@ struct PyWorld {
 
   // Spawns next to the player unless a waypoint is given.
   PyNpc spawn(const std::string& instance, const std::string& waypoint) {
-    auto*       w    = requireWorld();
-    auto&       sc   = w->script();
-    std::string name = instance;
-    for(auto& c:name)
-      c = char(std::toupper(uint8_t(c)));
-
-    const size_t id = sc.findSymbolIndex(name);
-    auto*        sym = id==size_t(-1) ? nullptr : sc.findSymbol(id);
-    if(sym==nullptr || sym->parent()==uint32_t(-1) ||
-       sym->type()!=zenkit::DaedalusDataType::INSTANCE || sym->address()==0)
-      throw std::invalid_argument("not an NPC instance: " + instance);
-    const auto* cls = sym;
-    while(cls!=nullptr && cls->parent()!=uint32_t(-1))
-      cls = sc.findSymbol(cls->parent());
-    if(cls==nullptr || cls->name()!="C_NPC")
+    auto*        w = requireWorld();
+    size_t       id = 0;
+    if(instanceClass(*w, upper(instance), id)!="C_NPC")
       throw std::invalid_argument("not an NPC instance: " + instance);
 
     Npc* n = nullptr;
@@ -293,6 +311,42 @@ struct PyWorld {
     if(n==nullptr)
       throw std::runtime_error("spawn failed: " + instance);
     return PyNpc::wrap(*w, *n);
+    }
+
+  py::object instanceKind(const std::string& instance) {
+    size_t id = 0;
+    const auto cls = instanceClass(*requireWorld(), upper(instance), id);
+    if(cls=="C_NPC")
+      return py::str("npc");
+    if(cls=="C_ITEM")
+      return py::str("item");
+    return py::none();
+    }
+
+  bool hasWaypoint(const std::string& name) const {
+    return requireWorld()->findPoint(name,false)!=nullptr;
+    }
+
+  PyItem placeItem(const std::string& instance, const std::string& waypoint) {
+    auto*  w  = requireWorld();
+    size_t id = 0;
+    if(instanceClass(*w, upper(instance), id)!="C_ITEM")
+      throw std::invalid_argument("not an item instance: " + instance);
+    if(w->findPoint(waypoint,false)==nullptr)
+      throw std::invalid_argument("no such waypoint: " + waypoint);
+    auto* it = w->addItem(id, std::string_view(waypoint));
+    if(it==nullptr)
+      throw std::runtime_error("could not place item: " + instance);
+    PyItem r;
+    r.ptr = it;
+    return r;
+    }
+
+  void removeNpc(const PyNpc& npc) {
+    Npc* n = npc.fetch();
+    if(n->isPlayer())
+      throw std::invalid_argument("cannot remove the player");
+    requireWorld()->removeNpc(*n);
     }
 
   py::list npcsNear(float radius) {
@@ -422,6 +476,9 @@ PYBIND11_EMBEDDED_MODULE(gothic, m) {
              })
       .def("__repr__", &PyNpc::repr);
 
+  py::class_<PyItem>(m, "Item")
+      .def("remove", &PyItem::remove);
+
   py::class_<PyWorld>(m, "World")
       .def_property_readonly("time",       &PyWorld::time)
       .def_property_readonly("day",        &PyWorld::day)
@@ -436,6 +493,11 @@ PYBIND11_EMBEDDED_MODULE(gothic, m) {
            "NPCs within radius of the player, excluding the player.")
       .def_property_readonly("generation", &PyWorld::generation,
                              "Changes every time a world starts loading.")
+      .def("instance_kind", &PyWorld::instanceKind, py::arg("instance"),
+           "'npc', 'item', or None for a Daedalus instance name.")
+      .def("has_waypoint", &PyWorld::hasWaypoint, py::arg("name"))
+      .def("place_item", &PyWorld::placeItem, py::arg("instance"), py::arg("waypoint"))
+      .def("remove_npc", &PyWorld::removeNpc, py::arg("npc"))
       .def("find_npc", &PyWorld::findNpc, py::arg("instance"), py::arg("nth") = 0,
            "Find a live NPC by Daedalus instance name, or None.")
       .def("__repr__", &PyWorld::repr);
@@ -449,7 +511,12 @@ PYBIND11_EMBEDDED_MODULE(gothic, m) {
              [](const PyNpc& npc) { requireDialog().agentBind(npc.fetch()); },
              py::arg("npc"),
              "Talking to this NPC opens an empty Python-driven dialogue.");
-  dialog.def("unbind", []() { requireDialog().agentBind(nullptr); });
+  dialog.def("unbind",
+             [](py::object npc) {
+               requireDialog().agentUnbind(npc.is_none() ? nullptr : npc.cast<PyNpc>().fetch());
+               },
+             py::arg("npc") = py::none(),
+             "Stop driving one NPC, or every NPC when none is given.");
   dialog.def("is_open", []() { return requireDialog().agentActive(); });
   dialog.def("just_opened", []() { return requireDialog().agentTakeOpened(); },
              "True once after the player starts the dialogue.");
@@ -490,6 +557,11 @@ PYBIND11_EMBEDDED_MODULE(gothic, m) {
   // Per-tick callback registry — consumed by PythonVM::tick() which is
   // invoked from World::tick().
   m.attr("_tick_callbacks") = py::list();
+
+  // Called with the save slot file name, or the world name for a new game.
+  m.attr("_save_callbacks")     = py::list();
+  m.attr("_load_callbacks")     = py::list();
+  m.attr("_new_game_callbacks") = py::list();
 
   m.def("on_tick",
         [](py::object fn) {

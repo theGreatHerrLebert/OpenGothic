@@ -37,6 +37,7 @@ class DialogMenu : public Tempest::Widget {
     // Agent mode: talking to the bound NPC opens an empty dialogue driven from
     // Python instead of the NPC's scripted C_INFO entries.
     void agentBind(Npc* npc);
+    void agentUnbind(Npc* npc);
     bool agentActive() const { return agentMode; }
     Npc* partner() const { return (state!=State::Idle && other!=pl) ? other : nullptr; }
     bool agentTakeOpened();
@@ -154,7 +155,7 @@ class DialogMenu : public Tempest::Widget {
     PScreen                             printMsg[MAX_PRINT];
     uint64_t                            remPrint=0;
 
-    Npc*                                agentNpc      = nullptr;
+    std::vector<Npc*>                   agentNpcs;
     bool                                agentMode     = false;
     bool                                agentOpened   = false;
     int                                 agentSelected = -1;

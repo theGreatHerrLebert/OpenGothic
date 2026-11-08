@@ -167,13 +167,21 @@ void DialogMenu::clear() {
 void DialogMenu::onWorldChanged() {
   close();
   clear();
-  agentNpc = nullptr;
+  agentNpcs.clear();
   }
 
 void DialogMenu::agentBind(Npc* npc) {
-  if(agentMode && npc!=agentNpc)
+  if(npc!=nullptr && std::find(agentNpcs.begin(),agentNpcs.end(),npc)==agentNpcs.end())
+    agentNpcs.push_back(npc);
+  }
+
+void DialogMenu::agentUnbind(Npc* npc) {
+  if(agentMode && (npc==nullptr || npc==other))
     agentClose();
-  agentNpc = npc;
+  if(npc==nullptr)
+    agentNpcs.clear();
+  else
+    agentNpcs.erase(std::remove(agentNpcs.begin(),agentNpcs.end(),npc),agentNpcs.end());
   }
 
 bool DialogMenu::agentTakeOpened() {
@@ -329,7 +337,7 @@ bool DialogMenu::hasContent() const {
   }
 
 bool DialogMenu::onStart(Npc &p, Npc &ot) {
-  if(agentNpc==&ot) {
+  if(std::find(agentNpcs.begin(),agentNpcs.end(),&ot)!=agentNpcs.end()) {
     agentMode      = true;
     agentOpened    = true;
     agentSelected  = -1;

@@ -1135,6 +1135,7 @@ Camera::Mode MainWindow::solveCameraMode() const {
   }
 
 void MainWindow::startGame(std::string_view slot) {
+  PythonVM::inst().notify("_new_game_callbacks", slot);
   // gothic.emitGlobalSound(gothic.loadSoundFx("NEWGAME"));
 
   if(Gothic::inst().checkLoading()==Gothic::LoadState::Idle){
@@ -1152,6 +1153,7 @@ void MainWindow::startGame(std::string_view slot) {
   }
 
 void MainWindow::loadGame(std::string_view slot) {
+  PythonVM::inst().notify("_load_callbacks", slot);
   if(Gothic::inst().checkLoading()==Gothic::LoadState::Idle) {
     setGameImpl(nullptr);
     }
@@ -1174,6 +1176,8 @@ void MainWindow::saveGame(std::string_view slot, std::string_view name) {
     return;
   if(auto w = Gothic::inst().world(); w!=nullptr && w->currentCs()!=nullptr)
     return;
+
+  PythonVM::inst().notify("_save_callbacks", slot);
 
   auto tex  = renderer.screenshoot(cmdId, Size(int(swapchain.w()),int(swapchain.h())));
   auto lres = Attachment();
