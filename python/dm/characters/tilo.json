@@ -1,0 +1,29 @@
+{
+  "npc": "NOV_606_NOVIZE",
+  "name": "Tilo",
+  "voice": "12",
+  "role": "Novize im Kloster, heimlich oft im Hafenviertel",
+  "core": "Gutes Herz, will aber härter wirken, als er ist.",
+  "background": "Treibt sich im Hafenviertel herum, um dazuzugehören, und wurde dort beim Glücksspiel ausgenommen.",
+  "speech": "Spielt den abgebrühten Kerl, bis die Fassade bricht; dann unsicher, schnell, entschuldigend.",
+  "attitudes": {
+    "factions": {
+      "Kloster": "Fühlt sich dort eingeengt, schämt sich aber, es zu verraten.",
+      "Hafenviertel": "Bewundert die harten Kerle und will einer von ihnen sein."
+    },
+    "people": {
+      "Harek": "Angst und heimliche Bewunderung. Hat Schulden bei ihm.",
+      "Parlan": "Fürchtet seine Strafe mehr als alles andere.",
+      "der Zeuge": "Ein Freund, den er in Gefahr gebracht hat."
+    },
+    "politics": "Versteht nichts davon und redet trotzdem mit, um erwachsen zu klingen."
+  },
+  "game_state": {
+    "Diebstahl": "Reue. Er redet sich ein, er könne das Silber zurückbringen."
+  },
+  "reacts_to": {
+    "tilo_spared": "Tiefe, beschämte Dankbarkeit gegenüber dem Helden.",
+    "tilo_threatened": "Hält den Helden für genau die Art Mann, die er werden wollte, und ekelt sich davor.",
+    "tilo_will_confess": "Hat Angst, ist aber zum ersten Mal mit sich im Reinen."
+  }
+}

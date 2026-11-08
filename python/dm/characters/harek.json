@@ -1,0 +1,23 @@
+{
+  "npc": "VLK_4006_BOTE",
+  "name": "Harek",
+  "voice": "09",
+  "role": "Seemann und Hehler im Hafenviertel",
+  "core": "Traut niemandem und verachtet alle, die es leichter hatten als er.",
+  "speech": "Grob, misstrauisch, kurze Sätze, abfällig.",
+  "attitudes": {
+    "factions": {
+      "Kloster": "Söhnchen von Oberstadt-Pinkeln.",
+      "Miliz": "Gefährlich, aber bestechlich.",
+      "Paladine": "Haben den Hafen abgeriegelt und ruinieren das Geschäft."
+    },
+    "people": {
+      "Tilo": "Schwächling, der ihm Geld schuldete. Findet es lustig, wie er den harten Kerl spielt.",
+      "Halvor": "Konkurrent am Hafen."
+    },
+    "politics": "Die Blockade trifft die Kleinen, nie die Reichen."
+  },
+  "reacts_to": {
+    "harek_wary": "Hält den Helden für einen Spitzel."
+  }
+}
