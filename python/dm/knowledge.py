@@ -21,6 +21,7 @@ check() returns (errors, warnings). Errors make a story invalid.
 """
 
 MIN_SOURCES = 2
+MAX_STATES = 5000
 
 
 def _visible(choice, known):
@@ -30,9 +31,18 @@ def _visible(choice, known):
     return choice.get("unless") not in known
 
 
-def _explore(graph, known):
-    """Return (issues, learned) over every path through one conversation."""
-    issues, learned = set(), set(known)
+def _order_issues(teaches, state, facts):
+    issues = set()
+    for fact in teaches:
+        missing = set(facts.get(fact, {}).get("needs", [])) - set(state) - set(teaches)
+        if missing and fact not in state:
+            issues.add(f"'{fact}' can be learned before {sorted(missing)}")
+    return issues
+
+
+def _explore(graph, known, facts):
+    """Return (issues, knowledge states) over every path through one conversation."""
+    issues, snapshots = set(), {frozenset(known)}
     nodes = graph["nodes"]
     start = graph["start"]
     stack, seen = [(start, frozenset(known))], set()
@@ -45,19 +55,21 @@ def _explore(graph, known):
         for fact in node.get("uses", []):
             if fact not in state:
                 issues.add(f"line uses '{fact}' before it is known: node {key}")
+        issues |= _order_issues(node.get("teaches", []), state, facts)
         after = set(state) | set(node.get("teaches", []))
-        learned |= after
+        snapshots.add(frozenset(after))
         for choice in node["choices"]:
             if not _visible(choice, after):
                 continue
             for fact in choice.get("uses", []):
                 if fact not in after:
                     issues.add(f"hero says '{fact}' before knowing it: node {key}, \"{choice['text']}\"")
+            issues |= _order_issues(choice.get("teaches", []), after, facts)
             final = after | set(choice.get("teaches", []))
-            learned |= final
+            snapshots.add(frozenset(final))
             if not choice.get("ends"):
                 stack.append((choice["goto"], frozenset(final)))
-    return issues, learned
+    return issues, snapshots
 
 
 def _speaker_issues(npc, graph, facts):
@@ -126,27 +138,35 @@ def check(plot, conversations):
     for npc, graph in conversations.items():
         errors |= _speaker_issues(npc, graph, facts)
 
-    known = set(plot.get("start", []))
-    while True:
-        gained = set(known)
+    # The player can talk to people in any order, so search every knowledge
+    # state reachable by some order of conversations and item finds.
+    start = frozenset(plot.get("start", []))
+    states, pending = {start}, [start]
+    truncated = False
+    while pending:
+        current = pending.pop()
+        following = set()
         for graph in conversations.values():
-            issues, learned = _explore(graph, known)
+            issues, snapshots = _explore(graph, current, facts)
             errors |= issues
-            gained |= learned
+            following |= snapshots
         for item in plot.get("items", []):
-            if set(item.get("needs", [])) <= known:
-                gained |= set(item["teaches"])
-        if gained == known:
-            break
-        for fact in gained - known:
-            missing = set(facts[fact].get("needs", [])) - known
-            if missing:
-                errors.add(f"'{fact}' can be learned before {sorted(missing)}")
-        known = gained
+            if set(item.get("needs", [])) <= current:
+                errors |= _order_issues(item["teaches"], current, facts)
+                following.add(current | frozenset(item["teaches"]))
+        for state in following - states:
+            if len(states) >= MAX_STATES:
+                truncated = True
+                break
+            states.add(state)
+            pending.append(state)
+    known = set().union(*states)
 
     sources = {}
     for npc, graph in conversations.items():
-        _, reached = _explore(graph, known)
+        reached = set()
+        for state in states:
+            reached |= set().union(*_explore(graph, state, facts)[1])
         taught = set()
         for node in graph["nodes"].values():
             taught |= set(node.get("teaches", []))
@@ -158,7 +178,7 @@ def check(plot, conversations):
         for fact in item["teaches"]:
             sources.setdefault(fact, set()).add(item["ref"])
 
-    warnings = []
+    warnings = ["story too large to check every order"] if truncated else []
     for fact, info in facts.items():
         if not info.get("essential"):
             continue

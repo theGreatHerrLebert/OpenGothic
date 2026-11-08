@@ -74,7 +74,8 @@ def has(errors, text):
 def test_story_is_consistent():
     errors, warnings = k.check(PLOT, conversations())
     assert errors == [], errors
-    assert warnings == ["only one source for essential fact: hiding_near_harbour"], warnings
+    assert warnings == ["only one source for essential fact: candlesticks",
+                        "only one source for essential fact: hiding_near_harbour"], warnings
 
 
 def test_catches_pronoun_before_subject():
