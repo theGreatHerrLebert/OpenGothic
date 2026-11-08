@@ -31,7 +31,7 @@ class World:
 
     def instance_kind(self, name):
         name = name.upper()
-        if name in self.npcs or name == "GHOST":
+        if name in ("NOV_A", "NOV_B", "PARLAN", "GHOST"):
             return "npc"
         return "item" if name.startswith("IT") else None
 
