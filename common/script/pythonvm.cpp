@@ -136,27 +136,31 @@ static std::string drainCapture(py::object& capture) {
   }
 
 static std::string formatException() {
+  // Take the pending error first: importing with one still set fails.
+  PyObject *et = nullptr, *ev = nullptr, *etb = nullptr;
+  PyErr_Fetch(&et, &ev, &etb);
+  PyErr_NormalizeException(&et, &ev, &etb);
+  if(etb != nullptr && ev != nullptr)
+    PyException_SetTraceback(ev, etb);
+  // Never steal a ref on Py_None: use py::none() for missing components.
+  py::object oet  = et  ? py::reinterpret_steal<py::object>(et)  : py::none();
+  py::object oev  = ev  ? py::reinterpret_steal<py::object>(ev)  : py::none();
+  py::object oetb = etb ? py::reinterpret_steal<py::object>(etb) : py::none();
   try {
-    py::object tb = py::module_::import("traceback");
-    py::object exc_type, exc_value, exc_tb;
-    PyObject *et = nullptr, *ev = nullptr, *etb = nullptr;
-    PyErr_Fetch(&et, &ev, &etb);
-    PyErr_NormalizeException(&et, &ev, &etb);
-    if(etb != nullptr)
-      PyException_SetTraceback(ev, etb);
-    // Never steal a ref on Py_None — it's a global singleton; stealing would
-    // eventually decref it to 0 and corrupt the interpreter. Use py::none()
-    // for the missing components, steal only the real ones.
-    py::object oet  = et  ? py::reinterpret_steal<py::object>(et)  : py::none();
-    py::object oev  = ev  ? py::reinterpret_steal<py::object>(ev)  : py::none();
-    py::object oetb = etb ? py::reinterpret_steal<py::object>(etb) : py::none();
+    py::object tb    = py::module_::import("traceback");
     py::object lines = tb.attr("format_exception")(oet, oev, oetb);
     std::string out;
     for(auto line : lines)
       out += py::cast<std::string>(line);
     return out;
     }
+  catch(py::error_already_set&) {
+    }
+  try {
+    return py::cast<std::string>(py::str(oev));
+    }
   catch(...) {
+    PyErr_Clear();
     return "<unable to format python exception>";
     }
   }
