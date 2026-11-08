@@ -9,6 +9,7 @@ Walk up to the NPC that appears and talk to it.
 import gothic
 
 _npc = None
+_home = None
 _state = "idle"
 
 
@@ -16,6 +17,11 @@ def _tick(dt):
     global _state
     try:
         d = gothic.dialog
+        if _npc is not None and not d.is_open():
+            x, y, z = _npc.position
+            if abs(x - _home[0]) + abs(z - _home[2]) > 30:
+                _npc.stop()
+                _npc.set_position(*_home)
         if d.just_opened():
             _state = "greet"
         if _state == "greet" and d.say("Grüß dich. Ich hörte Märchen über Feuer, Größe und Weißheit."):
@@ -35,8 +41,9 @@ def _tick(dt):
 
 
 def start():
-    global _npc
+    global _npc, _home
     _npc = gothic.world.spawn("VLK_4250_Jorgen")
+    _home = _npc.position
     _npc.display_name = "Aldarius"
     gothic.dialog.bind(_npc)
     if not getattr(gothic, "_dm_talktest_registered", False):
