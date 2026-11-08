@@ -1,0 +1,984 @@
+#include "inventorymenu.h"
+#include "safearea.h"
+
+#include <Tempest/Painter>
+#include <Tempest/SoundEffect>
+
+#include "utils/string_frm.h"
+#include "world/objects/npc.h"
+#include "world/objects/interactive.h"
+#include "world/objects/item.h"
+#include "world/world.h"
+#include "utils/gthfont.h"
+#include "utils/keycodec.h"
+#include "game/constants.h"
+#include "gothic.h"
+#include "resources.h"
+
+namespace {
+// Map each user-facing category into a bitmask of ItmFlags values.
+// CategoryFilter::All → 0, which Page::matches() treats as "accept any".
+uint32_t categoryMaskFor(InventoryMenu::CategoryFilter c) {
+  using CF = InventoryMenu::CategoryFilter;
+  switch(c) {
+    case CF::All:         return 0;
+    case CF::Weapons:     return ITM_CAT_NF  | ITM_CAT_FF    | ITM_CAT_MUN;
+    case CF::Armor:       return ITM_CAT_ARMOR;
+    case CF::Magic:       return ITM_CAT_RUNE | ITM_CAT_MAGIC;
+    case CF::Consumables: return ITM_CAT_POTION | ITM_CAT_FOOD;
+    case CF::Other:       return ITM_CAT_NONE | ITM_CAT_DOCS | ITM_CAT_LIGHT;
+    case CF::Count_:      return 0;
+    }
+  return 0;
+  }
+
+std::string_view categoryLabel(InventoryMenu::CategoryFilter c) {
+  using CF = InventoryMenu::CategoryFilter;
+  switch(c) {
+    case CF::All:         return "all";
+    case CF::Weapons:     return "weapons";
+    case CF::Armor:       return "armor";
+    case CF::Magic:       return "magic";
+    case CF::Consumables: return "consumables";
+    case CF::Other:       return "other";
+    case CF::Count_:      return "";
+    }
+  return "";
+  }
+} // namespace
+
+using namespace Tempest;
+
+static constexpr int headerTop     = 70;
+static constexpr int headerSpacing = 30;
+
+struct InventoryMenu::Page {
+  Page()=default;
+  Page(const Page&)=delete;
+  virtual ~Page()=default;
+
+  std::string                 filter;     // lowercase substring; empty == no filter
+  uint32_t                    categoryMask = 0; // 0 == accept all categories
+
+  void                        setFilter(std::string_view q) {
+    filter.assign(q);
+    for(auto& c : filter)
+      c = char(std::tolower(uint8_t(c)));
+    }
+
+  void                        setCategoryMask(uint32_t mask) {
+    categoryMask = mask;
+    }
+
+  bool                        matchesCategory(const Inventory::Iterator& it) const {
+    if(categoryMask == 0)
+      return true;
+    const uint32_t flag = static_cast<uint32_t>(it->mainFlag());
+    return (flag & categoryMask) != 0;
+    }
+
+  bool                        matches(const Inventory::Iterator& it) const {
+    if(!matchesCategory(it))
+      return false;
+    if(filter.empty())
+      return true;
+    // Match on the visible name first (cheap, most specific).
+    std::string name(it->displayName());
+    for(auto& c : name)
+      c = char(std::tolower(uint8_t(c)));
+    if(name.find(filter) != std::string::npos)
+      return true;
+    // Fall back to description: Gothic 2's English localization names
+    // every spell scroll identically ("Scroll"), so a user searching for
+    // "fireball" won't find it in the display name — but it lives in the
+    // scroll's description (e.g. "Scroll of Fireball"). Broadening the
+    // match here fixes that class of surprise without changing the
+    // on-screen labels.
+    std::string desc(it->description());
+    for(auto& c : desc)
+      c = char(std::tolower(uint8_t(c)));
+    return desc.find(filter) != std::string::npos;
+    }
+
+  size_t                      size() const {
+    if(is(nullptr))
+      return 0;
+    size_t ret = 0;
+    auto it = iterator();
+    while(it.isValid()) {
+      if(matches(it))
+        ret++;
+      ++it;
+      }
+    return ret;
+    }
+  Inventory::Iterator         get(size_t id) const {
+    auto   it   = iterator();
+    size_t seen = 0;
+    while(it.isValid()) {
+      if(matches(it)) {
+        if(seen == id)
+          return it;
+        ++seen;
+        }
+      ++it;
+      }
+    return it; // invalid
+    }
+
+  virtual bool                is(const Inventory* i) const { return i==nullptr; }
+  virtual Inventory::Iterator iterator() const { throw std::runtime_error("index out of range");  }
+  };
+
+struct InventoryMenu::InvPage : InventoryMenu::Page {
+  InvPage(const Inventory& i):inv(i){}
+
+  bool                is(const Inventory* i) const override { return &inv==i; }
+  Inventory::Iterator iterator() const override {
+    return inv.iterator(Inventory::T_Inventory);
+    }
+
+  const Inventory& inv;
+  };
+
+struct InventoryMenu::TradePage : InventoryMenu::Page {
+  TradePage(const Inventory& i):inv(i){}
+
+  bool                is(const Inventory* i) const override { return &inv==i; }
+  Inventory::Iterator iterator() const override {
+    return inv.iterator(Inventory::T_Trade);
+    }
+
+  const Inventory& inv;
+  };
+
+struct InventoryMenu::RansackPage : InventoryMenu::Page {
+  RansackPage(const Inventory& i):inv(i){}
+
+  bool                is(const Inventory* i) const override { return &inv==i; }
+  Inventory::Iterator iterator() const override {
+    return inv.iterator(Inventory::T_Ransack);
+    }
+
+  const Inventory& inv;
+  };
+
+InventoryMenu::InventoryMenu(const KeyCodec& key)
+  :keycodec(key) {
+  slot = Resources::loadTexture("INV_SLOT.TGA");
+  selT = Resources::loadTexture("INV_SLOT_HIGHLIGHTED.TGA");
+  selU = Resources::loadTexture("INV_SLOT_EQUIPPED.TGA");
+  tex  = Resources::loadTexture("INV_BACK.TGA"); // INV_TITEL.TGA
+
+  int invMaxColumns = Gothic::settingsGetI("GAME","invMaxColumns");
+  if(invMaxColumns>0)
+    columsCount = size_t(invMaxColumns); else
+    columsCount = 5;
+
+  setFocusPolicy(NoFocus);
+  setCursorShape(CursorShape::Hidden);
+  takeTimer.timeout.bind(this,&InventoryMenu::onTakeStuff);
+  }
+
+InventoryMenu::~InventoryMenu() {
+  }
+
+void InventoryMenu::close() {
+  if(state!=State::Closed) {
+    if(state==State::Trade)
+      Gothic::inst().emitGlobalSound("TRADE_CLOSE"); else
+      Gothic::inst().emitGlobalSound("INV_CLOSE");
+    }
+  renderer.reset(true);
+  takeTimer.stop();
+  state  = State::Closed;
+  searchQuery.clear();
+  categoryFilter = CategoryFilter::All;
+  if(pagePl)  { pagePl->setFilter({});  pagePl->setCategoryMask(0); }
+  if(pageOth) { pageOth->setFilter({}); pageOth->setCategoryMask(0); }
+  }
+
+void InventoryMenu::open(Npc &pl) {
+  if(pl.isDown() || pl.isMonster() || pl.isInAir() || pl.isSlide() || (pl.interactive()!=nullptr))
+    return;
+  if(pl.bodyStateMasked()==BS_UNCONSCIOUS || pl.bodyStateMasked()==BS_LIE)
+    return;
+  if(pl.weaponState()!=WeaponState::NoWeapon) {
+    pl.stopAnim("");
+    pl.closeWeapon(false);
+    }
+  state  = State::Equip;
+  player = &pl;
+  trader = nullptr;
+  chest  = nullptr;
+  page   = 0;
+  pagePl .reset(new InvPage  (pl.inventory()));
+  pageOth.reset();
+  adjustScroll();
+  update();
+
+  Gothic::inst().emitGlobalSound("INV_OPEN");
+  //Gothic::inst().emitGlobalSound("INV_CHANGE");
+  }
+
+void InventoryMenu::trade(Npc &pl, Npc &tr) {
+  if(pl.isDown())
+    return;
+  state  = State::Trade;
+  player = &pl;
+  trader = &tr;
+  chest  = nullptr;
+  page   = 0;
+  pagePl .reset(new InvPage  (pl.inventory()));
+  pageOth.reset(new TradePage(tr.inventory()));
+  adjustScroll();
+  update();
+  Gothic::inst().emitGlobalSound("TRADE_OPEN");
+  }
+
+bool InventoryMenu::ransack(Npc &pl, Npc &tr) {
+  if(pl.isDown())
+    return false;
+  auto it = tr.inventory().iterator(Inventory::T_Ransack);
+  if(!it.isValid())
+    return false;
+  state  = State::Ransack;
+  player = &pl;
+  trader = &tr;
+  chest  = nullptr;
+  page   = 0;
+  pagePl .reset(new InvPage    (pl.inventory()));
+  pageOth.reset(new RansackPage(tr.inventory()));
+  adjustScroll();
+  update();
+  Gothic::inst().emitGlobalSound("INV_OPEN");
+  return true;
+  }
+
+void InventoryMenu::open(Npc &pl, Interactive &ch) {
+  if(pl.isDown())
+    return;
+  const bool needToPicklock = ch.needToLockpick(pl);
+  if(!pl.setInteraction(&ch))
+    return;
+
+  if(needToPicklock && !ch.isCracked()) {
+    state = State::LockPicking;
+    } else {
+    state = State::Chest;
+    }
+
+  player = &pl;
+  trader = nullptr;
+  chest  = &ch;
+  page   = 0;
+  pagePl .reset(new InvPage(pl.inventory()));
+  pageOth.reset(new InvPage(ch.inventory()));
+  adjustScroll();
+  update();
+  }
+
+InventoryMenu::State InventoryMenu::isOpen() const {
+  return state;
+  }
+
+bool InventoryMenu::isActive() const {
+  return state!=State::Closed;
+  }
+
+void InventoryMenu::onWorldChanged() {
+  close();
+  player = nullptr;
+  trader = nullptr;
+  chest  = nullptr;
+  }
+
+void InventoryMenu::tick(uint64_t /*dt*/) {
+  if(player!=nullptr && (player->isDown() || player->bodyStateMasked()==BS_UNCONSCIOUS)) {
+    close();
+    return;
+    }
+
+  if(state==State::LockPicking) {
+    if(chest->isCracked()) {
+      state = State::Chest;
+      return;
+      }
+    }
+
+  if(state==State::Ransack) {
+    if(trader==nullptr){
+      close();
+      return;
+      }
+
+    if(!trader->isDown()) {
+      close();
+      return;
+      }
+
+    auto it = trader->inventory().iterator(Inventory::T_Ransack);
+    if(!it.isValid())
+      close();
+    }
+
+  if(state==State::Closed) {
+    if(player!=nullptr){
+      if(!player->setInteraction(nullptr))
+         return;
+      player = nullptr;
+      chest  = nullptr;
+      }
+
+    page = 0;
+    renderer.reset();
+    pagePl .reset();
+    pageOth.reset();
+    update();
+    }
+  }
+
+void InventoryMenu::processMove(KeyEvent& e) {
+  auto key = keycodec.tr(e);
+  if(key==KeyCodec::Forward)
+    moveUp();
+  else if(key==KeyCodec::Back)
+    moveDown();
+  else if(key==KeyCodec::Left || key==KeyCodec::RotateL)
+    moveLeft(true);
+  else if(key==KeyCodec::Right || key==KeyCodec::RotateR)
+    moveRight(true);
+  }
+
+void InventoryMenu::moveLeft(bool usePage) {
+  auto& sel = activePageSel();
+
+  if(usePage && sel.sel%columsCount==0 && page>0)
+    page--;
+  else if(sel.sel>0)
+    sel.sel--;
+  }
+
+void InventoryMenu::moveRight(bool usePage) {
+  auto&        pg     = activePage();
+  auto&        sel    = activePageSel();
+  const size_t pCount = pagesCount();
+
+  if(usePage && ((sel.sel+1u)%columsCount==0 || sel.sel+1u==pg.size() || pg.size()==0) && page+1u<pCount)
+    page++;
+  else if(sel.sel+1<pg.size())
+    sel.sel++;
+  }
+
+void InventoryMenu::moveUp() {
+  auto& sel = activePageSel();
+
+  if(sel.sel>=columsCount)
+    sel.sel -= columsCount;
+  else
+    moveLeft(false);
+  }
+
+void InventoryMenu::moveDown() {
+  auto& pg  = activePage();
+  auto& sel = activePageSel();
+
+  if(sel.sel+columsCount<pg.size())
+    sel.sel += columsCount;
+  else
+    moveRight(false);
+  }
+
+void InventoryMenu::keyDownEvent(KeyEvent &e) {
+  if(state==State::Closed || state==State::LockPicking){
+    e.ignore();
+    return;
+    }
+
+  // --- search input -------------------------------------------------------
+  // Esc clears an active search before closing the menu.
+  if(e.key==KeyEvent::K_ESCAPE && !searchQuery.empty()) {
+    searchQuery.clear();
+    if(pagePl)  pagePl->setFilter({});
+    if(pageOth) pageOth->setFilter({});
+    activePageSel().sel    = 0;
+    activePageSel().scroll = 0;
+    adjustScroll();
+    update();
+    return;
+    }
+  // Backspace: edit current query.
+  if(e.key==KeyEvent::K_Back && !searchQuery.empty()) {
+    searchQuery.pop_back();
+    if(pagePl)  pagePl->setFilter(searchQuery);
+    if(pageOth) pageOth->setFilter(searchQuery);
+    activePageSel().sel    = 0;
+    activePageSel().scroll = 0;
+    adjustScroll();
+    update();
+    return;
+    }
+
+  // Category cycling (only when no active search — once searching, `,`
+  // and `.` fall through and extend the query as text). `,` retreats,
+  // `.` advances; wraps both ways through CategoryFilter::Count_ states.
+  if(searchQuery.empty() && (e.code==',' || e.code=='.')) {
+    const int  n   = int(CategoryFilter::Count_);
+    const int  cur = int(categoryFilter);
+    const int  nxt = (e.code=='.') ? (cur + 1) % n : (cur + n - 1) % n;
+    categoryFilter = CategoryFilter(nxt);
+    const uint32_t mask = categoryMaskFor(categoryFilter);
+    if(pagePl)  pagePl->setCategoryMask(mask);
+    if(pageOth) pageOth->setCategoryMask(mask);
+    activePageSel().sel    = 0;
+    activePageSel().scroll = 0;
+    adjustScroll();
+    update();
+    return;
+    }
+  // Letters (other than Z/X, which are loot-mode shortcuts) start or extend
+  // the search. Once a search is active, every printable key — including
+  // Z/X/space/digits — extends it instead of triggering loot/hotkey actions,
+  // so the query behaves like a focused text field without needing a
+  // modal "search mode" that would violate Gothic's non-blocking ethos.
+  const bool inSearch   = !searchQuery.empty();
+  const bool letterKey  = (KeyEvent::K_A<=e.key && e.key<=KeyEvent::K_Z);
+  const bool reservedLoot = (e.key==KeyEvent::K_Z || e.key==KeyEvent::K_X ||
+                             e.key==KeyEvent::K_Space);
+  const bool digitKey   = (KeyEvent::K_0<=e.key && e.key<=KeyEvent::K_9);
+  const bool accept = (letterKey && !reservedLoot) ||
+                      (inSearch && (letterKey || digitKey ||
+                                    e.key==KeyEvent::K_Space));
+  if(accept && e.code>=0x20 && e.code<0x7F) {
+    searchQuery.push_back(char(std::tolower(uint8_t(e.code))));
+    if(pagePl)  pagePl->setFilter(searchQuery);
+    if(pageOth) pageOth->setFilter(searchQuery);
+    activePageSel().sel    = 0;
+    activePageSel().scroll = 0;
+    adjustScroll();
+    update();
+    return;
+    }
+
+  processMove(e);
+
+  if(keycodec.tr(e)==KeyCodec::Jump) {
+    lootMode = LootMode::Stack;
+    takeTimer.start(200);
+    onTakeStuff();
+    }
+  else if (keycodec.tr(e)==KeyCodec::ActionGeneric || e.key==KeyEvent::K_Return) {
+    onItemAction(Item::NSLOT);
+    }
+  else if((KeyEvent::K_3<=e.key && e.key<=KeyEvent::K_9) || e.key==KeyEvent::K_0) {
+    uint8_t slot = 10;
+    if((KeyEvent::K_3<=e.key && e.key<=KeyEvent::K_9))
+      slot = uint8_t(e.key-KeyEvent::K_0);
+    onItemAction(slot);
+    }
+  else if(e.key==KeyEvent::K_ESCAPE || keycodec.tr(e)==KeyCodec::Inventory){
+    close();
+    }
+  else if(e.key==KeyEvent::K_Space) {
+    lootMode = LootMode::Normal;
+    takeTimer.start(200);
+    onTakeStuff();
+    }
+  else if(e.key==KeyEvent::K_Z) {
+    lootMode = LootMode::Ten;
+    takeTimer.start(200);
+    onTakeStuff();
+    }
+  else if(e.key==KeyEvent::K_X) {
+    lootMode = LootMode::Hundred;
+    takeTimer.start(200);
+    onTakeStuff();
+    }
+
+  adjustScroll();
+  update();
+  }
+
+void InventoryMenu::keyRepeatEvent(KeyEvent& e) {
+  if(state==State::LockPicking || state==State::Closed)
+    return;
+  processMove(e);
+  adjustScroll();
+  update();
+  }
+
+void InventoryMenu::keyUpEvent(KeyEvent&) {
+  takeTimer.stop();
+  lootMode = LootMode::Normal;
+  }
+
+void InventoryMenu::mouseDownEvent(MouseEvent &e) {
+  if(player==nullptr || state==State::Closed) {
+    e.ignore();
+    return;
+    }
+
+  if(state==State::LockPicking)
+    return;
+
+  if (e.button==MouseEvent::ButtonLeft)
+    onItemAction(Item::NSLOT);
+  else if (e.button==MouseEvent::ButtonRight)
+    close();
+
+  adjustScroll();
+  }
+
+void InventoryMenu::mouseUpEvent(MouseEvent&) {
+  takeTimer.stop();
+  takeCount=0;
+  }
+
+void InventoryMenu::mouseWheelEvent(MouseEvent &e) {
+  if(state==State::Closed) {
+    e.ignore();
+    return;
+    }
+
+  if(state==State::LockPicking)
+    return;
+
+  scrollDelta += e.delta;
+  if(scrollDelta>0) {
+    for(int i=0;i<scrollDelta/120;++i)
+      moveUp();
+    scrollDelta %= 120;
+    } else {
+    for(int i=0;i<-scrollDelta/120;++i)
+      moveDown();
+    scrollDelta %= 120;
+    }
+  adjustScroll();
+  }
+
+size_t InventoryMenu::rowsCount() const {
+  const int iy=std::max(headerTop,margins().top)+headerHeight()+headerSpacing;
+  return size_t((h()-iy-infoHeight()-std::max(20,margins().bottom))/slotSize().h);
+  }
+
+int InventoryMenu::headerHeight() const {
+  return int(34*Gothic::interfaceScale(this));
+  }
+
+void InventoryMenu::paintEvent(PaintEvent &e) {
+  if(player==nullptr || state==State::Closed)
+    return;
+  renderer.reset();
+
+  Painter p(e);
+  drawAll(p,*player,DrawPass::Back);
+  }
+
+void InventoryMenu::paintNumOverlay(PaintEvent& e) {
+  if(player==nullptr || state==State::Closed)
+    return;
+
+  Painter p(e);
+  drawAll(p,*player,DrawPass::Front);
+  }
+
+Size InventoryMenu::slotSize() const {
+  const float scale = Gothic::interfaceScale(this);
+  const float cell  = float(Gothic::options().inventoryCellSize);
+  return Size(int(cell*scale),int(cell*scale));
+  }
+
+int InventoryMenu::infoHeight() const {
+  const float scale = Gothic::interfaceScale(this);
+  return (Item::MAX_UI_ROWS+2)*int(float(Resources::font(scale).pixelSize()))+int(scale*10)/*padding bottom*/;
+  }
+
+size_t InventoryMenu::pagesCount() const {
+  if(state==State::Chest || state==State::Trade)
+    return 2;
+  return 1;
+  }
+
+const InventoryMenu::Page &InventoryMenu::activePage() {
+  if(pageOth!=nullptr)
+    return *(page==0 ? pageOth : pagePl);
+  if(pagePl)
+    return *pagePl;
+
+  static Page n;
+  return n;
+  }
+
+InventoryMenu::PageLocal &InventoryMenu::activePageSel() {
+  if(pageOth!=nullptr)
+    return (page==0 ? pageLocal[0] : pageLocal[1]);
+  return pageLocal[1];
+  }
+  
+void InventoryMenu::onItemAction(uint8_t slotHint) {
+  auto& page = activePage();
+  auto& sel  = activePageSel();
+
+  auto it = page.get(sel.sel);
+  if(!it.isValid())
+    return;
+
+  if(state==State::Equip) {
+    const size_t clsId = it->clsId();
+    if(it.isEquipped() && slotHint==Item::NSLOT) {
+      player->unequipItem(clsId);
+      } else {
+      player->useItem(clsId,slotHint,false);
+      auto it2 = page.get(sel.sel);
+      if((!it2.isValid() || it2->clsId()!=clsId) && sel.sel>0)
+        --sel.sel;
+      }
+    }
+  else if(state==State::Chest || state==State::Trade || state==State::Ransack) {
+    lootMode = LootMode::Normal;
+    takeTimer.start(200);
+    onTakeStuff();
+    }
+  }
+
+void InventoryMenu::onTakeStuff() { 
+  size_t itemCount = 0;
+  auto& page = activePage();
+  auto& sel  = activePageSel();
+  if(sel.sel >= page.size())
+    return;
+  auto it = page.get(sel.sel);
+  if(lootMode==LootMode::Normal) {
+    ++takeCount;
+    itemCount = uint32_t(std::pow(10,takeCount / 10));
+    if(it.count() <= itemCount) {
+      itemCount = uint32_t(it.count());
+      takeCount = 0;
+      }
+    }
+  else if(lootMode==LootMode::Stack) {
+    itemCount = it.count();
+    }
+  else if(lootMode==LootMode::Ten) {
+    itemCount = 10;
+    }
+  else if(lootMode==LootMode::Hundred) {
+    itemCount = 100;
+    }
+
+  if(it.count() < itemCount) {
+    itemCount = it.count();
+    }
+
+  if(state==State::Chest) {
+    if(page.is(&player->inventory())) {
+      player->moveItem(it->clsId(),*chest,itemCount);
+      } else {
+      player->addItem (it->clsId(),*chest,itemCount);
+      }
+    }
+  else if(state==State::Trade) {
+    if(page.is(&player->inventory())) {
+      player->sellItem(it->clsId(),*trader,itemCount);
+      } else {
+      player->buyItem (it->clsId(),*trader,itemCount);
+      }
+    }
+  else if(state==State::Ransack) {
+    if(page.is(&trader->inventory())) {
+      player->addItem(it->clsId(),*trader,itemCount);
+      }
+    }
+  else if(state==State::Equip) {
+    player->dropItem(it->clsId(),itemCount);
+    }
+  adjustScroll();
+  }
+
+void InventoryMenu::adjustScroll() {
+  auto& page = activePage();
+  auto& sel  = activePageSel();
+  sel.sel = std::min(sel.sel, std::max<size_t>(page.size(),1)-1);
+  while(sel.sel<sel.scroll*columsCount) {
+    if(sel.scroll<=1){
+      sel.scroll=0;
+      return;
+      }
+    sel.scroll-=1;
+    }
+
+  const size_t hcount=rowsCount();
+  while(sel.sel>=(sel.scroll+hcount)*columsCount) {
+    sel.scroll+=1;
+    }
+  }
+
+void InventoryMenu::drawAll(Painter &p, Npc &player, DrawPass pass) {
+  const int padd = 43;
+
+  const int top   = std::max(headerTop,margins().top);
+  const int left  = std::max(padd,margins().left);
+  const int right = w() - std::max(padd,margins().right);
+  const int iy    = top + headerHeight() + headerSpacing;
+
+  if(state==State::LockPicking)
+    return;
+
+  const int wcount = int(columsCount);
+  const int hcount = int(rowsCount());
+
+  if(chest!=nullptr){
+    if(pass==DrawPass::Back)
+      drawHeader(p,chest->displayName(),left,top);
+    drawItems(p,pass,*pageOth,pageLocal[0],left,iy,wcount,hcount);
+    }
+
+  if(trader!=nullptr) {
+    if(pass==DrawPass::Back)
+      drawHeader(p,trader->displayName(),left,top);
+    drawItems(p,pass,*pageOth,pageLocal[0],left,iy,wcount,hcount);
+    }
+
+  if(state!=State::Ransack) {
+    const int goldX = right-2*slotSize().w;
+    if(pass==DrawPass::Back) {
+      const float scale = Gothic::interfaceScale(this);
+      // Tabs right-align to just before the gold box, same y as gold.
+      drawFilterBar(p, goldX - int(16*scale), top);
+      drawGold(p, player, goldX, top);
+      }
+    drawItems(p,pass,*pagePl,pageLocal[1],right-wcount*slotSize().w,iy,wcount,hcount);
+    }
+
+  if(pass==DrawPass::Back)
+    drawInfo(p);
+  }
+
+// Filter bar renders on the same y as the gold display, right-anchored at
+// `rightX` so the rightmost tab sits flush with the gold box (with the
+// small gap the caller bakes into `rightX`). Free to extend further left
+// than the inventory grid — horizontal space above the grid is
+// unconstrained. Category tabs always visible (discoverable); search
+// query, when active, renders on the line directly below, also
+// right-aligned to the same anchor.
+void InventoryMenu::drawFilterBar(Painter &p, int rightX, int y) {
+  const float    scale  = Gothic::interfaceScale(this);
+  const GthFont& font   = Resources::font(scale);
+  const GthFont& fontHi = Resources::font(Resources::FontType::Hi, scale);
+  const int      baseline = y + font.pixelSize();
+
+  std::string_view sep  = " | ";
+  const int        sepW = font.textSize(sep).w;
+
+  // Measure the whole tab run first so we can start at the correct x.
+  int totalW = 0;
+  for(int i = 0; i < int(CategoryFilter::Count_); ++i) {
+    const auto cf    = CategoryFilter(i);
+    const auto label = categoryLabel(cf);
+    const GthFont& f = (cf == categoryFilter) ? fontHi : font;
+    totalW += f.textSize(label).w;
+    if(i > 0)
+      totalW += sepW;
+    }
+
+  int cx = rightX - totalW;
+  for(int i = 0; i < int(CategoryFilter::Count_); ++i) {
+    const auto cf    = CategoryFilter(i);
+    const auto label = categoryLabel(cf);
+    const GthFont& f = (cf == categoryFilter) ? fontHi : font;
+    if(i > 0) {
+      font.drawText(p, cx, baseline, sep);
+      cx += sepW;
+      }
+    f.drawText(p, cx, baseline, label);
+    cx += f.textSize(label).w;
+    }
+
+  if(!searchQuery.empty()) {
+    std::string s = "search: ";
+    s.append(searchQuery);
+    s.push_back('_');
+    const int sw = font.textSize(std::string_view(s)).w;
+    font.drawText(p, rightX - sw, baseline + font.pixelSize(), s);
+    }
+  }
+
+void InventoryMenu::drawItems(Painter &p, DrawPass pass,
+                              const Page &inv, const PageLocal& sel, int x0, int y, int wcount, int hcount) {
+  if(state==State::LockPicking)
+    return;
+
+  if(tex!=nullptr && pass==DrawPass::Back) {
+    p.setBrush(*tex);
+    p.drawRect(x0,y,slotSize().w*wcount,slotSize().h*hcount,
+               0,0,tex->w(),tex->h());
+    }
+
+  // Advance past `scroll` full rows of FILTERED items. Without the
+  // matches() check the raw iterator would outrun the filtered index
+  // as soon as a search is active.
+  auto   it = inv.iterator();
+  size_t id = 0;
+  const size_t startAt = sel.scroll*size_t(wcount);
+  while(it.isValid() && id<startAt) {
+    if(inv.matches(it))
+      ++id;
+    ++it;
+    }
+  for(int i=0;i<hcount;++i) {
+    for(int r=0;r<wcount;++r) {
+      const int x = x0 + r*slotSize().w;
+      if(pass==DrawPass::Back) {
+        p.setBrush(*slot);
+        p.drawRect(x,y,slotSize().w,slotSize().h,
+                   0,0,slot->w(),slot->h());
+        }
+      // Walk to the next matching item (if any).
+      while(it.isValid() && !inv.matches(it))
+        ++it;
+      if(it.isValid()) {
+        drawSlot(p,pass, it,inv,sel, x,y, id);
+        ++it;
+        ++id;
+        }
+      }
+    y += slotSize().h;
+    }
+  }
+
+void InventoryMenu::drawSlot(Painter &p, DrawPass pass, const Inventory::Iterator &it,
+                             const Page& page, const PageLocal &sel,
+                             int x, int y, size_t id) {
+  if(!slot)
+    return;
+
+  auto& active = activePage();
+  const float scale = Gothic::interfaceScale(this);
+
+  if(pass==DrawPass::Back) {
+    if((!it.isValid() && id==0) || (id==sel.sel && &page==&active)){
+      p.setBrush(*selT);
+      p.drawRect(x,y,slotSize().w,slotSize().h,
+                 0,0,selT->w(),selT->h());
+      }
+
+    if(it.isEquipped() && selU!=nullptr) {
+      p.setBrush(*selU);
+      p.drawRect(x,y,slotSize().w,slotSize().h,
+                 0,0,selU->w(),selU->h());
+      }
+
+    const int dsz = (id==sel.sel ? 5 : 0);
+    renderer.drawItem(x-dsz, y-dsz, slotSize().w+2*dsz, slotSize().h+2*dsz, *it);
+    } else {
+    auto fnt = Resources::font(scale);
+
+    if(it.count()>1) {
+      string_frm vint(int(it.count()));
+      auto sz = fnt.textSize(vint);
+      fnt.drawText(p,x+slotSize().w-sz.w-10,
+                   y+slotSize().h-10,
+                   vint);
+      }
+
+    if(it.slot()!=Item::NSLOT) {
+      fnt = Resources::font(Resources::FontType::Red, scale);
+
+      string_frm vint(int(it.slot()));
+      auto sz = fnt.textSize(vint);
+      fnt.drawText(p,x+10,
+                   y+slotSize().h/2+sz.h/2,
+                   vint);
+      }
+    }
+  }
+
+void InventoryMenu::drawGold(Painter &p, Npc &player, int x, int y) {
+  if(!slot)
+    return;
+  auto           w    = Gothic::inst().world();
+  auto           txt  = w ? w->script().currencyName() : "";
+  const size_t   gold = player.inventory().goldCount();
+  if(txt.empty())
+    txt="Gold";
+
+  string_frm vint(txt," : ",int(gold));
+  drawHeader(p,vint,x,y);
+  }
+
+void InventoryMenu::drawHeader(Painter &p, std::string_view title, int x, int y) {
+  const float scale = Gothic::interfaceScale(this);
+  auto&       fnt   = Resources::font(scale);
+
+  const int   tw    = fnt.textSize(title).w;
+  const int   th    = fnt.textSize(title).h;
+  const int   padd  = int(8*scale);
+  const int   dw    = std::max(slotSize().w*2, tw+padd*2);
+  const int   dh    = headerHeight();
+
+  if(tex) {
+    p.setBrush(*tex);
+    p.drawRect(x,y,dw,dh, 0,0,tex->w(),tex->h());
+    }
+  if(slot) {
+    p.setBrush(*slot);
+    p.drawRect(x,y,dw,dh, 0,0,slot->w(),slot->h());
+    }
+
+  fnt.drawText(p,x+(dw-tw)/2,y+dh/2+th/2,title);
+  }
+
+void InventoryMenu::drawInfo(Painter &p) {
+  const float scale = Gothic::interfaceScale(this);
+  const auto  area  = clientRect();
+  const int   dw    = std::min(area.w, int(720*scale));
+  const int   dh    = infoHeight();
+  const int   x     = SafeArea::center(w(),dw,margins().left,margins().right);
+  const int   y     = h()-dh-std::max(20,margins().bottom);
+
+  auto& pg  = activePage();
+  auto& sel = activePageSel();
+
+  auto it = pg.get(sel.sel);
+  if(!it.isValid())
+    return;
+
+  auto& r = *pg.get(sel.sel);
+  if(tex) {
+    p.setBrush(*tex);
+    p.drawRect(x,y,dw,dh,
+               0,0,tex->w(),tex->h());
+    }
+
+  auto& fnt = Resources::font(scale);
+  auto  desc = r.description();
+  int   tw   = fnt.textSize(desc).w;
+
+  fnt.drawText(p,x+(dw-tw)/2,y+int(fnt.pixelSize()),desc);
+
+  for(size_t i=0;i<Item::MAX_UI_ROWS;++i){
+    auto    txt = r.uiText(i);
+    int32_t val = r.uiValue(i);
+
+    if(txt.empty())
+      continue;
+
+    if(i+1==Item::MAX_UI_ROWS && state==State::Trade && player!=nullptr && pg.is(&player->inventory())){
+      val = r.sellCost();
+      }
+
+    string_frm vint(val);
+    int tw = fnt.textSize(vint).w;
+
+    fnt.drawText(p, x+20,  y+int(i+2)*fnt.pixelSize(), txt);
+    if(val!=0)
+      fnt.drawText(p,x+dw-tw-20,y+int(i+2)*fnt.pixelSize(),vint);
+    }
+
+  const int sz = dh;
+  renderer.drawItem(x+dw-sz-sz/2,y,sz,sz,r);
+  }
+
+void InventoryMenu::draw(Tempest::Encoder<CommandBuffer>& cmd) {
+  renderer.draw(cmd);
+  }

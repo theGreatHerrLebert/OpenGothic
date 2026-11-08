@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
 
-project(Gothic2Notr LANGUAGES C CXX)
+project(OpenGothic LANGUAGES C CXX)
 set(CMAKE_CXX_STANDARD 20)
 set(BUILD_SHARED_LIBS OFF)
 
@@ -11,7 +11,14 @@ set(CMAKE_RELWITHDEBINFO_POSTFIX "")
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(CMAKE_SKIP_RPATH ON)
 
-add_executable(${PROJECT_NAME})
+add_library(${PROJECT_NAME} STATIC)
+if(ANDROID)
+  add_library(Gothic2Notr SHARED)
+  add_library(Spacer SHARED)
+else()
+  add_executable(Gothic2Notr)
+  add_executable(Spacer)
+endif()
 
 if(MSVC)
   add_definitions(-D_USE_MATH_DEFINES)
@@ -51,39 +58,33 @@ if(WIN32)
 elseif(IOS)
   enable_language(OBJCXX)
   set(CMAKE_OSX_DEPLOYMENT_TARGET 15.0)
-  set_directory_properties("${CMAKE_SOURCE_DIR}" PROPERTIES
-    PROPERTY XCODE_STARTUP_PROJECT "${PROJECT_NAME}")
-  set_target_properties(${PROJECT_NAME} PROPERTIES
-    MACOSX_BUNDLE_INFO_PLIST "Info.plist.in"
-    MACOSX_BUNDLE_GUI_IDENTIFIER "opengothic.gothic2"
-    MACOSX_BUNDLE_BUNDLE_VERSION 1
-    MACOSX_BUNDLE_SHORT_VERSION_STRING "1.0"
-    XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY "iPhone Developer")
 elseif(APPLE)
   enable_language(OBJCXX)
 endif()
 
 if(IOS)
-  file(GLOB_RECURSE ObjCSOURCES "game/*.mm")
+  file(GLOB_RECURSE ObjCSOURCES "common/*.mm")
 elseif(APPLE)
   target_link_libraries(${PROJECT_NAME} "-framework AppKit")
-  file(GLOB_RECURSE ObjCSOURCES "game/*.mm")
+  file(GLOB_RECURSE ObjCSOURCES "common/*.mm")
 endif()
 
 ## OpenGothic
 
 # sources
-file(GLOB_RECURSE OPENGOTHIC_SOURCES
-    "game/*.h"
-    "game/*.cpp")
+file(GLOB_RECURSE OPENGOTHIC_SOURCES "common/*.h" "common/*.cpp")
+file(GLOB_RECURSE SPACER_SOURCES "spacer/*.h" "spacer/*.cpp")
 
-target_sources(${PROJECT_NAME} PRIVATE ${OPENGOTHIC_SOURCES} ${ObjCSOURCES} icon.rc)
+target_sources(${PROJECT_NAME} PRIVATE ${OPENGOTHIC_SOURCES} ${ObjCSOURCES})
 
 # shaders
 add_subdirectory(shader)
 target_link_libraries(${PROJECT_NAME} GothicShaders)
 
-include_directories("game")
+# editor icons and such
+add_subdirectory(spacer/assets)
+
+include_directories("common")
 
 ## submodule dependencies
 
@@ -96,6 +97,8 @@ endif()
 
 if(WIN32)
   target_link_libraries(${PROJECT_NAME} shlwapi DbgHelp)
+elseif(ANDROID)
+  target_link_libraries(${PROJECT_NAME} dl)
 elseif(UNIX)
   target_link_libraries(${PROJECT_NAME} -lpthread -ldl)
 endif()
@@ -119,6 +122,9 @@ target_link_libraries(${PROJECT_NAME} dmusic)
 add_definitions(-DTSF_NO_STDIO)
 include_directories(lib/TinySoundFont)
 
+# Rapidjson
+include_directories(lib/rapidjson/include)
+
 # Tempest
 if(WIN32)
   set(TEMPEST_BUILD_SHARED ON  CACHE INTERNAL "")
@@ -131,7 +137,8 @@ target_link_libraries(${PROJECT_NAME} Tempest)
 
 # zip
 include_directories(lib/miniz)
-add_library(miniz STATIC "lib/miniz/miniz.h" "lib/miniz/miniz.c")
+add_definitions(-DMINIZ_NO_STDIO)
+add_library(miniz STATIC EXCLUDE_FROM_ALL "lib/miniz/miniz.h" "lib/miniz/miniz.c")
 target_link_libraries(${PROJECT_NAME} miniz)
 
 # bullet physics
@@ -184,8 +191,8 @@ target_include_directories(${PROJECT_NAME} SYSTEM PRIVATE
 
 if(NOT MSVC)
   set_source_files_properties(
-    game/script/pythonvm.cpp
-    game/script/pybindings.cpp
+    common/script/pythonvm.cpp
+    common/script/pybindings.cpp
     PROPERTIES COMPILE_FLAGS
     "-Wno-error -Wno-conversion -Wno-deprecated-declarations -Wno-unused-parameter -Wno-shadow")
 endif()
@@ -200,12 +207,42 @@ if(WIN32)
 endif()
 
 # in debug mode, enable sanitizers
-if(${CMAKE_BUILD_TYPE} MATCHES "Debug")
+if(${CMAKE_BUILD_TYPE} MATCHES "Debug" AND NOT ANDROID)
   add_compile_options(-fsanitize=address)
   add_compile_options(-fsanitize=leak)
   add_link_options   (-fsanitize=address)
   add_link_options   (-fsanitize=leak)
 endif()
 
+# the game
+if(IOS)
+  set_directory_properties("${CMAKE_SOURCE_DIR}" PROPERTIES
+    PROPERTY XCODE_STARTUP_PROJECT "Gothic2Notr")
+  set_target_properties(Gothic2Notr PROPERTIES
+    MACOSX_BUNDLE_INFO_PLIST "Info.plist.in"
+    MACOSX_BUNDLE_GUI_IDENTIFIER "opengothic.gothic2"
+    MACOSX_BUNDLE_BUNDLE_VERSION 1
+    MACOSX_BUNDLE_SHORT_VERSION_STRING "1.0"
+    XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY "iPhone Developer")
+endif()
+
+target_sources(Gothic2Notr PRIVATE game/main.cpp)
+if(WIN32)
+  target_sources(Gothic2Notr PRIVATE icon.rc)
+endif()
+target_link_libraries(Gothic2Notr PRIVATE OpenGothic)
+
+# editor
+target_sources(Spacer PRIVATE ${SPACER_SOURCES} spacer/main.cpp)
+target_include_directories(Spacer PRIVATE "spacer")
+target_link_libraries(Spacer PRIVATE OpenGothic SpacerAssets)
+
+if(ANDROID)
+  add_android_apk(OpenGothic-apk
+    PACKAGE_NAME org.opengothic.app
+    CODE Gothic2Notr
+    MANIFEST android/AndroidManifest.xml)
+endif()
+
 # installation
-install(TARGETS ${PROJECT_NAME} DESTINATION bin)
+install(TARGETS Gothic2Notr Spacer DESTINATION bin)

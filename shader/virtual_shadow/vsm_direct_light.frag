@@ -26,30 +26,6 @@ layout(binding = 8, r32ui)  uniform readonly uimage2D dbg;
 
 layout(location = 0) out vec4 outColor;
 
-float drawInt(in vec2 where, in int n) {
-  const float RESOLUTION = 0.5;
-  int i=int((where*=RESOLUTION).y);
-  if(0<i && i<6) {
-    i = 6-i;
-    for(int k=1, j=int(where.x); k-->0 || n>0; n/=10)
-      if ((j+=4)<3 && j>=0) {
-        int x = 0;
-        if(i>4)
-          x = 972980223;
-        else if(i>3)
-          x = 690407533;
-        else if(i>2)
-          x = 704642687;
-        else if(i>1)
-          x = 696556137;
-        else
-          x = 972881535;
-        return float(x >> (29-j-(n%10)*3)&1);
-        }
-    }
-  return 0;
-  }
-
 uint hash(uvec3 src) {
   const uint M = 0x5bd1e995u;
   uint h = 1190494759u;
@@ -171,9 +147,11 @@ void main() {
   const float light  = (isFlat   ? 0 : lambert(normal));
   const float shadow = (light<=0 ? 0 : shadowTest(z, normal, page, mip));
 
-  const vec3  illuminance = scene.sunColor * light * shadow;
-  const vec3  linear      = textureAlbedo(diff.rgb);
-  const vec3  luminance   = linear * Fd_Lambert * illuminance;
+  // const vec3 linear      = vec3(1);
+  const vec3 linear      = textureAlbedo(diff.rgb);
+
+  const vec3 illuminance = scene.sunColor * light * shadow;
+  const vec3 luminance   = linear * illuminance * Fd_Lambert;
 
   outColor = vec4(luminance * scene.exposure, 1);
 

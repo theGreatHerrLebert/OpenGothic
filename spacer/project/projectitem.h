@@ -1,0 +1,98 @@
+#pragma once
+
+#include "utility/spinlock.h"
+#include <string_view>
+#include <string>
+#include <vector>
+#include <memory>
+
+#include <Tempest/Texture2d>
+
+#include <zenkit/addon/daedalus.hh>
+
+#include <zenkit/vobs/Light.hh>
+
+class WorldEdit;
+class ProtoMesh;
+
+class ProjectItem {
+  public:
+    ProjectItem();
+    ~ProjectItem();
+
+    bool operator == (const ProjectItem& other) const;
+    bool operator != (const ProjectItem& other) const;
+
+    enum Type {
+      T_Project,
+      T_Dir,
+      T_File,
+      T_StaticMesh,
+      T_Texture,
+      T_World,
+      T_ScriptItem,
+      T_LightPreset,
+      };
+
+    enum State : uint32_t {
+      S_Idle,
+      S_Pending,
+      S_Ready,
+      S_Error,
+      };
+
+    std::string_view      displayName() const;
+    std::string_view      name() const;
+    Type                  type() const;
+    bool                  isReady() const;
+    bool                  isEmpty() const;
+    bool                  isPending() const;
+    bool                  isError() const;
+    bool                  isVisible() const;
+
+    std::string_view      path() const;
+    size_t                depth() const;
+
+    size_t                itemsCount() const;
+    ProjectItem           item(size_t i) const;
+
+    auto                  preview() const -> std::shared_ptr<const Tempest::Texture2d>;
+    template<class T>
+    auto                  get() const -> std::shared_ptr<T> { return implGet((const T*)nullptr); }
+
+  private:
+    struct Data {
+      std::vector<std::shared_ptr<ProjectItem::Data>> files;
+      std::string       name;
+      std::string       path;
+      size_t            depth = 0;
+      State             state = S_Idle;
+      ProjectItem::Type type  = ProjectItem::T_Dir;
+
+      SpinLock    sync;
+      std::shared_ptr<const Tempest::Texture2d> preview;
+
+      std::shared_ptr<zenkit::IItem>       item;
+      std::shared_ptr<zenkit::LightPreset> light;
+      std::shared_ptr<WorldEdit>           world;
+      };
+
+    ProjectItem(std::shared_ptr<Data> data);
+
+    auto implGet(const WorldEdit*) const -> std::shared_ptr<WorldEdit>;
+    auto implGet(const zenkit::IItem*) const -> std::shared_ptr<zenkit::IItem>;
+    auto implGet(const zenkit::LightPreset*) const -> std::shared_ptr<zenkit::LightPreset>;
+
+    void setPending();
+    void setError();
+    void setPreview(std::shared_ptr<const Tempest::Texture2d> preview);
+    void setPayload(std::shared_ptr<WorldEdit> payload);
+    void setPayload(std::shared_ptr<zenkit::LightPreset> payload);
+    void setPayload(const Tempest::Texture2d* payload);
+    void setPayload(const ProtoMesh* payload);
+
+    std::shared_ptr<Data> data;
+
+  friend class ProjectMgr;
+  friend class DataWorker;
+  };

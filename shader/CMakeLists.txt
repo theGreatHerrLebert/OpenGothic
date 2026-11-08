@@ -20,7 +20,7 @@ file(GLOB_RECURSE GLSL_SOURCES
   "${CMAKE_SOURCE_DIR}/shader/*.glsl")
 
 # GLSL to SPIRV compiler
-find_program(GLSLANGVALIDATOR glslangValidator "/opt/homebrew/bin")
+find_program(GLSLANGVALIDATOR glslangValidator "/opt/homebrew/bin" NO_CMAKE_FIND_ROOT_PATH)
 if(NOT GLSLANGVALIDATOR)
   message(FATAL_ERROR "glslangValidator required")
 endif()
@@ -63,11 +63,22 @@ function(add_shader OUTPUT SOURCE)
     list(APPEND VARS "-g")
   endif()
 
+  set(GLSL_CMD ${GLSLANGVALIDATOR})
+  list(APPEND GLSL_CMD "-V")
+  list(APPEND GLSL_CMD ${VARS})
+  list(APPEND GLSL_CMD "--P")
+  list(APPEND GLSL_CMD "#extension GL_GOOGLE_include_directive:enable")
+  list(APPEND GLSL_CMD "-I${CMAKE_SOURCE_DIR}/shader")
+  list(APPEND GLSL_CMD ${SOURCE_FILE})
+  list(APPEND GLSL_CMD "-o")
+  list(APPEND GLSL_CMD ${OUTPUT_FILE})
+
   add_custom_command(
     OUTPUT     ${OUTPUT_FILE}
     DEPENDS    ${SOURCE_FILE} ${GLSL_SOURCES}
     COMMAND    ${CMAKE_COMMAND} -E make_directory "${PROJECT_BINARY_DIR}/sprv/"
-    COMMAND    ${GLSLANGVALIDATOR} -V ${VARS} -I"${CMAKE_SOURCE_DIR}/shader" "${SOURCE_FILE}" -o ${OUTPUT_FILE}
+    COMMAND    ${GLSL_CMD}
+    VERBATIM
     )
 endfunction(add_shader)
 
@@ -101,6 +112,13 @@ function(add_frag_shader OUTPUT)
   set(OPENGOTHIC_SHADERS      ${OPENGOTHIC_SHADERS}      PARENT_SCOPE)
   set(OPENGOTHIC_SHADERS_SPRV ${OPENGOTHIC_SHADERS_SPRV} PARENT_SCOPE)
 endfunction(add_frag_shader)
+
+# editor hud
+add_shader(gizmo.vert hud/gizmo.vert)
+add_shader(gizmo.frag hud/gizmo.frag)
+
+add_shader(light_imposter.vert hud/light_imposter.vert)
+add_shader(light_imposter.frag hud/light_imposter.frag)
 
 # cluster culling
 add_shader(cluster_init.comp            materials/cluster_init.comp)
@@ -197,6 +215,7 @@ add_shader(item.frag                 inventory/item.frag)
 
 add_shader(stash.frag                stash.frag)
 add_shader(bink.frag                 bink/bink.frag)
+add_shader(downscale.frag            downscale.frag)
 
 add_shader(direct_light.frag         lighting/direct_light.frag)
 add_shader(direct_light_sh.frag      lighting/direct_light.frag -DSHADOW_MAP)
@@ -205,6 +224,7 @@ add_shader(direct_light_vsm.frag     virtual_shadow/vsm_direct_light.frag)
 
 add_shader(ambient_light.frag        lighting/ambient_light.frag)
 add_shader(ambient_light_ssao.frag   lighting/ambient_light.frag -DSSAO)
+add_shader(ambient_light_surf.frag   lighting/ambient_light.frag -DSSAO -DSURFEL_GI)
 
 add_shader(light.vert                lighting/light.vert)
 add_shader(light.frag                lighting/light.frag)
@@ -271,6 +291,10 @@ else()
 endif()
 add_shader(hiz_pot.comp              hiz/hiz_pot.comp)
 
+# RayQuery
+add_shader(rt_dbg.frag               lighting/rt_dbg/rt_dbg.frag -DRAY_QUERY -DRAY_QUERY_AT)
+add_shader(hash_dbg.frag             lighting/rt_dbg/hash_dbg.frag)
+
 # Global illumination
 add_shader(probe_dbg.vert            lighting/rt/probe_dbg.vert)
 add_shader(probe_dbg.frag            lighting/rt/probe_dbg.frag)
@@ -290,6 +314,38 @@ add_shader(probe_lighting.comp       lighting/rt/probe_lighting.comp)
 
 add_shader(probe_ambient.vert        triangle.vert)
 add_shader(probe_ambient.frag        lighting/rt/probe_ambient.frag)
+
+# Surfels
+add_shader(surf_dbg.vert             lighting/surfels/surf_dbg.vert)
+add_shader(surf_dbg.frag             lighting/surfels/surf_dbg.frag)
+
+add_shader(surf_update.comp          lighting/surfels/surf_update.comp)
+add_shader(surf_culling.comp         lighting/surfels/surf_culling.comp)
+add_shader(surf_decimate.comp        lighting/surfels/surf_decimate.comp)
+add_shader(surf_compact.comp         lighting/surfels/surf_compact.comp)
+
+add_shader(surf_alloc.comp           lighting/surfels/surf_alloc.comp)
+add_shader(surf_apply.comp           lighting/surfels/surf_apply.comp)
+add_shader(surf_freelist.comp        lighting/surfels/surf_freelist.comp)
+
+add_shader(surf_bin_clear.comp       lighting/surfels/surf_bin_clear.comp)
+add_shader(surf_bin_alloc.comp       lighting/surfels/surf_bin_alloc.comp)
+add_shader(surf_bin_pass.comp        lighting/surfels/surf_bin_pass.comp)
+add_shader(surf_bin_sort.comp        lighting/surfels/surf_bin_sort.comp)
+
+add_shader(surf_pathtrace.comp       lighting/surfels/surf_pathtrace.comp)
+add_shader(surf_raycast.comp         lighting/surfels/surf_raycast.comp)
+add_shader(surf_lighting.comp        lighting/surfels/surf_lighting.comp)
+
+# Pathtracing
+add_shader(pathtrace.frag        lighting/pt/pathtrace.frag -DRAY_QUERY -DRAY_QUERY_AT)
+
+add_shader(lights_morton.comp    lighting/lightstree/lights_morton.comp)
+add_shader(lights_topology.comp  lighting/lightstree/lights_topology.comp)
+add_shader(lights_tree.comp      lighting/lightstree/lights_tree.comp)
+add_shader(lights_bvh.comp       lighting/lightstree/lights_bvh.comp)
+
+add_shader(lightstree_dbg.frag   lighting/lightstree/lightstree_dbg.frag)
 
 # CMAA2
 add_shader(cmaa2_edges_color2x2_quality_0.comp     antialiasing/cmaa2/edge_color2x2.comp -DCMAA2_STATIC_QUALITY_PRESET=0)
