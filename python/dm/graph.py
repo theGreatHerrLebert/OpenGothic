@@ -6,6 +6,10 @@
              "choices": [{"text": "Wer bist du?", "goto": "b"},
                          {"text": "Leb wohl.", "ends": true}]},
        "b": {"line": "Niemand.", "choices": [{"text": "Leb wohl.", "ends": true}]}}}
+
+A choice can carry "requires" (flags, any one is enough) and "unless" (a flag),
+so the hero can only say what the player has actually learned. Every node needs
+at least one unconditional choice, so a conversation can always continue.
 """
 
 import gothic
@@ -27,9 +31,15 @@ def validate(graph):
         choices = node.get("choices")
         if not choices:
             return f"node has no choices: {key}"
+        if all(c.get("requires") or c.get("unless") for c in choices):
+            return f"node has only conditional choices: {key}"
         for choice in choices:
             if not choice.get("text"):
                 return f"choice has no text: {key}"
+            if choice.get("requires") or choice.get("unless"):
+                if choice.get("goto") not in nodes and not choice.get("ends"):
+                    return f"choice goes nowhere: {key}"
+                continue
             if choice.get("ends"):
                 can_end.add(key)
             elif choice.get("goto") not in nodes:
@@ -59,9 +69,11 @@ def validate(graph):
 
 
 class Player:
-    def __init__(self, get_graphs, on_flag):
+    def __init__(self, get_graphs, on_flag, get_flags=dict):
         self.get_graphs = get_graphs
         self.on_flag = on_flag
+        self.get_flags = get_flags
+        self.visible = []
         self.graph = None
         self.node = None
         self.path = []
@@ -82,6 +94,18 @@ class Player:
         if flag and flag not in self.flagged:
             self.flagged.add(flag)
             self.on_flag(flag)
+
+    def _visible_choices(self):
+        flags = self.get_flags()
+        shown = []
+        for choice in self.node["choices"]:
+            required = choice.get("requires")
+            if required and not any(flags.get(f) for f in required):
+                continue
+            if flags.get(choice.get("unless")):
+                continue
+            shown.append(choice)
+        return shown
 
     def _say(self, text, voice, is_player):
         wav, ms = voices.lookup(voice, text)
@@ -110,13 +134,14 @@ class Player:
                 self.stage = "offer"
         elif self.stage == "offer":
             if not dialog.busy():
-                dialog.set_choices([c["text"] for c in self.node["choices"]])
+                self.visible = self._visible_choices()
+                dialog.set_choices([c["text"] for c in self.visible])
                 self.stage = "choose"
         elif self.stage == "choose":
             index = dialog.poll_selection()
             if index is None:
                 return
-            self.choice = self.node["choices"][index]
+            self.choice = self.visible[index]
             if self.choice.get("goto") in self.path:
                 self._enter(self.choice["goto"])
             else:

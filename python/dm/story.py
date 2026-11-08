@@ -299,7 +299,8 @@ class Story:
 
 _story = Story()
 _player = graphs.Player(lambda: _story.state["graphs"],
-                        lambda name: _story.player_flag(name))
+                        lambda name: _story.player_flag(name),
+                        lambda: _story.state["flags"])
 
 
 def _tick(dt):

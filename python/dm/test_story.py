@@ -103,6 +103,36 @@ GOOD = {"start": "a", "nodes": {
     "b": {"line": "Größe.", "choices": [{"text": "Zurück", "goto": "a"}]}}}
 
 
+def test_conditional_choices():
+    graph = {"start": "a", "nodes": {"a": {"line": "Hallo.", "choices": [
+        {"text": "Wissend", "requires": ["known"], "ends": True},
+        {"text": "Unwissend", "unless": "known", "ends": True},
+        {"text": "Tschüss", "ends": True}]}}}
+    assert graphs.validate(graph) is None
+    bad = {"start": "a", "nodes": {"a": {"line": "x", "choices": [
+        {"text": "y", "requires": ["k"], "ends": True}]}}}
+    assert "only conditional" in graphs.validate(bad)
+
+    flags = {}
+    fake.dialog.reset()
+    d = fake.dialog
+    player = graphs.Player(lambda: {"NOV_B": graph}, lambda n: None, lambda: flags)
+    d.who, d.opened, d.open = Npc("NOV_B"), True, True
+    for _ in range(3):
+        player.on_tick()
+    assert d.choices == ["Unwissend", "Tschüss"]
+    flags["known"] = True
+    d.reset()
+    d.who, d.opened, d.open = Npc("NOV_B"), True, True
+    for _ in range(3):
+        player.on_tick()
+    assert d.choices == ["Wissend", "Tschüss"]
+    d.selection = 0
+    for _ in range(4):
+        player.on_tick()
+    assert d.lines[-1] == "Wissend"
+
+
 def rejected(story, ops, fragment):
     try:
         story.validate(ops)
@@ -271,7 +301,7 @@ def test_player():
     d.say = real_say
 
 
-for test in (test_graph_validation, test_validation, test_apply_and_rollback, test_return_npc,
+for test in (test_graph_validation, test_validation, test_apply_and_rollback, test_return_npc, test_conditional_choices,
              test_queue_waits_for_safe_point, test_save_load_does_not_reapply_world,
              test_player):
     test()
