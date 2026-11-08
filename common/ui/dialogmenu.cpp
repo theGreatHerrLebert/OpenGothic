@@ -194,7 +194,7 @@ bool DialogMenu::agentBusy() const {
   return current.time>0 || haveToWaitOutput();
   }
 
-bool DialogMenu::agentSay(std::string_view text, bool isPlayer, uint64_t timeMs) {
+bool DialogMenu::agentSay(std::string_view text, bool isPlayer, uint64_t timeMs, std::string_view wav) {
   if(!agentMode || agentBusy() || pl==nullptr || other==nullptr)
     return false;
 
@@ -207,6 +207,16 @@ bool DialogMenu::agentSay(std::string_view text, bool isPlayer, uint64_t timeMs)
   current.time    = timeMs + (dlgAnimation ? ANIM_TIME*2 : 0);
   currentSnd      = Tempest::SoundEffect();
   curentIsPl      = isPlayer;
+  if(!wav.empty()) {
+    try {
+      currentSnd = soundDevice.load(std::string(wav).c_str());
+      currentSnd.play();
+      }
+    catch(const std::exception& e) {
+      Log::e("unable to play dialogue audio: ", e.what());
+      currentSnd = Tempest::SoundEffect();
+      }
+    }
   speaker.setAiOutputBarrier(timeMs,false);
   update();
   return true;

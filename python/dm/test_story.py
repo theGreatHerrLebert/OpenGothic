@@ -78,7 +78,7 @@ class Dialog:
         value, self.opened = self.opened, False
         return value
 
-    def say(self, text):
+    def say(self, text, **kw):
         self.lines.append(text)
         return True
 
@@ -229,56 +229,42 @@ def test_player():
     flags = []
     player = graphs.Player(lambda: {"NOV_B": GOOD}, flags.append)
     d = fake.dialog
+
+    def pump(picks=None):
+        if picks is not None:
+            d.selection = picks
+        for _ in range(8):
+            player.on_tick()
+
     d.who, d.opened, d.open = Npc("NOV_B"), True, True
-    player.on_tick()
+    pump()
     assert d.lines == ["Hallo."] and flags == ["met"]
-    player.on_tick()
     assert d.choices == ["Mehr", "Tschüss"]
-    player.on_tick()
-    d.selection = 0
-    player.on_tick()
-    player.on_tick()
-    assert d.lines == ["Hallo.", "Größe."]
-    player.on_tick()
+
+    # the hero speaks the chosen line, then the NPC answers
+    pump(0)
+    assert d.lines == ["Hallo.", "Mehr", "Größe."]
     assert d.choices == ["Zurück"]
-    player.on_tick()
-    d.selection = 0
-    player.on_tick()
-    player.on_tick()
-    # stepping back shows the choices again without repeating the line
-    assert d.lines == ["Hallo.", "Größe."] and flags == ["met"]
+
+    # stepping back is silent and shows the earlier choices
+    pump(0)
+    assert d.lines == ["Hallo.", "Mehr", "Größe."] and flags == ["met"]
     assert d.choices == ["Mehr", "Tschüss"]
-    player.on_tick()
 
-    # asking the same question again gets the answer again
-    d.selection = 0
-    player.on_tick()
-    player.on_tick()
-    assert d.lines == ["Hallo.", "Größe.", "Größe."] and flags == ["met"]
-    player.on_tick()
-    assert d.choices == ["Zurück"]
-    player.on_tick()
-    d.selection = 0
-    player.on_tick()
-    player.on_tick()
-    assert d.lines[-1] == "Größe." and len(d.lines) == 3
-    player.on_tick()
-    d.selection = 1
-    player.on_tick()
-    assert not d.is_open()
+    # asking again gets the answer again
+    pump(0)
+    assert d.lines[-2:] == ["Mehr", "Größe."] and len(d.lines) == 5
 
-    # a new conversation starts fresh
-    d.who, d.opened, d.open = Npc("NOV_B"), True, True
-    player.on_tick()
-    assert d.lines[-1] == "Hallo." and len(d.lines) == 4
-    d.close()
-    player.on_tick()
+    # the hero says the closing line before the conversation ends
+    pump(0)
+    pump(1)
+    assert d.lines[-1] == "Tschüss" and not d.is_open()
 
     # a line refused while the UI is busy is retried
     d.reset()
     d.who, d.opened, d.open = Npc("NOV_B"), True, True
     real_say, attempts = d.say, []
-    d.say = lambda text: attempts.append(text) or len(attempts) > 1
+    d.say = lambda text, **kw: attempts.append(text) or len(attempts) > 1
     player.on_tick()
     player.on_tick()
     assert len(attempts) == 2

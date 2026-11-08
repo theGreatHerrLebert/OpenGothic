@@ -10,6 +10,8 @@
 
 import gothic
 
+from dm import voices
+
 
 def validate(graph):
     """Return a description of the first problem, or None if the graph is sound."""
@@ -64,6 +66,7 @@ class Player:
         self.node = None
         self.path = []
         self.flagged = set()
+        self.choice = None
         self.stage = "idle"
 
     def _enter(self, key):
@@ -79,6 +82,10 @@ class Player:
         if flag and flag not in self.flagged:
             self.flagged.add(flag)
             self.on_flag(flag)
+
+    def _say(self, text, voice, is_player):
+        wav, ms = voices.lookup(voice, text)
+        return gothic.dialog.say(text, player=is_player, ms=ms, wav=wav)
 
     def on_tick(self):
         dialog = gothic.dialog
@@ -99,7 +106,7 @@ class Player:
             return
 
         if self.stage == "say":
-            if dialog.say(self.node["line"]):
+            if self._say(self.node["line"], self.graph.get("voice"), False):
                 self.stage = "offer"
         elif self.stage == "offer":
             if not dialog.busy():
@@ -109,9 +116,18 @@ class Player:
             index = dialog.poll_selection()
             if index is None:
                 return
-            choice = self.node["choices"][index]
-            if choice.get("ends"):
-                dialog.close()
-                self.stage = "idle"
+            self.choice = self.node["choices"][index]
+            if self.choice.get("goto") in self.path:
+                self._enter(self.choice["goto"])
             else:
-                self._enter(choice["goto"])
+                self.stage = "hero"
+        elif self.stage == "hero":
+            if self._say(self.choice["text"], voices.HERO_VOICE, True):
+                self.stage = "hero_wait"
+        elif self.stage == "hero_wait":
+            if not dialog.busy():
+                if self.choice.get("ends"):
+                    dialog.close()
+                    self.stage = "idle"
+                else:
+                    self._enter(self.choice["goto"])

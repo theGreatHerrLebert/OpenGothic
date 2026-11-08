@@ -41,7 +41,7 @@ class DialogMenu : public Tempest::Widget {
     bool agentActive() const { return agentMode; }
     Npc* partner() const { return (state!=State::Idle && other!=pl) ? other : nullptr; }
     bool agentTakeOpened();
-    bool agentSay(std::string_view text, bool isPlayer, uint64_t timeMs);
+    bool agentSay(std::string_view text, bool isPlayer, uint64_t timeMs, std::string_view wav);
     void agentSetChoices(const std::vector<std::string>& titles);
     int  agentTakeSelection();
     bool agentBusy() const;

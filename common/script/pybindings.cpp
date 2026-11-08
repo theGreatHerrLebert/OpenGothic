@@ -523,12 +523,12 @@ PYBIND11_EMBEDDED_MODULE(gothic, m) {
   dialog.def("busy", []() { return requireDialog().agentBusy(); },
              "True while a line is still being shown.");
   dialog.def("say",
-             [](const std::string& text, bool player, int ms) {
+             [](const std::string& text, bool player, int ms, const std::string& wav) {
                if(ms<=0)
                  ms = std::max(2000, int(text.size())*70);
-               return requireDialog().agentSay(toEngine(text), player, uint64_t(ms));
+               return requireDialog().agentSay(toEngine(text), player, uint64_t(ms), wav);
                },
-             py::arg("text"), py::arg("player") = false, py::arg("ms") = 0,
+             py::arg("text"), py::arg("player") = false, py::arg("ms") = 0, py::arg("wav") = "",
              "Show a subtitle line. Returns False if the UI is busy; retry "
              "on a later tick.");
   dialog.def("set_choices",
