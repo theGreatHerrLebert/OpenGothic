@@ -867,6 +867,10 @@ bool Inventory::use(size_t cls, Npc &owner, uint8_t slotHint, bool force) {
   if(it==nullptr)
     return false;
 
+  // quest evidence stays in the inventory: it cannot be worn or used
+  if(it->isStoryItem() && it->isMission())
+    return false;
+
   auto& itData   = it->handle();
   auto  mainflag = ItmFlags(itData.main_flag);
   auto  flag     = ItmFlags(itData.flags);

@@ -247,6 +247,13 @@ struct PyNpc {
 // Only valid until the world changes; used to undo a placement within a plan.
 struct PyItem {
   Item* ptr = nullptr;
+  void makeQuest(const std::string& description, const std::vector<std::string>& lines) {
+    std::vector<std::string> converted;
+    for(auto& l:lines)
+      converted.push_back(toEngine(l));
+    ptr->makeQuestItem(toEngine(description), converted);
+    }
+
   void remove() {
     if(ptr!=nullptr)
       requireWorld()->removeItem(*ptr);
@@ -435,6 +442,21 @@ PYBIND11_EMBEDDED_MODULE(gothic, m) {
       .def_property_readonly("items",    &PyPlayer::items,
                              "List of dicts {name, count, equipped} for "
                              "every item in the player's inventory.")
+      .def("quest_item",
+           [](const PyPlayer&, const std::string& instance, const std::string& description,
+              const std::vector<std::string>& lines) {
+             auto* w  = requireWorld();
+             auto* p  = requirePlayer();
+             size_t id = w->script().findSymbolIndex(upper(instance));
+             auto* it = id==size_t(-1) ? nullptr : p->getItem(id);
+             if(it==nullptr)
+               throw std::invalid_argument("player does not have: " + instance);
+             PyItem wrapped;
+             wrapped.ptr = it;
+             wrapped.makeQuest(description, lines);
+             },
+           py::arg("instance"), py::arg("description"), py::arg("lines"),
+           "Turn an item in the player's inventory into a quest item.")
       .def("set_position",
            [](const PyPlayer&, float x, float y, float z) {
              auto* p = requirePlayer();
@@ -495,6 +517,8 @@ PYBIND11_EMBEDDED_MODULE(gothic, m) {
       .def("__repr__", &PyNpc::repr);
 
   py::class_<PyItem>(m, "Item")
+      .def("make_quest", &PyItem::makeQuest, py::arg("description"), py::arg("lines"),
+           "Make this a quest item: no equipping, no sale value, with story text.")
       .def("remove", &PyItem::remove);
 
   py::class_<PyWorld>(m, "World")

@@ -73,6 +73,7 @@ class Item : public Vob {
     bool                isConsumable() const;
     bool                isStoryItem() const { return storyItem; }
     void                setStoryItem(bool v) { storyItem = v; }
+    void                makeQuestItem(std::string_view desc, const std::vector<std::string>& lines);
     int32_t             spellId() const;
     int32_t             swordLength() const;
 

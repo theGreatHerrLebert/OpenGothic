@@ -158,6 +158,18 @@ void Item::setObjMatrix(const Tempest::Matrix4x4 &m) {
   visual.setObjMatrix(m);
   }
 
+void Item::makeQuestItem(std::string_view desc, const std::vector<std::string>& lines) {
+  storyItem     = true;
+  hitem->flags  = zenkit::ItemFlag(uint32_t(hitem->flags) | ITM_MISSION);
+  hitem->value  = 0;
+  if(!desc.empty())
+    hitem->description = std::string(desc);
+  for(size_t i=0; i<MAX_UI_ROWS; ++i) {
+    hitem->text[i]  = i<lines.size() ? lines[i] : "";
+    hitem->count[i] = 0;
+    }
+  }
+
 bool Item::isMission() const {
   return (uint32_t(hitem->flags)&ITM_MISSION);
   }

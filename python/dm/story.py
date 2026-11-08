@@ -131,7 +131,12 @@ def _check_place(args, state):
 
 
 def _world_place(args):
-    return gothic.world.place_item(args["instance"], args["waypoint"]).remove
+    item = gothic.world.place_item(args["instance"], args["waypoint"])
+    quest = args.get("quest")
+    if quest:
+        # the first row sits directly under the title, so it stays blank
+        item.make_quest(quest["description"], [""] + quest.get("lines", []))
+    return item.remove
 
 
 def _check_graph(args, state):
