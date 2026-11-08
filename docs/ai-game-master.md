@@ -118,6 +118,31 @@ the checker proves it solvable, conversations are written against it, a German
 editing pass reviews each line in context and for natural Gothic-flavoured
 speech, and audio is generated last.
 
+## Character sheets
+
+The knowledge graph decides what a character can say. A character sheet decides
+how they would say it, and gives the Director motives to work with. Each sheet
+records role, manner of speech, and attitudes toward factions, important people,
+those immediately around them, politics and game state, plus how those attitudes
+change with story state:
+
+```json
+{"npc": "HAREK", "voice": "09", "role": "Seemann und Hehler im Hafenviertel",
+ "speech": "grob, misstrauisch, kurze Sätze",
+ "attitudes": {"factions": {"Kloster": "Söhnchen von Oberstadt-Pinkeln"},
+               "people": {"Tilo": "Schwächling, schuldet ihm Geld"},
+               "politics": "Die Blockade trifft die Kleinen, nie die Reichen."},
+ "reacts_to": {"harek_wary": "Hält den Helden für einen Spitzel."}}
+```
+
+Sheets feed the Director, the dialogue writer and the editing pass, which rejects
+lines the character would not say and generic filler that could belong to anyone.
+
+Important facts should be reachable by different approaches, not only from
+different people: asking someone who knows, tricking someone who would not tell,
+or confronting the culprit. An approach can also close off another; showing your
+hand ends a later attempt to deceive that person.
+
 ## Known constraints
 
 - **Voice.** Gothic is fully voiced and generated lines are silent subtitles.
