@@ -1,6 +1,6 @@
 """Generates dialogue audio for graphs, skipping lines already baked. Private use only.
 
-    bake_voices.py refs <GOTHIC install> 15 09 ...
+    bake_voices.py refs <GOTHIC install> 15:4 09 ...   (voice, optional number of lines)
     bake_voices.py bake <graphs.json>
     bake_voices.py level
 
@@ -52,24 +52,43 @@ def extract_refs(game, wanted):
     lines = {m[1].upper(): m[2].strip().rstrip("}").strip()
              for m in re.finditer(r'AI_Output\s*\([^"]*"([^"]+)"\)\s*;\s*//\s*([^\r\n]*)', text)}
     voices.REF_DIR.mkdir(parents=True, exist_ok=True)
-    for voice in wanted:
+    for spec in wanted:
+        voice, _, count = spec.partition(":")
+        count = int(count or 1)
         pattern = re.compile(rf"_{voice}_\d\d\.WAV$")
         candidates = sorted(
-            (abs(len(lines[k[:-4]]) - 115), k) for k in index
-            if pattern.search(k) and k[:-4] in lines
-            and 90 <= len(lines[k[:-4]]) <= 140 and not re.search(r"[(\[]", lines[k[:-4]]))
-        key = candidates[0][1]
-        path, offset, size = index[key]
-        with open(path, "rb") as f:
-            f.seek(offset)
-            raw = f.read(size)
-        with tempfile.NamedTemporaryFile(suffix=".wav") as tmp:
-            tmp.write(raw)
-            tmp.flush()
-            subprocess.run(["afconvert", "-f", "WAVE", "-d", "LEI16@24000", "-c", "1",
-                            tmp.name, str(voices.REF_DIR / f"{voice}.wav")], check=True)
-        (voices.REF_DIR / f"{voice}.txt").write_text(lines[key[:-4]], encoding="utf-8")
-        print(voice, key)
+            (abs(len(lines[k[:-4]]) - 90), k) for k in index
+            if pattern.search(k) and k[:-4] in lines and "ADDON" not in k
+            and 60 <= len(lines[k[:-4]]) <= 130 and not re.search(r"[(\[]", lines[k[:-4]]))
+        chosen, speakers = [], set()
+        for _, key in candidates:
+            if key.split("_")[1] not in speakers:
+                speakers.add(key.split("_")[1])
+                chosen.append(key)
+            if len(chosen) == count:
+                break
+
+        frames, params = b"", None
+        for key in chosen:
+            path, offset, size = index[key]
+            with open(path, "rb") as f:
+                f.seek(offset)
+                raw = f.read(size)
+            with tempfile.TemporaryDirectory() as tmp:
+                src, dst = pathlib.Path(tmp, "in.wav"), pathlib.Path(tmp, "out.wav")
+                src.write_bytes(raw)
+                subprocess.run(["afconvert", "-f", "WAVE", "-d", "LEI16@24000", "-c", "1",
+                                str(src), str(dst)], check=True)
+                with wave.open(str(dst), "rb") as w:
+                    params = w.getparams()
+                    frames += w.readframes(w.getnframes()) + b"\0\0" * (params.framerate // 3)
+            print(voice, key, lines[key[:-4]])
+
+        voices.REF_DIR.mkdir(parents=True, exist_ok=True)
+        with wave.open(str(voices.REF_DIR / f"{voice}.wav"), "wb") as w:
+            w.setparams(params)
+            w.writeframes(frames)
+        (voices.REF_DIR / f"{voice}.txt").write_text(" ".join(lines[k[:-4]] for k in chosen), encoding="utf-8")
 
 
 def _samples(path):
