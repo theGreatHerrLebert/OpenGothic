@@ -8,7 +8,8 @@
        "b": {"line": "Niemand.", "choices": [{"text": "Leb wohl.", "ends": true}]}}}
 
 A choice can carry "requires" (flags, any one is enough) and "unless" (a flag),
-so the hero can only say what the player has actually learned. Every node needs
+so the hero can only say what the player has actually learned. A node with "sets"
+may also have "again", a line used instead once that flag is already set. Every node needs
 at least one unconditional choice, so a conversation can always continue.
 """
 
@@ -79,6 +80,7 @@ class Player:
         self.path = []
         self.flagged = set()
         self.choice = None
+        self.line = ""
         self.stage = "idle"
 
     def _enter(self, key):
@@ -91,6 +93,8 @@ class Player:
         self.path.append(key)
         self.stage = "say"
         flag = self.node.get("sets")
+        already = flag is not None and self.get_flags().get(flag)
+        self.line = self.node["again"] if self.node.get("again") and already else self.node["line"]
         if flag and flag not in self.flagged:
             self.flagged.add(flag)
             self.on_flag(flag)
@@ -130,7 +134,7 @@ class Player:
             return
 
         if self.stage == "say":
-            if self._say(self.node["line"], self.graph.get("voice"), False, self.node.get("delivery")):
+            if self._say(self.line, self.graph.get("voice"), False, self.node.get("delivery")):
                 self.stage = "offer"
         elif self.stage == "offer":
             if not dialog.busy():

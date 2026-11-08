@@ -163,6 +163,8 @@ def spoken_lines(graph):
     for node in graph["nodes"].values():
         if voice:
             yield voice, node["line"], node.get("delivery")
+            if node.get("again"):
+                yield voice, node["again"], node.get("delivery")
         for choice in node["choices"]:
             yield voices.HERO_VOICE, choice["text"], None
 

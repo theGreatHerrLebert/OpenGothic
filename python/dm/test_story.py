@@ -134,6 +134,20 @@ def test_conditional_choices():
     assert d.lines[-1] == "Wissend"
 
 
+def test_again_line():
+    graph = {"start": "a", "nodes": {"a": {"line": "Erstes Mal.", "again": "Du schon wieder.",
+             "sets": "met", "choices": [{"text": "Tschüss", "ends": True}]}}}
+    flags = {}
+    d = fake.dialog
+    player = graphs.Player(lambda: {"NOV_B": graph}, lambda n: flags.update({n: True}), lambda: flags)
+    for expected in ("Erstes Mal.", "Du schon wieder."):
+        d.reset()
+        d.who, d.opened, d.open = Npc("NOV_B"), True, True
+        for _ in range(2):
+            player.on_tick()
+        assert d.lines == [expected], d.lines
+
+
 def rejected(story, ops, fragment):
     try:
         story.validate(ops)
@@ -302,7 +316,7 @@ def test_player():
     d.say = real_say
 
 
-for test in (test_graph_validation, test_validation, test_apply_and_rollback, test_return_npc, test_conditional_choices,
+for test in (test_graph_validation, test_validation, test_apply_and_rollback, test_return_npc, test_conditional_choices, test_again_line,
              test_queue_waits_for_safe_point, test_save_load_does_not_reapply_world,
              test_player):
     test()
