@@ -107,8 +107,8 @@ class Player:
             shown.append(choice)
         return shown
 
-    def _say(self, text, voice, is_player):
-        wav, ms = voices.lookup(voice, text)
+    def _say(self, text, voice, is_player, delivery=None):
+        wav, ms = voices.lookup(voice, text, delivery)
         return gothic.dialog.say(text, player=is_player, ms=ms, wav=wav)
 
     def on_tick(self):
@@ -130,7 +130,7 @@ class Player:
             return
 
         if self.stage == "say":
-            if self._say(self.node["line"], self.graph.get("voice"), False):
+            if self._say(self.node["line"], self.graph.get("voice"), False, self.node.get("delivery")):
                 self.stage = "offer"
         elif self.stage == "offer":
             if not dialog.busy():
