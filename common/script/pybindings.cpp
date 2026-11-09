@@ -227,6 +227,12 @@ struct PyNpc {
     n->useItem(id, Item::NSLOT, true);
     }
 
+  // Uses the engine's perception: range, line of sight and view angle.
+  bool canSeePlayer() const {
+    auto* n = fetch();
+    return (uint32_t(n->canSenseNpc(*requirePlayer(), false)) & uint32_t(SensesBit::SENSE_SEE))!=0;
+    }
+
   void stop() {
     auto* n = fetch();
     n->clearAiQueue();
@@ -449,6 +455,9 @@ PYBIND11_EMBEDDED_MODULE(gothic, m) {
       .def_property_readonly("hp_max",   &PyPlayer::hpMax)
       .def_property_readonly("alive",    &PyPlayer::alive)
       .def_property_readonly("name",     &PyPlayer::name)
+      .def_property_readonly("busy",
+           [](const PyPlayer&) { return requirePlayer()->interactive()!=nullptr; },
+           "True while using a bed, chest or other interactive object.")
       .def_property_readonly("waypoint", &PyPlayer::waypoint,
                              "Name of the nearest waypoint.")
       .def_property_readonly("room",     &PyPlayer::room,
@@ -517,6 +526,7 @@ PYBIND11_EMBEDDED_MODULE(gothic, m) {
            "Start a conversation with the player through normal perception.")
       .def("wear", &PyNpc::wear, py::arg("instance"),
            "Give the NPC an armour item and put it on.")
+      .def("can_see_player", &PyNpc::canSeePlayer)
       .def("stand_here", &PyNpc::standHere,
            "Replace the daily routine with standing at the nearest waypoint.")
       .def("stop", &PyNpc::stop,

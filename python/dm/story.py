@@ -494,7 +494,7 @@ class Story:
             elif self.scene_wait > SCENE_OPEN_TICKS:
                 self._end_scene(False)
             return
-        if dialog.partner() is not None:
+        if dialog.partner() is not None or gothic.player.busy:
             return
         px, _, pz = gothic.player.position
         for scene_id, scene in self.state.get("scenes", {}).items():
@@ -505,6 +505,8 @@ class Story:
                 continue
             x, _, z = npc.position
             if (px - x) ** 2 + (pz - z) ** 2 > scene["within"] ** 2:
+                continue
+            if not npc.can_see_player():
                 continue
             dialog.bind(npc)
             npc.start_dialog()

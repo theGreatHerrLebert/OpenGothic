@@ -152,11 +152,12 @@ def test_scene_and_rule():
     fake.world.__init__()
     fake.dialog.__init__()
     w, d = fake.world, fake.dialog
-    fake.player = types.SimpleNamespace(position=(0, 0, 0), given=[],
+    fake.player = types.SimpleNamespace(position=(0, 0, 0), given=[], busy=False,
                                         give_item=lambda i, c=1: fake.player.given.append((i, c)))
     started = []
     for n in w.npcs.values():
-        n.position, n.alive = (9000, 0, 0), True
+        n.position, n.alive, n.sees = (9000, 0, 0), True, True
+        n.can_see_player = lambda who=n: who.sees
         n.start_dialog = lambda who=n: (started.append(who.instance), setattr(d, "open", True), setattr(d, "who", who))
     s = st.Story()
     s.generation = w.generation
@@ -170,6 +171,14 @@ def test_scene_and_rule():
     s.on_tick()
     assert started == []                 # too far away
     w.npcs["PARLAN"].position = (100, 0, 0)
+    w.npcs["PARLAN"].sees = False
+    s.on_tick()
+    assert started == []                 # through a wall
+    w.npcs["PARLAN"].sees = True
+    fake.player.busy = True
+    s.on_tick()
+    assert started == []                 # in bed
+    fake.player.busy = False
     s.on_tick()
     assert started == ["PARLAN"] and d.bound == ["PARLAN"]
     assert "PARLAN" in s.graphs_now()
