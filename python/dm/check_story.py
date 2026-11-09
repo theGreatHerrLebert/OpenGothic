@@ -17,6 +17,16 @@ sys.modules["gothic"] = gothic
 from dm import graph, knowledge, story  # noqa: E402
 
 
+def _spawned(ops):
+    """NPCs a plan creates itself. Who is already placed in the world is unknown offline."""
+    found = set()
+    for op in ops:
+        if op.get("op") == "spawn_npc":
+            found.add(str(op.get("instance", "")).upper())
+        found |= _spawned(op.get("ops", []))
+    return found
+
+
 def check(path, names_path):
     names = json.loads(pathlib.Path(names_path).read_text(encoding="utf-8"))
     npcs, items, waypoints = set(names["npcs"]), set(names["items"]), set(names["waypoints"])
@@ -38,12 +48,12 @@ def check(path, names_path):
             return name in waypoints
 
         def find_npc(self, name):
-            return Npc(name.upper()) if name.upper() in npcs else None
-
-    gothic.world = World()
+            return Npc(name.upper()) if name.upper() in npcs and name.upper() not in spawned else None
 
     errors = []
     data = json.loads(pathlib.Path(path).read_text(encoding="utf-8"))
+    spawned = _spawned(data.get("plan", []))
+    gothic.world = World()
     for key in ("title", "hidden_truth", "plot", "conversations", "plan"):
         if key not in data:
             errors.append(f"missing field: {key}")
