@@ -26,6 +26,7 @@ textarea{width:100%;box-sizing:border-box;font:15px var(--body);padding:8px;back
 details.flow{margin:10px 0}details.flow summary,details.truth summary{cursor:pointer}
 #graphbox{height:520px;overflow:hidden;margin-top:8px}#graphbox .node{cursor:pointer}
 .sheet .node{background:none;border:0!important;box-shadow:none}li{flex-wrap:wrap}h2:focus{outline:none}.kbd{margin-top:6px}
+.dock{position:fixed;left:0;right:0;bottom:0;display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:8px 16px;background:#1a110a;border-top:1px solid #6b5333;z-index:20}.dock[hidden]{display:none}.dock span{flex:1 1 240px;min-width:0;color:#e8d9b5;font:15px var(--body);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.dock select{font:14px var(--body);background:#1e140c;color:#e8d9b5;border:1px solid #6b5333}.facts{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
 .flash{outline:2px solid var(--ember);outline-offset:4px}
 .info{margin-top:8px;padding:10px 12px;border:1px solid var(--line)}.info p{margin:4px 0}
 </style>
@@ -36,9 +37,13 @@ details.flow{margin:10px 0}details.flow summary,details.truth summary{cursor:poi
 <p class="meta" id="status" role="status">Lädt …</p><button id="retry" class="choice" type="button" hidden>Erneut speichern</button>
 <div class="bar" id="bar"></div>
 <div id="view"></div>
+<div class="dock" id="dock" role="region" aria-label="Wiedergabe" hidden><button class="choice" type="button" id="dPause">Pause</button><button class="choice" type="button" id="dNext">Weiter</button><button class="choice" type="button" id="dStop">Stopp</button><label class="meta">Tempo <select id="dRate"><option>1</option><option>1.25</option><option>1.5</option></select></label><span id="dText"></span></div>
 </main>
-<script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/svg-pan-zoom@3.6.1/dist/svg-pan-zoom.min.js"></script>
+<script src="/vendor/mermaid.min.js"></script>
+<script src="/vendor/svg-pan-zoom.min.js"></script>
+<script>/* without python/dm/fetch_vendor.py, fall back to the pinned CDN copies */
+if(!window.mermaid)document.write('<script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"><\/script>');
+if(!window.svgPanZoom)document.write('<script src="https://cdn.jsdelivr.net/npm/svg-pan-zoom@3.6.1/dist/svg-pan-zoom.min.js"><\/script>');</script>
 <script>
 const $=s=>document.querySelector(s),el=(t,c,x)=>{const n=document.createElement(t);if(c)n.className=c;if(x!=null)n.textContent=x;return n};
 let D={stories:[]},S={},cur=0,player=null;
@@ -56,20 +61,27 @@ async function drawFlow(p,s){if(p.drawn||!p.d.open||!p.d.isConnected)return;p.dr
  }catch(e){p.box.textContent="Graph-Fehler: "+(e.message||e)}}
 function flowPanel(s){let p=panels.get(s.id);if(!p){const d=el("details","flow"),box=el("div");box.id="graphbox";const info=el("div","info");info.hidden=true;
   d.append(el("summary","","Wie es sich entfalten kann (Spoiler)"),el("p","meta","Rot sind Gespräche, hellbraun Tatsachen, orange wesentliche Tatsachen, grün echte Folgen. Durchgezogen: ein Gespräch lehrt etwas. Dick: etwas startet ein Gespräch oder löst eine Folge aus. Gepunktet: öffnet eine Zeile des Helden. Gekreuzt: schliesst etwas. Klicken springt zum Gespräch oder zeigt die Tatsache; ziehen und scrollen zum Bewegen und Zoomen."),box,info);
+  const facts=el("div","facts");facts.append(el("span","meta","Tatsachen: "));Object.values(s.graph.facts).forEach(f=>{const b=el("button","choice",f.id);b.type="button";b.onclick=()=>factInfo(info,f);facts.append(b)});d.append(facts);
   p={d,box,info,drawn:false};d.ontoggle=()=>drawFlow(p,s);panels.set(s.id,p)}
  return p}
-function play(u,b){if(player)player.pause();player=new Audio(u);b.textContent="…";const r=()=>b.textContent="Abspielen";player.onended=player.onpause=r;player.play().catch(r)}
+function play(u,b){if(Q.list.length)qStop();if(player)player.pause();player=new Audio(u);b.textContent="…";const r=()=>b.textContent="Abspielen";player.onended=player.onpause=r;player.play().catch(r)}
 function pbtn(u,text){const b=el("button","p",u?"Abspielen":"–");b.type="button";b.setAttribute("aria-label",(u?"Abspielen: ":"Keine Aufnahme: ")+(text||""));if(u)b.onclick=()=>play(u,b);else b.disabled=true;return b}
 function statusLine(){const scored=D.stories.filter(s=>!s.bonus),a=scored.map(s=>S[s.id]||{});const worth=a.filter(x=>x.worth==="yes").length;const bad=failed.size;$("#status").textContent=bad?"Nicht gespeichert: "+bad+" Geschichte(n). Läuft der Inspector noch?":a.filter(x=>x.worth).length+" von "+scored.length+" bewertet · "+worth+" lohnen sich · Stimmen fertig: "+D.ready+" von "+D.total;$("#retry").hidden=!bad}
 function bar(){const b=$("#bar");b.textContent="";D.stories.forEach((s,i)=>{const r=S[s.id]||{};const x=el("button",(r.worth||"")+(i===cur?" cur":""),String(i+1));x.type="button";if(i===cur)x.setAttribute("aria-current","true");x.onclick=()=>go(i);b.append(x)})}
-function go(i){if(i<0||i>=D.stories.length)return;if(player)player.pause();cur=i;render();scrollTo(0,0);const h=document.querySelector("#view h2");if(h)h.focus({preventScroll:true})}
+const Q={list:[],i:0};
+function queueOf(s){const l=[];s.convs.forEach(c=>c.nodes.forEach(n=>{if(n.audio)l.push({u:n.audio,t:n.line,w:c.who});n.choices.forEach(ch=>{if(ch.audio)l.push({u:ch.audio,t:ch.text,w:"Held"})})}));return l}
+function qPlay(i){if(i>=Q.list.length)return qStop();Q.i=i;const x=Q.list[i];if(player)player.pause();player=new Audio(x.u);player.playbackRate=Number($("#dRate").value);player.onended=()=>qPlay(Q.i+1);player.play().catch(()=>{});$("#dock").hidden=false;$("#dText").textContent=(i+1)+"/"+Q.list.length+" · "+x.w+": "+x.t;$("#dPause").textContent="Pause"}
+function qStop(){if(player)player.pause();player=null;Q.list=[];$("#dock").hidden=true}
+$("#dPause").onclick=()=>{if(!player)return;if(player.paused){player.play();$("#dPause").textContent="Pause"}else{player.pause();$("#dPause").textContent="Fortsetzen"}};
+$("#dNext").onclick=()=>qPlay(Q.i+1);$("#dStop").onclick=qStop;$("#dRate").onchange=()=>{if(player)player.playbackRate=Number($("#dRate").value)};
+function go(i){if(i<0||i>=D.stories.length)return;qStop();cur=i;render();scrollTo(0,0);const h=document.querySelector("#view h2");if(h)h.focus({preventScroll:true})}
 function nextOpen(){const n=D.stories.length;for(let k=1;k<=n;k++){const i=(cur+k)%n;if(!D.stories[i].bonus&&!(S[D.stories[i].id]||{}).worth)return go(i)}}
 const pending=new Map(),failed=new Set();
 function post(id){return fetch("/experiment/score",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({id,...S[id]})}).then(r=>{if(!r.ok)throw 0;failed.delete(id)}).catch(()=>failed.add(id)).then(statusLine)}
 function enqueue(id){const q=(pending.get(id)||Promise.resolve()).then(()=>post(id));pending.set(id,q);q.then(()=>{if(pending.get(id)===q)pending.delete(id)})}
 function save(s,patch){S[s.id]={...(S[s.id]||{}),...patch,rev:s.rev};bar();statusLine();enqueue(s.id)}
 function render(){bar();statusLine();const s=D.stories[cur],v=$("#view");v.textContent="";if(!s){v.textContent="Noch keine Geschichten. Erzeuge sie zuerst, siehe docs/experiment-1.md.";return}const a=el("article","sheet");
- a.append(el("div","label",s.bonus?"Bonus, zählt nicht fürs Experiment":"Geschichte "+(cur+1)+" von "+D.stories.filter(x=>!x.bonus).length),(()=>{const h=el("h2","",s.title);h.tabIndex=-1;return h})(),el("p","prem",s.premise));
+ a.append(el("div","label",s.bonus?"Bonus, zählt nicht fürs Experiment":"Geschichte "+(cur+1)+" von "+D.stories.filter(x=>!x.bonus).length),(()=>{const h=el("h2","",s.title);h.tabIndex=-1;return h})(),el("p","prem",s.premise));const all=el("button","choice","Alle abspielen");all.type="button";all.onclick=()=>{Q.list=queueOf(s);qPlay(0)};a.append(all);
  const d=el("details","truth");d.append(el("summary","","Die verborgene Wahrheit"),el("p","",s.hidden_truth));a.append(d);
  const flow=flowPanel(s);a.append(flow.d);
  s.convs.forEach((c,ci)=>{const x=el("section","conv");x.id="conv-"+ci;x.append(el("h3","",c.who));if(c.when)x.append(el("p","meta",c.when));

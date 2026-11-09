@@ -16,14 +16,16 @@ re-applies world effects.
     ])
 """
 
+import collections
 import copy
 import json
 import os
 import pathlib
+import time
 
 import gothic
 
-from dm import checks, perceptions
+from dm import checks, perceptions, voices
 from dm import graph as graphs
 
 RUNTIME_DIR = pathlib.Path(__file__).resolve().parent.parent / "dm_runtime"
@@ -292,6 +294,25 @@ def _check_give(args, state):
         raise PlanError(f"not an item instance: {args['instance']}")
 
 
+WITNESS_RANGE = 1500  # world units; about the range at which the game's own NPCs react
+NARRATOR_GAP_S = 20  # quiet time after each narrator line, so the voice stays a treat
+_narration = collections.deque(maxlen=8)
+
+
+def _check_narrate(args, state):
+    _require(args, "text")
+    if not isinstance(args["text"], str) or not args["text"].strip():
+        raise PlanError("narration needs text")
+    if "voice" in args and not isinstance(args["voice"], str):
+        raise PlanError("voice must be a voice id such as 10")
+
+
+def _world_narrate(args):
+    """Queued, not played: it waits until no conversation or other line is running. A save drops what is queued."""
+    _narration.append({"text": args["text"], "voice": args.get("voice")})
+    return None
+
+
 def _world_give(args):
     gothic.player.give_item(args["instance"], args.get("count", 1))
     return None
@@ -428,6 +449,7 @@ OPS = {
     "journal": (_check_journal, _noop, _world_journal),
     "rename_npc": (_check_rename, _noop, _world_rename),
     "give_item": (_check_give, _noop, _world_give),
+    "narrate": (_check_narrate, _noop, _world_narrate),
     "relocate_npc": (_check_relocate, _noop, _world_relocate),
 }
 
@@ -504,6 +526,7 @@ class Story:
     # ---- persistence ----
 
     def reset(self):
+        _narration.clear()  # lines queued in another save's timeline must not play in this one
         self.__init__()
 
     def save(self, slot):
@@ -617,9 +640,18 @@ class Story:
                     return False
         return True
 
+    def _weapon_events(self):
+        """The game never raises its draw-weapon perception, so the hero's weapon state is polled instead."""
+        drawn = getattr(gothic.player, "weapon", "none") != "none"
+        was, self.weapon_drawn = getattr(self, "weapon_drawn", drawn), drawn
+        if drawn and not was:
+            seen = [n.instance for n in gothic.world.npcs_near(WITNESS_RANGE) if n.alive and n.can_see_player()]
+            return [{"kind": "drew_weapon", "actor": perceptions.PLAYER, "target": "", "item": "", "spell": -1, "seen_by": seen}]
+        return []
+
     def _take_perceptions(self):
         """A rule hears only what happens while its own conditions hold, and hears it once."""
-        for event in gothic.world.take_perceptions():
+        for event in gothic.world.take_perceptions() + self._weapon_events():
             for rule_id, rule in self.state.get("rules", {}).items():
                 if (rule.get("on") and not rule["fired"] and not rule.get("perceived") and self._conditions(rule)
                         and perceptions.matches(rule["on"], event)):
@@ -647,6 +679,18 @@ class Story:
             if not self.state["flags"].get(flag) and gothic.player.guild == gothic.daedalus.get(guild, 0):
                 self.player_flag(flag)
 
+    def _tick_narration(self):
+        if not _narration or gothic.dialog.partner() is not None or gothic.dialog.narrating():
+            return
+        now = time.monotonic()
+        if now < getattr(self, "narrator_quiet_until", 0.0):
+            return
+        line = _narration[0]
+        wav, ms = voices.lookup(line["voice"], line["text"])
+        if gothic.dialog.narrate(line["text"], ms, wav):
+            _narration.popleft()
+            self.narrator_quiet_until = now + max(ms, 2500) / 1000 + NARRATOR_GAP_S
+
     def on_tick(self):
         generation = gothic.world.generation
         if generation != self.generation:
@@ -656,6 +700,7 @@ class Story:
 
         self._track_hero()
         self._take_perceptions()
+        self._tick_narration()
 
         self._tick_scenes()
         if gothic.dialog.partner() is None:

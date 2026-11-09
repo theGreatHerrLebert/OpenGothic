@@ -67,6 +67,13 @@ scripts/pyeval 'import dm; dm.start()'
 python3 python/dm/inspector_server.py
 ```
 
+Damit der Inspektor ohne Internet läuft, einmal die beiden Graph-Bibliotheken holen (sie werden vor dem Speichern
+geprüft):
+
+```sh
+python3 python/dm/fetch_vendor.py
+```
+
 Dann <http://127.0.0.1:8765> öffnen. Oben rechts stellst du mit **EN | DE** die Sprache um, der Browser merkt sich die
 Wahl. Der Inspektor ist nur auf deinem eigenen Rechner erreichbar.
 

@@ -433,6 +433,12 @@ class Handler(http.server.BaseHTTPRequestHandler):
             html = self._localized(PAGE.read_text(encoding="utf-8")).decode("utf-8").replace("%%GRAPH%%", labels(graph)).replace(
                 "/*DATA*/null", labels(json.dumps(data, ensure_ascii=False)).replace("</", "<\\/"))
             self._send(html.encode("utf-8"), "text/html; charset=utf-8")
+        elif self.path in ("/vendor/mermaid.min.js", "/vendor/svg-pan-zoom.min.js"):
+            path = voices.RUNTIME_DIR / "vendor" / self.path.rsplit("/", 1)[1]
+            if path.exists():
+                self._send(path.read_bytes(), "text/javascript; charset=utf-8")
+            else:
+                self._send(b"", "text/javascript; charset=utf-8", status=404)
         elif self.path == "/gothic.css":
             self._send((ROOT / "inspector" / "gothic.css").read_bytes(), "text/css; charset=utf-8")
         elif self.path == "/characters":

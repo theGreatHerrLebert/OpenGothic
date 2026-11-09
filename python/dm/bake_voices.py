@@ -161,6 +161,10 @@ def level_all():
 
 def spoken_lines(graph):
     voice = graph.get("voice")
+    if "narration" in graph:  # {"voice": "10", "narration": ["line", ...]} for narrator lines outside dialogue
+        for text in graph["narration"]:
+            yield voice, text, None
+        return
     for node in graph["nodes"].values():
         if voice:
             yield voice, node["line"], node.get("delivery")

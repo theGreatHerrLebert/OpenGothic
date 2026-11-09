@@ -1,6 +1,7 @@
 #include "dialogmenu.h"
 #include "safearea.h"
 
+#include <Tempest/Application>
 #include <Tempest/Painter>
 #include <Tempest/Log>
 #include <algorithm>
@@ -289,6 +290,7 @@ void DialogMenu::dialogCamera(Camera& camera) {
   }
 
 void DialogMenu::openPipe(Npc &player, Npc &npc, AiOuputPipe *&out) {
+  stopNarration();
   out    = &pipe;
   pl     = &player;
   other  = &npc;
@@ -346,6 +348,66 @@ bool DialogMenu::aiClose() {
   choice.clear();
   close();
   state=State::Idle;
+  update();
+  return true;
+  }
+
+void DialogMenu::stopNarration() {
+  // A conversation always wins: the voice from off-screen stops and its subtitle goes with it.
+  narratorSnd   = Tempest::SoundEffect();
+  narratorUntil = 0;
+  pscreen.erase(std::remove_if(pscreen.begin(),pscreen.end(),[this](const PScreen& sc){
+    return sc.x<0 && std::find(narratorRows.begin(),narratorRows.end(),sc.y)!=narratorRows.end();
+    }),pscreen.end());
+  narratorRows.clear();
+  }
+
+bool DialogMenu::narrating() const {
+  return Tempest::Application::tickCount()<narratorUntil;
+  }
+
+bool DialogMenu::narrate(std::string_view text, uint64_t timeMs, std::string_view wav) {
+  if(isActive() || narrating() || text.empty())
+    return false;
+  narratorSnd = Tempest::SoundEffect();
+  if(!wav.empty()) {
+    try {
+      narratorSnd = soundDevice.load(std::string(wav).c_str());
+      narratorSnd.play();
+      }
+    catch(const std::exception& e) {
+      Log::e("unable to play narrator audio: ", e.what());
+      narratorSnd = Tempest::SoundEffect();
+      }
+    }
+  // The font does not wrap, so long lines are split into rows near the top of the screen.
+  const float scale   = Gothic::interfaceScale(this);
+  auto&       font    = Resources::font(scale);
+  const int   seconds = int((timeMs+999)/1000);
+  std::string row;
+  int         y = 8;
+  narratorRows.clear();
+  auto flush = [&]() {
+    if(!row.empty()) {
+      printScreen(row,-1,y,seconds,font);
+      narratorRows.push_back(y);
+      }
+    row.clear();
+    y += 4;
+    };
+  size_t at = 0;
+  while(at<text.size()) {
+    size_t end  = text.find(' ',at);
+    auto   word = text.substr(at,end==std::string_view::npos ? std::string_view::npos : end-at);
+    if(!row.empty() && row.size()+1+word.size()>64)
+      flush();
+    if(!row.empty())
+      row += ' ';
+    row += word;
+    at = end==std::string_view::npos ? text.size() : end+1;
+    }
+  flush();
+  narratorUntil = Tempest::Application::tickCount()+timeMs;
   update();
   return true;
   }

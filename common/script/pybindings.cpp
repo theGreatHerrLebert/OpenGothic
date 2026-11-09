@@ -489,6 +489,20 @@ PYBIND11_EMBEDDED_MODULE(gothic, m) {
       .def_property_readonly("guild",
            [](const PyPlayer&) { return int(requirePlayer()->guild()); },
            "Guild id, comparable with Daedalus constants such as GIL_KDF.")
+      .def_property_readonly("weapon",
+           [](const PyPlayer&) {
+             switch(requirePlayer()->weaponState()) {
+               case WeaponState::NoWeapon: return "none";
+               case WeaponState::Fist:     return "fist";
+               case WeaponState::W1H:
+               case WeaponState::W2H:      return "melee";
+               case WeaponState::Bow:
+               case WeaponState::CBow:     return "ranged";
+               case WeaponState::Mage:     return "magic";
+               }
+             return "none";
+             },
+           "What the hero has readied: none, fist, melee, ranged or magic.")
       .def_property_readonly("armor",
            [](const PyPlayer&) -> py::object {
              auto* it  = requirePlayer()->currentArmor();
@@ -691,6 +705,16 @@ PYBIND11_EMBEDDED_MODULE(gothic, m) {
              py::arg("text"), py::arg("player") = false, py::arg("ms") = 0, py::arg("wav") = "",
              "Show a subtitle line. Returns False if the UI is busy; retry "
              "on a later tick.");
+  dialog.def("narrate",
+             [](const std::string& text, int ms, const std::string& wav) {
+               if(ms<=0)
+                 ms = std::max(2500, int(text.size())*70);
+               return requireDialog().narrate(toEngine(text), uint64_t(ms), wav);
+               },
+             py::arg("text"), py::arg("ms") = 0, py::arg("wav") = "",
+             "Play a line from off-screen with a subtitle near the top. Returns False while a "
+             "conversation or another narrator line is running; retry later.");
+  dialog.def("narrating", []() { return requireDialog().narrating(); });
   dialog.def("set_choices",
              [](const std::vector<std::string>& c) {
                std::vector<std::string> titles;

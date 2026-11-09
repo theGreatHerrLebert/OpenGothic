@@ -213,7 +213,7 @@ breaking. A rung is finished when it has typed operations, submission checks and
 
 Alongside the ladder, since it does not depend on any rung:
 
-- **Narrator voice.** An operation that plays a pre-generated line with a subtitle, without opening a conversation, so
+- **Narrator voice (built, not yet tried in the running game).** An operation that plays a pre-generated line with a subtitle, without opening a conversation, so
   a voice can comment from off-screen as the player moves around. Combined with `on` perceptions it can react to what
   the player just did. It must not talk over a conversation or another narrator line, and needs a cooldown so it stays
   a treat. Today every line has to come from someone in a dialogue.

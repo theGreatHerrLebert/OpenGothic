@@ -67,8 +67,11 @@ textarea{width:100%;box-sizing:border-box;margin-top:8px;font:14px/1.4 var(--bod
 </aside></div>
 <p class="save" id="save" role="status"></p>
 </main>
-<script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/svg-pan-zoom@3.6.1/dist/svg-pan-zoom.min.js"></script>
+<script src="/vendor/mermaid.min.js"></script>
+<script src="/vendor/svg-pan-zoom.min.js"></script>
+<script>/* without python/dm/fetch_vendor.py, fall back to the pinned CDN copies */
+if(!window.mermaid)document.write('<script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"><\/script>');
+if(!window.svgPanZoom)document.write('<script src="https://cdn.jsdelivr.net/npm/svg-pan-zoom@3.6.1/dist/svg-pan-zoom.min.js"><\/script>');</script>
 <script>
 const DATA=/*DATA*/null;
 const $=(s,e=document)=>e.querySelector(s), el=(t,c,x)=>{const n=document.createElement(t);if(c)n.className=c;if(x!=null)n.textContent=x;return n};
@@ -114,7 +117,7 @@ function applyFilters(){const f=filters(),active=!!(f.q||f.show||f.who);let show
  $("#found").textContent=active?(shown?shown+" von "+total+" Zeilen":"Keine Zeile passt."):""}
 function openConv(id){const c=DATA.convs.find(x=>x.id===id);if(!c)return;openPeople.add(c.speaker);renderConvs();const s=document.getElementById("c-"+id);if(s)s.scrollIntoView({behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth",block:"start"})}
 function renderRail(){const j=$("#jump");j.textContent="";DATA.convs.forEach(c=>{const a=el("a","",c.speaker+" · "+c.id);a.href="#c-"+c.id;a.onclick=e=>{e.preventDefault();openConv(c.id)};j.append(a)});
- const f=$("#facts");f.textContent="";Object.entries(DATA.facts).forEach(([k,v])=>{if(v.topic&&k!=="tilo_named"&&k!=="tilo_cornered"&&k!=="harek_wary")return;const l=el("label","fact");const i=el("input");i.type="checkbox";i.id="f-"+k;i.checked=known.has(k);i.onchange=()=>{i.checked?known.add(k):known.delete(k);renderConvs()};l.append(i,el("span",v.essential?"ess":"",k));f.append(l)});
+ const f=$("#facts");f.textContent="";Object.entries(DATA.facts).forEach(([k,v])=>{if(v.topic&&k!=="tilo_named"&&k!=="tilo_cornered"&&k!=="harek_wary")return;const l=el("label","fact");const i=el("input");i.type="checkbox";i.id="f-"+k;i.checked=known.has(k);i.onchange=()=>{i.checked?known.add(k):known.delete(k);renderConvs()};const why=el("button","linkbtn","Herkunft");why.type="button";why.setAttribute("aria-label","Herkunft: "+k);why.onclick=e=>{e.preventDefault();factInfo(k)};l.append(i,el("span",v.essential?"ess":"",k),why);f.append(l)});
  const r=$("#rules");r.textContent="";DATA.rules.forEach(x=>{const li=el("li");li.append(el("strong","","wenn "+x.when.join(" + ")),el("div","",x.ops.map(o=>o.op+(o.id?" "+o.id:"")+(o.instance?" "+o.instance:"")+(o.count?" ×"+o.count:"")).join("; ")));r.append(li)})}
 function renderAll(){const f=document.activeElement&&document.activeElement.dataset.f;renderStatus();renderConvs();if(f){const b=document.querySelector('[data-f="'+CSS.escape(f)+'"]');if(b)b.focus({preventScroll:true})}}
 [...new Set(DATA.convs.map(c=>c.speaker))].forEach(sp=>$("#who").append(new Option(sp,sp)));

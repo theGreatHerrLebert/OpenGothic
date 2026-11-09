@@ -462,6 +462,58 @@ def test_player():
     d.say = real_say
 
 
+def test_drawing_a_weapon_is_perceived():
+    fake.world.__init__()
+    fake.dialog.__init__()
+    watcher = types.SimpleNamespace(instance="PARLAN", alive=True, can_see_player=lambda: True)
+    fake.world.npcs_near = lambda radius: [watcher]
+    fake.player = types.SimpleNamespace(position=(0, 0, 0), given=[], busy=False, guild=0, weapon="melee",
+                                        give_item=lambda i, c=1: fake.player.given.append((i, c)))
+    s = st.Story()
+    s.generation = fake.world.generation
+    s.apply_plan({"reason": "r", "ops": [{"op": "add_rule", "id": "armed", "when": [],
+                                          "on": {"event": "drew_weapon", "seen_by": "PARLAN"},
+                                          "ops": [{"op": "give_item", "instance": "ITREWARD"}]}]})
+    s.on_tick()
+    assert fake.player.given == []       # already drawn when the story began: not an event
+    fake.player.weapon = "none"
+    s.on_tick()
+    fake.player.weapon = "magic"
+    s.on_tick()
+    assert fake.player.given == [("ITREWARD", 1)]
+    del fake.world.npcs_near
+
+
+def test_narration_waits_for_quiet():
+    fake.world.__init__()
+    fake.dialog.__init__()
+    played, state = [], {"busy": True}
+    fake.dialog.narrating = lambda: state["busy"]
+    fake.dialog.narrate = lambda text, ms=0, wav="": played.append(text) or True
+    fake.player = types.SimpleNamespace(position=(0, 0, 0), given=[], busy=False, guild=0)
+    s = st.Story()
+    s.generation = fake.world.generation
+    rejected(s, [{"op": "narrate", "text": "  "}], "needs text")
+    s.apply_plan({"reason": "r", "ops": [{"op": "narrate", "text": "Es war ein ruhiger Morgen.", "voice": "10"},
+                                         {"op": "narrate", "text": "Zu ruhig."}]})
+    s.on_tick()
+    assert played == []                              # another line is still running
+    state["busy"] = False
+    s.on_tick()
+    s.on_tick()
+    assert played == ["Es war ein ruhiger Morgen."]  # the second waits for the quiet gap
+    s.narrator_quiet_until = 0
+    s.on_tick()
+    assert played == ["Es war ein ruhiger Morgen.", "Zu ruhig."]
+    s.apply_plan({"reason": "r", "ops": [{"op": "narrate", "text": "Aus einem anderen Spielstand."}]})
+    s.reset()                                        # loading another save drops what was queued
+    s.generation = fake.world.generation
+    s.narrator_quiet_until = 0
+    s.on_tick()
+    assert played == ["Es war ein ruhiger Morgen.", "Zu ruhig."]
+    del fake.dialog.narrating, fake.dialog.narrate
+
+
 def test_rule_fires_on_perception():
     fake.world.__init__()
     fake.dialog.__init__()
@@ -494,7 +546,7 @@ def test_rule_fires_on_perception():
         rejected(s, [{"op": "add_rule", "id": "x", "when": [], "on": bad, "ops": []}], "bad check")
 
 
-for test in (test_rule_contents_are_checked_when_submitted, test_graph_validation, test_validation, test_apply_and_rollback, test_return_npc, test_conditional_choices, test_returns_to_menu, test_questions_are_asked_once, test_variant_line, test_again_line, test_scene_and_rule, test_rule_fires_on_perception,
+for test in (test_rule_contents_are_checked_when_submitted, test_graph_validation, test_validation, test_apply_and_rollback, test_return_npc, test_conditional_choices, test_returns_to_menu, test_questions_are_asked_once, test_variant_line, test_again_line, test_scene_and_rule, test_rule_fires_on_perception, test_narration_waits_for_quiet, test_drawing_a_weapon_is_perceived,
              test_queue_waits_for_safe_point, test_save_load_does_not_reapply_world,
              test_player):
     test()

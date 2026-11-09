@@ -31,6 +31,9 @@ ENGLISH = [
     ('placeholder="Zeilen, Tatsachen, Sprecher suchen" aria-label="Zeilen, Tatsachen, Sprecher suchen"', 'placeholder="Search lines, facts, speakers" aria-label="Search lines, facts, speakers"'),
     ('>Alle Zeilen<', '>All lines<'), ('>Unbewertet<', '>Unreviewed<'), ('>Abgelehnt<', '>Rejected<'), ('>Ohne Aufnahme<', '>No recording<'), ('>Alle Sprecher<', '>All speakers<'),
     ('aria-label="Sprecher"', 'aria-label="Speaker"'), ('shown+" von "+total+" Zeilen"', 'shown+" of "+total+" lines"'), ('"Keine Zeile passt."', '"No line matches."'),
+    ('>Pause<', '>Pause<'), ('"Pause"', '"Pause"'), ('>Weiter<', '>Next<'), ('>Stopp<', '>Stop<'), ('"Fortsetzen"', '"Resume"'), ('>Tempo <', '>Speed <'),
+    ('aria-label="Wiedergabe"', 'aria-label="Playback"'), ('"Alle abspielen"', '"Play all"'), ('"Tatsachen: "', '"Facts: "'), ('w:"Held"', 'w:"Hero"'),
+    ('"linkbtn","Herkunft"', '"linkbtn","Source"'), ('"Herkunft: "+k', '"Source: "+k'),
     # characters
     ('placeholder="Figuren und Tatsachen suchen" aria-label="Figuren und Tatsachen suchen"', 'placeholder="Search sheets and facts" aria-label="Search sheets and facts"'),
     ('Lädt …', 'Loading…'), ('"Belege ("', '"Evidence ("'), ('"Diese Datei konnte nicht gelesen werden: "', '"This file could not be read: "'), ('"Stimme "+', '"voice "+'), ('"keine Belege"', '"no evidence recorded"'), ('" erfunden"', '" invented"'),

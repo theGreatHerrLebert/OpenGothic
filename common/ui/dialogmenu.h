@@ -46,6 +46,10 @@ class DialogMenu : public Tempest::Widget {
     int  agentTakeSelection();
     bool agentBusy() const;
     void agentClose();
+    // A voice from off-screen: plays a line with a subtitle near the top, outside any conversation.
+    bool narrate(std::string_view text, uint64_t timeMs, std::string_view wav);
+    bool narrating() const;
+    void stopNarration();
 
     void print      (std::string_view msg);
     void printScreen(std::string_view msg, int x, int y, int time, const GthFont &font);
@@ -147,6 +151,9 @@ class DialogMenu : public Tempest::Widget {
     State                               state=State::Idle;
     Entry                               current;
     Tempest::SoundEffect                currentSnd;
+    Tempest::SoundEffect                narratorSnd;
+    uint64_t                            narratorUntil = 0;
+    std::vector<int>                    narratorRows;
     bool                                curentIsPl=false;
     bool                                dlgTrade=false;
     int32_t                             mobsiState=-1;

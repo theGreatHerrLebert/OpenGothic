@@ -59,6 +59,13 @@ now: `has_item`, `wears`, `guild`, `npc_state` (burning, asleep, frozen and so o
 the item, and the item really changes hands. A checked choice never counts as the way out of a node. Often the best use is a hint: one line mentions a rule
 that is already true, such as a sleep scroll working on a guard, and the player makes the plan.
 
+## A voice from off-screen
+
+`{"op": "narrate", "text": ..., "voice": "10"}` plays a line with a subtitle near the top of the screen, outside any
+conversation. It waits until no conversation or other narrator line runs, and leaves a quiet gap after each line, so
+use it rarely: a comment on what the player just did, from a rule with `on`, lands best. Voice it by adding
+`{"voice": "10", "narration": [...]}` to the graphs file that `bake_voices.py` reads.
+
 ## What you cannot do yet
 
 There is no operation for creating a new NPC, so stories use existing NPCs. Generating
