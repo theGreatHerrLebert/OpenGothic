@@ -1,0 +1,102 @@
+<title>Der Fall Tilo</title>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,500;0,700;1,500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a tall working manuscript. Conversations down the page, each line reviewable; knowledge state in a side rail. */
+:root{--bg:#EFEBDF;--paper:#F8F5EC;--ink:#23201A;--soft:#6A6352;--line:#D7D0BE;--ember:#A8421B;--ok:#2F6B3E;--bad:#A62B2B;--okbg:#DDE9DC;--badbg:#F2DCD6;--chip:#E4DECD;
+--disp:"Alegreya",Georgia,serif;--body:"IBM Plex Sans",system-ui,sans-serif;--mono:"IBM Plex Mono",ui-monospace,monospace}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1C1A16;--paper:#26231D;--ink:#ECE6D6;--soft:#A79F8B;--line:#403B30;--ember:#E0733F;--ok:#83C48F;--bad:#EB8579;--okbg:#26382A;--badbg:#44261F;--chip:#37322A;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#1C1A16;--paper:#26231D;--ink:#ECE6D6;--soft:#A79F8B;--line:#403B30;--ember:#E0733F;--ok:#83C48F;--bad:#EB8579;--okbg:#26382A;--badbg:#44261F;--chip:#37322A;color-scheme:dark}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--body)}
+.wrap{max-width:1180px;margin:0 auto;padding-block:32px 80px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1{font:700 44px/1.05 var(--disp);margin:0 0 8px;text-wrap:balance}
+h2{font:700 27px/1.15 var(--disp);margin:0;text-wrap:balance}
+.lead{max-width:68ch;color:var(--soft);margin:0 0 20px}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:32px;align-items:start}
+@media(max-width:860px){.grid{grid-template-columns:minmax(0,1fr)}.rail{position:static!important;max-height:none!important}}
+.rail{position:sticky;top:calc(env(safe-area-inset-top,0px) + 16px);max-height:calc(100vh - 32px);overflow:auto;display:grid;gap:18px}
+.label{font:500 11px/1 var(--mono);letter-spacing:.09em;text-transform:uppercase;color:var(--soft)}
+.status{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 26px}
+.st{font:500 12.5px var(--mono);padding:5px 10px;border-radius:3px;background:var(--chip)}.st.good{background:var(--okbg);color:var(--ok)}.st.warn{background:var(--badbg);color:var(--bad)}
+details.truth{margin:0 0 28px;max-width:72ch;border-left:2px solid var(--ember);padding-left:14px}details.truth summary{cursor:pointer;font-weight:600}
+.conv{margin:0 0 42px}.convhead{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:baseline;margin-bottom:6px}
+.cond{font:12.5px var(--mono);color:var(--soft);margin:0 0 12px;overflow-wrap:anywhere}
+.node{background:var(--paper);border:1px solid var(--line);border-radius:4px;padding:14px 16px;margin-bottom:10px}
+.node.approved{border-color:var(--ok)}.node.rejected{border-color:var(--bad)}
+.nid{font:500 12px var(--mono);color:var(--ember)}
+.line{font:500 18.5px/1.42 var(--disp);margin:4px 0 8px;max-width:64ch}
+.again{font:italic 500 16px/1.4 var(--disp);color:var(--soft);margin:0 0 8px}
+.tags{display:flex;flex-wrap:wrap;gap:5px;margin:0 0 10px}.tag{font:12px var(--mono);padding:2px 6px;border-radius:3px;background:var(--chip);overflow-wrap:anywhere}.tag.t{background:var(--okbg);color:var(--ok)}.tag.u{background:var(--badbg);color:var(--bad)}
+ul.ch{list-style:none;margin:0;padding:0;display:grid;gap:7px}
+.c{display:grid;grid-template-columns:minmax(0,1fr);gap:4px 10px;padding-top:7px;border-top:1px dashed var(--line)}
+.c.hidden{opacity:.45}
+.ct{font-size:14.5px}.meta{font:12px var(--mono);color:var(--soft);overflow-wrap:anywhere}
+.acts{display:flex;gap:5px}button.v{font:600 12px var(--body);padding:3px 9px;border:1px solid var(--line);border-radius:3px;background:transparent;color:var(--ink);cursor:pointer}
+button.v.on.a{background:var(--ok);color:var(--paper);border-color:var(--ok)}button.v.on.r{background:var(--bad);color:var(--paper);border-color:var(--bad)}
+button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--ember);outline-offset:1px}
+.review{display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-end;margin-top:8px;gap:8px}.voice{display:flex;align-items:center;gap:6px}.review .label{margin-left:6px}
+textarea{width:100%;box-sizing:border-box;margin-top:8px;font:14px/1.4 var(--body);background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:3px;padding:7px}
+.reason{grid-column:1/-1}
+.panel{background:var(--paper);border:1px solid var(--line);border-radius:4px;padding:12px 14px}
+.fact{display:flex;align-items:flex-start;gap:7px;font:12.5px var(--mono);padding:2px 0;overflow-wrap:anywhere}.fact input{margin-top:3px}
+.ess{color:var(--ember)}
+.jump{display:grid;gap:3px}.jump a{color:var(--ink);font-size:13.5px;text-decoration:none}.jump a:hover{color:var(--ember)}
+.rules{font:12.5px var(--mono);margin:0;padding:0;list-style:none;display:grid;gap:8px;overflow-wrap:anywhere}
+.save{font:12px var(--mono);color:var(--soft);min-height:16px}
+.linkbtn{background:none;border:0;color:var(--ember);cursor:pointer;font:12px var(--mono);padding:0}
+</style>
+<main class="wrap">
+<div class="label">Story inspector</div>
+<h1>Der Fall Tilo</h1>
+<p class="lead">Every line in the story, in the order you can meet it. Judge the text and the spoken delivery separately, and give a reason for anything you reject. Tick facts on the right to see which hero lines would appear with that knowledge.</p>
+<div class="status" id="status"></div>
+<details class="truth"><summary>Frame and hidden truth (spoilers)</summary><p id="frame"></p><p id="truth"></p></details>
+<section style="margin:0 0 34px"><h2>How it can unfold</h2><p class="lead" style="margin:6px 0 10px">Conversations are red, facts tan, essential facts orange, and real consequences green. A solid arrow means a conversation teaches a fact. A thick arrow means a fact starts a scene or causes an effect. A dotted arrow unlocks a hero line, and a crossed arrow closes a scene off for good.</p><div style="overflow-x:auto;background:var(--paper);border:1px solid var(--line);border-radius:4px;padding:12px"><pre class="mermaid">
+%%GRAPH%%
+</pre></div></section>
+<div class="grid"><div id="convs"><p class="meta" id="loading">Loading your reviews…</p></div>
+<aside class="rail">
+<div class="panel"><div class="label">Conversations</div><div class="jump" id="jump" style="margin-top:8px"></div></div>
+<div class="panel"><div class="label">What the player knows</div><div style="margin:6px 0"><button class="linkbtn" id="clear">Nothing known (cold start)</button></div><div id="facts"></div></div>
+<div class="panel"><div class="label">Consequences</div><ul class="rules" id="rules" style="margin-top:8px"></ul></div>
+</aside></div>
+<p class="save" id="save"></p>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
+<script>
+const DATA=/*DATA*/null;
+const $=(s,e=document)=>e.querySelector(s), el=(t,c,x)=>{const n=document.createElement(t);if(c)n.className=c;if(x!=null)n.textContent=x;return n};
+const known=new Set(); let reviews={}, db=null, col=null;
+function visible(c){const r=c.requires;if(r&&r.length&&!r.some(f=>known.has(f)))return false;return !(c.unless&&known.has(c.unless))}
+function stats(){const v=Object.values(reviews);return{a:v.filter(r=>r.verdict==="approve").length,r:v.filter(r=>r.verdict==="reject").length}}
+function renderStatus(){const s=$("#status");s.textContent="";const add=(c,t)=>s.append(el("span","st "+c,t));
+ add(DATA.errors.length?"warn":"good",DATA.errors.length?DATA.errors.length+" logic errors":"Logic check passed");
+ DATA.warnings.forEach(w=>add("warn",w));const st=stats();add("",st.a+" approved");add("",st.r+" rejected");}
+async function setVerdict(id,verdict,text){const prev=reviews[id]||{};const next=prev.verdict===verdict&&text===undefined?null:{verdict,reason:text!==undefined?text:(prev.reason||"")};
+ if(next)reviews[id]=next;else delete reviews[id];renderAll();
+ try{const r=await fetch("/reviews",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({id,...(next||{})})});if(!r.ok)throw 0;$("#save").textContent="Saved."}catch(e){$("#save").textContent="Saving failed. Is the inspector server still running?"}}
+let player=null;function play(url,b){if(player)player.pause();player=new Audio(url);b.textContent="Playing";player.onended=player.onpause=()=>{b.textContent="Play"};player.play().catch(()=>{b.textContent="Play"})}
+function voiceRow(url,id){const w=el("div","voice");if(!url){w.append(el("span","meta","no audio generated"));return w}const p=el("button","v","Play");p.type="button";p.onclick=()=>play(url,p);const lab=el("span","label","Voice");w.append(p,lab,reviewControls(id));return w}
+function reviewControls(id){const w=el("div");const r=reviews[id]||{};const acts=el("div","acts");
+ const a=el("button","v a"+(r.verdict==="approve"?" on":""),"Approve");const b=el("button","v r"+(r.verdict==="reject"?" on":""),"Reject");
+ a.type=b.type="button";a.onclick=()=>setVerdict(id,"approve");b.onclick=()=>setVerdict(id,"reject");acts.append(a,b);w.append(acts);return w}
+function reasonBox(id,cls){const r=reviews[id];if(!r||r.verdict!=="reject")return null;const t=el("textarea",cls||"");t.id="reason-"+id;t.rows=2;t.placeholder="Why doesn't this work?";t.value=r.reason||"";t.setAttribute("aria-label","Reason for rejecting");t.onchange=()=>setVerdict(id,"reject",t.value);return t}
+function renderConvs(){const host=$("#convs");host.textContent="";DATA.convs.forEach(c=>{const s=el("section","conv");s.id="c-"+c.id;const h=el("div","convhead");h.append(el("h2","",c.speaker),el("span","label",c.where));s.append(h);
+ const cond=[];if(c.scene)cond.push("starts talking within "+(c.within||450)+" units");if(c.requires.length)cond.push("needs: "+c.requires.join(", "));const u=Array.isArray(c.unless)?c.unless:[c.unless].filter(Boolean);if(u.length)cond.push("not after: "+u.join(", "));if(cond.length)s.append(el("p","cond",cond.join(" · ")));
+ Object.entries(c.nodes).forEach(([key,n])=>{const id=c.id+"__"+key;const r=reviews[id];const box=el("article","node"+(r?(r.verdict==="approve"?" approved":" rejected"):""));
+  const top=el("div","");top.style.cssText="display:flex;gap:8px;align-items:baseline;flex-wrap:wrap";top.append(el("span","nid",key===c.start?key+" · opening":key));if(n.delivery)top.append(el("span","meta","delivery: "+n.delivery));box.append(top);
+  box.append(el("p","line","„"+n.line+"“"));if(n.again)box.append(el("p","again","Later meetings: „"+n.again+"“"));
+  if((n.teaches||[]).length||(n.uses||[]).length){const tg=el("div","tags");(n.uses||[]).forEach(f=>tg.append(el("span","tag u","uses "+f)));(n.teaches||[]).forEach(f=>tg.append(el("span","tag t","teaches "+f)));box.append(tg)}
+  const rev=el("div","review");rev.append(el("span","label","Text"),reviewControls(id),voiceRow(n.audio,id+"__voice"));box.append(rev);const rb=reasonBox(id);if(rb)box.append(rb);const rv=reasonBox(id+"__voice");if(rv)box.append(rv);if(n.again){const ag=el("div","review");ag.append(el("span","label","Later line"),reviewControls(id+"__again"),voiceRow(n.audioAgain,id+"__again__voice"));box.append(ag);[id+"__again",id+"__again__voice"].forEach(x=>{const r=reasonBox(x);if(r)box.append(r)})}
+  const ul=el("ul","ch");n.choices.forEach((ch,i)=>{const cid=id+"__c"+i;const li=el("li","c"+(visible(ch)?"":" hidden"));const left=el("div");left.style.minWidth="0";left.append(el("div","ct","Held: „"+ch.text+"“"));
+   const m=[];m.push(ch.ends?"ends":"→ "+ch.goto);if(ch.requires)m.push("needs "+ch.requires.join(" or "));if(ch.unless)m.push("unless "+ch.unless);if(!visible(ch))m.push("hidden right now");left.append(el("div","meta",m.join(" · ")));const ctl=el("div","review");ctl.style.marginTop="0";ctl.append(el("span","label","Text"),reviewControls(cid),voiceRow(ch.audio,cid+"__voice"));li.append(left,ctl);[cid,cid+"__voice"].forEach(x=>{const rc=reasonBox(x,"reason");if(rc)li.append(rc)});ul.append(li)});box.append(ul);s.append(box)});host.append(s)})}
+function renderRail(){const j=$("#jump");j.textContent="";DATA.convs.forEach(c=>{const a=el("a","",c.speaker+" · "+c.id);a.href="#c-"+c.id;j.append(a)});
+ const f=$("#facts");f.textContent="";Object.entries(DATA.facts).forEach(([k,v])=>{if(v.topic&&k!=="tilo_named"&&k!=="tilo_cornered"&&k!=="harek_wary")return;const l=el("label","fact");const i=el("input");i.type="checkbox";i.id="f-"+k;i.checked=known.has(k);i.onchange=()=>{i.checked?known.add(k):known.delete(k);renderConvs()};l.append(i,el("span",v.essential?"ess":"",k));f.append(l)});
+ const r=$("#rules");r.textContent="";DATA.rules.forEach(x=>{const li=el("li");li.append(el("strong","","when "+x.when.join(" + ")),el("div","",x.ops.map(o=>o.op+(o.id?" "+o.id:"")+(o.instance?" "+o.instance:"")+(o.count?" ×"+o.count:"")).join("; ")));r.append(li)})}
+function renderAll(){renderStatus();renderConvs()}
+$("#frame").textContent=DATA.frame;$("#truth").textContent=DATA.truth;$("#clear").onclick=()=>{known.clear();renderRail();renderConvs()};
+renderAll();renderRail();
+fetch("/reviews").then(r=>r.json()).then(v=>{reviews=v;renderAll()}).catch(()=>{$("#save").textContent="Could not load reviews."});
+if(window.mermaid){mermaid.initialize({startOnLoad:true,theme:matchMedia("(prefers-color-scheme: dark)").matches?"dark":"default"})}
+</script>
