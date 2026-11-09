@@ -219,6 +219,14 @@ ANSELM_GRATEFUL = {"voice": VOICES[ANSELM], "start": "a", "nodes": {
               ["anselm_secret"], [end("Das bleibt unter uns.")]),
 }}
 
+TILO_AFTER_HELP = {"voice": VOICES[TILO], "start": "a", "nodes": {
+    "a": node("Ich bin gleich weg. Nur noch ein paar Sachen. Danke noch mal.", [], [end("Mach's gut.")]),
+}}
+
+TILO_AFTER_TURNED_IN = {"voice": VOICES[TILO], "start": "a", "nodes": {
+    "a": node("Geh schon vor. Ich komme nach, ich laufe nicht weg. Wohin auch.", [], [end("Ich verlasse mich darauf.")]),
+}}
+
 TILO_BEFORE = {"voice": VOICES[TILO], "start": "a", "nodes": {
     "a": node("Was ist? Ich hab zu tun. Gorax reißt mir den Kopf ab, wenn die Fässer nicht fertig sind.",
               ["tilo_met", "tilo_named"], again="Du schon wieder? Ich hab wirklich zu tun.", choices=[
@@ -305,9 +313,13 @@ def plan(start_day=0):
         {"op": "add_rule", "id": "tilo_turned_in", "when": ["tilo_turned_in"], "ops": [
             {"op": "detach_dialogue_graph", "npc": BARREL},
             {"op": "detach_dialogue_graph", "npc": ANSELM},
-            {"op": "remove_npc", "instance": TILO},
+            {"op": "attach_dialogue_graph", "npc": TILO, "graph": TILO_AFTER_TURNED_IN},
             {"op": "add_scene", "id": "parlan_reward", "npc": PARLAN, "graph": PARLAN_REWARD, "within": 600},
             {"op": "add_scene", "id": "anselm_bitter", "npc": ANSELM, "graph": ANSELM_BITTER, "within": 450, "requires": ["parlan_paid"]}]},
+        {"op": "add_rule", "id": "tilo_gone_turned_in", "when": ["tilo_turned_in"], "unseen_by_near": TILO, "ops": [
+            {"op": "remove_npc", "instance": TILO}]},
+        {"op": "add_rule", "id": "tilo_gone_helped", "when": ["tilo_helped"], "unseen_by_near": TILO, "ops": [
+            {"op": "remove_npc", "instance": TILO}]},
         {"op": "add_rule", "id": "reward_gold", "when": ["reward_gold"], "ops": [
             {"op": "give_item", "instance": "ITMI_GOLD", "count": 200}]},
         {"op": "add_rule", "id": "reward_fire", "when": ["reward_fire"], "ops": [
@@ -321,7 +333,7 @@ def plan(start_day=0):
         {"op": "add_rule", "id": "tilo_helped", "when": ["tilo_helped"], "ops": [
             {"op": "detach_dialogue_graph", "npc": BARREL},
             {"op": "detach_dialogue_graph", "npc": ANSELM},
-            {"op": "remove_npc", "instance": TILO},
+            {"op": "attach_dialogue_graph", "npc": TILO, "graph": TILO_AFTER_HELP},
             {"op": "add_scene", "id": "anselm_grateful", "npc": ANSELM, "graph": ANSELM_GRATEFUL, "within": 450, "requires": ["friend_offer"]}]},
         {"op": "add_rule", "id": "secret_told", "when": ["anselm_secret"], "ops": [
             {"op": "place_item", "instance": "ITFO_WINE", "waypoint": "NW_MONASTERY_WINEMAKER_03"}]},
@@ -348,6 +360,6 @@ for _graph in (GORAX_SCENE, PARLAN_SCENE, ANSELM_SCENE, HAREK_GRAPH, TILO_GRAPH,
 
 
 def all_graphs():
-    return {"barrel": BARREL_GRAPH, "tilo_before": TILO_BEFORE, "gorax": GORAX_SCENE, "parlan": PARLAN_SCENE, "anselm": ANSELM_SCENE, "harek": HAREK_GRAPH,
+    return {"tilo_after_help": TILO_AFTER_HELP, "tilo_after_turned_in": TILO_AFTER_TURNED_IN, "barrel": BARREL_GRAPH, "tilo_before": TILO_BEFORE, "gorax": GORAX_SCENE, "parlan": PARLAN_SCENE, "anselm": ANSELM_SCENE, "harek": HAREK_GRAPH,
             "tilo": TILO_GRAPH, "parlan_reward": PARLAN_REWARD, "anselm_bitter": ANSELM_BITTER,
             "anselm_grateful": ANSELM_GRATEFUL}
