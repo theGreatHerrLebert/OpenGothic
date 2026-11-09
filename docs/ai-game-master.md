@@ -143,6 +143,24 @@ different people: asking someone who knows, tricking someone who would not tell,
 or confronting the culprit. An approach can also close off another; showing your
 hand ends a later attempt to deceive that person.
 
+## Lazy world: content built when it becomes relevant
+
+The game can build itself as it is played. A piece of content is like a closure: it captures
+the character sheet, what that character knows and the player's standing, and is only
+evaluated when the player gets close to needing it. Once built, it is kept.
+
+- **Memoize on what the line depends on**, not on time: for example who the character is,
+  what they know, and how they see the hero. When one of those changes, that entry is stale
+  and is rebuilt; everything else stays.
+- **Evaluate ahead of the player.** Text and voice take seconds, so build for whoever is nearby
+  or likely next, and fall back to existing lines if something is not ready.
+- **Every build passes the checker** before it can be used. Laziness never skips validation.
+- **Facts stay eager.** What is true is committed once and never regenerated; only how it is
+  told is built lazily. Saved games keep what was built for them.
+
+Character sheets gain a section on **how they see the hero**, which changes as the hero rises.
+A greeting must be true for this player now: a veteran is never called a ragged newcomer.
+
 ## Known constraints
 
 - **Voice.** Gothic is fully voiced and generated lines are silent subtitles.
