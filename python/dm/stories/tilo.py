@@ -221,6 +221,7 @@ def plan():
         {"op": "spawn_npc", "instance": HAREK, "waypoint": "NW_CITY_HABOUR_TAVERN01_01", "display_name": "Harek"},
         {"op": "attach_dialogue_graph", "npc": HAREK, "graph": HAREK_GRAPH},
         {"op": "place_item", "instance": "ITAR_NOV_L", "waypoint": "NW_MONASTERY_WINEMAKER_01", "quest": ROBE},
+        {"op": "rename_npc", "instance": ANSELM, "display_name": "Anselm"},
         {"op": "add_scene", "id": "gorax", "npc": GORAX, "graph": GORAX_SCENE, "within": 500, "unless": FATE},
         {"op": "add_scene", "id": "parlan", "npc": PARLAN, "graph": PARLAN_SCENE, "within": 500, "requires": ["tilo_absent"], "unless": FATE},
         {"op": "add_scene", "id": "anselm", "npc": ANSELM, "graph": ANSELM_SCENE, "within": 450, "requires": ["reward"], "unless": FATE},

@@ -273,6 +273,19 @@ def _world_relocate(args):
     return None
 
 
+def _check_rename(args, state):
+    _require(args, "instance", "display_name")
+    _npc_instance(args["instance"])
+    _live_npc(args["instance"])
+
+
+def _world_rename(args):
+    npc = _live_npc(args["instance"])
+    previous = npc.display_name
+    npc.display_name = args["display_name"]
+    return lambda: setattr(npc, "display_name", previous)
+
+
 def _check_flag(args, state):
     _require(args, "name", "value")
 
@@ -302,12 +315,13 @@ OPS = {
     "add_rule": (_check_rule, _fold_rule, None),
     "fire_rule": (_check_fire_rule, _fold_fire_rule, None),
     "spawn_npc": (_check_spawn, _noop, _world_spawn),
+    "rename_npc": (_check_rename, _noop, _world_rename),
     "give_item": (_check_give, _noop, _world_give),
     "relocate_npc": (_check_relocate, _noop, _world_relocate),
 }
 
 # Removal cannot be undone, so it runs after everything that can.
-_LAST = {"remove_npc", "relocate_npc"}
+_LAST = {"remove_npc"}
 
 
 class Story:
