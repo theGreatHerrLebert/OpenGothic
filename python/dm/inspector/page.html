@@ -46,10 +46,10 @@ textarea{width:100%;box-sizing:border-box;margin-top:8px;font:14px/1.4 var(--bod
 </style>
 <link rel="stylesheet" href="/gothic.css">
 <main class="wrap">
-<div class="label">Story inspector · <a href="/characters" style="color:var(--ember)">Characters</a></div>
+<nav class="label" aria-label="Seiten"><a href="/">Story inspector</a> · <a href="/characters">Characters</a> · <a href="/experiment">Geschichtenprobe</a></nav>
 <h1>Der Fall Tilo</h1>
-<p class="lead">Every line in the story, in the order you can meet it. Judge the text and the spoken delivery separately, and give a reason for anything you reject. Tick facts on the right to see which hero lines would appear with that knowledge.</p>
-<div class="status" id="status"></div>
+<p class="lead">A reference story, not the live game: the knowledge on the right is simulated. Every line in the story, in the order you can meet it. Judge the text and the spoken delivery separately, and give a reason for anything you reject. Tick facts on the right to see which hero lines would appear with that knowledge.</p>
+<div class="status" id="status" role="status"></div>
 <details class="truth"><summary>Frame and hidden truth (spoilers)</summary><p id="frame"></p><p id="truth"></p></details>
 <section style="margin:0 0 34px"><h2>How it can unfold</h2><p class="lead" style="margin:6px 0 10px">Conversations are red, facts tan, essential facts orange, and real consequences green. A solid arrow means a conversation teaches a fact. A thick arrow means a fact starts a scene or causes an effect. A dotted arrow unlocks a hero line, and a crossed arrow closes a scene off for good.</p><div id="graphbox" style="height:560px;overflow:hidden;background:var(--paper);border:1px solid var(--line);border-radius:4px"><pre class="mermaid">
 %%GRAPH%%
@@ -60,7 +60,7 @@ textarea{width:100%;box-sizing:border-box;margin-top:8px;font:14px/1.4 var(--bod
 <div class="panel"><div class="label">What the player knows</div><div style="margin:6px 0"><button class="linkbtn" id="clear">Nothing known (cold start)</button></div><div id="facts"></div></div>
 <div class="panel"><div class="label">Consequences</div><ul class="rules" id="rules" style="margin-top:8px"></ul></div>
 </aside></div>
-<p class="save" id="save"></p>
+<p class="save" id="save" role="status"></p>
 </main>
 <script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/svg-pan-zoom@3.6.1/dist/svg-pan-zoom.min.js"></script>
@@ -71,21 +71,21 @@ const known=new Set(); let reviews={}, db=null, col=null;
 function visible(c){const r=c.requires;if(r&&r.length&&!r.some(f=>known.has(f)))return false;return !(c.unless&&known.has(c.unless))}
 function stats(){const v=Object.values(reviews);return{a:v.filter(r=>r.verdict==="approve").length,r:v.filter(r=>r.verdict==="reject").length}}
 function renderStatus(){const s=$("#status");s.textContent="";const add=(c,t)=>s.append(el("span","st "+c,t));
- add(DATA.errors.length?"warn":"good",DATA.errors.length?DATA.errors.length+" logic errors":"Logic check passed");
+ add(DATA.errors.length?"warn":"good",DATA.errors.length?DATA.errors.length+" logic errors":"Conversation logic check passed");DATA.errors.forEach(w=>add("warn",w));
  DATA.warnings.forEach(w=>add("warn",w));const st=stats();add("",st.a+" approved");add("",st.r+" rejected");}
 async function setVerdict(id,verdict,text){const prev=reviews[id]||{};const next=prev.verdict===verdict&&text===undefined?null:{verdict,reason:text!==undefined?text:(prev.reason||"")};
  if(next)reviews[id]=next;else delete reviews[id];renderAll();
  try{const r=await fetch("/reviews",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({id,...(next||{})})});if(!r.ok)throw 0;$("#save").textContent="Saved."}catch(e){$("#save").textContent="Saving failed. Is the inspector server still running?"}}
 async function approveBoth(ids){const clear=ids.every(i=>reviews[i]&&reviews[i].verdict==="approve");
  for(const i of ids){if(clear)delete reviews[i];else reviews[i]={verdict:"approve",reason:""}}renderAll();
- try{await Promise.all(ids.map(id=>fetch("/reviews",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(clear?{id}:{id,verdict:"approve",reason:""})})));$("#save").textContent="Saved."}catch(e){$("#save").textContent="Saving failed. Is the inspector server still running?"}}
-function bothButton(id,hasAudio){const ids=hasAudio?[id,id+"__voice"]:[id];const on=ids.every(i=>reviews[i]&&reviews[i].verdict==="approve");const b=el("button","v a"+(on?" on":""),hasAudio?"Approve both":"Approve");b.type="button";b.onclick=()=>approveBoth(ids);return b}
+ try{const rs=await Promise.all(ids.map(id=>fetch("/reviews",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(clear?{id}:{id,verdict:"approve",reason:""})})));if(rs.some(r=>!r.ok))throw 0;$("#save").textContent="Saved."}catch(e){$("#save").textContent="Saving failed. Is the inspector server still running?"}}
+function bothButton(id,hasAudio){const ids=hasAudio?[id,id+"__voice"]:[id];const on=ids.every(i=>reviews[i]&&reviews[i].verdict==="approve");const b=el("button","v a"+(on?" on":""),hasAudio?"Approve both":"Approve");b.type="button";b.dataset.f=id+":both";b.setAttribute("aria-pressed",on);b.onclick=()=>approveBoth(ids);return b}
 let player=null;function play(url,b){if(player)player.pause();player=new Audio(url);b.textContent="Playing";player.onended=player.onpause=()=>{b.textContent="Play"};player.play().catch(()=>{b.textContent="Play"})}
 function playButton(url){if(!url)return el("span","meta","no audio generated");const p=el("button","v play","Play");p.type="button";p.onclick=()=>play(url,p);return p}
 function voiceRow(url,id){const w=el("div","voice");if(!url)return w;w.append(el("span","label","Voice"),reviewControls(id));return w}
 function reviewControls(id){const w=el("div");const r=reviews[id]||{};const acts=el("div","acts");
  const a=el("button","v a"+(r.verdict==="approve"?" on":""),"Approve");const b=el("button","v r"+(r.verdict==="reject"?" on":""),"Reject");
- a.type=b.type="button";a.onclick=()=>setVerdict(id,"approve");b.onclick=()=>setVerdict(id,"reject");acts.append(a,b);w.append(acts);return w}
+ a.type=b.type="button";a.dataset.f=id+":a";b.dataset.f=id+":r";a.setAttribute("aria-pressed",r.verdict==="approve");b.setAttribute("aria-pressed",r.verdict==="reject");a.onclick=()=>setVerdict(id,"approve");b.onclick=()=>setVerdict(id,"reject");acts.append(a,b);w.append(acts);return w}
 function reasonBox(id,cls){const r=reviews[id];if(!r||r.verdict!=="reject")return null;const t=el("textarea",cls||"");t.id="reason-"+id;t.rows=2;t.placeholder="Why doesn't this work?";t.value=r.reason||"";t.setAttribute("aria-label","Reason for rejecting");t.onchange=()=>setVerdict(id,"reject",t.value);return t}
 const openPeople=new Set();let seenLines=new Map();function firstSeen(key,where){if(seenLines.has(key))return seenLines.get(key);seenLines.set(key,where);return null}
 function renderConvs(){seenLines=new Map();const host=$("#convs");host.textContent="";const groups={};const groupFor=sp=>{if(groups[sp])return groups[sp];const d=el("details","person");d.dataset.speaker=sp;d.open=openPeople.has(sp);d.ontoggle=()=>{d.open?openPeople.add(sp):openPeople.delete(sp)};const sum=el("summary");const name=el("h2","",sp);name.style.display="inline";const prog=el("span","label");prog.style.marginLeft="12px";sum.append(name,prog);d.append(sum);host.append(d);groups[sp]={d,prog};return groups[sp]};DATA.convs.forEach(c=>{const grp=groupFor(c.speaker);const s=el("section","conv");s.id="c-"+c.id;const h=el("div","convhead");h.append(el("strong","",c.id),el("span","label",c.where));s.append(h);
@@ -98,11 +98,11 @@ function renderConvs(){seenLines=new Map();const host=$("#convs");host.textConte
   const ul=el("ul","ch");n.choices.forEach((ch,i)=>{const cid=id+"__c"+i;const li=el("li","c"+(visible(ch)?"":" hidden"));const left=el("div");left.style.minWidth="0";left.append(el("div","ct","Held: „"+ch.text+"“"));
    const m=[];m.push(ch.ends?"ends":"→ "+ch.goto);if(ch.requires)m.push("needs "+ch.requires.join(" or "));if(ch.unless)m.push("unless "+ch.unless);if(!visible(ch))m.push("hidden right now");left.append(el("div","meta",m.join(" · ")));const ctl=el("div","review");ctl.style.marginTop="0";const silent=ch.text==="Zurück.";const dupC=silent?null:firstSeen(ch.audio||ch.text,c.speaker+" · "+key);if(dupC)ctl.append(playButton(ch.audio),el("span","meta","same line as "+dupC+", judged there"));else if(silent)ctl.append(el("span","meta","silent, steps back"));else ctl.append(playButton(ch.audio),bothButton(cid,!!ch.audio),el("span","label","Text"),reviewControls(cid),voiceRow(ch.audio,cid+"__voice"));li.append(left,ctl);[cid,cid+"__voice"].forEach(x=>{const rc=reasonBox(x,"reason");if(rc)li.append(rc)});ul.append(li)});box.append(ul);if(n.returns)box.append(el("p","meta","Then back to the questions in "+n.returns));s.append(box)});grp.d.append(s)});
  Object.entries(groups).forEach(([sp,g])=>{const ids=DATA.convs.filter(c=>c.speaker===sp).map(c=>c.id+"__");const vs=Object.entries(reviews).filter(([k])=>ids.some(p=>k.startsWith(p))).map(([,v])=>v);const rej=vs.filter(v=>v.verdict==="reject").length;g.prog.textContent=vs.length+" reviewed"+(rej?" · "+rej+" rejected":"")})}
-function openConv(id){const c=DATA.convs.find(x=>x.id===id);if(!c)return;openPeople.add(c.speaker);renderConvs();const s=document.getElementById("c-"+id);if(s)s.scrollIntoView({behavior:"smooth",block:"start"})}
+function openConv(id){const c=DATA.convs.find(x=>x.id===id);if(!c)return;openPeople.add(c.speaker);renderConvs();const s=document.getElementById("c-"+id);if(s)s.scrollIntoView({behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth",block:"start"})}
 function renderRail(){const j=$("#jump");j.textContent="";DATA.convs.forEach(c=>{const a=el("a","",c.speaker+" · "+c.id);a.href="#c-"+c.id;a.onclick=e=>{e.preventDefault();openConv(c.id)};j.append(a)});
  const f=$("#facts");f.textContent="";Object.entries(DATA.facts).forEach(([k,v])=>{if(v.topic&&k!=="tilo_named"&&k!=="tilo_cornered"&&k!=="harek_wary")return;const l=el("label","fact");const i=el("input");i.type="checkbox";i.id="f-"+k;i.checked=known.has(k);i.onchange=()=>{i.checked?known.add(k):known.delete(k);renderConvs()};l.append(i,el("span",v.essential?"ess":"",k));f.append(l)});
  const r=$("#rules");r.textContent="";DATA.rules.forEach(x=>{const li=el("li");li.append(el("strong","","when "+x.when.join(" + ")),el("div","",x.ops.map(o=>o.op+(o.id?" "+o.id:"")+(o.instance?" "+o.instance:"")+(o.count?" ×"+o.count:"")).join("; ")));r.append(li)})}
-function renderAll(){renderStatus();renderConvs()}
+function renderAll(){const f=document.activeElement&&document.activeElement.dataset.f;renderStatus();renderConvs();if(f){const b=document.querySelector('[data-f="'+CSS.escape(f)+'"]');if(b)b.focus({preventScroll:true})}}
 $("#frame").textContent=DATA.frame;$("#truth").textContent=DATA.truth;$("#clear").onclick=()=>{known.clear();renderRail();renderConvs()};
 renderAll();renderRail();
 fetch("/reviews").then(r=>r.json()).then(v=>{reviews=v;renderAll()}).catch(()=>{$("#save").textContent="Could not load reviews."});

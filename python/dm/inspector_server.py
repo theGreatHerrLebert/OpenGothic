@@ -337,9 +337,7 @@ def experiment_data():
         ready += bool(found)
         return found
 
-    for path in sorted(sorted((EXPERIMENT / "stories").glob("s*_*.json")) + sorted((EXPERIMENT / "stories").glob("x*_*.json"))):
-        if path.name.endswith((".first.json", ".final.json")):
-            continue
+    for path in _story_paths():
         data = json.loads(path.read_text(encoding="utf-8"))
         convs = []
         labels, cast = _conversation_names(data, sheets)
@@ -360,9 +358,35 @@ def experiment_data():
             convs.append({"who": labels[key], "when": "", "nodes": nodes})
         stories.append({"id": _blind_id(path.stem), "title": data["title"], "premise": data.get("premise", ""),
                         "hidden_truth": data["hidden_truth"], "convs": convs,
-                        "graph": story_graph(data, labels, cast), "bonus": bool(data.get("bonus")), "stem": path.stem})
+                        "graph": story_graph(data, labels, cast), "bonus": bool(data.get("bonus")), "stem": path.stem,
+                        "rev": hashlib.sha256(path.read_bytes()).hexdigest()[:12]})
     stories.sort(key=lambda s: (s["bonus"], s["stem"] if s["bonus"] else s["id"]))  # bonus stories go last, so the scored numbering stays put
+    for story in stories:
+        del story["stem"]  # the file name says which snapshot and author it came from
     return {"stories": stories, "total": total, "ready": ready}
+
+
+MAX_BODY, MAX_TEXT = 200_000, 20_000
+
+
+def _story_paths():
+    stories = EXPERIMENT / "stories"
+    return [p for p in sorted(stories.glob("s*_*.json")) + sorted(stories.glob("x*_*.json"))
+            if not p.name.endswith((".first.json", ".final.json"))]
+
+
+def _clean_score(request):
+    """Only known stories and known fields reach the scores file."""
+    if request.get("id") not in {_blind_id(p.stem) for p in _story_paths()}:
+        return "unknown story", None
+    score = {k: request[k] for k in ("worth", "interest", "defects", "rev") if request.get(k) not in (None, "")}
+    if score.get("worth", "yes") not in ("yes", "no"):
+        return "bad verdict", None
+    if score.get("interest", 1) not in (1, 2, 3, 4, 5):
+        return "bad interest", None
+    if len(str(score.get("defects", ""))) > MAX_TEXT:
+        return "text too long", None
+    return None, score
 
 
 def load_scores():
@@ -378,6 +402,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
         self.wfile.write(body)
 
     def do_GET(self):
+        self.path = self.path.split("?", 1)[0].rstrip("/") or "/"
         if self.path == "/":
             data, graph = build()
             html = PAGE.read_text(encoding="utf-8").replace("%%GRAPH%%", graph).replace(
@@ -405,19 +430,46 @@ class Handler(http.server.BaseHTTPRequestHandler):
             else:
                 self._send(b"{}", status=404)
 
+    def _read_json(self):
+        """Another website can send requests to localhost, so only this page's own JSON is accepted."""
+        allowed = {f"127.0.0.1:{PORT}", f"localhost:{PORT}"}
+        host, origin = self.headers.get("Host"), self.headers.get("Origin")
+        if host not in allowed or (origin and origin != f"http://{host}"):
+            return "wrong origin", None
+        if not (self.headers.get("Content-Type") or "").startswith("application/json"):
+            return "expected JSON", None
+        try:
+            length = int(self.headers.get("Content-Length", ""))
+        except ValueError:
+            return "missing length", None
+        if not 0 < length <= MAX_BODY:
+            return "bad length", None
+        try:
+            request = json.loads(self.rfile.read(length))
+        except ValueError:
+            return "malformed JSON", None
+        return (None, request) if isinstance(request, dict) else ("expected an object", None)
+
     def do_POST(self):
         if self.path not in ("/reviews", "/experiment/score"):
             return self._send(b"{}", status=404)
-        request = json.loads(self.rfile.read(int(self.headers["Content-Length"])))
+        problem, request = self._read_json()
+        if problem:
+            return self._send(json.dumps({"error": problem}).encode("utf-8"), status=400)
         if self.path == "/experiment/score":
+            problem, score = _clean_score(request)
+            if problem:
+                return self._send(json.dumps({"error": problem}).encode("utf-8"), status=400)
             with REVIEW_LOCK:
                 scores = load_scores()
-                scores[request.pop("id")] = request
+                scores[request["id"]] = score
                 temporary = SCORES.with_suffix(".tmp")
                 temporary.write_text(json.dumps(scores, ensure_ascii=False, indent=1), encoding="utf-8")
                 temporary.replace(SCORES)
             return self._send(b"{}")
-        target = content_index(build()[0]).get(request["id"])
+        target = content_index(build()[0]).get(request.get("id"))
+        if target is None or request.get("verdict") not in (None, "approve", "reject") or len(str(request.get("reason", ""))) > MAX_TEXT:
+            return self._send(b'{"error": "bad review"}', status=400)
         with REVIEW_LOCK:
             reviews = load_reviews()
             if request.get("verdict"):
