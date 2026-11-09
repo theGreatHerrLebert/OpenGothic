@@ -224,6 +224,7 @@ bool DialogMenu::agentSay(std::string_view text, bool isPlayer, uint64_t timeMs,
       currentSnd = Tempest::SoundEffect();
       }
     }
+  speaker.startDlgAnim(timeMs);
   speaker.setAiOutputBarrier(timeMs,false);
   update();
   return true;
@@ -232,6 +233,10 @@ bool DialogMenu::agentSay(std::string_view text, bool isPlayer, uint64_t timeMs,
 void DialogMenu::agentSetChoices(const std::vector<std::string>& titles) {
   if(!agentMode)
     return;
+  if(pl!=nullptr)
+    pl->stopDlgAnim();
+  if(other!=nullptr)
+    other->stopDlgAnim();
   choice.clear();
   for(auto& t:titles) {
     GameScript::DlgChoice c;

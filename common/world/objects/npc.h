@@ -107,6 +107,7 @@ class Npc final {
     auto       bBoxCol() const -> const Tempest::Vec3*;
 
     void       stopDlgAnim();
+    void       startDlgAnim(uint64_t timeMs);
     void       clearSpeed();
     bool       resetPositionToTA();
 

@@ -556,6 +556,11 @@ bool Npc::resetPositionToTA() {
   return true;
   }
 
+void Npc::startDlgAnim(uint64_t timeMs) {
+  visual.startFaceAnim(*this,"VISEME",1,timeMs);
+  visual.startAnimDialog(*this);
+  }
+
 void Npc::stopDlgAnim() {
   visual.stopDlgAnim(*this);
   }
