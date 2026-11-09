@@ -28,6 +28,9 @@ ENGLISH = [
     ('"Erfährt man von: "', '"Learned from: "'), ('"Ereignissen, nicht aus Gesprächen"', '"events in the story, not dialogue"'), ('"Öffnet: "', '"Unlocks: "'), ('"nichts direkt"', '"nothing directly"'),
     ('"Szene beginnt: "', '"Scene starts: "'), ('"Die Graph-Bibliothek konnte nicht geladen werden. Prüfe die Verbindung."', '"The graph library could not load. Check your connection."'),
     ('"Die Graph-Bibliothek konnte nicht geladen werden."', '"The graph library could not load."'), ('"Graph-Fehler: "', '"Graph error: "'),
+    ('placeholder="Zeilen, Tatsachen, Sprecher suchen" aria-label="Zeilen, Tatsachen, Sprecher suchen"', 'placeholder="Search lines, facts, speakers" aria-label="Search lines, facts, speakers"'),
+    ('>Alle Zeilen<', '>All lines<'), ('>Unbewertet<', '>Unreviewed<'), ('>Abgelehnt<', '>Rejected<'), ('>Ohne Aufnahme<', '>No recording<'), ('>Alle Sprecher<', '>All speakers<'),
+    ('aria-label="Sprecher"', 'aria-label="Speaker"'), ('shown+" von "+total+" Zeilen"', 'shown+" of "+total+" lines"'), ('"Keine Zeile passt."', '"No line matches."'),
     # characters
     ('placeholder="Figuren und Tatsachen suchen" aria-label="Figuren und Tatsachen suchen"', 'placeholder="Search sheets and facts" aria-label="Search sheets and facts"'),
     ('Lädt …', 'Loading…'), ('"Belege ("', '"Evidence ("'), ('"Diese Datei konnte nicht gelesen werden: "', '"This file could not be read: "'), ('"Stimme "+', '"voice "+'), ('"keine Belege"', '"no evidence recorded"'), ('" erfunden"', '" invented"'),
