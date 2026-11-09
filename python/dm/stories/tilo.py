@@ -13,7 +13,9 @@ ANSELM = "NOV_610_NOVIZE"
 TILO = "NOV_606_NOVIZE"
 HAREK = "VLK_4006_BOTE"
 
-VOICES = {GORAX: "14", PARLAN: "05", ANSELM: "13", HAREK: "09", TILO: "03"}
+BARREL = "NOV_607_NOVIZE"
+
+VOICES = {BARREL: "08", GORAX: "14", PARLAN: "05", ANSELM: "13", HAREK: "09", TILO: "03"}
 
 
 def fact(*known_by, essential=False, needs=(), topic=False):
@@ -25,7 +27,7 @@ PLOT = {
     "start": [],
     "facts": {
         "tilo_named": fact(topic=True),
-        "tilo_absent": fact(GORAX, PARLAN, ANSELM, essential=True),
+        "tilo_absent": fact(GORAX, PARLAN, ANSELM, BARREL, essential=True),
         "wine_trips": fact(GORAX, ANSELM),
         "silver_stolen": fact(PARLAN, ANSELM, TILO, HAREK, essential=True),
         "candlesticks": fact(PARLAN, TILO, HAREK, essential=True),
@@ -39,6 +41,7 @@ PLOT = {
         "tilo_nearby": fact(HAREK, essential=True, needs=["harbour_lead"]),
         "tilo_cornered": fact(topic=True),
         "tilo_met": fact(topic=True),
+        "barrel_met": fact(topic=True),
         "tilo_stressed": fact(topic=True),
     },
     "items": [{"ref": "ROBE", "teaches": ["tilo_absent"], "needs": []}],
@@ -219,7 +222,16 @@ TILO_BEFORE = {"voice": VOICES[TILO], "start": "a", "nodes": {
               [], [go(BACK, "a"), end("Ich geh dann mal.")]),
 }}
 
-CONVERSATIONS = {TILO + "_BEFORE": TILO_BEFORE, GORAX: GORAX_SCENE, PARLAN: PARLAN_SCENE, ANSELM: ANSELM_SCENE, HAREK: HAREK_GRAPH, TILO: TILO_GRAPH}
+BARREL_GRAPH = {"voice": VOICES[BARREL], "start": "a", "nodes": {
+    "a": node("Tilo? Nein. Seit heute früh muss ich seine Arbeit mitmachen, und Gorax lässt es an mir aus.",
+              ["tilo_named", "tilo_absent", "barrel_met"], again="Ich muss weiterarbeiten. Gorax schaut schon wieder.", choices=[
+                  go("Ist dir an ihm etwas aufgefallen?", "b"),
+                  end("Ich geh dann mal.")]),
+    "b": node("Er war nervös, seit Tagen. Nachts hat er sich herumgewälzt. Aber mit mir redet ja keiner, ich bin hier nur der, der die Fässer schleppt.",
+              [], [go(BACK, "a"), end("Danke.")], uses=["tilo_named"]),
+}}
+
+CONVERSATIONS = {BARREL: BARREL_GRAPH, TILO + "_BEFORE": TILO_BEFORE, GORAX: GORAX_SCENE, PARLAN: PARLAN_SCENE, ANSELM: ANSELM_SCENE, HAREK: HAREK_GRAPH, TILO: TILO_GRAPH}
 
 HIDDEN_TRUTH = ("Tilo, cheated at dice by Harek and owing him 300 gold, stole two silver candlesticks from the "
                 "chapel at night, left his robe at the wine press, paid Harek and tried to sign on with a ship. "
@@ -269,18 +281,21 @@ def plan():
             {"op": "relocate_npc", "instance": TILO, "waypoint": "NW_CITY_HABOUR_POOR_AREA_PATH_08",
              "armor": "ITAR_VLK_L", "display_name": "Tilo"},
             {"op": "attach_dialogue_graph", "npc": TILO, "graph": TILO_GRAPH},
+            {"op": "attach_dialogue_graph", "npc": BARREL, "graph": BARREL_GRAPH},
             {"op": "add_scene", "id": "gorax", "npc": GORAX, "graph": GORAX_SCENE, "within": 500, "unless": FATE},
             {"op": "add_scene", "id": "parlan", "npc": PARLAN, "graph": PARLAN_SCENE, "within": 500,
              "requires": ["tilo_absent"], "unless": FATE},
             {"op": "add_scene", "id": "anselm", "npc": ANSELM, "graph": ANSELM_SCENE, "within": 450,
              "requires": ["reward"], "unless": FATE}]},
         {"op": "add_rule", "id": "tilo_turned_in", "when": ["tilo_turned_in"], "ops": [
+            {"op": "detach_dialogue_graph", "npc": BARREL},
             {"op": "remove_npc", "instance": TILO},
             {"op": "add_scene", "id": "parlan_reward", "npc": PARLAN, "graph": PARLAN_REWARD, "within": 600},
             {"op": "add_scene", "id": "anselm_bitter", "npc": ANSELM, "graph": ANSELM_BITTER, "within": 450, "requires": ["parlan_paid"]}]},
         {"op": "add_rule", "id": "reward_paid", "when": ["parlan_paid"], "ops": [
             {"op": "give_item", "instance": "ITMI_GOLD", "count": 200}]},
         {"op": "add_rule", "id": "tilo_helped", "when": ["tilo_helped"], "ops": [
+            {"op": "detach_dialogue_graph", "npc": BARREL},
             {"op": "remove_npc", "instance": TILO},
             {"op": "add_scene", "id": "anselm_grateful", "npc": ANSELM, "graph": ANSELM_GRATEFUL, "within": 450, "requires": ["friend_offer"]}]},
         {"op": "add_rule", "id": "secret_told", "when": ["anselm_secret"], "ops": [
@@ -289,6 +304,6 @@ def plan():
 
 
 def all_graphs():
-    return {"tilo_before": TILO_BEFORE, "gorax": GORAX_SCENE, "parlan": PARLAN_SCENE, "anselm": ANSELM_SCENE, "harek": HAREK_GRAPH,
+    return {"barrel": BARREL_GRAPH, "tilo_before": TILO_BEFORE, "gorax": GORAX_SCENE, "parlan": PARLAN_SCENE, "anselm": ANSELM_SCENE, "harek": HAREK_GRAPH,
             "tilo": TILO_GRAPH, "parlan_reward": PARLAN_REWARD, "anselm_bitter": ANSELM_BITTER,
             "anselm_grateful": ANSELM_GRATEFUL}

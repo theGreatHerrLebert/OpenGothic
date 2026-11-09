@@ -299,6 +299,23 @@ def _world_journal(args):
     return None
 
 
+def _check_detach(args, state):
+    _require(args, "npc")
+    if args["npc"].upper() not in state["graphs"]:
+        raise PlanError(f"NPC has no story dialogue: {args['npc']}")
+
+
+def _fold_detach(args, state):
+    del state["graphs"][args["npc"].upper()]
+
+
+def _world_detach(args):
+    npc = gothic.world.find_npc(args["npc"])
+    if npc is not None:
+        gothic.dialog.unbind(npc)
+    return None
+
+
 def _check_flag(args, state):
     _require(args, "name", "value")
 
@@ -328,6 +345,7 @@ OPS = {
     "add_rule": (_check_rule, _fold_rule, None),
     "fire_rule": (_check_fire_rule, _fold_fire_rule, None),
     "spawn_npc": (_check_spawn, _noop, _world_spawn),
+    "detach_dialogue_graph": (_check_detach, _fold_detach, _world_detach),
     "journal": (_check_journal, _noop, _world_journal),
     "rename_npc": (_check_rename, _noop, _world_rename),
     "give_item": (_check_give, _noop, _world_give),
