@@ -7,6 +7,9 @@
                          {"text": "Leb wohl.", "ends": true}]},
        "b": {"line": "Niemand.", "choices": [{"text": "Leb wohl.", "ends": true}]}}}
 
+A node with "returns" has no choices of its own: after its line, the conversation
+goes straight back to that earlier node's menu.
+
 A choice can carry "requires" (flags, any one is enough) and "unless" (a flag),
 so the hero can only say what the player has actually learned. A node with "sets"
 may also have "again", a line used instead once that flag is already set. Every node needs
@@ -29,6 +32,10 @@ def validate(graph):
     for key, node in nodes.items():
         if not node.get("line"):
             return f"node has no line: {key}"
+        if node.get("returns"):
+            if node["returns"] not in nodes:
+                return f"node returns nowhere: {key}"
+            continue
         choices = node.get("choices")
         if not choices:
             return f"node has no choices: {key}"
@@ -51,14 +58,16 @@ def validate(graph):
     while changed:
         changed = False
         for key, node in nodes.items():
-            if key not in can_end and any(c.get("goto") in can_end for c in node["choices"]):
+            targets = [node["returns"]] if node.get("returns") else [c.get("goto") for c in node["choices"]]
+            if key not in can_end and any(t in can_end for t in targets):
                 can_end.add(key)
                 changed = True
 
     reachable, frontier = {start}, [start]
     while frontier:
-        for choice in nodes[frontier.pop()]["choices"]:
-            target = choice.get("goto")
+        current = nodes[frontier.pop()]
+        targets = [current["returns"]] if current.get("returns") else [c.get("goto") for c in current["choices"]]
+        for target in targets:
             if target and target not in reachable:
                 reachable.add(target)
                 frontier.append(target)
@@ -141,6 +150,9 @@ class Player:
                 self.stage = "offer"
         elif self.stage == "offer":
             if not dialog.busy():
+                if self.node.get("returns"):
+                    self._enter(self.node["returns"])
+                    return
                 self.visible = self._visible_choices()
                 dialog.set_choices([c["text"] for c in self.visible])
                 self.stage = "choose"

@@ -58,7 +58,9 @@ def _explore(graph, known, facts):
         issues |= _order_issues(node.get("teaches", []), state, facts)
         after = set(state) | set(node.get("teaches", []))
         snapshots.add(frozenset(after))
-        for choice in node["choices"]:
+        if node.get("returns"):
+            stack.append((node["returns"], frozenset(after)))
+        for choice in node.get("choices", []):
             if not _visible(choice, after):
                 continue
             for fact in choice.get("uses", []):

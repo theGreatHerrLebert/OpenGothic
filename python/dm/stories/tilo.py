@@ -322,6 +322,20 @@ def plan(start_day=0):
     ] + journal_rules()
 
 
+def _simplify_dead_ends(graph):
+    """A finished topic returns to its menu by itself; "Zurück" stays where more can be asked."""
+    for node in graph["nodes"].values():
+        choices = node["choices"]
+        back = [c for c in choices if c["text"] == BACK]
+        if back and all(c["text"] == BACK or c.get("ends") for c in choices):
+            node["returns"] = back[0]["goto"]
+            node["choices"] = []
+
+
+for _graph in (GORAX_SCENE, PARLAN_SCENE, ANSELM_SCENE, HAREK_GRAPH, TILO_GRAPH, TILO_BEFORE, BARREL_GRAPH):
+    _simplify_dead_ends(_graph)
+
+
 def all_graphs():
     return {"barrel": BARREL_GRAPH, "tilo_before": TILO_BEFORE, "gorax": GORAX_SCENE, "parlan": PARLAN_SCENE, "anselm": ANSELM_SCENE, "harek": HAREK_GRAPH,
             "tilo": TILO_GRAPH, "parlan_reward": PARLAN_REWARD, "anselm_bitter": ANSELM_BITTER,

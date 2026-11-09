@@ -134,6 +134,25 @@ def test_conditional_choices():
     assert d.lines[-1] == "Wissend"
 
 
+def test_returns_to_menu():
+    graph = {"start": "a", "nodes": {
+        "a": {"line": "Menü.", "choices": [{"text": "Frage", "goto": "b"}, {"text": "Tschüss", "ends": True}]},
+        "b": {"line": "Antwort.", "returns": "a", "choices": []}}}
+    assert graphs.validate(graph) is None
+    assert "returns nowhere" in graphs.validate({"start": "a", "nodes": {"a": {"line": "x", "returns": "z", "choices": []}}})
+    d = fake.dialog
+    d.reset()
+    player = graphs.Player(lambda: {"NOV_B": graph}, lambda n: None)
+    d.who, d.opened, d.open = Npc("NOV_B"), True, True
+    for _ in range(3):
+        player.on_tick()
+    d.selection = 0
+    for _ in range(7):
+        player.on_tick()
+    assert d.lines == ["Menü.", "Frage", "Antwort."], d.lines
+    assert d.choices == ["Frage", "Tschüss"]
+
+
 def test_again_line():
     graph = {"start": "a", "nodes": {"a": {"line": "Erstes Mal.", "again": "Du schon wieder.",
              "sets": "met", "choices": [{"text": "Tschüss", "ends": True}]}}}
@@ -380,7 +399,7 @@ def test_player():
     d.say = real_say
 
 
-for test in (test_graph_validation, test_validation, test_apply_and_rollback, test_return_npc, test_conditional_choices, test_again_line, test_scene_and_rule,
+for test in (test_graph_validation, test_validation, test_apply_and_rollback, test_return_npc, test_conditional_choices, test_returns_to_menu, test_again_line, test_scene_and_rule,
              test_queue_waits_for_safe_point, test_save_load_does_not_reapply_world,
              test_player):
     test()
