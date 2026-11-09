@@ -456,6 +456,15 @@ PYBIND11_EMBEDDED_MODULE(gothic, m) {
       .def_property_readonly("items",    &PyPlayer::items,
                              "List of dicts {name, count, equipped} for "
                              "every item in the player's inventory.")
+      .def("give_item",
+           [](const PyPlayer&, const std::string& instance, int count) {
+             auto*  w  = requireWorld();
+             size_t id = 0;
+             if(instanceClass(*w, upper(instance), id)!="C_ITEM" || count<=0)
+               throw std::invalid_argument("cannot give: " + instance);
+             requirePlayer()->addItem(id, size_t(count));
+             },
+           py::arg("instance"), py::arg("count") = 1)
       .def("quest_item",
            [](const PyPlayer&, const std::string& instance, const std::string& description,
               const std::vector<std::string>& lines) {

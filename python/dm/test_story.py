@@ -148,6 +148,45 @@ def test_again_line():
         assert d.lines == [expected], d.lines
 
 
+def test_scene_and_rule():
+    fake.world.__init__()
+    fake.dialog.__init__()
+    w, d = fake.world, fake.dialog
+    fake.player = types.SimpleNamespace(position=(0, 0, 0), given=[],
+                                        give_item=lambda i, c=1: fake.player.given.append((i, c)))
+    started = []
+    for n in w.npcs.values():
+        n.position, n.alive = (9000, 0, 0), True
+        n.start_dialog = lambda who=n: (started.append(who.instance), setattr(d, "open", True), setattr(d, "who", who))
+    s = st.Story()
+    s.generation = w.generation
+    s.apply_plan({"reason": "r", "ops": [
+        {"op": "add_scene", "id": "s", "npc": "PARLAN", "graph": GOOD, "requires": ["ready"]},
+        {"op": "add_rule", "id": "pay", "when": ["met"], "ops": [{"op": "give_item", "instance": "ITGOLD", "count": 5}]},
+    ]})
+    s.on_tick()
+    assert started == []                 # condition not met
+    s.state["flags"]["ready"] = True
+    s.on_tick()
+    assert started == []                 # too far away
+    w.npcs["PARLAN"].position = (100, 0, 0)
+    s.on_tick()
+    assert started == ["PARLAN"] and d.bound == ["PARLAN"]
+    assert "PARLAN" in s.graphs_now()
+
+    s.state["flags"]["met"] = True
+    s.on_tick()
+    assert fake.player.given == []       # rules wait until the conversation ends
+    d.open, d.who = False, None
+    s.on_tick()
+    assert d.bound == [] and s.state["scenes"]["s"]["done"]
+    assert "PARLAN" not in s.graphs_now()
+    s.on_tick()
+    assert fake.player.given == [("ITGOLD", 5)] and s.state["rules"]["pay"]["fired"]
+    s.on_tick()
+    assert fake.player.given == [("ITGOLD", 5)] and started == ["PARLAN"]  # both happen once
+
+
 def rejected(story, ops, fragment):
     try:
         story.validate(ops)
@@ -316,7 +355,7 @@ def test_player():
     d.say = real_say
 
 
-for test in (test_graph_validation, test_validation, test_apply_and_rollback, test_return_npc, test_conditional_choices, test_again_line,
+for test in (test_graph_validation, test_validation, test_apply_and_rollback, test_return_npc, test_conditional_choices, test_again_line, test_scene_and_rule,
              test_queue_waits_for_safe_point, test_save_load_does_not_reapply_world,
              test_player):
     test()
