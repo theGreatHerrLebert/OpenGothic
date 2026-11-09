@@ -1,95 +1,134 @@
 # Plan: an automatic game master with no human in the loop
 
-Status: draft for review. Nothing here is built yet.
+Status: revised after an independent review. Nothing new here is built yet.
 
 ## Goal
 
-A Director that writes and runs stories like Der Fall Tilo inside a running Gothic 2 game,
-unattended. The player must never have to read or approve content, because reviewing a story
-spoils it. Human review was how we learned the rules; it cannot be how the system runs.
+A system that produces stories like Der Fall Tilo for a running Gothic 2 game and runs them
+unattended. A player must never have to review the stories they will play, because that spoils
+them. Stories nobody will play can be read freely, and those are how the system is judged.
+
+## The main uncertainty
+
+Can a Director write a story worth playing at all? Nothing has tested that. So we measure it
+first, cheaply, and build heavy machinery only for what the results show is needed.
+
+## Default architecture
+
+Generate and validate stories **between play sessions**. Each story carries explicit
+preconditions. In the game, simple deterministic code picks a story when its conditions hold.
+No model runs during play. This removes most timing, pause and stale-content problems. Writing
+stories live is a later option, along with building content lazily.
 
 ## What exists today
 
-Running on branch `python-repl`: event observer, typed story operations with all-or-nothing
-plans, per-save story log, one-off scenes with sight checks, consequence rules, quest items,
-journal, dialogue graphs with conditions, a logic checker that searches all orders of play, an NPC
-dependency map, character sheets, pre-generated voices, an MCP server, and a local inspector
-whose approvals are bound to the exact text and audio. One story, Der Fall Tilo, was written by
-hand with a human and has been played through once along one path.
+Working in the game along the paths played so far: event observer, typed story operations,
+per-save story log, one-off scenes with sight checks, consequence rules, quest items, journal,
+dialogue graphs with conditions, character sheets for five people, pre-generated voices, an MCP
+server, and a local inspector whose approvals are bound to exact text and audio.
 
-Known weaknesses: the checker proves logic only; rules in `docs/quest-design.md` are mostly
-unenforced prose; a story dialogue replaces an NPC's whole conversation list; nothing has been
-produced by a Director yet.
-
-## Principle: replace the reviewer with layers, and fail closed
-
-A plan reaches the game only if it passes every layer. Any failure means the Director retries
-within a budget, and then does nothing. Doing nothing is always an acceptable result.
-
-1. **Deterministic checks.** Schema, logic and every order of play, dependency map, physical rules
-   (waypoints exist, placement unseen, no clue that incurs theft, guild gating), economy bounds on
-   rewards, unique content, every essential fact has two sources of different approaches, every
-   ending carries a cost.
-2. **Lore ledger.** Based on Evident Light. Every claim about the existing world cites an exact
-   passage from the game's scripts, found by a script and not by the model. Anything else must be
-   declared as invention. Contradiction with a cited passage rejects the plan.
-3. **Independent critics.** Separate model calls that never see the author's reasoning, each with
-   one job: does this line answer what was just said on every path; is it true for this speaker and
-   this player; does it match the character sheet; is the German natural; is it filler; is the
-   story fair. Structured verdicts with reasons.
-4. **Runtime safety.** Applied only at safe points, atomic, logged, reversible through the story log
-   where possible, and a hard limit on how much the Director may change per game day.
-5. **After-the-fact player signal.** A key to mark "that was wrong" with no spoilers. Marks are
-   stored for later analysis and become new rules. It is the only human input, and it is optional.
-
-## Measuring the critics before trusting them
-
-Critics are unproven and could approve poor work or reject good work. Before they are used:
-
-- Build a labelled set from this project: the lines and reasons the human rejected, recoverable
-  from `git log -p python/dm/stories/tilo.py`, plus the approved lines of the current story. Add
-  deliberately broken variants for each rule.
-- Measure catch rate and false rejection rate per critic against that set, with a held-out part
-  never used when writing their prompts.
-- The set is small and from one story by one person, so these numbers are a floor for a working
-  system, not proof that it generalises.
+Known to be weaker than it sounds:
+- The logic checker models conversations only. It ignores scene conditions, rules and guild gates,
+  covers 7 of Der Fall Tilo's 14 conversations, and trusts each line's declared facts.
+- Der Fall Tilo fails the checker as written, because five flags are undeclared.
+- Rule contents are barely validated when submitted, so bad data surfaces during play.
+- Plans are all-or-nothing only for operations that have an undo.
+- The dependency map guards removal and relocation only, and lists just two safe NPCs.
+- The Director cannot see the hero's guild, chapter or level.
 
 ## Phases
 
-Each phase ends with a check that can fail.
+Each phase has a test that can fail.
 
-1. **Finish the template.** Remaining Tilo runs: turn him in, harbour first, mage path, wine location.
-   Done when all three main paths play with no manual intervention.
-2. **Additive dialogue.** Inject story topics into the normal `C_INFO` menu so vanilla conversations
-   survive. Done when Gorax offers his normal topics and a story topic together, and any NPC can
-   be used without detaching. Needed first because it changes what the Director may do.
-3. **Enforce the written rules.** Turn every checkable rule in `quest-design.md` into a check, and
-   list what remains as critic work.
-4. **Lore ledger.** Done when every claim in Der Fall Tilo cites a passage or is declared invented.
-5. **Critics and evaluation.** Done when catch and false rejection rates on the held-out set meet
-   thresholds agreed before seeing the results.
-6. **Director pipeline.** Observe; decide (usually do nothing); commit hidden truth; plot; checks;
-   dialogue; critics and revise; German edit; bake voices; submit. Runs out of band, with a budget.
-7. **Blind trial.** A story the player has not seen, generated from their real play. Success
-   measures: they pursue it without instruction, it completes without intervention, and the count
-   of "that was wrong" marks per hour. Compare against Der Fall Tilo, and against doing nothing.
-8. **Lazy building.** Only after a blind trial succeeds: build dialogue when it becomes relevant and
-   cache it by what it depends on, ahead of the player, falling back to existing lines.
+### 0. Honest foundation
 
-## Decisions worth challenging
+Declare the missing flags and check all conversations, in the automated tests. Validate the contents
+of rules and scenes when submitted. Enforce the NPC allow-list on every operation. Give the
+Director the hero's guild, chapter, level and quest state, and treat dead NPCs as absent.
 
-- Pre-baking conversations rather than generating them live.
-- Using separate model calls as critics, which may share the author's blind spots.
-- Doing additive dialogue before the Director instead of after.
-- Fail-closed with "do nothing" as the default, which could make the world feel empty.
-- Restricting stories to one location and a few NPCs for the first trials.
-- Cloned original voices remain a private experiment and are never distributed; anything shipped
-  uses designed voices. An automatic Director must therefore not depend on cloned voices.
+*Done when* Der Fall Tilo passes the checker in the test suite, and a story with a bad waypoint inside a
+rule is rejected at submission.
+
+### 1. Cast and world sheet
+
+Write character sheets for the people a story can use, starting with the monastery and the harbour, with
+a section on how they see the hero. Count who can actually be used. Add a hand-made fact sheet
+of factions, places, chapter state and named people, in place of a full lore system. Sheets for minor
+characters may be drafted by a model from the game's own dialogue and corrected by a person.
+
+*Done when* about 15 usable people have sheets, and the count shows whether enough stories are possible.
+
+### 2. The throwaway experiment
+
+Fix the scoring and the kill criterion **before** generating anything. Record 3 to 5 snapshots of real
+play. With only the Director brief and these sheets, generate about 20 stories offline, without the game.
+A person reads and scores each for defects and interest, tagging each defect with the rule it breaks.
+
+*Kill or pivot criterion:* at least 5 of 20 are worth playing after automatic checking. Otherwise change the
+approach before building anything further.
+
+This also yields the labelled data for phase 4, and real figures for cost and checker pass rate.
+
+### 3. One blind vertical slice
+
+The best-performing setup writes a story for one location and one to three people, using scenes, ideally a
+small vignette rather than a mystery. The player plays it unseen. Voices follow the current private setup.
+
+*Done when* it runs unaided from start to end. *Success* is that the player follows it up without being
+told to. This is a sample of one, played by the system's author, so it is a smoke test.
+
+### 4. Only the checks that earned their place
+
+Add the two or three critics that phase 2's defects call for, each measured on held-out stories with
+confidence intervals. Repair single lines with a retry limit, and track rejection rate, because too many
+critics reject everything or push the writing towards bland.
+
+Add a check that a line's declared facts match its text, since the logic checker depends on those.
+
+*Done when* agreed thresholds are met on held-out data.
+
+### 5. A checker that models the game
+
+Compile plan, rules, scenes and graphs into one state model and check that, including guild gates and
+item pickups. Treat a single source for an essential fact as an error, and record each source's approach.
+
+*Done when* it catches seeded faults that today's checker misses.
+
+### 6. Stories that can fail gracefully
+
+Fail closed before a story starts, and fail safe once it has. Every story ships with a closure: a validated
+quiet ending for a dead cast member, a chapter change or a timeout. Add preconditions for each
+story, and operations for retiring a thread. Rules blocked by a passing condition, such as being in another
+world, wait instead of dying. Add a spoiler-free health report, so a quiet world and a broken one
+can be told apart.
+
+*Done when* a path-walking test kills each cast member at each stage and every story still closes.
+
+### 7. Unattended runner
+
+Build generation as a real program with budgets, retries and a story library, running with only the
+MCP tools. Plans get ids and are bound to the state they were written for. Define a safe point, including
+combat, cutscenes and loading.
+
+*Done when* it fills a library unattended, and a duplicate or stale plan is refused.
+
+### Later, if justified
+
+- **Additive dialogue:** story topics inside the normal `C_INFO` menu, so important NPCs can be used.
+- **Fuller lore ledger** based on Evident Light. A found quote proves only that the passage exists.
+- **Lazy building**, cached by what each line depends on.
+- **Designed voices**, required for anything distributed. Cloned voices stay a private experiment.
+- A `that was wrong` key that records context for later analysis.
+
+## Immediate work on Der Fall Tilo
+
+Keep playing it as the reference: turning Tilo in, harbour first, the mage path, and the wine location.
+Replace most repeat playthroughs with a path-walking test built on the existing fakes.
 
 ## Known risks
 
-- Taste. Nothing above proves a story is any good, only that it is not broken.
-- Rule explosion: every playtest added rules, and checks may reject most plans.
-- Cost and latency of many model calls for each story.
-- Vanilla interactions the dependency map cannot see, such as logic outside the scripts.
-- Overfitting the whole system to one story and one player's taste.
+- Taste. Passing checks shows a story is not broken, not that it is good.
+- One person's taste, and one story, shape all of this.
+- Too few usable NPCs, or too few safe story shapes, may limit variety.
+- Cost of many model calls.
+- Vanilla logic the dependency map cannot see.
