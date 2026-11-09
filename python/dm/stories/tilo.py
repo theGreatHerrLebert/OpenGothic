@@ -148,13 +148,11 @@ HAREK_GRAPH = {"voice": VOICES[HAREK], "start": "a", "nodes": {
               ["harek_wary"], [go(BACK, "a"), end("Vergiss es.")], delivery="drohend"),
     "c": node("Pass auf, was du sagst. Hier im Hafenviertel kann schnell jemand auf den Gedanken kommen, du willst ihn bei der Miliz anschwärzen. Und das würde nicht gut für dich enden.",
               ["harek_wary"], [
-                  go("Im Kloster sind einige wertvolle Leuchter aus Silber verschwunden.", "d2", requires=["candlesticks"], uses=["candlesticks"]),
-                  go("Im Kloster ist etwas Wertvolles verschwunden.", "d2", unless="candlesticks"),
+                  go("Im Kloster sind einige wertvolle Leuchter aus Silber verschwunden.", "d", requires=["candlesticks"], uses=["candlesticks"]),
+                  go("Im Kloster ist etwas Wertvolles verschwunden.", "d", unless="candlesticks"),
                   go(BACK, "a"), end("Vergiss es.")], delivery="drohend"),
-    "d": node("Na schön. Er kam letzte Nacht mit einem Sack voll Silber. Das deckt seine Schulden, mehr nicht. Er wollte auf einem Schiff anheuern und verschwinden, aber seit der Blockade läuft keines aus.",
-              ["silver_sold", "silver_stolen"], [go("Wo ist er jetzt?", "e"), go(BACK, "a"), end("Danke.")], uses=["tilo_named"]),
-    "d2": node("Na schön. Der kleine Tilo aus dem Kloster kam letzte Nacht mit einem Sack voll Silber. Das deckt seine Schulden, mehr nicht. Er wollte auf einem Schiff anheuern und verschwinden, aber seit der Blockade läuft keines aus.",
-               ["tilo_named", "silver_sold", "silver_stolen", "gambling"], [go("Wo ist er jetzt?", "e"), go(BACK, "a"), end("Danke.")]),
+    "d": node("Na schön. Tilo kam letzte Nacht mit einem Sack voll Silber. Das deckt seine Schulden, mehr nicht. Er wollte auf einem Schiff anheuern und verschwinden, aber seit der Blockade läuft keines aus.",
+              ["tilo_named", "silver_sold", "silver_stolen", "gambling"], [go("Wo ist er jetzt?", "e"), go(BACK, "a"), end("Danke.")]),
     "e": node("Irgendwo hier am Hafen, schätze ich. Der Kerl ist ein Schwächling und würde niemals eine Überfahrt als Matrose überstehen. Novizen sind doch alles Söhnchen von reichen Oberstadt-Pinkeln!",
               ["tilo_nearby", "harbour_lead"], [go(BACK, "a"), end("Danke.")], uses=["tilo_named"]),
 }}
