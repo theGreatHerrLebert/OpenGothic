@@ -144,7 +144,7 @@ HAREK_GRAPH = {"voice": VOICES[HAREK], "start": "a", "nodes": {
                   go(BACK, "a"), end("Vergiss es.")], uses=["tilo_named"]),
     "w": node("Und wenn? Gewürfelt ist gewürfelt. Wenn die Würfel einen Klosterjungen nicht mögen, ist das sein Pech. Hat er sich etwa beschwert?",
               ["harek_wary"], [go("Du hast ihn betrogen.", "x"), go(BACK, "a"), end("Vergiss es.")]),
-    "x": node("Pass auf, was du sagst. Hier im Hafenviertel kann schnell jemand auf den Gedanken kommen, du willst ihn bei der Miliz anschwärzen. Und das würde nicht gut für dich enden.",
+    "x": node("Betrogen? Sag das noch mal, und du verlässt diese Kneipe mit gebrochener Nase. Der Kleine hat verloren, weil er ein Trottel ist, der sich für einen Kerl hält.",
               ["harek_wary"], [go(BACK, "a"), end("Vergiss es.")], delivery="drohend"),
     "c": node("Pass auf, was du sagst. Hier im Hafenviertel kann schnell jemand auf den Gedanken kommen, du willst ihn bei der Miliz anschwärzen. Und das würde nicht gut für dich enden.",
               ["harek_wary"], [
