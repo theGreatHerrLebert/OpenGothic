@@ -166,7 +166,7 @@ HAREK_GRAPH = {"voice": VOICES[HAREK], "start": "a", "nodes": {
 }}
 
 TILO_GRAPH = {"voice": VOICES[TILO], "start": "a", "nodes": {
-    "a": node("Du? Was machst du denn hier? Ich meine ... was glotzt du so? Ich bin hier Stammgast, klar? Die Leute am Hafen kennen mich.",
+    "a": node("Du? Was machst du denn hier? Ich meine ... was glotzt du so? Ich kenn mich hier aus, klar? Die Leute am Hafen kennen mich.",
               ["tilo_cornered"], again="Was willst du denn noch? Lass mich in Ruhe.", choices=[
                   go("Ich weiß von den Leuchtern.", "b", requires=["candlesticks"], uses=["candlesticks"]),
                   go("Ich weiß, was du gestohlen hast.", "b", requires=["silver_stolen"], unless="candlesticks", uses=["silver_stolen"]),
