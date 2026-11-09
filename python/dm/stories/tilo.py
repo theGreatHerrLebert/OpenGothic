@@ -100,7 +100,7 @@ GORAX_SCENE = {"voice": VOICES[GORAX], "start": "a", "nodes": {
 }}
 
 PARLAN_SCENE = {"voice": VOICES[PARLAN], "start": "a", "nodes": {
-    "a": node("Bleib stehen, Fremder. Es ist unfassbar, aber heute Nacht wurde aus unserer Kapelle Silber gestohlen. Zwei Leuchter, im Hause Innos'! Wer den Dieb findet und zu mir bringt, dem soll es nicht zum Schaden sein.",
+    "a": node("Bleib stehen, Novize. Es ist unfassbar, aber heute Nacht wurde aus unserer Kapelle Silber gestohlen. Zwei Leuchter, im Hause Innos'! Wer den Dieb findet und zu mir bringt, dem soll es nicht zum Schaden sein.",
               ["silver_stolen", "candlesticks", "reward"], [
                   go("Am Hafen bietet jemand silberne Leuchter an.", "h", requires=["silver_sold"], uses=["silver_sold"]),
                   go("Hast du einen Verdacht?", "b"),
