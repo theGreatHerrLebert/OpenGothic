@@ -211,6 +211,13 @@ breaking. A rung is finished when it has typed operations, submission checks and
 3. **Sorcery.** Curses, transformations, scrolls that do something odd. Easiest to break, so it starts at the Wild and
    Chaos levels of the DM setting.
 
+Alongside the ladder, since it does not depend on any rung:
+
+- **Narrator voice.** An operation that plays a pre-generated line with a subtitle, without opening a conversation, so
+  a voice can comment from off-screen as the player moves around. Combined with `on` perceptions it can react to what
+  the player just did. It must not talk over a conversation or another narrator line, and needs a cooldown so it stays
+  a treat. Today every line has to come from someone in a dialogue.
+
 ## Immediate work on Der Fall Tilo
 
 Keep playing it as the reference: turning Tilo in, harbour first, the mage path, and the wine location.
