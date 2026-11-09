@@ -232,6 +232,29 @@ ROBE = {"description": "Zerknitterte Novizenrobe",
 FATE = ["tilo_turned_in", "tilo_helped"]  # once decided, the early scenes no longer make sense
 
 
+JOURNAL_TOPIC = "Der Fall Tilo"
+
+# (fact that triggers the entry, entry, status). Written in the hero's terse log voice:
+# it records what he has found out and never tells the player what to do.
+JOURNAL = [
+    ("tilo_absent", "Der Novize Tilo ist nicht zur Arbeit erschienen. Gorax ist außer sich.", 0),
+    ("reward", "Aus der Kapelle des Klosters wurden zwei silberne Leuchter gestohlen. Parlan zahlt dem, der den Dieb zu ihm bringt, zweihundert Goldstücke.", 0),
+    ("gambling", "Tilo hat beim Würfeln viel Geld verloren.", 0),
+    ("harbour_lead", "Tilo soll sich oft in der Hafenkneipe herumgetrieben haben.", 0),
+    ("friend_offer", "Anselm hat mich gebeten, Tilo zu helfen. Dafür will er mir ein Geheimnis des Klosters verraten.", 0),
+    ("silver_sold", "Die Leuchter sind am Hafen bei einem Seemann namens Harek gelandet.", 0),
+    ("tilo_confessed", "Tilo hat den Diebstahl gestanden. Er wollte seine Spielschulden bezahlen und mit einem Schiff verschwinden.", 0),
+    ("tilo_turned_in", "Ich habe Tilo zu Parlan gebracht.", 2),
+    ("tilo_helped", "Ich habe Tilo laufen lassen. Parlan erfährt nichts von mir.", 2),
+]
+
+
+def journal_rules():
+    return [{"op": "add_rule", "id": f"journal_{fact_id}", "when": [fact_id], "ops": [
+        {"op": "journal", "topic": JOURNAL_TOPIC, "entry": text, **({"status": status} if status else {})}]}
+        for fact_id, text, status in JOURNAL]
+
+
 def plan():
     """Everything before the theft. Tilo is an ordinary novice until the first night."""
     return [
@@ -262,7 +285,7 @@ def plan():
             {"op": "add_scene", "id": "anselm_grateful", "npc": ANSELM, "graph": ANSELM_GRATEFUL, "within": 450, "requires": ["friend_offer"]}]},
         {"op": "add_rule", "id": "secret_told", "when": ["anselm_secret"], "ops": [
             {"op": "place_item", "instance": "ITFO_WINE", "waypoint": "NW_MONASTERY_WINEMAKER_03"}]},
-    ]
+    ] + journal_rules()
 
 
 def all_graphs():

@@ -19,7 +19,8 @@ not to generate quests. Most of the time, the right decision is to do nothing.
 
 - Respect the world. A novice cannot command a mage. An NPC knows only what could
   plausibly have reached them.
-- No quest markers, journal entries or announcements. Let the player notice.
+- No quest markers or announcements. Let the player notice. The journal records what
+  the hero has found out, in his terse voice; it never tells the player what to do.
 - The player learns what happened, what was taken or done, and why, each from
   somewhere. An essential fact needs at least two sources, using different approaches:
   asking someone who knows, tricking someone who would not tell, confronting the

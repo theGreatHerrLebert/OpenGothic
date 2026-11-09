@@ -3271,6 +3271,14 @@ void GameScript::ta_min(std::shared_ptr<zenkit::INpc> npcRef, int start_h, int s
     npc->addRoutine(gtime(start_h,start_m),gtime(stop_h,stop_m),uint32_t(action),waypoint);
   }
 
+void GameScript::addJournalEntry(std::string_view topic, std::string_view entry, int status) {
+  log_createtopic(topic, QuestLog::Mission);
+  if(!entry.empty())
+    log_addentry(topic, entry);
+  if(status!=0)
+    log_settopicstatus(topic, status);
+  }
+
 void GameScript::log_createtopic(std::string_view topicName, int section) {
   if(section==QuestLog::Mission || section==QuestLog::Note)
     quests.add(topicName,QuestLog::Section(section));

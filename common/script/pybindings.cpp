@@ -650,6 +650,14 @@ PYBIND11_EMBEDDED_MODULE(gothic, m) {
           },
         "Remove all registered tick callbacks.");
 
+  m.def("journal",
+        [](const std::string& topic, const std::string& entry, int status) {
+          requireWorld()->script().addJournalEntry(toEngine(topic), toEngine(entry), status);
+          },
+        py::arg("topic"), py::arg("entry") = "", py::arg("status") = 0,
+        "Add an entry to the player's journal. Status: 0 unchanged, 1 running, "
+        "2 success, 3 failed, 4 obsolete.");
+
   m.def("announce",
         [](const std::string& text, float duration, int x, int y) {
           auto& font = Resources::font(1.0f);

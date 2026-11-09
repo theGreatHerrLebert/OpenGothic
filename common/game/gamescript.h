@@ -77,6 +77,7 @@ class GameScript final {
 
     inline auto& getVm() { return vm; }
     auto         questLog() const -> const QuestLog&;
+    void         addJournalEntry(std::string_view topic, std::string_view entry, int status);
 
     const World& world() const;
     World&       world();

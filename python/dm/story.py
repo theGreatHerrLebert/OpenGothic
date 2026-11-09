@@ -288,6 +288,17 @@ def _world_rename(args):
     return lambda: setattr(npc, "display_name", previous)
 
 
+def _check_journal(args, state):
+    _require(args, "topic")
+    if "entry" not in args and "status" not in args:
+        raise PlanError("journal needs an entry or a status")
+
+
+def _world_journal(args):
+    gothic.journal(args["topic"], args.get("entry", ""), args.get("status", 0))
+    return None
+
+
 def _check_flag(args, state):
     _require(args, "name", "value")
 
@@ -317,6 +328,7 @@ OPS = {
     "add_rule": (_check_rule, _fold_rule, None),
     "fire_rule": (_check_fire_rule, _fold_fire_rule, None),
     "spawn_npc": (_check_spawn, _noop, _world_spawn),
+    "journal": (_check_journal, _noop, _world_journal),
     "rename_npc": (_check_rename, _noop, _world_rename),
     "give_item": (_check_give, _noop, _world_give),
     "relocate_npc": (_check_relocate, _noop, _world_relocate),
