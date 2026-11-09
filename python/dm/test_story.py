@@ -153,6 +153,30 @@ def test_returns_to_menu():
     assert d.choices == ["Frage", "Tschüss"]
 
 
+def test_questions_are_asked_once():
+    graph = {"start": "a", "nodes": {
+        "a": {"line": "Menü.", "choices": [
+            {"text": "Frage", "goto": "b"}, {"text": "Immer", "goto": "c", "repeat": True},
+            {"text": "Tschüss", "ends": True}]},
+        "b": {"line": "Antwort.", "returns": "a", "choices": []},
+        "c": {"line": "Wieder.", "returns": "a", "choices": []}}}
+    flags = {}
+    d = fake.dialog
+    d.reset()
+    player = graphs.Player(lambda: {"NOV_B": graph}, lambda n: flags.update({n: True}), lambda: flags)
+    d.who, d.opened, d.open = Npc("NOV_B"), True, True
+    for _ in range(3):
+        player.on_tick()
+    d.selection = 0
+    for _ in range(7):
+        player.on_tick()
+    assert d.choices == ["Immer", "Tschüss"], d.choices
+    d.selection = 0
+    for _ in range(7):
+        player.on_tick()
+    assert d.choices == ["Immer", "Tschüss"], d.choices
+
+
 def test_again_line():
     graph = {"start": "a", "nodes": {"a": {"line": "Erstes Mal.", "again": "Du schon wieder.",
              "sets": "met", "choices": [{"text": "Tschüss", "ends": True}]}}}
@@ -366,7 +390,7 @@ def test_player():
 
     d.who, d.opened, d.open = Npc("NOV_B"), True, True
     pump()
-    assert d.lines == ["Hallo."] and flags == ["met"]
+    assert d.lines == ["Hallo."] and [x for x in flags if not x.startswith("asked:")] == ["met"]
     assert d.choices == ["Mehr", "Tschüss"]
 
     # the hero speaks the chosen line, then the NPC answers
@@ -376,7 +400,7 @@ def test_player():
 
     # stepping back is silent and shows the earlier choices
     pump(0)
-    assert d.lines == ["Hallo.", "Mehr", "Größe."] and flags == ["met"]
+    assert d.lines == ["Hallo.", "Mehr", "Größe."] and [x for x in flags if not x.startswith("asked:")] == ["met"]
     assert d.choices == ["Mehr", "Tschüss"]
 
     # asking again gets the answer again
@@ -399,7 +423,7 @@ def test_player():
     d.say = real_say
 
 
-for test in (test_graph_validation, test_validation, test_apply_and_rollback, test_return_npc, test_conditional_choices, test_returns_to_menu, test_again_line, test_scene_and_rule,
+for test in (test_graph_validation, test_validation, test_apply_and_rollback, test_return_npc, test_conditional_choices, test_returns_to_menu, test_questions_are_asked_once, test_again_line, test_scene_and_rule,
              test_queue_waits_for_safe_point, test_save_load_does_not_reapply_world,
              test_player):
     test()

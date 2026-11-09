@@ -11,7 +11,8 @@ A node with "returns" has no choices of its own: after its line, the conversatio
 goes straight back to that earlier node's menu.
 
 A choice can carry "requires" (flags, any one is enough) and "unless" (a flag),
-so the hero can only say what the player has actually learned. A node with "sets"
+so the hero can only say what the player has actually learned. Once asked, a question
+is gone for good, as in the original game, unless the choice sets "repeat". A node with "sets"
 may also have "again", a line used instead once that flag is already set. Every node needs
 at least one unconditional choice, so a conversation can always continue.
 """
@@ -84,6 +85,7 @@ class Player:
         self.on_flag = on_flag
         self.get_flags = get_flags
         self.visible = []
+        self.partner = ""
         self.graph = None
         self.node = None
         self.path = []
@@ -111,10 +113,15 @@ class Player:
                 self.flagged.add(flag)
                 self.on_flag(flag)
 
+    def _asked_flag(self, choice):
+        return f"asked:{self.partner}:{choice['text']}"
+
     def _visible_choices(self):
         flags = self.get_flags()
         shown = []
         for choice in self.node["choices"]:
+            if flags.get(self._asked_flag(choice)):
+                continue
             required = choice.get("requires")
             if required and not any(flags.get(f) for f in required):
                 continue
@@ -131,6 +138,7 @@ class Player:
         dialog = gothic.dialog
         if dialog.just_opened():
             partner = dialog.partner()
+            self.partner = partner.instance if partner else ""
             self.graph = self.get_graphs().get(partner.instance) if partner else None
             if self.graph is None:
                 self.stage = "idle"
@@ -154,6 +162,10 @@ class Player:
                     self._enter(self.node["returns"])
                     return
                 self.visible = self._visible_choices()
+                back = [c for c in self.visible if c["text"] == "Zurück."]
+                if back and len(back) == len(self.visible):
+                    self._enter(back[0]["goto"])  # nothing left to ask in this branch
+                    return
                 dialog.set_choices([c["text"] for c in self.visible])
                 self.stage = "choose"
         elif self.stage == "choose":
@@ -161,6 +173,9 @@ class Player:
             if index is None:
                 return
             self.choice = self.visible[index]
+            is_question = self.choice.get("goto") and self.choice["goto"] not in self.path
+            if is_question and not self.choice.get("repeat"):
+                self.on_flag(self._asked_flag(self.choice))
             if self.choice.get("goto") in self.path:
                 self._enter(self.choice["goto"])
             else:
