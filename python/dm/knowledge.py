@@ -21,7 +21,7 @@ check() returns (errors, warnings). Errors make a story invalid.
 """
 
 MIN_SOURCES = 2
-MAX_STATES = 5000
+MAX_STATES = 200000
 
 
 def _visible(choice, known):
