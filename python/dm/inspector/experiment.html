@@ -1,4 +1,5 @@
 <!doctype html>
+<html lang="de">
 <title>Geschichtenprobe</title>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,400;0,500;0,700;1,400;1,500&family=Almendra+SC&family=Grenze+Gotisch:wght@500;700&family=IM+Fell+English:ital@0;1&family=IBM+Plex+Mono:wght@400;500&display=swap">
@@ -30,9 +31,9 @@ details.flow{margin:10px 0}details.flow summary,details.truth summary{cursor:poi
 </style>
 <link rel="stylesheet" href="/gothic.css">
 <main class="wrap">
-<nav class="label" aria-label="Seiten"><a href="/">Story inspector</a> · <a href="/characters">Characters</a> · <a href="/experiment">Geschichtenprobe</a></nav>
+<nav class="topnav" aria-label="Seiten"><a href="/">Inspektor</a><a href="/characters">Figuren</a><a href="/experiment">Geschichtenprobe</a><span class="lang"><a href="?lang=en" hreflang="en">EN</a><a href="?lang=de" hreflang="de">DE</a></span></nav>
 <h1>Geschichtenprobe</h1>
-<p class="meta" id="status" role="status">Loading…</p><button id="retry" class="choice" type="button" hidden>Erneut speichern</button>
+<p class="meta" id="status" role="status">Lädt …</p><button id="retry" class="choice" type="button" hidden>Erneut speichern</button>
 <div class="bar" id="bar"></div>
 <div id="view"></div>
 </main>
@@ -57,9 +58,9 @@ function flowPanel(s){let p=panels.get(s.id);if(!p){const d=el("details","flow")
   d.append(el("summary","","Wie es sich entfalten kann (Spoiler)"),el("p","meta","Rot sind Gespräche, hellbraun Tatsachen, orange wesentliche Tatsachen, grün echte Folgen. Durchgezogen: ein Gespräch lehrt etwas. Dick: etwas startet ein Gespräch oder löst eine Folge aus. Gepunktet: öffnet eine Zeile des Helden. Gekreuzt: schliesst etwas. Klicken springt zum Gespräch oder zeigt die Tatsache; ziehen und scrollen zum Bewegen und Zoomen."),box,info);
   p={d,box,info,drawn:false};d.ontoggle=()=>drawFlow(p,s);panels.set(s.id,p)}
  return p}
-function play(u,b){if(player)player.pause();player=new Audio(u);b.textContent="…";const r=()=>b.textContent="Play";player.onended=player.onpause=r;player.play().catch(r)}
-function pbtn(u,text){const b=el("button","p",u?"Play":"–");b.type="button";b.setAttribute("aria-label",(u?"Abspielen: ":"Keine Aufnahme: ")+(text||""));if(u)b.onclick=()=>play(u,b);else b.disabled=true;return b}
-function statusLine(){const scored=D.stories.filter(s=>!s.bonus),a=scored.map(s=>S[s.id]||{});const worth=a.filter(x=>x.worth==="yes").length;const bad=failed.size;$("#status").textContent=bad?"Nicht gespeichert: "+bad+" Geschichte(n). Läuft der Inspector noch?":a.filter(x=>x.worth).length+" of "+scored.length+" judged · "+worth+" worth playing · voices ready: "+D.ready+" of "+D.total;$("#retry").hidden=!bad}
+function play(u,b){if(player)player.pause();player=new Audio(u);b.textContent="…";const r=()=>b.textContent="Abspielen";player.onended=player.onpause=r;player.play().catch(r)}
+function pbtn(u,text){const b=el("button","p",u?"Abspielen":"–");b.type="button";b.setAttribute("aria-label",(u?"Abspielen: ":"Keine Aufnahme: ")+(text||""));if(u)b.onclick=()=>play(u,b);else b.disabled=true;return b}
+function statusLine(){const scored=D.stories.filter(s=>!s.bonus),a=scored.map(s=>S[s.id]||{});const worth=a.filter(x=>x.worth==="yes").length;const bad=failed.size;$("#status").textContent=bad?"Nicht gespeichert: "+bad+" Geschichte(n). Läuft der Inspector noch?":a.filter(x=>x.worth).length+" von "+scored.length+" bewertet · "+worth+" lohnen sich · Stimmen fertig: "+D.ready+" von "+D.total;$("#retry").hidden=!bad}
 function bar(){const b=$("#bar");b.textContent="";D.stories.forEach((s,i)=>{const r=S[s.id]||{};const x=el("button",(r.worth||"")+(i===cur?" cur":""),String(i+1));x.type="button";if(i===cur)x.setAttribute("aria-current","true");x.onclick=()=>go(i);b.append(x)})}
 function go(i){if(i<0||i>=D.stories.length)return;if(player)player.pause();cur=i;render();scrollTo(0,0);const h=document.querySelector("#view h2");if(h)h.focus({preventScroll:true})}
 function nextOpen(){const n=D.stories.length;for(let k=1;k<=n;k++){const i=(cur+k)%n;if(!D.stories[i].bonus&&!(S[D.stories[i].id]||{}).worth)return go(i)}}
@@ -79,10 +80,10 @@ function render(){bar();statusLine();const s=D.stories[cur],v=$("#view");v.textC
  const r=S[s.id]||{},f=el("div","score");
  const row=(label,opts,key)=>{const w=el("div","row");w.append(el("span","label",label));opts.forEach(o=>{const on=String(r[key])===String(o[0]);const b=el("button","choice"+(on?" on":""),o[1]);b.type="button";b.dataset.score=key+":"+o[0];b.setAttribute("aria-pressed",on);b.onclick=()=>{save(s,{[key]:o[0]});w.querySelectorAll(".choice").forEach(x=>{x.classList.toggle("on",x===b);x.setAttribute("aria-pressed",x===b)})};w.append(b)});return w};
  f.append(row("Wert zu spielen?",[["yes","Ja"],["no","Nein"]],"worth"),row("Interesse",[[1,"1"],[2,"2"],[3,"3"],[4,"4"],[5,"5"]],"interest"));
- const t=el("textarea");t.id="defects-"+s.id;t.rows=4;t.placeholder="Fehler: was stimmt nicht, und welche Regel bricht es?";t.value=r.defects||"";t.onchange=()=>save(s,{defects:t.value});t.setAttribute("aria-label","Defects");f.append(t);
+ const t=el("textarea");t.id="defects-"+s.id;t.rows=4;t.placeholder="Fehler: was stimmt nicht, und welche Regel bricht es?";t.value=r.defects||"";t.onchange=()=>save(s,{defects:t.value});t.setAttribute("aria-label","Fehler");f.append(t);
  const n=el("div","row");const nx=el("button","choice","Nächste Geschichte");nx.type="button";nx.onclick=()=>go(cur+1);const un=el("button","choice","Nächste ohne Urteil");un.type="button";un.onclick=nextOpen;n.append(nx,un);f.append(n,el("p","meta kbd","Tasten: Y oder N, 1 bis 5, Pfeile links und rechts, U für die nächste ohne Urteil."));if(r.rev&&r.rev!==s.rev)f.prepend(el("p","meta","Die Geschichte wurde seit dieser Bewertung geändert."));a.append(f);v.append(a);drawFlow(flow,s)}
 async function load(){const[d,s]=await Promise.all([fetch("/experiment/data").then(r=>r.json()),fetch("/experiment/scores").then(r=>r.json())]);const changed=JSON.stringify(d)!==JSON.stringify(D);D=d;if(!pending.size&&!failed.size)S=s;const a=document.activeElement;if(changed&&!(a&&a.tagName==="TEXTAREA"))render();else statusLine()}
 $("#retry").onclick=()=>[...failed].forEach(enqueue);
 addEventListener("keydown",e=>{if(e.metaKey||e.ctrlKey||e.altKey||/^(TEXTAREA|INPUT)$/.test(e.target.tagName))return;const k=e.key.toLowerCase();const press=q=>{const b=document.querySelector('[data-score="'+q+'"]');if(b)b.click()};if(k==="y")press("worth:yes");else if(k==="n")press("worth:no");else if(/^[1-5]$/.test(k))press("interest:"+k);else if(k==="arrowright")go(cur+1);else if(k==="arrowleft")go(cur-1);else if(k==="u")nextOpen()});
-load().catch(()=>{$("#status").textContent="Could not load the stories."});setInterval(()=>{if(!(player&&!player.paused))load().catch(()=>{})},60000);
+load().catch(()=>{$("#status").textContent="Die Geschichten konnten nicht geladen werden."});setInterval(()=>{if(!(player&&!player.paused))load().catch(()=>{})},60000);
 </script>

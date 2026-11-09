@@ -1,4 +1,5 @@
 <!doctype html>
+<html lang="de">
 <title>Buch der Namen</title>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -36,11 +37,11 @@ details{margin-top:3px}summary{cursor:pointer;font:12px var(--mono);color:var(--
 </style>
 <link rel="stylesheet" href="/gothic.css">
 <main class="wrap">
-<nav class="label" aria-label="Seiten"><a href="/">Story inspector</a> · <a href="/characters">Characters</a> · <a href="/experiment">Geschichtenprobe</a></nav>
+<nav class="topnav" aria-label="Seiten"><a href="/">Inspektor</a><a href="/characters">Figuren</a><a href="/experiment">Geschichtenprobe</a><span class="lang"><a href="?lang=en" hreflang="en">EN</a><a href="?lang=de" hreflang="de">DE</a></span></nav>
 <h1>Das Buch der Namen</h1>
 <div class="grid">
-<aside class="rail"><input id="q" type="search" placeholder="Search sheets and facts" aria-label="Search sheets and facts"><nav id="list"></nav></aside>
-<div id="view"><p class="meta">Loading…</p></div>
+<aside class="rail"><input id="q" type="search" placeholder="Figuren und Tatsachen suchen" aria-label="Figuren und Tatsachen suchen"><nav id="list"></nav></aside>
+<div id="view"><p class="meta">Lädt …</p></div>
 </div>
 </main>
 <script>
@@ -50,47 +51,47 @@ let DATA={characters:[],facts:[]};
 const hay=x=>JSON.stringify(x).toLowerCase();
 const current=()=>decodeURIComponent(location.hash.slice(1));
 function quotes(items){const u=el("ul","ev");items.forEach(e=>{const l=el("li");l.append(el("q","",e.quote),el("span","key",e.key));u.append(l)});return u}
-function evidence(s,about){const items=(s.evidence||[]).filter(e=>e.about===about);if(!items.length)return null;const d=el("details");d.append(el("summary","","Evidence ("+items.length+")"),quotes(items));return d}
+function evidence(s,about){const items=(s.evidence||[]).filter(e=>e.about===about);if(!items.length)return null;const d=el("details");d.append(el("summary","","Belege ("+items.length+")"),quotes(items));return d}
 function field(s,about,name,text){const f=el("div","field");const p=el("p");if(name)p.append(el("span","name",name+": "));p.append(text);f.append(p);const ev=evidence(s,about);if(ev)f.append(ev);return f}
 function section(title,fields){if(!fields.length)return null;const x=el("section");x.append(el("h3","",title),...fields);return x}
 const entries=(s,o,path)=>Object.entries(o||{}).map(([k,v])=>field(s,path+"."+k,k,v));
 function showSheet(s){const v=$("#view");v.textContent="";const b=el("article","sheet");
- if(s.error){b.append(el("h2","",s.file),el("div","flag","This file could not be read: "+s.error));v.append(b);return}
- const t=el("div","tags");[s.npc,"voice "+(s.voice||"?")].forEach(x=>t.append(el("span","tag",x)));
- if(!s.evidence)t.append(el("span","tag w","no evidence recorded"));
- if(s.invented&&s.invented.length)t.append(el("span","tag w",s.invented.length+" invented"));
+ if(s.error){b.append(el("h2","",s.file),el("div","flag","Diese Datei konnte nicht gelesen werden: "+s.error));v.append(b);return}
+ const t=el("div","tags");[s.npc,"Stimme "+(s.voice||"?")].forEach(x=>t.append(el("span","tag",x)));
+ if(!s.evidence)t.append(el("span","tag w","keine Belege"));
+ if(s.invented&&s.invented.length)t.append(el("span","tag w",s.invented.length+" erfunden"));
  b.append(t,el("h2","",s.name||s.file),el("p","role",s.role||""));
- const a=s.attitudes||{},eye={novize:"As a novice",feuermagier:"As a Fire Mage"},own=[];
+ const a=s.attitudes||{},eye={novize:"Als Novize",feuermagier:"Als Feuermagier"},own=[];
  if(s.core)own.push(field(s,"core","",s.core));
- if(s.background)own.push(field(s,"background","Background",s.background));
- if(s.speech)own.push(field(s,"speech","Speech",s.speech));
- const parts=[section("Character",own),
-  section("Factions",entries(s,a.factions,"attitudes.factions")),
-  section("People",entries(s,a.people,"attitudes.people")),
-  section("Politics",a.politics?[field(s,"attitudes.politics","",a.politics)]:[]),
-  section("Game state",entries(s,s.game_state,"game_state")),
-  section("How they see the hero",Object.entries(s.sees_hero||{}).map(([k,x])=>field(s,"sees_hero."+k,eye[k]||k,x))),
-  section("Reacts to",entries(s,s.reacts_to,"reacts_to"))];
+ if(s.background)own.push(field(s,"background","Hintergrund",s.background));
+ if(s.speech)own.push(field(s,"speech","Sprache",s.speech));
+ const parts=[section("Wesen",own),
+  section("Fraktionen",entries(s,a.factions,"attitudes.factions")),
+  section("Personen",entries(s,a.people,"attitudes.people")),
+  section("Politik",a.politics?[field(s,"attitudes.politics","",a.politics)]:[]),
+  section("Spielstand",entries(s,s.game_state,"game_state")),
+  section("Wie die Figur den Helden sieht",Object.entries(s.sees_hero||{}).map(([k,x])=>field(s,"sees_hero."+k,eye[k]||k,x))),
+  section("Reagiert auf",entries(s,s.reacts_to,"reacts_to"))];
  parts.forEach(p=>p&&b.append(p));
- if(s.invented&&s.invented.length){const f=el("div","flag");f.append(el("strong","","Not grounded in the character's lines"));const u=el("ul");s.invented.forEach(i=>u.append(el("li","",i)));f.append(u);b.append(f)}
+ if(s.invented&&s.invented.length){const f=el("div","flag");f.append(el("strong","","Nicht durch die Zeilen der Figur belegt"));const u=el("ul");s.invented.forEach(i=>u.append(el("li","",i)));f.append(u);b.append(f)}
  v.append(b)}
 function showFacts(){const v=$("#view");v.textContent="";const b=el("article","sheet"),q=$("#q").value.trim().toLowerCase();
  const facts=DATA.facts.filter(f=>!q||hay(f).includes(q)),topics=new Map();
  facts.forEach(f=>{if(!topics.has(f.about))topics.set(f.about,[]);topics.get(f.about).push(f)});
- b.append(el("div","label","Shared knowledge"),el("h2","","World facts"),el("p","meta",facts.length+" of "+DATA.facts.length+" facts"));
+ b.append(el("div","label","Gemeinsames Wissen"),el("h2","","Weltwissen"),el("p","meta",facts.length+" von "+DATA.facts.length+" Tatsachen"));
  topics.forEach((items,topic)=>{const x=el("section");x.append(el("h3","",topic));items.forEach(f=>{const d=el("div","field");d.append(el("p","",f.fact),quotes([f]));x.append(d)});b.append(x)});
  v.append(b)}
 function renderList(){const q=$("#q").value.trim().toLowerCase(),now=current(),n=$("#list");n.textContent="";
  const link=(id,name,sub)=>{const a=el("a","who",name);a.href="#"+encodeURIComponent(id);if(id===now)a.setAttribute("aria-current","page");if(sub)a.append(el("small","",sub));return a};
- n.append(link("world","World facts",DATA.facts.length+" facts"));
+ n.append(link("world","Weltwissen",DATA.facts.length+" Tatsachen"));
  let shown=0;
- GROUPS.forEach(([prefix,title])=>{const people=DATA.characters.filter(s=>(s.npc||"").startsWith(prefix)&&(prefix||!GROUPS.some(g=>g[0]&&(s.npc||"").startsWith(g[0])))&&(!q||hay(s).includes(q)));if(!people.length)return;const g=el("div","group");g.append(el("div","label",title));people.forEach(s=>g.append(link(s.file,s.name||s.file,s.error?"unreadable":s.role)));n.append(g);shown+=people.length});
- if(!shown&&q)n.append(el("p","meta","No sheet matches."))}
+ GROUPS.forEach(([prefix,title])=>{const people=DATA.characters.filter(s=>(s.npc||"").startsWith(prefix)&&(prefix||!GROUPS.some(g=>g[0]&&(s.npc||"").startsWith(g[0])))&&(!q||hay(s).includes(q)));if(!people.length)return;const g=el("div","group");g.append(el("div","label",title));people.forEach(s=>g.append(link(s.file,s.name||s.file,s.error?"unlesbar":s.role)));n.append(g);shown+=people.length});
+ if(!shown&&q)n.append(el("p","meta","Keine Figur passt."))}
 function route(){if(!current()&&DATA.characters.length){history.replaceState(null,"","#"+encodeURIComponent(DATA.characters[0].file))}
  const id=current(),rail=$(".rail"),kept=rail.scrollTop;renderList();rail.scrollTop=kept;
- if(id==="world")showFacts();else{const c=DATA.characters.find(x=>x.file===id);if(c)showSheet(c);else{$("#view").textContent="";$("#view").append(el("p","meta","No sheet selected."))}}
+ if(id==="world")showFacts();else{const c=DATA.characters.find(x=>x.file===id);if(c)showSheet(c);else{$("#view").textContent="";$("#view").append(el("p","meta","Keine Figur ausgewählt."))}}
  const top=$("#view").getBoundingClientRect().top;if(top<0)window.scrollBy(0,top-16)}
 $("#q").oninput=()=>{renderList();if(current()==="world")showFacts()};
 addEventListener("hashchange",route);
-fetch("/characters.json").then(r=>{if(!r.ok)throw 0;return r.json()}).then(d=>{DATA=d;route()}).catch(()=>{$("#view").textContent="";$("#view").append(el("p","meta","Could not load the sheets. Is the inspector server still running?"))});
+fetch("/characters.json").then(r=>{if(!r.ok)throw 0;return r.json()}).then(d=>{DATA=d;route()}).catch(()=>{$("#view").textContent="";$("#view").append(el("p","meta","Die Figuren konnten nicht geladen werden. Läuft der Inspektor noch?"))});
 </script>

@@ -47,3 +47,10 @@ input,textarea{font-family:var(--body);border-radius:1px}
 .who small{font-family:var(--body);font-size:13.5px}
 .who[aria-current]{border-left-color:var(--ember);background:linear-gradient(90deg,rgba(224,138,53,.24),transparent)}
 section{border-top-color:var(--line)}
+.topnav{display:flex;flex-wrap:wrap;align-items:center;gap:4px;margin:0 0 14px;font:500 16px/1.2 var(--body)}
+.topnav a{color:#d8b878;text-decoration:none;padding:7px 12px;border:1px solid transparent;border-radius:2px}
+.topnav a:hover{border-color:rgba(216,184,120,.45)}
+.topnav a:focus-visible{outline:2px solid #d8b878;outline-offset:1px}
+.topnav a[aria-current]{color:#f0e2c0;background:rgba(216,184,120,.16);border-color:rgba(216,184,120,.45)}
+.topnav .lang{display:flex;gap:2px;margin-left:auto}
+.topnav .lang a{padding:7px 9px;font-size:14px}

@@ -9,6 +9,7 @@ are stored in python/dm_runtime/reviews.json.
 
 import copy
 import hashlib
+import http.cookies
 import http.server
 import importlib
 import json
@@ -17,12 +18,14 @@ import re
 import sys
 import threading
 import types
+import urllib.parse
 
 ROOT = pathlib.Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT.parent))
 sys.modules.setdefault("gothic", types.ModuleType("gothic"))
 
 from dm import knowledge as k  # noqa: E402
+from dm import inspector_i18n  # noqa: E402
 from dm import voices  # noqa: E402
 from dm.stories import tilo as t  # noqa: E402
 
@@ -53,14 +56,14 @@ def build():
     for r in rules:
         for o in r["ops"]:
             if o["op"]=="add_scene": scenes[o["id"]]=o
-    order=[("barrel","Novize neben Gorax","Monastery, after the theft"),("tilo_before","Tilo","Monastery, before the theft"),("gorax","Gorax","Monastery, on approach"),("parlan","Parlan","Monastery, on approach"),("anselm","Anselm","Monastery, on approach"),("harek","Harek","Harbour tavern, always available"),("tilo","Tilo","Harbour alleys, always available"),("tilo_ordered_home","Tilo","Until you leave, if ordered home"),("tilo_back_at_work","Tilo","At the winery, after being ordered home"),("tilo_after_turned_in","Tilo","Until you leave, if turned in"),("tilo_after_help","Tilo","Until you leave, if helped"),("parlan_reward","Parlan","After Tilo is turned in"),("anselm_bitter","Anselm","After the reward is paid"),("anselm_grateful","Anselm","After Tilo is helped")]
+    order=[("barrel","Novize neben Gorax","Kloster, nach dem Diebstahl"),("tilo_before","Tilo","Kloster, vor dem Diebstahl"),("gorax","Gorax","Kloster, beim Näherkommen"),("parlan","Parlan","Kloster, beim Näherkommen"),("anselm","Anselm","Kloster, beim Näherkommen"),("harek","Harek","Hafenkneipe, immer verfügbar"),("tilo","Tilo","Hafengassen, immer verfügbar"),("tilo_ordered_home","Tilo","Bis du gehst, wenn nach Hause geschickt"),("tilo_back_at_work","Tilo","An der Kelter, nach der Heimkehr"),("tilo_after_turned_in","Tilo","Bis du gehst, wenn ausgeliefert"),("tilo_after_help","Tilo","Bis du gehst, wenn ihm geholfen wurde"),("parlan_reward","Parlan","Nachdem Tilo ausgeliefert wurde"),("anselm_bitter","Anselm","Nachdem die Belohnung bezahlt wurde"),("anselm_grateful","Anselm","Nachdem Tilo geholfen wurde")]
     g=t.all_graphs()
     data={"frame":re.sub(r"\s+"," ",t.__doc__.split("Frame:")[1]).strip(),"truth":t.HIDDEN_TRUTH,"errors":errors,"warnings":warnings,"facts":{f:dict(essential=v.get("essential",False),topic=v.get("topic",False),needs=v.get("needs",[]),knownBy=[names.get(n,n) for n in v.get("known_by",[])]) for f,v in plot["facts"].items()},
     "convs":[{"id":i,"speaker":s,"where":w,"requires":scenes.get(i,{}).get("requires",[]),"unless":scenes.get(i,{}).get("unless") or [],"within":scenes.get(i,{}).get("within"),"scene":i in scenes,"start":g[i]["start"],"nodes":g[i]["nodes"]} for i,s,w in order],
     "rules":[{"id":r["id"],"when":r["when"],"ops":[{k:v for k,v in o.items() if k in("op","instance","count","id","waypoint","requires")} for o in r["ops"]]} for r in rules]}
-    lab={"tilo_named":"Tilo's name","tilo_absent":"Tilo is missing","wine_trips":"his wine trips","silver_stolen":"silver was stolen","candlesticks":"two candlesticks","reward":"reward offered","tilo_past":"his father","gambling":"dice debt","harbour_lead":"try the harbour","friend_offer":"Anselm's offer","harek_wary":"Harek is wary","silver_sold":"silver sold to Harek","tilo_nearby":"hiding near harbour","tilo_cornered":"met him at the harbour","tilo_met":"met Tilo","barrel_met":"met the barrel novice","tilo_stressed":"he looked stressed","tilo_turned_in":"Tilo turned in","tilo_helped":"Tilo helped","parlan_paid":"reward paid","anselm_secret":"secret told","tilo_threatened":"Tilo shaken down","tilo_confessed":"Tilo confessed"}
+    lab={"tilo_named":"Tilos Name","tilo_absent":"Tilo fehlt","wine_trips":"seine Weingänge","silver_stolen":"Silber gestohlen","candlesticks":"zwei Leuchter","reward":"Belohnung ausgesetzt","tilo_past":"sein Vater","gambling":"Würfelschulden","harbour_lead":"Spur zum Hafen","friend_offer":"Anselms Angebot","harek_wary":"Harek ist misstrauisch","silver_sold":"Silber an Harek verkauft","tilo_nearby":"versteckt am Hafen","tilo_cornered":"am Hafen getroffen","tilo_met":"Tilo getroffen","barrel_met":"Fass-Novize getroffen","tilo_stressed":"wirkte gehetzt","tilo_turned_in":"Tilo ausgeliefert","tilo_helped":"Tilo geholfen","parlan_paid":"Belohnung bezahlt","anselm_secret":"Geheimnis erzählt","tilo_threatened":"Tilo erpresst","tilo_confessed":"Tilo gestanden"}
     conv={c["id"]:c for c in data["convs"]}
-    titles={"tilo_back_at_work":"Tilo back at work","tilo_ordered_home":"Tilo obeys","tilo_after_help":"Tilo says goodbye","tilo_after_turned_in":"Tilo promises to follow","barrel":"The novice at the barrels","tilo_before":"Tilo before the theft","gorax":"Gorax complains","parlan":"Parlan announces","anselm":"Anselm's plea","harek":"Harek","tilo":"Tilo","parlan_reward":"Parlan pays","anselm_bitter":"Anselm turns away","anselm_grateful":"Anselm's secret"}
+    titles={"tilo_back_at_work":"Tilo wieder bei der Arbeit","tilo_ordered_home":"Tilo gehorcht","tilo_after_help":"Tilo verabschiedet sich","tilo_after_turned_in":"Tilo verspricht zu folgen","barrel":"Der Novize an den Fässern","tilo_before":"Tilo vor dem Diebstahl","gorax":"Gorax beschwert sich","parlan":"Parlan verkündet","anselm":"Anselms Bitte","harek":"Harek","tilo":"Tilo","parlan_reward":"Parlan zahlt","anselm_bitter":"Anselm wendet sich ab","anselm_grateful":"Anselms Geheimnis"}
     L=["flowchart LR"]; seen=set(); facts=set(); E=set()
     def f(x):
         facts.add(x); return "f_"+x
@@ -81,8 +84,8 @@ def build():
     E.add(f"  {f('tilo_turned_in')} ==>|starts| c_parlan_reward"); E.add(f"  c_parlan_reward --> {f('parlan_paid')}"); E.add(f"  {f('parlan_paid')} ==>|starts| c_anselm_bitter")
     E.add(f"  {f('tilo_helped')} ==>|starts| c_anselm_grateful"); E.add(f"  c_anselm_grateful --> {f('anselm_secret')}")
     L.append('  r_gold(["200 gold"]):::effect'); E.add(f"  {f('parlan_paid')} ==> r_gold")
-    L.append('  r_wine(["hidden wine appears"]):::effect'); E.add(f"  {f('anselm_secret')} ==> r_wine")
-    L.append('  r_gone(["Tilo leaves the harbour"]):::effect'); E.add(f"  {f('tilo_turned_in')} ==> r_gone"); E.add(f"  {f('tilo_helped')} ==> r_gone")
+    L.append('  r_wine(["versteckter Wein taucht auf"]):::effect'); E.add(f"  {f('anselm_secret')} ==> r_wine")
+    L.append('  r_gone(["Tilo verlässt den Hafen"]):::effect'); E.add(f"  {f('tilo_turned_in')} ==> r_gone"); E.add(f"  {f('tilo_helped')} ==> r_gone")
     for x in sorted(facts):
         L.append(f'  f_{x}("{lab[x]}"):::{"ess" if plot["facts"].get(x,{}).get("essential") else "fact"}')
     L+=sorted(E)
@@ -394,6 +397,14 @@ def load_scores():
 
 
 class Handler(http.server.BaseHTTPRequestHandler):
+    def _localized(self, html):
+        cookies = http.cookies.SimpleCookie(self.headers.get("Cookie", ""))
+        language = cookies["lang"].value if "lang" in cookies else "en"
+        html = inspector_i18n.translate(html, language)
+        for link in (f'<a href="{self.path}">', f'<a href="?lang={language}" hreflang="{language}">'):
+            html = html.replace(link, link[:-1] + ' aria-current="page">', 1)
+        return html.encode("utf-8")
+
     def _send(self, body, kind="application/json", status=200):
         self.send_response(status)
         self.send_header("Content-Type", kind)
@@ -402,20 +413,28 @@ class Handler(http.server.BaseHTTPRequestHandler):
         self.wfile.write(body)
 
     def do_GET(self):
-        self.path = self.path.split("?", 1)[0].rstrip("/") or "/"
+        path, _, query = self.path.partition("?")
+        self.path = path.rstrip("/") or "/"
+        chosen = dict(urllib.parse.parse_qsl(query)).get("lang")
+        if chosen in ("en", "de"):
+            self.send_response(303)
+            self.send_header("Location", self.path)
+            self.send_header("Set-Cookie", f"lang={chosen}; Path=/; Max-Age=31536000; SameSite=Lax")
+            self.send_header("Content-Length", "0")
+            return self.end_headers()
         if self.path == "/":
             data, graph = build()
             html = PAGE.read_text(encoding="utf-8").replace("%%GRAPH%%", graph).replace(
                 "/*DATA*/null", json.dumps(data, ensure_ascii=False).replace("</", "<\\/"))
-            self._send(html.encode("utf-8"), "text/html; charset=utf-8")
+            self._send(self._localized(html), "text/html; charset=utf-8")
         elif self.path == "/gothic.css":
             self._send((ROOT / "inspector" / "gothic.css").read_bytes(), "text/css; charset=utf-8")
         elif self.path == "/characters":
-            self._send(CHARACTERS_PAGE.read_bytes(), "text/html; charset=utf-8")
+            self._send(self._localized(CHARACTERS_PAGE.read_text(encoding="utf-8")), "text/html; charset=utf-8")
         elif self.path == "/characters.json":
             self._send(json.dumps(character_data(), ensure_ascii=False).encode("utf-8"))
         elif self.path == "/experiment":
-            self._send(EXPERIMENT_PAGE.read_bytes(), "text/html; charset=utf-8")
+            self._send(self._localized(EXPERIMENT_PAGE.read_text(encoding="utf-8")), "text/html; charset=utf-8")
         elif self.path == "/experiment/data":
             self._send(json.dumps(experiment_data(), ensure_ascii=False).encode("utf-8"))
         elif self.path == "/experiment/scores":
