@@ -10,6 +10,8 @@
 A node with "returns" has no choices of its own: after its line, the conversation
 goes straight back to that earlier node's menu.
 
+A node's "variants" replace its line when a flag is set: [{"when": flag, "line": text}].
+
 A choice can carry "requires" (flags, any one is enough) and "unless" (a flag),
 so the hero can only say what the player has actually learned. Once asked, a question
 is gone for good, as in the original game, unless the choice sets "repeat". A node with "sets"
@@ -106,8 +108,13 @@ class Player:
         flags = self.node.get("sets") or []
         if isinstance(flags, str):
             flags = [flags]
-        already = bool(flags) and self.get_flags().get(flags[0])
+        known = self.get_flags()
+        already = bool(flags) and known.get(flags[0])
         self.line = self.node["again"] if self.node.get("again") and already else self.node["line"]
+        for variant in self.node.get("variants", []):
+            if known.get(variant["when"]):
+                self.line = variant["line"]
+                break
         for flag in flags:
             if flag not in self.flagged:
                 self.flagged.add(flag)

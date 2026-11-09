@@ -42,6 +42,8 @@ PLOT = {
         "tilo_cornered": fact(topic=True),
         "tilo_met": fact(topic=True),
         "barrel_met": fact(topic=True),
+        "hero_mage": fact(topic=True),
+        "tilo_sent_back": fact(topic=True),
         "anselm_met": fact(topic=True),
         "tilo_stressed": fact(topic=True),
     },
@@ -49,8 +51,10 @@ PLOT = {
 }
 
 
-def node(line, sets=(), choices=(), uses=(), again=None, delivery=None):
+def node(line, sets=(), choices=(), uses=(), again=None, delivery=None, variants=None):
     result = {"line": line, "choices": list(choices)}
+    if variants:
+        result["variants"] = variants
     if sets:
         result["sets"] = list(sets)
         result["teaches"] = list(sets)
@@ -83,6 +87,9 @@ def _choice(text, base, requires, unless, uses):
 
 
 BACK = "Zurück."
+ORDER_HOME = ("Du bist doch ein Novize des Feuers. Mach, dass du ins Kloster zurückkommst. Als Diener Innos' befehle ich es. "
+              "Sprich mit Parlan, um eine angemessene Strafe entgegenzunehmen. Innos zu dienen sollte dich mit Stolz erfüllen, "
+              "und du treibst dich hier herum!")
 
 GORAX_SCENE = {"voice": VOICES[GORAX], "start": "a", "nodes": {
     "a": node("Hey du! Hast du den Novizen Tilo gesehen? Der Bengel ist heute früh nicht zur Arbeit erschienen. Die Presse steht still, und der Wein keltert sich schließlich nicht von selbst!",
@@ -169,13 +176,16 @@ HAREK_GRAPH = {"voice": VOICES[HAREK], "start": "a", "nodes": {
 
 TILO_GRAPH = {"voice": VOICES[TILO], "start": "a", "nodes": {
     "a": node("Du? Was machst du denn hier? Ich meine ... was glotzt du so? Ich kenn mich hier aus, klar? Die Leute am Hafen kennen mich.",
-              ["tilo_cornered"], again="Was willst du denn noch? Lass mich in Ruhe.", choices=[
+              ["tilo_cornered"], again="Was willst du denn noch? Lass mich in Ruhe.",
+              variants=[{"when": "hero_mage", "line": "Meister? Verzeiht, ich ... ich wollte gerade ... ich bin nur kurz hier."}], choices=[
+                  go(ORDER_HOME, "m", requires=["hero_mage"]),
                   go("Ich weiß von den Leuchtern.", "b", requires=["candlesticks"], uses=["candlesticks"]),
                   go("Ich weiß, was du gestohlen hast.", "b", requires=["silver_stolen"], unless="candlesticks", uses=["silver_stolen"]),
                   go("Du bist Tilo aus dem Kloster.", "a2", requires=["tilo_named"], uses=["tilo_named"]),
                   go("Du siehst nicht aus wie einer von hier.", "a3"),
                   go("Dein Freund Anselm macht sich Sorgen.", "b2", requires=["friend_offer"], uses=["friend_offer"]),
                   end("Schon gut. Ich gehe wieder.")]),
+    "m": node("Ja, Meister. Sofort, Meister. Verzeiht mir.", ["tilo_sent_back"], [end("Geh jetzt.")]),
     "a2": node("Kloster? Das war einmal. Ich bin jetzt Seemann. Sobald die Blockade weg ist, heuere ich an, und du hast mich nie gesehen, klar?",
                [], [go("Du siehst nicht aus wie ein Seemann.", "b"), go(BACK, "a"), end("Wie du meinst.")]),
     "a3": node("Ach ja? Ich bin Seemann, Mann. Ich warte nur, bis die Blockade weg ist. Geh weiter, hier gibt es nichts zu sehen.",
@@ -229,6 +239,10 @@ TILO_AFTER_TURNED_IN = {"voice": VOICES[TILO], "start": "a", "nodes": {
     "a": node("Geh schon vor. Ich komme nach, ich laufe nicht weg. Wohin auch.", [], [end("Ich verlasse mich darauf.")]),
 }}
 
+TILO_ORDERED_HOME = {"voice": VOICES[TILO], "start": "a", "nodes": {
+    "a": node("Ich gehe ja schon, Meister.", [], [end("Geh.")]),
+}}
+
 TILO_BEFORE = {"voice": VOICES[TILO], "start": "a", "nodes": {
     "a": node("Was ist? Ich hab zu tun. Gorax reißt mir den Kopf ab, wenn die Fässer nicht fertig sind.",
               ["tilo_met", "tilo_named"], again="Du schon wieder? Ich hab wirklich zu tun.", choices=[
@@ -266,7 +280,7 @@ ROBE = {"description": "Zerknitterte Novizenrobe",
 
 # A mage is too important to be drawn in. Tilo still vanishes, but nobody tells him about it.
 TOO_IMPORTANT = ["GIL_KDF"]
-FATE = ["tilo_turned_in", "tilo_helped"]  # once decided, the early scenes no longer make sense
+FATE = ["tilo_turned_in", "tilo_helped", "tilo_sent_back"]  # once decided, the early scenes no longer make sense
 
 
 JOURNAL_TOPIC = "Der Fall Tilo"
@@ -322,6 +336,12 @@ def plan(start_day=0):
             {"op": "add_scene", "id": "anselm_bitter", "npc": ANSELM, "graph": ANSELM_BITTER, "within": 450, "requires": ["parlan_paid"]}]},
         {"op": "add_rule", "id": "tilo_gone_turned_in", "when": ["tilo_turned_in"], "unseen_by_near": TILO, "ops": [
             {"op": "remove_npc", "instance": TILO}]},
+        {"op": "add_rule", "id": "tilo_sent_back", "when": ["tilo_sent_back"], "ops": [
+            {"op": "detach_dialogue_graph", "npc": BARREL},
+            {"op": "detach_dialogue_graph", "npc": ANSELM},
+            {"op": "attach_dialogue_graph", "npc": TILO, "graph": TILO_ORDERED_HOME}]},
+        {"op": "add_rule", "id": "tilo_gone_sent_back", "when": ["tilo_sent_back"], "unseen_by_near": TILO, "ops": [
+            {"op": "remove_npc", "instance": TILO}]},
         {"op": "add_rule", "id": "tilo_gone_helped", "when": ["tilo_helped"], "unseen_by_near": TILO, "ops": [
             {"op": "remove_npc", "instance": TILO}]},
         {"op": "add_rule", "id": "reward_gold", "when": ["reward_gold"], "ops": [
@@ -364,6 +384,6 @@ for _graph in (GORAX_SCENE, PARLAN_SCENE, ANSELM_SCENE, HAREK_GRAPH, TILO_GRAPH,
 
 
 def all_graphs():
-    return {"tilo_after_help": TILO_AFTER_HELP, "tilo_after_turned_in": TILO_AFTER_TURNED_IN, "barrel": BARREL_GRAPH, "tilo_before": TILO_BEFORE, "gorax": GORAX_SCENE, "parlan": PARLAN_SCENE, "anselm": ANSELM_SCENE, "harek": HAREK_GRAPH,
+    return {"tilo_ordered_home": TILO_ORDERED_HOME, "tilo_after_help": TILO_AFTER_HELP, "tilo_after_turned_in": TILO_AFTER_TURNED_IN, "barrel": BARREL_GRAPH, "tilo_before": TILO_BEFORE, "gorax": GORAX_SCENE, "parlan": PARLAN_SCENE, "anselm": ANSELM_SCENE, "harek": HAREK_GRAPH,
             "tilo": TILO_GRAPH, "parlan_reward": PARLAN_REWARD, "anselm_bitter": ANSELM_BITTER,
             "anselm_grateful": ANSELM_GRATEFUL}

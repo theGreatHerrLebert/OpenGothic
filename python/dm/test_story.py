@@ -90,6 +90,8 @@ class Dialog:
 
 fake = types.ModuleType("gothic")
 fake.world, fake.dialog = World(), Dialog()
+fake.player = types.SimpleNamespace(position=(0, 0, 0), busy=False, guild=0)
+fake.daedalus = types.SimpleNamespace(get=lambda name, i=0: -1)
 sys.modules["gothic"] = fake
 
 from dm import graph as graphs  # noqa: E402
@@ -177,6 +179,19 @@ def test_questions_are_asked_once():
     assert d.choices == ["Immer", "Tschüss"], d.choices
 
 
+def test_variant_line():
+    graph = {"start": "a", "nodes": {"a": {"line": "Normal.", "variants": [{"when": "mage", "line": "Meister!"}],
+             "choices": [{"text": "Tschüss", "ends": True}]}}}
+    flags = {"mage": True}
+    d = fake.dialog
+    d.reset()
+    player = graphs.Player(lambda: {"NOV_B": graph}, lambda n: None, lambda: flags)
+    d.who, d.opened, d.open = Npc("NOV_B"), True, True
+    player.on_tick()
+    player.on_tick()
+    assert d.lines == ["Meister!"], d.lines
+
+
 def test_again_line():
     graph = {"start": "a", "nodes": {"a": {"line": "Erstes Mal.", "again": "Du schon wieder.",
              "sets": "met", "choices": [{"text": "Tschüss", "ends": True}]}}}
@@ -220,6 +235,7 @@ def test_scene_and_rule():
     s.on_tick()
     assert started == []                 # too important
     s.state["scenes"]["s"]["not_guilds"] = []
+    fake.daedalus = types.SimpleNamespace(get=lambda name, i=0: -1)
     w.npcs["PARLAN"].sees = False
     s.on_tick()
     assert started == []                 # through a wall
@@ -429,7 +445,7 @@ def test_player():
     d.say = real_say
 
 
-for test in (test_graph_validation, test_validation, test_apply_and_rollback, test_return_npc, test_conditional_choices, test_returns_to_menu, test_questions_are_asked_once, test_again_line, test_scene_and_rule,
+for test in (test_graph_validation, test_validation, test_apply_and_rollback, test_return_npc, test_conditional_choices, test_returns_to_menu, test_questions_are_asked_once, test_variant_line, test_again_line, test_scene_and_rule,
              test_queue_waits_for_safe_point, test_save_load_does_not_reapply_world,
              test_player):
     test()
