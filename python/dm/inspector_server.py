@@ -14,6 +14,7 @@ import json
 import pathlib
 import re
 import sys
+import threading
 import types
 
 ROOT = pathlib.Path(__file__).resolve().parent
@@ -27,6 +28,7 @@ from dm.stories import tilo as t  # noqa: E402
 PORT = 8765
 PAGE = ROOT / "inspector" / "page.html"
 REVIEWS = voices.RUNTIME_DIR / "reviews.json"
+REVIEW_LOCK = threading.Lock()  # requests arrive on separate threads
 AUDIO_PATH = re.compile(r"^/audio/([0-9A-Za-z_]+)/([0-9a-f]{20})\.wav$")
 
 
@@ -125,12 +127,16 @@ class Handler(http.server.BaseHTTPRequestHandler):
         if self.path != "/reviews":
             return self._send(b"{}", status=404)
         request = json.loads(self.rfile.read(int(self.headers["Content-Length"])))
-        reviews = load_reviews()
-        if request.get("verdict"):
-            reviews[request["id"]] = {"verdict": request["verdict"], "reason": request.get("reason", "")}
-        else:
-            reviews.pop(request["id"], None)
-        REVIEWS.write_text(json.dumps(reviews, ensure_ascii=False, indent=1), encoding="utf-8")
+        with REVIEW_LOCK:
+            reviews = load_reviews()
+            if request.get("verdict"):
+                reviews[request["id"]] = {"verdict": request["verdict"], "reason": request.get("reason", "")}
+            else:
+                reviews.pop(request["id"], None)
+            # write to a temporary file first, so a crash can never leave a partial file
+            temporary = REVIEWS.with_suffix(".tmp")
+            temporary.write_text(json.dumps(reviews, ensure_ascii=False, indent=1), encoding="utf-8")
+            temporary.replace(REVIEWS)
         self._send(b"{}")
 
     def log_message(self, *args):
