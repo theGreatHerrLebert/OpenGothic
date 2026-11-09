@@ -210,6 +210,7 @@ def _fold_rule(args, state):
     state.setdefault("rules", {})[args["id"]] = {
         "when": args["when"], "unless": args.get("unless"), "ops": args["ops"], "fired": False,
         "after_night_of": args.get("after_night_of"), "unseen_by_near": args.get("unseen_by_near"),
+        "unseen_range": args.get("unseen_range", UNSEEN_RANGE),
     }
 
 
@@ -316,6 +317,20 @@ def _world_detach(args):
     return None
 
 
+def _check_send(args, state):
+    _require(args, "instance", "waypoint")
+    _npc_instance(args["instance"])
+    if not gothic.world.has_waypoint(args["waypoint"]):
+        raise PlanError(f"no such waypoint: {args['waypoint']}")
+    if args["instance"].upper() not in state.get("returning", []):
+        _live_npc(args["instance"])
+
+
+def _world_send(args):
+    _live_npc(args["instance"]).send_to(args["waypoint"])
+    return None
+
+
 def _check_flag(args, state):
     _require(args, "name", "value")
 
@@ -346,6 +361,7 @@ OPS = {
     "fire_rule": (_check_fire_rule, _fold_fire_rule, None),
     "spawn_npc": (_check_spawn, _noop, _world_spawn),
     "detach_dialogue_graph": (_check_detach, _fold_detach, _world_detach),
+    "send_npc": (_check_send, _noop, _world_send),
     "journal": (_check_journal, _noop, _world_journal),
     "rename_npc": (_check_rename, _noop, _world_rename),
     "give_item": (_check_give, _noop, _world_give),
@@ -533,7 +549,7 @@ class Story:
             if npc is not None:
                 px, _, pz = gothic.player.position
                 x, _, z = npc.position
-                if (px - x) ** 2 + (pz - z) ** 2 < UNSEEN_RANGE ** 2:
+                if (px - x) ** 2 + (pz - z) ** 2 < rule.get("unseen_range", UNSEEN_RANGE) ** 2:
                     return False
         return True
 

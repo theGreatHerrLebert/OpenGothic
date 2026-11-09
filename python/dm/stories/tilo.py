@@ -244,6 +244,10 @@ TILO_ORDERED_HOME = {"voice": VOICES[TILO], "start": "a", "nodes": {
     "a": node("Ich gehe ja schon, Meister.", [], [end("Geh.")]),
 }}
 
+TILO_BACK_AT_WORK = {"voice": VOICES[TILO], "start": "a", "nodes": {
+    "a": node("Meister. Ich bin wieder bei der Arbeit, wie Ihr es befohlen habt.", [], [end("Gut so.")]),
+}}
+
 TILO_BEFORE = {"voice": VOICES[TILO], "start": "a", "nodes": {
     "a": node("Was ist? Ich hab zu tun. Gorax reißt mir den Kopf ab, wenn die Fässer nicht fertig sind.",
               ["tilo_met", "tilo_named"], again="Du schon wieder? Ich hab wirklich zu tun.", choices=[
@@ -340,9 +344,13 @@ def plan(start_day=0):
         {"op": "add_rule", "id": "tilo_sent_back", "when": ["tilo_sent_back"], "ops": [
             {"op": "detach_dialogue_graph", "npc": BARREL},
             {"op": "detach_dialogue_graph", "npc": ANSELM},
-            {"op": "attach_dialogue_graph", "npc": TILO, "graph": TILO_ORDERED_HOME}]},
-        {"op": "add_rule", "id": "tilo_gone_sent_back", "when": ["tilo_sent_back"], "unseen_by_near": TILO, "ops": [
-            {"op": "remove_npc", "instance": TILO}]},
+            {"op": "attach_dialogue_graph", "npc": TILO, "graph": TILO_ORDERED_HOME},
+            {"op": "send_npc", "instance": TILO, "waypoint": "NW_MONASTERY_WINEMAKER_01"}]},
+        {"op": "add_rule", "id": "tilo_back_at_work", "when": ["tilo_sent_back"], "unseen_by_near": TILO,
+         "unseen_range": 3000, "ops": [
+            {"op": "relocate_npc", "instance": TILO, "waypoint": "NW_MONASTERY_WINEMAKER_01",
+             "armor": "ITAR_NOV_L", "display_name": "Tilo"},
+            {"op": "attach_dialogue_graph", "npc": TILO, "graph": TILO_BACK_AT_WORK}]},
         {"op": "add_rule", "id": "tilo_gone_helped", "when": ["tilo_helped"], "unseen_by_near": TILO, "ops": [
             {"op": "remove_npc", "instance": TILO}]},
         {"op": "add_rule", "id": "reward_gold", "when": ["reward_gold"], "ops": [
@@ -385,6 +393,6 @@ for _graph in (GORAX_SCENE, PARLAN_SCENE, ANSELM_SCENE, HAREK_GRAPH, TILO_GRAPH,
 
 
 def all_graphs():
-    return {"tilo_ordered_home": TILO_ORDERED_HOME, "tilo_after_help": TILO_AFTER_HELP, "tilo_after_turned_in": TILO_AFTER_TURNED_IN, "barrel": BARREL_GRAPH, "tilo_before": TILO_BEFORE, "gorax": GORAX_SCENE, "parlan": PARLAN_SCENE, "anselm": ANSELM_SCENE, "harek": HAREK_GRAPH,
+    return {"tilo_back_at_work": TILO_BACK_AT_WORK, "tilo_ordered_home": TILO_ORDERED_HOME, "tilo_after_help": TILO_AFTER_HELP, "tilo_after_turned_in": TILO_AFTER_TURNED_IN, "barrel": BARREL_GRAPH, "tilo_before": TILO_BEFORE, "gorax": GORAX_SCENE, "parlan": PARLAN_SCENE, "anselm": ANSELM_SCENE, "harek": HAREK_GRAPH,
             "tilo": TILO_GRAPH, "parlan_reward": PARLAN_REWARD, "anselm_bitter": ANSELM_BITTER,
             "anselm_grateful": ANSELM_GRATEFUL}

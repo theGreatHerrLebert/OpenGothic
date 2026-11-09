@@ -233,6 +233,16 @@ struct PyNpc {
     return (uint32_t(n->canSenseNpc(*requirePlayer(), false)) & uint32_t(SensesBit::SENSE_SEE))!=0;
     }
 
+  // Gives the NPC a routine at a waypoint, so they walk there through the world.
+  void sendTo(const std::string& waypoint) {
+    auto* n = fetch();
+    auto* w = requireWorld();
+    const size_t fn = w->script().findSymbolIndex("ZS_STAND_ARMSCROSSED");
+    if(w->findPoint(waypoint,false)==nullptr || fn==size_t(-1))
+      throw std::invalid_argument("cannot send NPC to: " + waypoint);
+    n->standAtRoutine(uint32_t(fn), waypoint);
+    }
+
   void stop() {
     auto* n = fetch();
     n->clearAiQueue();
@@ -544,6 +554,8 @@ PYBIND11_EMBEDDED_MODULE(gothic, m) {
       .def("wear", &PyNpc::wear, py::arg("instance"),
            "Give the NPC an armour item and put it on.")
       .def("can_see_player", &PyNpc::canSeePlayer)
+      .def("send_to", &PyNpc::sendTo, py::arg("waypoint"),
+           "Make the NPC walk to a waypoint and stay there.")
       .def("stand_here", &PyNpc::standHere,
            "Replace the daily routine with standing at the nearest waypoint.")
       .def("stop", &PyNpc::stop,
