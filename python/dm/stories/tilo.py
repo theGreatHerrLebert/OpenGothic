@@ -306,13 +306,13 @@ def plan(start_day=0):
         {"op": "add_rule", "id": "reward_gold", "when": ["reward_gold"], "ops": [
             {"op": "give_item", "instance": "ITMI_GOLD", "count": 200}]},
         {"op": "add_rule", "id": "reward_fire", "when": ["reward_fire"], "ops": [
-            {"op": "give_item", "instance": "ITSC_INSTANTFIREBALL", "count": 3}]},
+            {"op": "give_item", "instance": "ITSC_INSTANTFIREBALL", "count": 4}]},
         {"op": "add_rule", "id": "reward_ice", "when": ["reward_ice"], "ops": [
-            {"op": "give_item", "instance": "ITSC_ICECUBE", "count": 3}]},
+            {"op": "give_item", "instance": "ITSC_ICECUBE", "count": 2}]},
         {"op": "add_rule", "id": "reward_heal", "when": ["reward_heal"], "ops": [
-            {"op": "give_item", "instance": "ITSC_LIGHTHEAL", "count": 3}]},
+            {"op": "give_item", "instance": "ITSC_LIGHTHEAL", "count": 8}]},
         {"op": "add_rule", "id": "reward_light", "when": ["reward_light"], "ops": [
-            {"op": "give_item", "instance": "ITSC_LIGHT", "count": 3}]},
+            {"op": "give_item", "instance": "ITSC_LIGHT", "count": 20}]},
         {"op": "add_rule", "id": "tilo_helped", "when": ["tilo_helped"], "ops": [
             {"op": "detach_dialogue_graph", "npc": BARREL},
             {"op": "remove_npc", "instance": TILO},
