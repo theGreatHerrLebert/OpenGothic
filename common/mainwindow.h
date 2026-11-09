@@ -74,6 +74,8 @@ class MainWindow : public Tempest::Window {
     void drawMsg(Tempest::Painter& p);
     void drawProgress(Tempest::Painter& p, int x, int y, int w, int h, float v);
     void drawLoading (Tempest::Painter& p,int x,int y,int w,int h);
+    void drawDmOverlay(Tempest::Painter& p);
+    void toggleDmOverlay();
     void drawSaving  (Tempest::Painter& p);
     void drawSaving  (Tempest::Painter& p, const Tempest::Texture2d& back, int w, int h, float scale);
 
@@ -165,6 +167,8 @@ class MainWindow : public Tempest::Window {
 
     Tempest::Shortcut         funcKey[11];
     Tempest::Shortcut         displayPos;
+    Tempest::Shortcut dmOverlayKey;
+    bool              dmOverlayVisible = true;
 
     struct BenchmarkData {
       std::vector<uint64_t> low1procent;

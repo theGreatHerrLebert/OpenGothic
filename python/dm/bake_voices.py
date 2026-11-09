@@ -21,6 +21,7 @@ import tempfile
 import wave
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+import status  # noqa: E402
 import voices  # noqa: E402
 
 TTS_DIR = voices.RUNTIME_DIR / "tts"
@@ -205,7 +206,9 @@ def bake(path):
             continue
         level_match(target, reference)
         print(f"{n}/{len(todo)} {voice} {text[:50]}", flush=True)
+        status.report("Stimmen", n, len(todo))
     print(f"{len(todo) - len(failed)} generated, {len(failed)} failed", flush=True)
+    status.report("bereit")
     if failed:
         sys.exit(1)
 

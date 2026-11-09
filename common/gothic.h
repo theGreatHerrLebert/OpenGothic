@@ -192,6 +192,14 @@ class Gothic final {
 
     Tempest::Signal<void(const ChapterScreen::Show&)>                   onIntroChapter;
     Tempest::Signal<void(const DocumentMenu::Show&)>                    onShowDocument;
+
+    // What the AI game master is doing, drawn as a small corner panel. Progress below zero means the length is unknown.
+    struct DmStatus final {
+      std::string text;
+      float       progress = -1.f;
+      };
+    DmStatus dmStatus;
+
     Tempest::Signal<void()>                                             onWorldLoaded;
     Tempest::Signal<void()>                                             onStartLoading;
     Tempest::Signal<void()>                                             onSessionExit;

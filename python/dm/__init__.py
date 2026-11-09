@@ -3,6 +3,7 @@
 
 def start():
     """Start observing the game and accepting story plans. Safe to repeat."""
-    from dm import observer, story
+    from dm import observer, overlay, story
     observer.start()
     story.start()
+    overlay.start()

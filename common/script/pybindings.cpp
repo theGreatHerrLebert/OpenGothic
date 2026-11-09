@@ -656,6 +656,15 @@ PYBIND11_EMBEDDED_MODULE(gothic, m) {
   m.attr("player") = PyPlayer{};
   m.attr("world")  = PyWorld{};
 
+  py::module_ overlay = m.def_submodule("overlay", "The small DM status panel in the corner of the screen.");
+  overlay.def("set",
+              [](const std::string& text, float progress) {
+                Gothic::inst().dmStatus = {toEngine(text), progress};
+                },
+              py::arg("text"), py::arg("progress") = -1.f,
+              "Show text, with progress from 0 to 1, or below zero if the length is unknown.");
+  overlay.def("clear", []() { Gothic::inst().dmStatus = {}; });
+
   py::module_ dialog = m.def_submodule(
       "dialog", "Drive the native dialogue UI for one bound NPC from Python.");
   dialog.def("bind",

@@ -115,6 +115,8 @@ MainWindow::MainWindow(Device& device)
   funcKey[10].onActivated.bind(this, &MainWindow::onMarvinKey<Event::K_F10>);
 
   displayPos = Shortcut(*this,Event::M_Alt,Event::K_P);
+  dmOverlayKey = Shortcut(*this,Event::M_Alt,Event::K_O);
+  dmOverlayKey.onActivated.bind(this,&MainWindow::toggleDmOverlay);
   displayPos.onActivated.bind(this, &MainWindow::onMarvinKey<Event::K_P>);
   }
 
@@ -243,6 +245,8 @@ void MainWindow::paintEvent(PaintEvent& event) {
           // layer, so hide it under anything that should cover it.
           if(!dialogs.isActive() && !rootMenu.isActive() && !document.isActive() && !chapter.isActive())
             drawBelt(p, *pl);
+          if(!rootMenu.isActive() && !document.isActive() && !chapter.isActive())
+            drawDmOverlay(p);
           if(showSwimBar) {
             uint32_t gl = pl->guild();
             auto     v  = float(pl->world().script().guildVal().dive_time[gl]);
@@ -810,6 +814,45 @@ void MainWindow::drawMsg(Tempest::Painter& p) {
 
   const int y = std::max(10,margins().top) + int(destH) + 10;
   dialogs.drawMsg(p, y);
+  }
+
+void MainWindow::toggleDmOverlay() {
+  dmOverlayVisible = !dmOverlayVisible;
+  }
+
+void MainWindow::drawDmOverlay(Painter& p) {
+  const auto& st = Gothic::inst().dmStatus;
+  if(!dmOverlayVisible || st.text.empty())
+    return;
+
+  const float scale = Gothic::interfaceScale(this);
+  auto&       fnt   = Resources::font(scale);
+  const int   pad   = int(8.f*scale);
+  const int   width = int(220.f*scale);
+  const int   barH  = int(6.f*scale);
+  const int   textH = int(fnt.pixelSize());
+  const int   x     = w()-std::max(10,margins().right)-width;
+  const int   y     = std::max(10,margins().top);
+
+  p.setBrush(Brush(Color(0.f,0.f,0.f,0.55f),Painter::Alpha));
+  p.drawRect(x,y,width,textH+barH+3*pad);
+
+  fnt.drawText(p,x+pad,y+pad+textH,st.text);
+
+  const int barX = x+pad, barY = y+2*pad+textH, barW = width-2*pad;
+  p.setBrush(Brush(Color(1.f,1.f,1.f,0.15f),Painter::Alpha));
+  p.drawRect(barX,barY,barW,barH);
+
+  p.setBrush(Brush(Color(0.85f,0.65f,0.25f,0.9f),Painter::Alpha));
+  if(st.progress>=0.f) {
+    p.drawRect(barX,barY,int(float(barW)*std::min(st.progress,1.f)),barH);
+    } else {
+    // Unknown length: a moving block, because a percentage would be invented.
+    const int block = barW/4;
+    const int range = barW-block;
+    const int t     = int(Application::tickCount()/4u)%(2*range);
+    p.drawRect(barX+(t<range ? t : 2*range-t),barY,block,barH);
+    }
   }
 
 void MainWindow::drawProgress(Painter &p, int x, int y, int w, int h, float v) {

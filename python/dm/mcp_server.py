@@ -15,6 +15,7 @@ from mcp.server.mcpserver import MCPServer
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 import knowledge  # noqa: E402
+import status  # noqa: E402
 
 BRIDGE = pathlib.Path(os.environ.get("OPENGOTHIC_PY_BRIDGE_DIR",
                                      f"/tmp/opengothic-{os.environ.get('USER', 'user')}-bridge"))
@@ -102,6 +103,26 @@ def validate_plan(ops: list) -> str:
 def submit_plan(reason: str, ops: list) -> str:
     """Queue validated story operations. They apply together, or not at all, at a safe moment."""
     return json.dumps(_call("submit", reason, ops), ensure_ascii=False)
+
+
+@mcp.tool()
+def report_status(stage: str, done: int | None = None, total: int | None = None) -> str:
+    """Show what the DM is doing on the in-game panel. Stage is schreibt, prüft, Stimmen or bereit; counts are optional.
+
+    Works without the game. The panel clears itself after two minutes without a new report.
+    """
+    try:
+        status.report(stage, done, total)
+    except ValueError as error:
+        return json.dumps({"ok": False, "error": str(error)}, ensure_ascii=False)
+    return json.dumps({"ok": True, "panel": status.read()}, ensure_ascii=False)
+
+
+@mcp.tool()
+def clear_status() -> str:
+    """Hide the in-game DM panel."""
+    status.clear()
+    return json.dumps({"ok": True})
 
 
 if __name__ == "__main__":
