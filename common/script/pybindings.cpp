@@ -260,6 +260,7 @@ struct PyNpc {
     auto* n = fetch();
     return !n->isDead() && !n->isUnconscious();
     }
+  bool dead() const { return fetch()->isDead(); }
   std::string repr() const {
     try {
       auto* n = fetch();
@@ -482,6 +483,8 @@ PYBIND11_EMBEDDED_MODULE(gothic, m) {
       .def_property_readonly("guild",
            [](const PyPlayer&) { return int(requirePlayer()->guild()); },
            "Guild id, comparable with Daedalus constants such as GIL_KDF.")
+      .def_property_readonly("level",
+           [](const PyPlayer&) { return int(requirePlayer()->level()); })
       .def_property_readonly("busy",
            [](const PyPlayer&) { return requirePlayer()->interactive()!=nullptr; },
            "True while using a bed, chest or other interactive object.")
@@ -565,6 +568,7 @@ PYBIND11_EMBEDDED_MODULE(gothic, m) {
       .def_property_readonly("hp",        &PyNpc::hp)
       .def_property_readonly("hp_max",    &PyNpc::hpMax)
       .def_property_readonly("alive",     &PyNpc::alive)
+      .def_property_readonly("dead",      &PyNpc::dead)
       .def("set_position",
            [](const PyNpc& self, float x, float y, float z) {
              Npc* n = self.fetch();

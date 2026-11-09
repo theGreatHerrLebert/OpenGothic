@@ -1,6 +1,6 @@
 """Finds which NPCs the original game scripts depend on, from compiled GOTHIC.DAT.
 
-    python3 python/dm/depmap.py <path to GOTHIC.DAT> [deps.json] [safe_npcs.json]
+    python3 python/dm/depmap.py <path to GOTHIC.DAT> [deps.json] [safe_npcs.json] [attachable_npcs.json]
 
 An NPC counts as depended on when its instance is pushed by code outside its
 own dialogues, its own init function, and world setup. Such code can break,
@@ -187,6 +187,11 @@ def main():
                   if k.startswith(SAFE_GROUPS) and "TOTER" not in k
                   and not v["external_refs"] and not v["dialogues"] and not v["immortal"])
     print("safe:", safe)
+    if len(sys.argv) > 4:
+        attachable = sorted(k for k, v in result.items() if not v["dialogues"] and not v["immortal"])
+        with open(sys.argv[4], "w", encoding="utf-8") as f:
+            json.dump(attachable, f, indent=0)
+            f.write("\n")
     if len(sys.argv) > 3:
         with open(sys.argv[3], "w", encoding="utf-8") as f:
             json.dump(safe, f, indent=1)

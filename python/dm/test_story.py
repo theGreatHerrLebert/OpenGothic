@@ -9,6 +9,8 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 
 
 class Npc:
+    dead = False
+
     def __init__(self, instance):
         self.instance = instance
 
@@ -99,6 +101,7 @@ from dm import story as st  # noqa: E402
 
 st.SAVES_DIR = pathlib.Path(tempfile.mkdtemp())
 st.SAFE_TO_REMOVE.add("NOV_A")
+st.ATTACHABLE.update(["NOV_A", "NOV_B", "GHOST"])
 
 GOOD = {"start": "a", "nodes": {
     "a": {"line": "Hallo.", "sets": "met", "choices": [
@@ -296,6 +299,16 @@ def test_graph_validation():
         "b": {"line": "x", "choices": [{"text": "y", "goto": "a"}]}}})
 
 
+def test_rule_contents_are_checked_when_submitted():
+    s = st.Story()
+    rule = {"op": "add_rule", "id": "r", "when": ["x"], "ops": [{"op": "place_item", "instance": "ITX", "waypoint": "BAD"}]}
+    rejected(s, [rule], "no such waypoint")
+    bad_graph = {"op": "add_rule", "id": "r", "when": ["x"], "ops": [
+        {"op": "attach_dialogue_graph", "npc": "NOV_B", "graph": {"start": "a", "nodes": {}}}]}
+    rejected(s, [bad_graph], "bad dialogue graph")
+    rejected(s, [{"op": "attach_dialogue_graph", "npc": "PARLAN", "graph": GOOD}], "cannot be taken over")
+
+
 def test_validation():
     s = st.Story()
     rejected(s, [], "empty")
@@ -445,7 +458,7 @@ def test_player():
     d.say = real_say
 
 
-for test in (test_graph_validation, test_validation, test_apply_and_rollback, test_return_npc, test_conditional_choices, test_returns_to_menu, test_questions_are_asked_once, test_variant_line, test_again_line, test_scene_and_rule,
+for test in (test_rule_contents_are_checked_when_submitted, test_graph_validation, test_validation, test_apply_and_rollback, test_return_npc, test_conditional_choices, test_returns_to_menu, test_questions_are_asked_once, test_variant_line, test_again_line, test_scene_and_rule,
              test_queue_waits_for_safe_point, test_save_load_does_not_reapply_world,
              test_player):
     test()

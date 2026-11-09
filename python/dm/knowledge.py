@@ -31,6 +31,10 @@ def _visible(choice, known):
     return choice.get("unless") not in known
 
 
+def _kept(teaches, relevant):
+    return set(teaches) if relevant is None else set(teaches) & relevant
+
+
 def _order_issues(teaches, state, facts):
     issues = set()
     for fact in teaches:
@@ -40,7 +44,24 @@ def _order_issues(teaches, state, facts):
     return issues
 
 
-def _explore(graph, known, facts):
+def _relevant_facts(plot, conversations):
+    """Facts that change what can happen. Tracking only these keeps the search complete and small."""
+    relevant = {f for f, info in plot["facts"].items() if info.get("essential")}
+    for info in plot["facts"].values():
+        relevant |= set(info.get("needs", []))
+    for item in plot.get("items", []):
+        relevant |= set(item.get("needs", []))
+    for graph in conversations.values():
+        for node in graph["nodes"].values():
+            relevant |= set(node.get("uses", []))
+            for choice in node["choices"]:
+                relevant |= set(choice.get("uses", [])) | set(choice.get("requires", []))
+                if choice.get("unless"):
+                    relevant.add(choice["unless"])
+    return relevant
+
+
+def _explore(graph, known, facts, relevant=None):
     """Return (issues, knowledge states) over every path through one conversation."""
     issues, snapshots = set(), {frozenset(known)}
     nodes = graph["nodes"]
@@ -56,7 +77,7 @@ def _explore(graph, known, facts):
             if fact not in state:
                 issues.add(f"line uses '{fact}' before it is known: node {key}")
         issues |= _order_issues(node.get("teaches", []), state, facts)
-        after = set(state) | set(node.get("teaches", []))
+        after = set(state) | _kept(node.get("teaches", []), relevant)
         snapshots.add(frozenset(after))
         if node.get("returns"):
             stack.append((node["returns"], frozenset(after)))
@@ -67,7 +88,7 @@ def _explore(graph, known, facts):
                 if fact not in after:
                     issues.add(f"hero says '{fact}' before knowing it: node {key}, \"{choice['text']}\"")
             issues |= _order_issues(choice.get("teaches", []), after, facts)
-            final = after | set(choice.get("teaches", []))
+            final = after | _kept(choice.get("teaches", []), relevant)
             snapshots.add(frozenset(final))
             if not choice.get("ends"):
                 stack.append((choice["goto"], frozenset(final)))
@@ -142,20 +163,21 @@ def check(plot, conversations):
 
     # The player can talk to people in any order, so search every knowledge
     # state reachable by some order of conversations and item finds.
-    start = frozenset(plot.get("start", []))
+    relevant = _relevant_facts(plot, conversations)
+    start = frozenset(set(plot.get("start", [])) & relevant)
     states, pending = {start}, [start]
     truncated = False
     while pending:
         current = pending.pop()
         following = set()
         for graph in conversations.values():
-            issues, snapshots = _explore(graph, current, facts)
+            issues, snapshots = _explore(graph, current, facts, relevant)
             errors |= issues
             following |= snapshots
         for item in plot.get("items", []):
             if set(item.get("needs", [])) <= current:
                 errors |= _order_issues(item["teaches"], current, facts)
-                following.add(current | frozenset(item["teaches"]))
+                following.add(current | frozenset(_kept(item["teaches"], relevant)))
         for state in following - states:
             if len(states) >= MAX_STATES:
                 truncated = True
@@ -168,7 +190,7 @@ def check(plot, conversations):
     for npc, graph in conversations.items():
         reached = set()
         for state in states:
-            reached |= set().union(*_explore(graph, state, facts)[1])
+            reached |= set().union(*_explore(graph, state, facts, relevant)[1])
         taught = set()
         for node in graph["nodes"].values():
             taught |= set(node.get("teaches", []))

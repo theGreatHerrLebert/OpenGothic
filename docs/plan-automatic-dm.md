@@ -52,7 +52,8 @@ rule is rejected at submission.
 ### 1. Cast and world sheet
 
 Write character sheets for the people a story can use, starting with the monastery and the harbour, with
-a section on how they see the hero. Count who can actually be used. Add a hand-made fact sheet
+a section on how they see the hero, covering only the cases that can actually occur. For a prefilled story
+those are decided in advance; a live Director would fill them in from the game state. Count who can actually be used. Add a hand-made fact sheet
 of factions, places, chapter state and named people, in place of a full lore system. Sheets for minor
 characters may be drafted by a model from the game's own dialogue and corrected by a person.
 

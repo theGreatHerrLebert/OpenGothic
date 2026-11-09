@@ -42,6 +42,18 @@ PLOT = {
         "tilo_cornered": fact(topic=True),
         "tilo_met": fact(topic=True),
         "barrel_met": fact(topic=True),
+        "harek_met": fact(topic=True),
+        "tilo_confessed": fact(topic=True),
+        "tilo_turned_in": fact(topic=True),
+        "tilo_threatened": fact(topic=True),
+        "tilo_helped": fact(topic=True),
+        "parlan_paid": fact(topic=True),
+        "reward_gold": fact(topic=True),
+        "reward_fire": fact(topic=True),
+        "reward_ice": fact(topic=True),
+        "reward_heal": fact(topic=True),
+        "reward_light": fact(topic=True),
+        "anselm_secret": fact(topic=True),
         "hero_mage": fact(topic=True),
         "tilo_sent_back": fact(topic=True),
         "anselm_met": fact(topic=True),
@@ -371,6 +383,14 @@ def plan(start_day=0):
         {"op": "add_rule", "id": "secret_told", "when": ["anselm_secret"], "ops": [
             {"op": "place_item", "instance": "ITFO_WINE", "waypoint": "NW_MONASTERY_WINEMAKER_03", "count": 10}]},
     ] + journal_rules()
+
+
+def conversations_to_check():
+    """Every conversation in the story, each under its own speaker key."""
+    return dict(CONVERSATIONS, **{
+        TILO + "_ORDERED": TILO_ORDERED_HOME, TILO + "_BACK": TILO_BACK_AT_WORK, TILO + "_HELPED": TILO_AFTER_HELP,
+        TILO + "_TURNED": TILO_AFTER_TURNED_IN, PARLAN + "_REWARD": PARLAN_REWARD,
+        ANSELM + "_BITTER": ANSELM_BITTER, ANSELM + "_GRATEFUL": ANSELM_GRATEFUL})
 
 
 def _simplify_dead_ends(graph):

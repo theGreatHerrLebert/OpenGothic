@@ -46,6 +46,10 @@ visibly hurt the story. The Director follows these along with `director-brief.md
 
 ## The characters
 
+**Fill out only what can happen.** A sheet covers the situations this story can actually reach.
+For a quest limited to novices and mages, nobody needs a view of the hero as a paladin. A prefilled
+story does this in advance; a live Director fills them in from the game state it is handed.
+
 **Every character has a sheet**: role, core, background, manner of speech, and attitudes to
 factions, important people, those around them, politics and game state, plus how those change.
 A line that could belong to anyone is filler.

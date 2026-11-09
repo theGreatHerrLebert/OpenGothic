@@ -11,8 +11,18 @@ import gothic
 from dm import observer, story
 
 
+GUILDS = ("GIL_NONE", "GIL_VLK", "GIL_NOV", "GIL_KDF", "GIL_MIL", "GIL_PAL", "GIL_SLD", "GIL_BAU", "GIL_DJG", "GIL_BDT", "GIL_PIR")
+
+
 def _reply(value):
     print(json.dumps(value, ensure_ascii=False))
+
+
+def _guild_name(guild):
+    for name in GUILDS:
+        if gothic.daedalus.get(name, 0) == guild:
+            return name
+    return str(guild)
 
 
 def events(n=50):
@@ -25,6 +35,10 @@ def world():
         "day": gothic.world.day, "hour": hour, "minute": minute,
         "waypoint": gothic.player.waypoint, "room": gothic.player.room,
         "hp": gothic.player.hp,
+        "guild": _guild_name(gothic.player.guild),
+        "level": gothic.player.level,
+        "chapter": gothic.daedalus.get("KAPITEL", 0),
+        "quests": {topic: len(entries) for topic, entries in gothic.journal_entries().items()},
         "near": [{"instance": n.instance, "name": n.name, "alive": n.alive}
                  for n in gothic.world.npcs_near(2000)],
         "items": gothic.player.items,
