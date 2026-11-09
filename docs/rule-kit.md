@@ -24,24 +24,26 @@ The second kind costs almost nothing to write, since the solution already exists
 | Block | Evidence | Story layer today |
 |---|---|---|
 | Earlier conversation unlocks a line | `Npc_KnowsInfo` in 1,157 conditions | Yes (`requires`) |
-| Guild changes what is offered | 412 conditions | Scene exclusion only |
-| Item carried opens a line | 250 conditions, 132 distinct items | No |
-| Worn clothes change treatment | 2 conditions; also `C_PlayerHasFakeGuild`, `C_PlayerIsFakeBandit` | No |
-| NPC death changes the world | 219 conditions | Scenes treat the dead as absent; no reaction |
+| Guild changes what is offered | 412 conditions | Yes (`guild` check) |
+| Item carried opens a line | 250 conditions, 132 distinct items | Yes (`has_item`) |
+| Worn clothes change treatment | 2 conditions; also `C_PlayerHasFakeGuild`, `C_PlayerIsFakeBandit` | Yes (`wears`); NPC reactions no |
+| NPC death changes the world | 219 conditions | Yes (`npc_dead`) |
 | Pickpocketing | 227 dialogues (`C_Beklauen`) | No |
 | Being in a place | 174 conditions | Scene range only |
 | Talent gates | 49 conditions | No |
 | Crime and forgiveness | 24 conditions; `B_AddPetzCrime`, `B_GrantAbsolution` | No |
-| Time and day | 18 conditions | No |
+| Time and day | 18 conditions | Yes (`hour`) |
 | Several routes, one outcome | 47 outcomes found with 3 to 14 routes | Yes, by hand |
 | A route closes the others | 17 flags, mostly "already let in" guards | Yes (`unless`) |
 | Locks | 185 lockpick only, 61 key only; 55 distinct keys | No |
 | Chests and placed items | Contents and positions per world | Placement only |
 | Items with scripted use | 284 scripts | No |
 | NPC reactions to the player | `B_Assess*`: damage, theft, drawn weapon, entering a room, murder, sneaking | No |
-| Status states | `ZS_MagicBurn`, `MagicSleep`, `MagicFreeze`, `MagicShrink`, `MagicFlee`, `Whirlwind`, `Unconscious` | No |
-| Obsession | `B_SCIsObsessed`, `B_ClearSCObsession`, `Use_HealObsession`, `C_IsShrineObsessed` | No |
+| Status states | `ZS_MagicBurn`, `MagicSleep`, `MagicFreeze`, `MagicShrink`, `MagicFlee`, `Whirlwind`, `Unconscious` | Yes (`npc_state`) |
+| Obsession | `B_SCIsObsessed`, `B_ClearSCObsession`, `Use_HealObsession`, `C_IsShrineObsessed` | Yes (`obsessed`, hero only) |
 | Who belongs where | `C_NpcBelongsToCity`, `Farm`, `Monastery`; `C_IsTakenItemMyPossession` | No |
+
+Checks are defined in `python/dm/checks.py` and work on scenes, rules and dialogue choices. They are unit-tested against a fake game and have not yet been exercised in a running game. The knowledge checker ignores them, as it does guild gates.
 
 ## Known limits
 

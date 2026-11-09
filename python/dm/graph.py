@@ -21,7 +21,7 @@ at least one unconditional choice, so a conversation can always continue.
 
 import gothic
 
-from dm import voices
+from dm import checks, voices
 
 
 def validate(graph):
@@ -42,12 +42,12 @@ def validate(graph):
         choices = node.get("choices")
         if not choices:
             return f"node has no choices: {key}"
-        if all(c.get("requires") or c.get("unless") for c in choices):
+        if all(c.get("requires") or c.get("unless") or c.get("checks") for c in choices):
             return f"node has only conditional choices: {key}"
         for choice in choices:
             if not choice.get("text"):
                 return f"choice has no text: {key}"
-            if choice.get("requires") or choice.get("unless"):
+            if choice.get("requires") or choice.get("unless") or choice.get("checks"):
                 if choice.get("goto") not in nodes and not choice.get("ends"):
                     return f"choice goes nowhere: {key}"
                 continue
@@ -133,6 +133,8 @@ class Player:
             if required and not any(flags.get(f) for f in required):
                 continue
             if flags.get(choice.get("unless")):
+                continue
+            if not checks.all_hold(choice.get("checks")):
                 continue
             shown.append(choice)
         return shown

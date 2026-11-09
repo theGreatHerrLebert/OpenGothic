@@ -51,6 +51,13 @@ accident with topics unexplored. A finished topic returns to the menu by itself;
 "Zurück" only where more can still be asked. A decision that must be faced may have no
 way out, and a story may still end a conversation deliberately. Every line must make sense as a response to what was just said.
 
+## Conditions on the live game
+
+Flags record what the story remembers. A `checks` list on a scene, a rule or a dialogue choice tests what is true right
+now: `has_item`, `wears`, `guild`, `npc_state` (burning, asleep, frozen and so on), `npc_dead`, `obsessed`, `hour`, and
+`not`. A checked choice never counts as the way out of a node. Often the best use is a hint: one line mentions a rule
+that is already true, such as a sleep scroll working on a guard, and the player makes the plan.
+
 ## What you cannot do yet
 
 There is no operation for creating a new NPC, so stories use existing NPCs. Generating

@@ -23,6 +23,7 @@ import pathlib
 
 import gothic
 
+from dm import checks
 from dm import graph as graphs
 
 RUNTIME_DIR = pathlib.Path(__file__).resolve().parent.parent / "dm_runtime"
@@ -81,6 +82,16 @@ NPC_FIELDS = {"remove_npc": "instance", "relocate_npc": "instance", "spawn_npc":
 ITEM_OPS = {"place_item", "give_item"}
 
 
+def _graph_problem(graph):
+    return graphs.validate(graph) or checks.validate_graph(graph)
+
+
+def _require_checks(args):
+    problem = checks.validate_all(args.get("checks"))
+    if problem:
+        raise PlanError(f"bad check: {problem}")
+
+
 def check_contents(op):
     """Everything that can be verified now about an operation that runs later."""
     name = op.get("op")
@@ -101,9 +112,10 @@ def check_contents(op):
     if "armor" in op and gothic.world.instance_kind(op["armor"]) != "item":
         raise PlanError(f"not an item instance: {op['armor']}")
     if "graph" in op:
-        problem = graphs.validate(op["graph"])
+        problem = _graph_problem(op["graph"])
         if problem:
             raise PlanError(f"bad dialogue graph: {problem}")
+    _require_checks(op)
     for inner in op.get("ops", []):
         check_contents(inner)
 
@@ -198,7 +210,7 @@ def _check_graph(args, state):
         raise PlanError(f"NPC has been removed: {name}")
     if name not in state.get("returning", []):
         _live_npc(name)
-    problem = graphs.validate(args["graph"])
+    problem = _graph_problem(args["graph"])
     if problem:
         raise PlanError(f"bad dialogue graph: {problem}")
 
@@ -217,8 +229,9 @@ def _check_scene(args, state):
     _require(args, "id", "npc", "graph")
     if args["id"] in state.setdefault("scenes", {}):
         raise PlanError(f"scene already exists: {args['id']}")
+    _require_checks(args)
     _npc_instance(args["npc"])
-    problem = graphs.validate(args["graph"])
+    problem = _graph_problem(args["graph"])
     if problem:
         raise PlanError(f"bad dialogue graph: {problem}")
 
@@ -227,7 +240,7 @@ def _fold_scene(args, state):
     state.setdefault("scenes", {})[args["id"]] = {
         "npc": args["npc"].upper(), "graph": args["graph"], "within": args.get("within", SCENE_RANGE),
         "requires": args.get("requires", []), "unless": args.get("unless"), "done": False,
-        "not_guilds": args.get("not_guilds", []),
+        "not_guilds": args.get("not_guilds", []), "checks": args.get("checks", []),
     }
 
 
@@ -245,13 +258,14 @@ def _check_rule(args, state):
     _require(args, "id", "when", "ops")
     if args["id"] in state.setdefault("rules", {}):
         raise PlanError(f"rule already exists: {args['id']}")
+    _require_checks(args)
     for op in args["ops"]:
         check_contents(op)
 
 
 def _fold_rule(args, state):
     state.setdefault("rules", {})[args["id"]] = {
-        "when": args["when"], "unless": args.get("unless"), "ops": args["ops"], "fired": False,
+        "when": args["when"], "unless": args.get("unless"), "ops": args["ops"], "fired": False, "checks": args.get("checks", []),
         "after_night_of": args.get("after_night_of"), "unseen_by_near": args.get("unseen_by_near"),
         "unseen_range": args.get("unseen_range", UNSEEN_RANGE),
     }
@@ -529,7 +543,8 @@ class Story:
         blocked = entry.get("unless") or []
         if isinstance(blocked, str):
             blocked = [blocked]
-        return all(flags.get(f) for f in required) and not any(flags.get(f) for f in blocked)
+        return (all(flags.get(f) for f in required) and not any(flags.get(f) for f in blocked)
+                and checks.all_hold(entry.get("checks")))
 
     def _guild_excluded(self, scene):
         guild = gothic.player.guild

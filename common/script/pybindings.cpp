@@ -261,6 +261,12 @@ struct PyNpc {
     return !n->isDead() && !n->isUnconscious();
     }
   bool dead() const { return fetch()->isDead(); }
+  bool inState(const std::string& state) const {
+    auto id = requireWorld()->script().findSymbolIndex(upper(state));
+    if(id==size_t(-1))
+      throw std::invalid_argument("no such state: " + state);
+    return fetch()->isInState(ScriptFn(id));
+    }
   std::string repr() const {
     try {
       auto* n = fetch();
@@ -483,6 +489,13 @@ PYBIND11_EMBEDDED_MODULE(gothic, m) {
       .def_property_readonly("guild",
            [](const PyPlayer&) { return int(requirePlayer()->guild()); },
            "Guild id, comparable with Daedalus constants such as GIL_KDF.")
+      .def_property_readonly("armor",
+           [](const PyPlayer&) -> py::object {
+             auto* it  = requirePlayer()->currentArmor();
+             auto* sym = it==nullptr ? nullptr : requireWorld()->script().findSymbol(it->clsId());
+             return sym==nullptr ? py::object(py::none()) : py::object(py::str(std::string(sym->name())));
+             },
+           "Instance name of the equipped armour, or None.")
       .def_property_readonly("level",
            [](const PyPlayer&) { return int(requirePlayer()->level()); })
       .def_property_readonly("busy",
@@ -569,6 +582,8 @@ PYBIND11_EMBEDDED_MODULE(gothic, m) {
       .def_property_readonly("hp_max",    &PyNpc::hpMax)
       .def_property_readonly("alive",     &PyNpc::alive)
       .def_property_readonly("dead",      &PyNpc::dead)
+      .def("in_state", &PyNpc::inState, py::arg("state"),
+           "True while the NPC runs this ZS_ state, for example ZS_MAGICBURN.")
       .def("set_position",
            [](const PyNpc& self, float x, float y, float z) {
              Npc* n = self.fetch();
