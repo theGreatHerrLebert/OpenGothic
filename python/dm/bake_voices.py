@@ -179,21 +179,35 @@ def bake(path):
                   key=lambda line: (line[0], line[1], line[2] or ""))
     print(len(todo), "lines to generate")
     env = dict(os.environ, HF_HOME=str(TTS_DIR / "hf"))
+    failed = []
     for n, (voice, text, delivery) in enumerate(todo, 1):
         target = voices.audio_path(voice, text, delivery)
         reference = voices.reference_name(voice, delivery)
         target.parent.mkdir(parents=True, exist_ok=True)
-        with tempfile.TemporaryDirectory() as tmp:
-            subprocess.run([sys.executable, "-m", "mlx_audio.tts.generate", "--model", MODEL,
-                            "--lang_code", "german", "--text", text,
-                            "--ref_audio", str(voices.REF_DIR / f"{reference}.wav"),
-                            "--ref_text", (voices.REF_DIR / f"{reference}.txt").read_text(encoding="utf-8"),
-                            "--output_path", tmp, "--file_prefix", "line", "--audio_format", "wav"],
-                           check=True, env=env, capture_output=True)
-            produced = sorted(pathlib.Path(tmp).glob("line*.wav"))
-            pathlib.Path(produced[0]).replace(target)
+        command = [sys.executable, "-m", "mlx_audio.tts.generate", "--model", MODEL,
+                   "--lang_code", "german", "--text", text,
+                   "--ref_audio", str(voices.REF_DIR / f"{reference}.wav"),
+                   "--ref_text", (voices.REF_DIR / f"{reference}.txt").read_text(encoding="utf-8"),
+                   "--output_path", None, "--file_prefix", "line", "--audio_format", "wav"]
+        made = False
+        for _attempt in range(2):  # generation is sampled, so a line that yields nothing can work on a retry
+            with tempfile.TemporaryDirectory() as tmp:
+                command[command.index("--output_path") + 1] = tmp
+                result = subprocess.run(command, env=env, capture_output=True)
+                produced = sorted(pathlib.Path(tmp).glob("line*.wav"))
+                if result.returncode == 0 and produced:
+                    produced[0].replace(target)
+                    made = True
+                    break
+        if not made:  # one bad line must not cost the rest of the story
+            failed.append((voice, text))
+            print(f"{n}/{len(todo)} FAILED {voice} {text[:50]}", flush=True)
+            continue
         level_match(target, reference)
         print(f"{n}/{len(todo)} {voice} {text[:50]}", flush=True)
+    print(f"{len(todo) - len(failed)} generated, {len(failed)} failed", flush=True)
+    if failed:
+        sys.exit(1)
 
 
 if __name__ == "__main__":

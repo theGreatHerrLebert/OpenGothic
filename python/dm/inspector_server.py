@@ -191,8 +191,142 @@ def _blind_id(name):
     return hashlib.sha256(("experiment-1:" + name).encode("utf-8")).hexdigest()[:10]
 
 
+def _as_list(value):
+    return value if isinstance(value, list) else ([value] if value else [])
+
+
+def _graph_text(text, limit=44):
+    """Text that is safe inside a quoted Mermaid label."""
+    text = re.sub(r"[\"#\[\]{}<>|]", "'", " ".join(str(text).split()))
+    return text if len(text) <= limit else text[:limit - 1].rstrip() + "…"
+
+
+def _sheet_names():
+    names = {}
+    for path in CHARACTERS.glob("*.json"):
+        try:
+            sheet = json.loads(path.read_text(encoding="utf-8"))
+        except ValueError:
+            continue
+        if sheet.get("npc") and sheet.get("name"):
+            names[sheet["npc"]] = sheet["name"]
+    return names
+
+
+def _conversation_names(data, sheets):
+    """A readable heading for each conversation, derived from the story's own cast."""
+    cast = dict(sheets)
+    cast.update({c["npc"]: c["name"] for c in data.get("new_characters", [])
+                 if isinstance(c, dict) and c.get("npc") and c.get("name")})
+    cast.update({o["instance"]: o["display_name"] for o in data["plan"]
+                 if o["op"] in ("spawn_npc", "rename_npc") and o.get("display_name")})
+    labels = {}
+    for key in data["conversations"]:
+        npc = max((n for n in cast if key == n or key.startswith(n + "_")), key=len, default=None)
+        if npc is None:
+            labels[key] = key
+        else:
+            variant = key[len(npc):].strip("_").replace("_", " ").lower()
+            labels[key] = cast[npc] + (" · " + variant if variant else "")
+    return labels, cast
+
+
+def story_graph(data, labels, cast):
+    """The Tilo-style flow graph for one generated story, read from its plan and dialogue."""
+    conversations = data["conversations"]
+    plot_facts = data["plot"]["facts"]
+    conv_ids = {key: f"c{i}" for i, key in enumerate(conversations)}
+    fact_ids, facts, effects, edges, attached = {}, {}, {}, {}, set()
+
+    def fact(name):
+        if name not in fact_ids:
+            fact_ids[name] = f"f{len(fact_ids)}"
+            info = plot_facts.get(name, {})
+            facts[fact_ids[name]] = {"id": name, "text": info.get("text", ""), "essential": bool(info.get("essential")),
+                                     "taught": [], "unlocks": []}
+        return fact_ids[name]
+
+    def note(name, field, value):
+        entries = facts[fact(name)][field]
+        if value not in entries:
+            entries.append(value)
+
+    def effect(label):
+        return effects.setdefault(label, f"r{len(effects)}")
+
+    def edge(line):
+        edges[line] = True
+
+    def facts_of(values):
+        return [v for v in values if isinstance(v, str)]
+
+    for key, graph in conversations.items():
+        for node in graph["nodes"].values():
+            for name in facts_of(_as_list(node.get("sets")) + _as_list(node.get("teaches"))):
+                edge(f"  {conv_ids[key]} --> {fact(name)}")
+                note(name, "taught", labels[key])
+            for choice in node["choices"]:
+                for name in facts_of(_as_list(choice.get("teaches"))):
+                    edge(f"  {conv_ids[key]} --> {fact(name)}")
+                    note(name, "taught", labels[key])
+                for name in facts_of(_as_list(choice.get("requires"))):
+                    edge(f"  {fact(name)} -. line .-> {conv_ids[key]}")
+                    note(name, "unlocks", labels[key] + ": „" + choice["text"] + "“")
+
+    def outcome(op):
+        who = cast.get(op.get("npc") or op.get("instance"), op.get("npc") or op.get("instance"))
+        if op["op"] == "give_item":
+            return f"{op.get('count', 1)}× {op['instance']}"
+        if op["op"] == "place_item":
+            return (op.get("quest") or {}).get("description") or op["instance"]
+        return {"send_npc": f"{who} geht fort", "relocate_npc": f"{who} wechselt den Ort",
+                "detach_dialogue_graph": f"{who} verstummt", "spawn_npc": f"{who} erscheint",
+                "rename_npc": f"{who} heisst nun anders"}.get(op["op"])
+
+    def walk(ops, when=(), unless=()):
+        for op in ops:
+            if op["op"] == "add_rule":
+                walk(op["ops"], facts_of(_as_list(op.get("when"))), facts_of(_as_list(op.get("unless"))))
+            elif op["op"] in ("add_scene", "attach_dialogue_graph"):
+                key = next(k for k, g in conversations.items() if g == op["graph"])
+                attached.add(key)
+                for name in list(when) + facts_of(_as_list(op.get("requires"))):
+                    edge(f"  {fact(name)} ==>|starts| {conv_ids[key]}")
+                    note(name, "unlocks", "Beginnt: " + labels[key])
+                for name in list(unless) + facts_of(_as_list(op.get("unless"))):
+                    edge(f"  {fact(name)} --x|closes| {conv_ids[key]}")
+            elif op["op"] == "set_flag":
+                for name in when:
+                    edge(f"  {fact(name)} ==> {fact(op['name'])}")
+                note(op["name"], "taught", "eine Folge in der Welt")
+            elif when and outcome(op):
+                target = effect(outcome(op))
+                for name in when:
+                    edge(f"  {fact(name)} ==> {target}")
+                for name in unless:
+                    edge(f"  {fact(name)} --x {target}")
+
+    walk(data["plan"])
+    lines = ["flowchart LR"]
+    for key, node_id in conv_ids.items():
+        mark = "" if key in attached else " (nie gestartet)"
+        lines.append(f'  {node_id}["{_graph_text(labels[key] + mark)}"]:::conv')
+    for name, node_id in fact_ids.items():
+        info = facts[node_id]
+        lines.append(f'  {node_id}("{_graph_text(info["text"] or name.replace("_", " "))}"):::{"ess" if info["essential"] else "fact"}')
+    for label, node_id in effects.items():
+        lines.append(f'  {node_id}(["{_graph_text(label)}"]):::effect')
+    lines += list(edges)
+    lines += ["  classDef conv fill:#7A1F14,stroke:#2a1c10,color:#F0E2C0",
+              "  classDef fact fill:#EADBB6,stroke:#7A5F36,color:#2A1C10",
+              "  classDef ess fill:#D9A441,stroke:#7A1F14,color:#2A1C10",
+              "  classDef effect fill:#3E5A22,stroke:#2a1c10,color:#F0E2C0"]
+    return {"mermaid": "\n".join(lines), "facts": facts}
+
+
 def experiment_data():
     """All stories in one fixed, shuffled order that hides which author wrote each."""
+    sheets = _sheet_names()
     graphs = json.loads((EXPERIMENT / "graphs.json").read_text(encoding="utf-8"))
     stories, total, ready = [], 0, 0
 
@@ -208,6 +342,7 @@ def experiment_data():
             continue
         data = json.loads(path.read_text(encoding="utf-8"))
         convs = []
+        labels, cast = _conversation_names(data, sheets)
         for key in data["conversations"]:
             graph = graphs[f"{path.stem}__{key}"]
             nodes = []
@@ -222,9 +357,10 @@ def experiment_data():
                     entry["again"] = node["again"]
                     entry["audioAgain"] = url(graph["voice"], node["again"])
                 nodes.append(entry)
-            convs.append({"who": key, "when": "", "nodes": nodes})
+            convs.append({"who": labels[key], "when": "", "nodes": nodes})
         stories.append({"id": _blind_id(path.stem), "title": data["title"], "premise": data.get("premise", ""),
-                        "hidden_truth": data["hidden_truth"], "convs": convs})
+                        "hidden_truth": data["hidden_truth"], "convs": convs,
+                        "graph": story_graph(data, labels, cast)})
     stories.sort(key=lambda s: s["id"])
     return {"stories": stories, "total": total, "ready": ready}
 

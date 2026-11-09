@@ -17,8 +17,9 @@ first, cheaply, and build heavy machinery only for what the results show is need
 
 Generate and validate stories **between play sessions**. Each story carries explicit
 preconditions. In the game, simple deterministic code picks a story when its conditions hold.
-No model runs during play. This removes most timing, pause and stale-content problems. Writing
-stories live is a later option, along with building content lazily.
+No model runs during play. This removes most timing, pause and stale-content problems. This is the
+first target and stays as the fallback. The intended end state is writing stories in the background
+during play; see "Live authoring and the DM overlay".
 
 ## What exists today
 
@@ -126,6 +127,74 @@ combat, cutscenes and loading.
 - **Lazy building**, cached by what each line depends on.
 - **Designed voices**, required for anything distributed. Cloned voices stay a private experiment.
 - A `that was wrong` key that records context for later analysis.
+
+## Live authoring and the DM overlay
+
+The goal is for the Director to write in the background while the player plays. A story need not appear
+instantly: it starts once it is ready and the moment suits. The pre-generated library stays as the fallback,
+so a slow or failed generation never leaves the world empty.
+
+Voices take about 7 to 8 seconds per line here, so a typical 40-line story needs roughly 5 minutes plus
+writing and checks.
+
+Requirements:
+
+- **Measure first.** The game and the voice model share one GPU, and they have never run together. Measure the
+  frame rate with and without generation, and generation speed with and without the game. Stutter would rule out
+  generating voices during play.
+- **Stale stories.** The player keeps playing while a story is written, so a cast member may die or a chapter may
+  end. Bind each plan to the state it was written for (phase 7) and check again just before it starts.
+- **The same checks as offline.** Live stories get no weaker validation.
+
+**Overlay.** A small corner panel with a toggle key, for example `DM · schreibt … → prüft 3/5 → Stimmen 23/41 →
+bereit`. It doubles as phase 6's spoiler-free health report.
+
+- It shows only the process: no titles, names or places, and not which check failed.
+- Voices and checks show real counts. Writing has no known length, so it gets a moving indicator, not a
+  percentage.
+- A small Tempest widget, fed from Python over the existing bridge.
+
+## Open question: pacing and balance over a long game
+
+Not decided yet. Gothic's balance rests on a finite world, with a fixed amount of XP, gold and enemies, so
+every added quest pushes the hero ahead of the curve, and an endless supply of stories adds up without limit.
+Stories cannot grant XP today, as there is no operation for it. They pay out through `give_item`, with amounts
+chosen by the author, up to 120 gold in one experiment story.
+
+Starting ideas:
+
+- **A budget per chapter, enforced by code.** A story declares a reward tier such as small or medium. The
+  deterministic picker turns that into real XP and gold from what is left of the chapter's budget. A model never
+  sets the numbers. When the budget is spent, stories still run but stop paying.
+- **Rewards that leave the curve alone.** Information, changed relationships, better prices, an opened door. XP
+  stays rare and marks the larger stories.
+- **Limit stories against time played.** The picker caps how many run per chapter or in-game day, which sets the
+  pacing and keeps the world from filling up with people who have a problem for you.
+
+Settle the reward schema no later than the story library in phase 7, so stories declare a tier rather than
+hard-coded amounts. Retrofitting that across a filled library is the expensive path.
+
+## Open idea: a DM character setting
+
+A player-chosen setting from fully Gothic-native to total chaos. Stories are written between sessions, so it can
+be a parameter of the Director brief and a tag on each story in the library. The picker offers only stories at or
+below the chosen level, and nothing extra runs during play.
+
+Each level has to change specific rules, since "be more chaotic" alone produces noise. A first draft:
+
+| Level | Tone | Canon | Stakes and rewards |
+|---|---|---|---|
+| Native | Gothic's dry, grounded voice; could pass for a vanilla side quest | Nothing contradicts the game; only established people and places | Small, inside the chapter budget |
+| Folk tale | Odd and funny, but the people still believe it | Canon holds, with invented rumours, feuds and local oddities | Same budget |
+| Wild | Absurd premises played straight | New characters and events may bend the world; quest-critical NPCs and the main plot stay safe | Larger, stranger rewards |
+| Chaos | Anything goes | Lore yields; only technical limits still apply | Budget off; the player accepts a broken curve |
+
+- Logic and safety checks apply at every level, including whether a story can finish and whether it strands a
+  quest-critical NPC. Only the tone and lore critics relax as the setting rises.
+- Silly tone and broken lore are separate things, and a story can be absurd yet fully canon. Start with one
+  slider and split it into two only if one proves wrong.
+- Calibrate with experiment 1: after scoring, tag each story with the level it landed on and see which levels
+  were rated worth playing. The stories rated best at each level become its examples.
 
 ## Immediate work on Der Fall Tilo
 

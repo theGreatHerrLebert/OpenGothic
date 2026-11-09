@@ -22,6 +22,10 @@ button.p[disabled]{opacity:.35;cursor:default}
 .choice{padding:5px 12px;font:15px var(--small);background:var(--chip);color:var(--ink);border:1px solid var(--line);cursor:pointer}.choice.on{background:var(--ember);color:var(--paper)}
 textarea{width:100%;box-sizing:border-box;font:15px var(--body);padding:8px;background:var(--bg);color:var(--ink);border:1px solid var(--line)}
 .meta{font:13px var(--mono);color:var(--soft)}
+details.flow{margin:10px 0}details.flow summary,details.truth summary{cursor:pointer}
+#graphbox{height:520px;overflow:hidden;margin-top:8px}#graphbox .node{cursor:pointer}
+.flash{outline:2px solid var(--ember);outline-offset:4px}
+.info{margin-top:8px;padding:10px 12px;border:1px solid var(--line)}.info p{margin:4px 0}
 </style>
 <link rel="stylesheet" href="/gothic.css">
 <main class="wrap">
@@ -31,9 +35,27 @@ textarea{width:100%;box-sizing:border-box;font:15px var(--body);padding:8px;back
 <div class="bar" id="bar"></div>
 <div id="view"></div>
 </main>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/svg-pan-zoom@3.6.1/dist/svg-pan-zoom.min.js"></script>
 <script>
 const $=s=>document.querySelector(s),el=(t,c,x)=>{const n=document.createElement(t);if(c)n.className=c;if(x!=null)n.textContent=x;return n};
 let D={stories:[]},S={},cur=0,player=null;
+/* One panel per story, kept between renders so zoom and open state survive the page's refresh. */
+const panels=new Map();let flowOpen=false,mermaidReady=false,renderCount=0;
+function factInfo(box,f){box.hidden=false;box.textContent="";box.append(el("div","label",f.essential?"Wesentliche Tatsache":"Tatsache"),el("p","",f.text||f.id),el("p","","Erfährt man von: "+(f.taught.join(", ")||"niemandem, nie gelehrt")),el("p","","Öffnet: "+(f.unlocks.join(" · ")||"nichts direkt")))}
+function jumpTo(i){const t=document.getElementById("conv-"+i);if(!t)return;t.scrollIntoView({behavior:"smooth",block:"start"});t.classList.add("flash");setTimeout(()=>t.classList.remove("flash"),1600)}
+async function drawFlow(p,s){if(p.drawn||!p.d.open||!p.d.isConnected)return;p.drawn=true;
+ if(!window.mermaid){p.box.textContent="Die Graph-Bibliothek konnte nicht geladen werden.";return}
+ if(!mermaidReady){mermaid.initialize({startOnLoad:false,securityLevel:"loose",flowchart:{useMaxWidth:false},theme:"base",themeVariables:{fontFamily:"Alegreya, Georgia, serif",fontSize:"16px",lineColor:"#3a2614",primaryTextColor:"#2a1c10",edgeLabelBackground:"#d9c59c"}});mermaidReady=true}
+ try{const r=await mermaid.render("flow"+(++renderCount),s.graph.mermaid);p.box.innerHTML=r.svg;const svg=p.box.querySelector("svg");svg.removeAttribute("style");svg.setAttribute("width","100%");svg.setAttribute("height","100%");
+  if(window.svgPanZoom)svgPanZoom(svg,{controlIconsEnabled:true,minZoom:.2,maxZoom:12,fit:true,center:true,zoomScaleSensitivity:.25});
+  let down=null;svg.addEventListener("pointerdown",e=>{down=[e.clientX,e.clientY]});
+  svg.addEventListener("click",e=>{if(down&&Math.hypot(e.clientX-down[0],e.clientY-down[1])>5)return;const g=e.target.closest(".node");if(!g)return;const m=g.id.match(/flowchart-(c|f|r)(\d+)-\d+$/);if(!m)return;if(m[1]==="c")jumpTo(m[2]);else if(m[1]==="f")factInfo(p.info,s.graph.facts["f"+m[2]])})
+ }catch(e){p.box.textContent="Graph-Fehler: "+(e.message||e)}}
+function flowPanel(s){let p=panels.get(s.id);if(!p){const d=el("details","flow"),box=el("div");box.id="graphbox";const info=el("div","info");info.hidden=true;
+  d.append(el("summary","","Wie es sich entfalten kann (Spoiler)"),el("p","meta","Rot sind Gespräche, hellbraun Tatsachen, orange wesentliche Tatsachen, grün echte Folgen. Durchgezogen: ein Gespräch lehrt etwas. Dick: etwas startet ein Gespräch oder löst eine Folge aus. Gepunktet: öffnet eine Zeile des Helden. Gekreuzt: schliesst etwas. Klicken springt zum Gespräch oder zeigt die Tatsache; ziehen und scrollen zum Bewegen und Zoomen."),box,info);
+  p={d,box,info,drawn:false};d.ontoggle=()=>{flowOpen=d.open;drawFlow(p,s)};panels.set(s.id,p)}
+ p.d.open=flowOpen;return p}
 function play(u,b){if(player)player.pause();player=new Audio(u);b.textContent="…";const r=()=>b.textContent="Play";player.onended=player.onpause=r;player.play().catch(r)}
 function pbtn(u){const b=el("button","p",u?"Play":"–");b.type="button";if(u)b.onclick=()=>play(u,b);else b.disabled=true;return b}
 function statusLine(){const a=Object.values(S);const worth=a.filter(x=>x.worth==="yes").length;$("#status").textContent=a.filter(x=>x.worth).length+" of "+D.stories.length+" judged · "+worth+" worth playing · voices ready: "+D.ready+" of "+D.total}
@@ -43,7 +65,8 @@ async function save(s,patch){S[s.id]={...(S[s.id]||{}),...patch};bar();statusLin
 function render(){bar();statusLine();const s=D.stories[cur],v=$("#view");v.textContent="";if(!s)return;const a=el("article","sheet");
  a.append(el("div","label","Geschichte "+(cur+1)+" von "+D.stories.length),el("h2","",s.title),el("p","prem",s.premise));
  const d=el("details","truth");d.append(el("summary","","Die verborgene Wahrheit"),el("p","",s.hidden_truth));a.append(d);
- s.convs.forEach(c=>{const x=el("section","conv");x.append(el("h3","",c.who));if(c.when)x.append(el("p","meta",c.when));
+ const flow=flowPanel(s);a.append(flow.d);
+ s.convs.forEach((c,ci)=>{const x=el("section","conv");x.id="conv-"+ci;x.append(el("h3","",c.who));if(c.when)x.append(el("p","meta",c.when));
   c.nodes.forEach(n=>{const b=el("div","node");b.append(el("div","who",n.key));const l=el("div","row");l.append(pbtn(n.audio),el("span","say",n.line));b.append(l);
    if(n.again){const a2=el("div","row");a2.append(pbtn(n.audioAgain),el("span","meta","Später: "),el("span","say",n.again));b.append(a2)}
    if(n.returns)b.append(el("div","meta","→ zurück zu "+n.returns));
@@ -52,7 +75,7 @@ function render(){bar();statusLine();const s=D.stories[cur],v=$("#view");v.textC
  const row=(label,opts,key)=>{const w=el("div","row");w.append(el("span","label",label));opts.forEach(o=>{const b=el("button","choice"+(String(r[key])===String(o[0])?" on":""),o[1]);b.type="button";b.onclick=()=>{save(s,{[key]:o[0]});render()};w.append(b)});return w};
  f.append(row("Wert zu spielen?",[["yes","Ja"],["no","Nein"]],"worth"),row("Interesse",[[1,"1"],[2,"2"],[3,"3"],[4,"4"],[5,"5"]],"interest"));
  const t=el("textarea");t.id="defects-"+s.id;t.rows=4;t.placeholder="Fehler: was stimmt nicht, und welche Regel bricht es?";t.value=r.defects||"";t.onchange=()=>save(s,{defects:t.value});t.setAttribute("aria-label","Defects");f.append(t);
- const n=el("div","row");const nx=el("button","choice","Nächste Geschichte");nx.type="button";nx.onclick=()=>{if(cur<D.stories.length-1){cur++;render();scrollTo(0,0)}};n.append(nx);f.append(n);a.append(f);v.append(a)}
+ const n=el("div","row");const nx=el("button","choice","Nächste Geschichte");nx.type="button";nx.onclick=()=>{if(cur<D.stories.length-1){cur++;render();scrollTo(0,0)}};n.append(nx);f.append(n);a.append(f);v.append(a);drawFlow(flow,s)}
 async function load(){const[d,s]=await Promise.all([fetch("/experiment/data").then(r=>r.json()),fetch("/experiment/scores").then(r=>r.json())]);D=d;S=s;const a=document.activeElement;if(!(a&&a.tagName==="TEXTAREA"))render();else statusLine()}
 load().catch(()=>{$("#status").textContent="Could not load the stories."});setInterval(()=>{if(!(player&&!player.paused))load().catch(()=>{})},60000);
 </script>
