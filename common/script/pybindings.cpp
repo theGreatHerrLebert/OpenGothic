@@ -668,6 +668,23 @@ PYBIND11_EMBEDDED_MODULE(gothic, m) {
         "Add an entry to the player's journal. Status: 0 unchanged, 1 running, "
         "2 success, 3 failed, 4 obsolete.");
 
+  m.def("journal_entries",
+        []() {
+          py::dict out;
+          auto* log = Gothic::inst().questLog();
+          if(log==nullptr)
+            return out;
+          for(size_t i=0; i<log->questCount(); ++i) {
+            auto& q = log->quest(i);
+            py::list entries;
+            for(auto& e:q.entry)
+              entries.append(toPy(e));
+            out[py::str(toPy(q.name))] = entries;
+            }
+          return out;
+          },
+        "All journal topics and their entries.");
+
   m.def("announce",
         [](const std::string& text, float duration, int x, int y) {
           auto& font = Resources::font(1.0f);

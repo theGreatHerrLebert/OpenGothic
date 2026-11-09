@@ -3273,8 +3273,9 @@ void GameScript::ta_min(std::shared_ptr<zenkit::INpc> npcRef, int start_h, int s
 
 void GameScript::addJournalEntry(std::string_view topic, std::string_view entry, int status) {
   log_createtopic(topic, QuestLog::Mission);
+  // B_LogEntry adds the entry and plays the game's own notice and sound
   if(!entry.empty())
-    log_addentry(topic, entry);
+    vm.call_function<void>("B_LOGENTRY", topic, entry);
   if(status!=0)
     log_settopicstatus(topic, status);
   }
