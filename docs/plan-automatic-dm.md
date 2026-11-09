@@ -196,6 +196,21 @@ Each level has to change specific rules, since "be more chaotic" alone produces 
 - Calibrate with experiment 1: after scoring, tag each story with the level it landed on and see which levels
   were rated worth playing. The stories rated best at each level become its examples.
 
+## Open idea: a ladder of story verbs
+
+Stories can only talk, set flags, move people and hand out items today, and experiment 1 shows that already
+carries a lot. New verbs come one rung at a time, cheapest first, because each makes a story harder to keep from
+breaking. A rung is finished when it has typed operations, submission checks and a path-walking test.
+
+1. **Inventory.** Taking an item from the hero, real handovers on a dialogue line (`takes`, `gives`), and letters on
+   the game's own document screen (`doc_create` and friends in `common/gothic.cpp`), with "has read it" as a flag. The
+   stories already pretend to do this: letters are borrowed vanilla items with a new description, and nothing can
+   leave the hero's inventory. Each letter needs its own text and must survive save and load.
+2. **Fights.** An NPC who attacks, or a duel the hero can lose and still carry on from. Depends on phase 6, since a
+   story must still close whoever dies, and on knowing which NPCs are quest-critical.
+3. **Sorcery.** Curses, transformations, scrolls that do something odd. Easiest to break, so it starts at the Wild and
+   Chaos levels of the DM setting.
+
 ## Immediate work on Der Fall Tilo
 
 Keep playing it as the reference: turning Tilo in, harbour first, the mage path, and the wine location.

@@ -58,12 +58,12 @@ function flowPanel(s){let p=panels.get(s.id);if(!p){const d=el("details","flow")
  p.d.open=flowOpen;return p}
 function play(u,b){if(player)player.pause();player=new Audio(u);b.textContent="…";const r=()=>b.textContent="Play";player.onended=player.onpause=r;player.play().catch(r)}
 function pbtn(u){const b=el("button","p",u?"Play":"–");b.type="button";if(u)b.onclick=()=>play(u,b);else b.disabled=true;return b}
-function statusLine(){const a=Object.values(S);const worth=a.filter(x=>x.worth==="yes").length;$("#status").textContent=a.filter(x=>x.worth).length+" of "+D.stories.length+" judged · "+worth+" worth playing · voices ready: "+D.ready+" of "+D.total}
+function statusLine(){const scored=D.stories.filter(s=>!s.bonus),a=scored.map(s=>S[s.id]||{});const worth=a.filter(x=>x.worth==="yes").length;$("#status").textContent=a.filter(x=>x.worth).length+" of "+scored.length+" judged · "+worth+" worth playing · voices ready: "+D.ready+" of "+D.total}
 function bar(){const b=$("#bar");b.textContent="";D.stories.forEach((s,i)=>{const r=S[s.id]||{};const x=el("button",(r.worth||"")+(i===cur?" cur":""),String(i+1));x.onclick=()=>{cur=i;render()};b.append(x)})}
 async function save(s,patch){S[s.id]={...(S[s.id]||{}),...patch};bar();statusLine();
  try{const r=await fetch("/experiment/score",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({id:s.id,...S[s.id]})});if(!r.ok)throw 0}catch(e){$("#status").textContent="Saving failed. Is the inspector server still running?"}}
 function render(){bar();statusLine();const s=D.stories[cur],v=$("#view");v.textContent="";if(!s)return;const a=el("article","sheet");
- a.append(el("div","label","Geschichte "+(cur+1)+" von "+D.stories.length),el("h2","",s.title),el("p","prem",s.premise));
+ a.append(el("div","label",s.bonus?"Bonus, zählt nicht fürs Experiment":"Geschichte "+(cur+1)+" von "+D.stories.filter(x=>!x.bonus).length),el("h2","",s.title),el("p","prem",s.premise));
  const d=el("details","truth");d.append(el("summary","","Die verborgene Wahrheit"),el("p","",s.hidden_truth));a.append(d);
  const flow=flowPanel(s);a.append(flow.d);
  s.convs.forEach((c,ci)=>{const x=el("section","conv");x.id="conv-"+ci;x.append(el("h3","",c.who));if(c.when)x.append(el("p","meta",c.when));

@@ -337,7 +337,7 @@ def experiment_data():
         ready += bool(found)
         return found
 
-    for path in sorted((EXPERIMENT / "stories").glob("s*_*.json")):
+    for path in sorted(sorted((EXPERIMENT / "stories").glob("s*_*.json")) + sorted((EXPERIMENT / "stories").glob("x*_*.json"))):
         if path.name.endswith((".first.json", ".final.json")):
             continue
         data = json.loads(path.read_text(encoding="utf-8"))
@@ -360,8 +360,8 @@ def experiment_data():
             convs.append({"who": labels[key], "when": "", "nodes": nodes})
         stories.append({"id": _blind_id(path.stem), "title": data["title"], "premise": data.get("premise", ""),
                         "hidden_truth": data["hidden_truth"], "convs": convs,
-                        "graph": story_graph(data, labels, cast)})
-    stories.sort(key=lambda s: s["id"])
+                        "graph": story_graph(data, labels, cast), "bonus": bool(data.get("bonus")), "stem": path.stem})
+    stories.sort(key=lambda s: (s["bonus"], s["stem"] if s["bonus"] else s["id"]))  # bonus stories go last, so the scored numbering stays put
     return {"stories": stories, "total": total, "ready": ready}
 
 

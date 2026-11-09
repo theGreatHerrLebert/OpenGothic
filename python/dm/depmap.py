@@ -60,19 +60,21 @@ def parse(data):
         bits = r.u32()
         size, kind, flags = bits & 0xFFF, (bits >> 12) & 0xF, (bits >> 16) & 0x3F
         r.pos += 20
-        address = None
+        address, strings, ints = None, [], []
         if not flags & MEMBER:
-            if kind == T_FLOAT or kind == T_INT:
+            if kind == T_FLOAT:
                 r.pos += 4 * size
+            elif kind == T_INT:
+                ints = [r.i32() for _ in range(size)]
             elif kind == T_STRING:
-                for _ in range(size):
-                    r.line()
+                strings = [r.line() for _ in range(size)]
             elif kind == T_CLASS:
                 r.u32()
             elif kind in (T_FUNC, T_PROTOTYPE, T_INSTANCE):
                 address = r.i32()
         parent = r.i32()
-        symbols.append(dict(index=index, name=name.upper(), kind=kind, address=address, parent=parent))
+        symbols.append(dict(index=index, name=name.upper(), kind=kind, address=address, parent=parent,
+                            size=size, flags=flags, strings=strings, ints=ints))
     code_size = r.u32()
     return symbols, data[r.pos:r.pos + code_size]
 
