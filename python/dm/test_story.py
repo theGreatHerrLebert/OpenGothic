@@ -31,6 +31,10 @@ class World:
         self.placed = []
         self.fail_place = None
 
+    def take_perceptions(self):
+        taken, self.perceived = getattr(self, "perceived", []), []
+        return taken
+
     def instance_kind(self, name):
         name = name.upper()
         if name in ("NOV_A", "NOV_B", "PARLAN", "GHOST"):
@@ -458,7 +462,39 @@ def test_player():
     d.say = real_say
 
 
-for test in (test_rule_contents_are_checked_when_submitted, test_graph_validation, test_validation, test_apply_and_rollback, test_return_npc, test_conditional_choices, test_returns_to_menu, test_questions_are_asked_once, test_variant_line, test_again_line, test_scene_and_rule,
+def test_rule_fires_on_perception():
+    fake.world.__init__()
+    fake.dialog.__init__()
+    w = fake.world
+    fake.player = types.SimpleNamespace(position=(0, 0, 0), given=[], busy=False, guild=0,
+                                        give_item=lambda i, c=1: fake.player.given.append((i, c)))
+    fake.daedalus = types.SimpleNamespace(get=lambda name, i=0: -1)
+    s = st.Story()
+    s.generation = w.generation
+    s.apply_plan({"reason": "r", "ops": [{"op": "add_rule", "id": "seen", "when": ["active"],
+                                          "on": {"event": "took_item", "item": "ITGOLD", "unseen": True},
+                                          "ops": [{"op": "give_item", "instance": "ITREWARD"}]}]})
+    theft = dict(kind="took_item", actor="PLAYER", target="", item="ITGOLD", spell=-1, seen_by=[])
+    w.perceived = [theft]
+    s.on_tick()
+    assert fake.player.given == []       # the story was not listening yet
+    s.state["flags"]["active"] = True
+    s.on_tick()
+    assert fake.player.given == []       # nothing has happened since it began to listen
+    w.perceived = [{**theft, "seen_by": ["PARLAN"]}]
+    s.on_tick()
+    assert fake.player.given == []       # somebody saw it
+    w.perceived = [theft]
+    s.on_tick()
+    assert fake.player.given == [("ITREWARD", 1)]
+    w.perceived = [theft]
+    s.on_tick()
+    assert fake.player.given == [("ITREWARD", 1)]  # once only
+    for bad in ({"event": "nope"}, {"event": "hit", "target": "ITGOLD"}):
+        rejected(s, [{"op": "add_rule", "id": "x", "when": [], "on": bad, "ops": []}], "bad check")
+
+
+for test in (test_rule_contents_are_checked_when_submitted, test_graph_validation, test_validation, test_apply_and_rollback, test_return_npc, test_conditional_choices, test_returns_to_menu, test_questions_are_asked_once, test_variant_line, test_again_line, test_scene_and_rule, test_rule_fires_on_perception,
              test_queue_waits_for_safe_point, test_save_load_does_not_reapply_world,
              test_player):
     test()

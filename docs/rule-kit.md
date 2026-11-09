@@ -38,7 +38,7 @@ The second kind costs almost nothing to write, since the solution already exists
 | Locks | 185 lockpick only, 61 key only; 55 distinct keys | No |
 | Chests and placed items | Contents and positions per world | Placement only |
 | Items with scripted use | 284 scripts | No |
-| NPC reactions to the player | `B_Assess*`: damage, theft, drawn weapon, entering a room, murder, sneaking | No |
+| NPC reactions to the player | `B_Assess*`: damage, theft, drawn weapon, entering a room, murder, sneaking | Partly (`on`: took_item, hit, knocked_down, killed, cast_spell, entered_room) |
 | Status states | `ZS_MagicBurn`, `MagicSleep`, `MagicFreeze`, `MagicShrink`, `MagicFlee`, `Whirlwind`, `Unconscious` | Yes (`npc_state`) |
 | Obsession | `B_SCIsObsessed`, `B_ClearSCObsession`, `Use_HealObsession`, `C_IsShrineObsessed` | Yes (`obsessed`, hero only) |
 | Who belongs where | `C_NpcBelongsToCity`, `Farm`, `Monastery`; `C_IsTakenItemMyPossession` | No |

@@ -64,3 +64,24 @@ assert [c["text"] for c in player._visible_choices()] == ["reich", "arm"]
 bad = {"start": "a", "nodes": {"a": {"line": "x", "choices": [{"text": "y", "ends": True, "checks": [{"type": "nope"}]}]}}}
 assert "unknown" in checks.validate_graph(bad)
 print("ok")
+
+# Perceptions.
+from dm import perceptions as perc  # noqa: E402
+
+values["SPL_FIREBOLT"] = 18
+ev = dict(kind="cast_spell", actor="PLAYER", target="BURNER", item="", spell=18, seen_by=[])
+assert perc.matches({"event": "cast_spell"}, ev) and perc.matches({"event": "cast_spell", "target": "BURNER", "spell": "SPL_FIREBOLT"}, ev)
+assert not perc.matches({"event": "hit"}, ev) and not perc.matches({"event": "cast_spell", "target": "CORPSE"}, ev)
+values["SPL_SLEEP"] = 7
+assert not perc.matches({"event": "cast_spell", "spell": "SPL_SLEEP"}, ev)
+take = dict(kind="took_item", actor="PLAYER", target="", item="ITMI_GOLD", spell=-1, seen_by=["CORPSE"])
+assert perc.matches({"event": "took_item", "item": "itmi_gold", "seen_by": "CORPSE"}, take)
+assert not perc.matches({"event": "took_item", "unseen": True}, take) and not perc.matches({"event": "took_item", "item": "ITMI_X"}, take)
+assert perc.matches({"event": "took_item", "unseen": True}, {**take, "seen_by": []})
+done_to_hero = dict(kind="hit", actor="BURNER", target="PLAYER", item="", spell=-1, seen_by=[])
+assert not perc.matches({"event": "hit"}, done_to_hero) and perc.matches({"event": "hit", "target": "PLAYER"}, done_to_hero)
+for bad, word in [({"event": "nope"}, "unknown"), ({"event": "took_item", "item": "BURNER"}, "not an item"), ({"event": "hit", "target": "ITX"}, "not an NPC"),
+                  ({"event": "cast_spell", "spell": "FIRE"}, "not a spell"), ({"event": "hit", "seen_by": "BURNER", "unseen": True}, "exclude")]:
+    assert word in perc.validate(bad), bad
+assert perc.validate(None) is None and perc.validate({"event": "hit", "target": "PLAYER"}) is None
+print("perceptions ok")

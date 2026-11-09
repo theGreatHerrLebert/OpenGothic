@@ -135,6 +135,14 @@ class WorldObjects final {
     void           sendPassivePerc  (Npc& self, Npc& other, Npc* victim, Item* itm, int32_t perc);
     void           sendImmediatePerc(Npc& self, Npc& other, Npc& victim, Item* itm, int32_t perc);
 
+    struct PerceptionRecord final {
+      std::string              kind, actor, target, item;
+      int32_t                  spell = -1;
+      std::vector<std::string> seenBy;
+      };
+    void           recordSpellCast(Npc& caster, Npc& target, int32_t spell);
+    auto           takePerceptions() -> std::vector<PerceptionRecord>;
+
     void           resetPositionToTA();
 
   private:
@@ -181,6 +189,7 @@ class WorldObjects final {
     std::vector<AbstractTrigger*>      triggersTk;
     std::vector<AbstractTrigger*>      triggersDef;
     std::vector<PerceptionMsg>         sndPerc;
+    std::vector<PerceptionRecord>      perceptionLog;
     std::vector<TriggerEvent>          triggerEvents;
     CsCamera*                          currentCsCamera = nullptr;
 
@@ -194,6 +203,9 @@ class WorldObjects final {
 
     void             setMobState(std::string_view scheme, int32_t st);
     void             passivePerceptionProcess(PerceptionMsg& msg, Npc& npc, Npc& pl);
+    void             recordPerception(const PerceptionMsg& msg, Npc& pl);
+    void             pushPerception(PerceptionRecord&& record);
+    std::string      perceptionName(const Npc& npc, const Npc& pl) const;
 
     void             tickNear(uint64_t dt);
     void             tickTriggers(uint64_t dt);

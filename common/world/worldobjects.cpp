@@ -261,6 +261,9 @@ void WorldObjects::tick(uint64_t dt, uint64_t dtPlayer) {
         passivePerceptionProcess(r, *ptr, *pl);
       }
     }
+
+  for(auto& r:passive)
+    recordPerception(r,*pl);
   }
 
 uint32_t WorldObjects::npcId(const Npc *ptr) const {
@@ -939,6 +942,71 @@ void WorldObjects::sendImmediatePerc(Npc& self, Npc& other, Npc& victim, Item* i
   for(auto& ptr:npcNear) {
     passivePerceptionProcess(r, *ptr, *pl);
     }
+  recordPerception(r,*pl);
+  }
+
+static const char* perceptionKind(int32_t what) {
+  switch(what) {
+    case PERC_ASSESSTHEFT:        return "took_item";
+    case PERC_ASSESSOTHERSDAMAGE: return "hit";
+    case PERC_ASSESSDEFEAT:       return "knocked_down";
+    case PERC_ASSESSMURDER:       return "killed";
+    case PERC_ASSESSENTERROOM:    return "entered_room";
+    default:                      return nullptr;
+    }
+  }
+
+std::string WorldObjects::perceptionName(const Npc& npc, const Npc& pl) const {
+  if(&npc==&pl)
+    return "PLAYER";
+  auto* sym = owner.script().findSymbol(npc.instanceSymbol());
+  return sym!=nullptr ? std::string(sym->name()) : std::string();
+  }
+
+void WorldObjects::pushPerception(PerceptionRecord&& record) {
+  // Nobody may be reading: the log stays small rather than growing through a whole session.
+  if(perceptionLog.size()>=128)
+    perceptionLog.erase(perceptionLog.begin());
+  perceptionLog.push_back(std::move(record));
+  }
+
+void WorldObjects::recordPerception(const PerceptionMsg& msg, Npc& pl) {
+  const char* kind = perceptionKind(msg.what);
+  if(kind==nullptr)
+    return;
+  // Damage is reported by the victim as self, with the attacker as other.
+  Npc* actor  = (msg.self==msg.victim && msg.other!=msg.self) ? msg.other : msg.self;
+  Npc* target = msg.victim==actor ? nullptr : msg.victim;
+  if(actor!=&pl && target!=&pl)
+    return;
+
+  PerceptionRecord record;
+  record.kind  = kind;
+  record.actor = perceptionName(*actor,pl);
+  if(target!=nullptr)
+    record.target = perceptionName(*target,pl);
+  if(msg.item!=size_t(-1))
+    if(auto* sym = owner.script().findSymbol(msg.item))
+      record.item = sym->name();
+  for(auto* npc:msg.seenBy)
+    record.seenBy.push_back(perceptionName(*npc,pl));
+  pushPerception(std::move(record));
+  }
+
+void WorldObjects::recordSpellCast(Npc& caster, Npc& target, int32_t spell) {
+  auto* pl = owner.player();
+  if(pl==nullptr || (&caster!=pl && &target!=pl))
+    return;
+  PerceptionRecord record;
+  record.kind   = "cast_spell";
+  record.actor  = perceptionName(caster,*pl);
+  record.target = perceptionName(target,*pl);
+  record.spell  = spell;
+  pushPerception(std::move(record));
+  }
+
+auto WorldObjects::takePerceptions() -> std::vector<PerceptionRecord> {
+  return std::exchange(perceptionLog,{});
   }
 
 void WorldObjects::passivePerceptionProcess(PerceptionMsg& msg, Npc& npc, Npc& pl) {
@@ -965,6 +1033,11 @@ void WorldObjects::passivePerceptionProcess(PerceptionMsg& msg, Npc& npc, Npc& p
      ((SensesBit(npc.handle().senses) & SensesBit::SENSE_HEAR)==SensesBit::SENSE_NONE)) {
     //return;
     }
+
+  // Line of sight is only worth testing for events a story could actually hear about.
+  if(perceptionKind(msg.what)!=nullptr && (msg.self==&pl || msg.other==&pl || msg.victim==&pl) &&
+     (uint32_t(npc.canSenseNpc(*msg.other,false)) & uint32_t(SensesBit::SENSE_SEE))!=0)
+    msg.seenBy.push_back(&npc);
 
   if(msg.item!=size_t(-1) && msg.other!=nullptr)
     owner.script().setInstanceItem(*msg.other,msg.item);

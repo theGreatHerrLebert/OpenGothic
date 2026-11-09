@@ -610,6 +610,22 @@ PYBIND11_EMBEDDED_MODULE(gothic, m) {
       .def_property_readonly("tick_count", &PyWorld::tickCount)
       .def_property_readonly("npc_count",  &PyWorld::npcCount)
       .def_property_readonly("npcs",       &PyWorld::npcs)
+      .def("take_perceptions",
+           [](const PyWorld&) {
+             py::list out;
+             for(auto& r:requireWorld()->takePerceptions()) {
+               py::dict d;
+               d["kind"]    = r.kind;
+               d["actor"]   = r.actor;
+               d["target"]  = r.target;
+               d["item"]    = r.item;
+               d["spell"]   = r.spell;
+               d["seen_by"] = r.seenBy;
+               out.append(d);
+               }
+             return out;
+             },
+           "Events involving the player since the last call, oldest first.")
       .def("set_time", &PyWorld::setTime, py::arg("hour"), py::arg("minute"))
       .def("spawn", &PyWorld::spawn, py::arg("instance"), py::arg("waypoint") = "",
            "Create an NPC by Daedalus instance name, near the player unless a "

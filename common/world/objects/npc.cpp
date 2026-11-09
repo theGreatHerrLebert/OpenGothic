@@ -3242,6 +3242,7 @@ void Npc::commitSpell() {
     visual.setMagicWeaponKey(owner,SpellFxKey::Init);
     if(currentTarget!=nullptr) {
       currentTarget->lastHitSpell = splId;
+      owner.recordSpellCast(*this,*currentTarget,splId);
       currentTarget->perceptionProcess(*this,nullptr,0,PERC_ASSESSMAGIC);
       }
     }

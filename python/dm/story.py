@@ -23,7 +23,7 @@ import pathlib
 
 import gothic
 
-from dm import checks
+from dm import checks, perceptions
 from dm import graph as graphs
 
 RUNTIME_DIR = pathlib.Path(__file__).resolve().parent.parent / "dm_runtime"
@@ -87,7 +87,7 @@ def _graph_problem(graph):
 
 
 def _require_checks(args):
-    problem = checks.validate_all(args.get("checks"))
+    problem = checks.validate_all(args.get("checks")) or perceptions.validate(args.get("on"))
     if problem:
         raise PlanError(f"bad check: {problem}")
 
@@ -266,9 +266,14 @@ def _check_rule(args, state):
 def _fold_rule(args, state):
     state.setdefault("rules", {})[args["id"]] = {
         "when": args["when"], "unless": args.get("unless"), "ops": args["ops"], "fired": False, "checks": args.get("checks", []),
+        "on": args.get("on"), "perceived": False,
         "after_night_of": args.get("after_night_of"), "unseen_by_near": args.get("unseen_by_near"),
         "unseen_range": args.get("unseen_range", UNSEEN_RANGE),
     }
+
+
+def _fold_perceive(args, state):
+    state["rules"][args["id"]]["perceived"] = True
 
 
 def _check_fire_rule(args, state):
@@ -416,6 +421,7 @@ OPS = {
     "finish_scene": (_check_finish_scene, _fold_finish_scene, None),
     "add_rule": (_check_rule, _fold_rule, None),
     "fire_rule": (_check_fire_rule, _fold_fire_rule, None),
+    "perceive": (_check_fire_rule, _fold_perceive, None),
     "spawn_npc": (_check_spawn, _noop, _world_spawn),
     "detach_dialogue_graph": (_check_detach, _fold_detach, _world_detach),
     "send_npc": (_check_send, _noop, _world_send),
@@ -611,9 +617,19 @@ class Story:
                     return False
         return True
 
+    def _take_perceptions(self):
+        """A rule hears only what happens while its own conditions hold, and hears it once."""
+        for event in gothic.world.take_perceptions():
+            for rule_id, rule in self.state.get("rules", {}).items():
+                if (rule.get("on") and not rule["fired"] and not rule.get("perceived") and self._conditions(rule)
+                        and perceptions.matches(rule["on"], event)):
+                    self.apply_plan({"reason": f"Wahrgenommen: {rule_id}", "ops": [{"op": "perceive", "id": rule_id}]})
+
     def _tick_rules(self):
         for rule_id, rule in self.state.get("rules", {}).items():
             if rule["fired"] or rule_id in self.failed_rules or not self._conditions(rule):
+                continue
+            if rule.get("on") and not rule.get("perceived"):
                 continue
             if not self._timing_allows(rule):
                 continue
@@ -639,6 +655,7 @@ class Story:
             self.rebind()
 
         self._track_hero()
+        self._take_perceptions()
 
         self._tick_scenes()
         if gothic.dialog.partner() is None:
