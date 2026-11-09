@@ -79,7 +79,7 @@ def _choice(text, base, requires, unless, uses):
 BACK = "Zurück."
 
 GORAX_SCENE = {"voice": VOICES[GORAX], "start": "a", "nodes": {
-    "a": node("Du da! Hast du Tilo gesehen, den Novizen? Der Bengel ist heute früh nicht zur Arbeit erschienen. Die Presse steht still, und der Wein keltert sich nicht von selbst.",
+    "a": node("Warte! Hast du den Novizen Tilo gesehen? Der Bengel ist heute früh nicht zur Arbeit erschienen. Die Presse steht still, und der Wein keltert sich schließlich nicht von selbst!",
               ["tilo_named", "tilo_absent"], [
                   go("Ich habe am Hafen einen Kerl getroffen, der nicht dorthin passt.", "c", requires=["tilo_cornered"], uses=["tilo_cornered"]),
                   go("Wer ist dieser Tilo?", "b"),
