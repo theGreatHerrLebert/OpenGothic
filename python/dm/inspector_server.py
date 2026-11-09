@@ -28,6 +28,9 @@ from dm.stories import tilo as t  # noqa: E402
 
 PORT = 8765
 PAGE = ROOT / "inspector" / "page.html"
+CHARACTERS_PAGE = ROOT / "inspector" / "characters.html"
+CHARACTERS = ROOT / "characters"
+WORLD_FACTS = ROOT / "world_facts.json"
 REVIEWS = voices.RUNTIME_DIR / "reviews.json"
 REVIEW_LOCK = threading.Lock()  # requests arrive on separate threads
 AUDIO_PATH = re.compile(r"^/audio/([0-9A-Za-z_]+)/([0-9a-f]{20})\.wav$")
@@ -83,7 +86,7 @@ def build():
     for x in sorted(facts):
         L.append(f'  f_{x}("{lab[x]}"):::{"ess" if plot["facts"].get(x,{}).get("essential") else "fact"}')
     L+=sorted(E)
-    L+=["  classDef conv fill:#A8421B,stroke:#A8421B,color:#fff","  classDef fact fill:#E4DECD,stroke:#B9B09A,color:#23201A","  classDef ess fill:#F0C9A8,stroke:#A8421B,color:#23201A","  classDef effect fill:#2F6B3E,stroke:#2F6B3E,color:#fff"]
+    L+=["  classDef conv fill:#7A1F14,stroke:#2a1c10,color:#F0E2C0","  classDef fact fill:#EADBB6,stroke:#7A5F36,color:#2A1C10","  classDef ess fill:#D9A441,stroke:#7A1F14,color:#2A1C10","  classDef effect fill:#3E5A22,stroke:#2a1c10,color:#F0E2C0"]
     for conv in data["convs"]:
         voice = g[conv["id"]].get("voice")
         conv["nodes"] = copy.deepcopy(conv["nodes"])
@@ -156,6 +159,18 @@ def load_reviews():
     return json.loads(REVIEWS.read_text(encoding="utf-8")) if REVIEWS.exists() else {}
 
 
+def character_data():
+    """Every sheet and the world facts, read fresh so edits show on reload."""
+    sheets = []
+    for path in sorted(CHARACTERS.glob("*.json")):
+        try:
+            sheets.append({**json.loads(path.read_text(encoding="utf-8")), "file": path.stem})
+        except ValueError as error:  # one hand-edited file must not hide the others
+            sheets.append({"file": path.stem, "error": str(error)})
+    facts = json.loads(WORLD_FACTS.read_text(encoding="utf-8"))["facts"] if WORLD_FACTS.exists() else []
+    return {"characters": sheets, "facts": facts}
+
+
 class Handler(http.server.BaseHTTPRequestHandler):
     def _send(self, body, kind="application/json", status=200):
         self.send_response(status)
@@ -170,6 +185,12 @@ class Handler(http.server.BaseHTTPRequestHandler):
             html = PAGE.read_text(encoding="utf-8").replace("%%GRAPH%%", graph).replace(
                 "/*DATA*/null", json.dumps(data, ensure_ascii=False).replace("</", "<\\/"))
             self._send(html.encode("utf-8"), "text/html; charset=utf-8")
+        elif self.path == "/gothic.css":
+            self._send((ROOT / "inspector" / "gothic.css").read_bytes(), "text/css; charset=utf-8")
+        elif self.path == "/characters":
+            self._send(CHARACTERS_PAGE.read_bytes(), "text/html; charset=utf-8")
+        elif self.path == "/characters.json":
+            self._send(json.dumps(character_data(), ensure_ascii=False).encode("utf-8"))
         elif self.path == "/reviews":
             self._send(json.dumps(current_reviews(), ensure_ascii=False).encode("utf-8"))
         else:

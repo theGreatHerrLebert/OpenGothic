@@ -1,13 +1,11 @@
 <title>Der Fall Tilo</title>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,500;0,700;1,500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,400;0,500;0,700;1,400;1,500&family=Almendra+SC&family=Grenze+Gotisch:wght@500;700&family=IM+Fell+English:ital@0;1&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
 /* Layout: a tall working manuscript. Conversations down the page, each line reviewable; knowledge state in a side rail. */
 :root{--bg:#EFEBDF;--paper:#F8F5EC;--ink:#23201A;--soft:#6A6352;--line:#D7D0BE;--ember:#A8421B;--ok:#2F6B3E;--bad:#A62B2B;--okbg:#DDE9DC;--badbg:#F2DCD6;--chip:#E4DECD;
 --disp:"Alegreya",Georgia,serif;--body:"IBM Plex Sans",system-ui,sans-serif;--mono:"IBM Plex Mono",ui-monospace,monospace}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1C1A16;--paper:#26231D;--ink:#ECE6D6;--soft:#A79F8B;--line:#403B30;--ember:#E0733F;--ok:#83C48F;--bad:#EB8579;--okbg:#26382A;--badbg:#44261F;--chip:#37322A;color-scheme:dark}}
-:root[data-theme="dark"]{--bg:#1C1A16;--paper:#26231D;--ink:#ECE6D6;--soft:#A79F8B;--line:#403B30;--ember:#E0733F;--ok:#83C48F;--bad:#EB8579;--okbg:#26382A;--badbg:#44261F;--chip:#37322A;color-scheme:dark}
 body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--body)}
 .wrap{max-width:1180px;margin:0 auto;padding-block:32px 80px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
 h1{font:700 44px/1.05 var(--disp);margin:0 0 8px;text-wrap:balance}
@@ -46,8 +44,9 @@ textarea{width:100%;box-sizing:border-box;margin-top:8px;font:14px/1.4 var(--bod
 .save{font:12px var(--mono);color:var(--soft);min-height:16px}
 .linkbtn{background:none;border:0;color:var(--ember);cursor:pointer;font:12px var(--mono);padding:0}
 </style>
+<link rel="stylesheet" href="/gothic.css">
 <main class="wrap">
-<div class="label">Story inspector</div>
+<div class="label">Story inspector · <a href="/characters" style="color:var(--ember)">Characters</a></div>
 <h1>Der Fall Tilo</h1>
 <p class="lead">Every line in the story, in the order you can meet it. Judge the text and the spoken delivery separately, and give a reason for anything you reject. Tick facts on the right to see which hero lines would appear with that knowledge.</p>
 <div class="status" id="status"></div>
@@ -112,7 +111,7 @@ function factInfo(id){const box=$("#info");box.hidden=false;box.textContent="";c
  const v=DATA.facts[id]||{};box.append(el("div","label",id),el("p","",(v.essential?"Essential. ":"")+"Known by: "+((v.knownBy||[]).join(", ")||"no one in particular")));
  box.append(el("p","","Learned from: "+(sources.join(", ")||"events in the story, not dialogue")),el("p","","Unlocks: "+(needs.join(" · ")||"nothing directly")));box.scrollIntoView({block:"nearest"})}
 async function drawGraph(){if(!window.mermaid){$("#graphbox").textContent="The graph library could not load. Check your connection.";return}
- mermaid.initialize({startOnLoad:false,securityLevel:"loose",flowchart:{useMaxWidth:false},theme:matchMedia("(prefers-color-scheme: dark)").matches?"dark":"default"});
+ mermaid.initialize({startOnLoad:false,securityLevel:"loose",flowchart:{useMaxWidth:false},theme:"base",themeVariables:{fontFamily:"Alegreya, Georgia, serif",fontSize:"16px",lineColor:"#3a2614",primaryTextColor:"#2a1c10",edgeLabelBackground:"#d9c59c"}});
  await mermaid.run();const svg=$("#graphbox svg");if(!svg)return;svg.removeAttribute("style");svg.setAttribute("width","100%");svg.setAttribute("height","100%");
  if(window.svgPanZoom)svgPanZoom(svg,{controlIconsEnabled:true,minZoom:.2,maxZoom:12,fit:true,center:true,zoomScaleSensitivity:.25});
  let down=null;svg.addEventListener("pointerdown",e=>{down=[e.clientX,e.clientY]});

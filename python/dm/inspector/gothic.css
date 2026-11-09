@@ -1,0 +1,49 @@
+/* Shared look of the inspector pages: a torch-lit stone hall with parchment on the table.
+   Colours are custom properties, so anything inside a parchment block picks up dark ink by itself. */
+:root{
+  --bg:#14110d;--paper:#d9c59c;--ink:#e8dcbd;--soft:#a8997b;--line:#4d412f;--ember:#e08a35;
+  --ok:#a4c673;--bad:#e8735a;--okbg:#2c3a20;--badbg:#4b1d15;--chip:#2c261b;
+  --gold:#d8b26a;
+  --disp:"Grenze Gotisch","Alegreya",Georgia,serif;
+  --body:"Alegreya",Georgia,serif;
+  --mono:"IBM Plex Mono",ui-monospace,monospace;
+  --hand:"IM Fell English","Alegreya",Georgia,serif;
+  --small:"Almendra SC","Alegreya",Georgia,serif;
+  --grain:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .22 0'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23n)'/%3E%3C/svg%3E");
+  color-scheme:dark;
+}
+.node:not(g),.panel,.sheet,#graphbox{
+  --bg:#e8d9b5;--ink:#2a1c10;--soft:#5e4829;--line:#a68c60;--ember:#8c2515;
+  --ok:#35521a;--bad:#8c2515;--okbg:#c2c78c;--badbg:#e0ac90;--chip:#c8af80;
+  color:var(--ink);color-scheme:light;
+  background:var(--grain),linear-gradient(160deg,#e2d0a8,#d4bd90 60%,#c9b083);
+  border:1px solid #17100a!important;border-radius:2px;
+  box-shadow:inset 0 0 46px rgba(92,56,18,.5),0 8px 20px rgba(0,0,0,.6);
+}
+body{
+  font-size:16.5px;line-height:1.5;
+  background:radial-gradient(ellipse 900px 520px at 50% -80px,rgba(214,120,40,.3),transparent 72%),var(--grain),#14110d;
+  background-attachment:fixed;
+}
+h1,h2,h3{font-family:var(--disp);font-weight:700;letter-spacing:.01em}
+h1{font-size:clamp(38px,8vw,58px);line-height:1;color:var(--gold);text-shadow:0 2px 0 #000,0 0 26px rgba(224,138,53,.4)}
+h1::after{content:"";display:block;height:1px;margin-top:12px;background:linear-gradient(90deg,var(--gold),transparent 70%)}
+h2{font-size:34px}
+h3{font-size:23px;color:var(--ember)}
+.person h2{color:var(--gold)}
+.label{font:400 14px/1.1 var(--small);letter-spacing:.05em;text-transform:none}
+.lead{font-style:italic}
+.line,.ev q{font-family:var(--hand);font-weight:400}
+.line{font-size:21px}
+.again{font-family:var(--hand)}
+.ct{font-size:16.5px}
+.role{font-family:var(--hand);font-weight:400;font-size:21px}
+.st{border-radius:1px;border:1px solid var(--line)}
+button.v{font-family:var(--small);font-size:14px;font-weight:400;border-radius:1px}
+input,textarea{font-family:var(--body);border-radius:1px}
+.rail input,.who{font-size:16.5px}
+.rail input{background:#231d14;border-color:var(--line)}
+.who{border-left:2px solid transparent;border-radius:0}
+.who small{font-family:var(--body);font-size:13.5px}
+.who[aria-current]{border-left-color:var(--ember);background:linear-gradient(90deg,rgba(224,138,53,.24),transparent)}
+section{border-top-color:var(--line)}
