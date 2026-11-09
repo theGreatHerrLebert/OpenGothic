@@ -223,12 +223,16 @@ TILO_BEFORE = {"voice": VOICES[TILO], "start": "a", "nodes": {
 }}
 
 BARREL_GRAPH = {"voice": VOICES[BARREL], "start": "a", "nodes": {
-    "a": node("Tilo? Nein. Seit heute früh muss ich seine Arbeit mitmachen, und Gorax lässt es an mir aus.",
-              ["tilo_named", "tilo_absent", "barrel_met"], again="Ich muss weiterarbeiten. Gorax schaut schon wieder.", choices=[
-                  go("Ist dir an ihm etwas aufgefallen?", "b"),
+    "a": node("Was gibt's? Ich muss arbeiten, Gorax schaut schon wieder.",
+              ["barrel_met"], again="Ja? Mach schnell, ich muss weiterarbeiten.", choices=[
+                  go("Tilo ist verschwunden.", "c", requires=["tilo_absent"], uses=["tilo_absent"]),
                   end("Ich geh dann mal.")]),
+    "c": node("Ich weiß. Seit heute früh muss ich seine Arbeit mitmachen, und Gorax lässt es an mir aus.",
+              ["tilo_named"], [
+                  go("Ist dir an ihm etwas aufgefallen?", "b"),
+                  go(BACK, "a"), end("Ich geh dann mal.")], uses=["tilo_absent"]),
     "b": node("Er war nervös, seit Tagen. Nachts hat er sich herumgewälzt. Aber mit mir redet ja keiner, ich bin hier nur der, der die Fässer schleppt.",
-              [], [go(BACK, "a"), end("Danke.")], uses=["tilo_named"]),
+              [], [go(BACK, "c"), end("Danke.")], uses=["tilo_named"]),
 }}
 
 CONVERSATIONS = {BARREL: BARREL_GRAPH, TILO + "_BEFORE": TILO_BEFORE, GORAX: GORAX_SCENE, PARLAN: PARLAN_SCENE, ANSELM: ANSELM_SCENE, HAREK: HAREK_GRAPH, TILO: TILO_GRAPH}
