@@ -53,7 +53,7 @@ class World:
         self.npcs[instance.upper()] = npc
         return npc
 
-    def place_item(self, instance, waypoint):
+    def place_item(self, instance, waypoint, count=1, position=None):
         self.placed.append((instance, waypoint))
         return Handle(self, (instance, waypoint))
 

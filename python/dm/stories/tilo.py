@@ -215,7 +215,9 @@ ANSELM_BITTER = {"voice": VOICES[ANSELM], "start": "a", "nodes": {
 }}
 
 ANSELM_GRATEFUL = {"voice": VOICES[ANSELM], "start": "a", "nodes": {
-    "a": node("Du hast ihn laufen lassen. Ich weiß es. Danke. Also gut, ich halte mein Wort: Neben der Weinpresse versteckt Gorax seinen besten Tropfen vor Meister Parlan. Niemand weiß davon.",
+    "a": node("Hast du Tilo gefunden? Bitte, sag mir, wie es ihm geht.", [],
+              [go("Ich habe ihn laufen lassen. Parlan erfährt nichts.", "b")]),
+    "b": node("Innos sei Dank. Also gut, ich halte mein Wort: Neben der Weinpresse versteckt Gorax seinen besten Tropfen vor Meister Parlan. Niemand weiß davon.",
               ["anselm_secret"], [end("Das bleibt unter uns.")]),
 }}
 
@@ -336,7 +338,7 @@ def plan(start_day=0):
             {"op": "attach_dialogue_graph", "npc": TILO, "graph": TILO_AFTER_HELP},
             {"op": "add_scene", "id": "anselm_grateful", "npc": ANSELM, "graph": ANSELM_GRATEFUL, "within": 450, "requires": ["friend_offer"]}]},
         {"op": "add_rule", "id": "secret_told", "when": ["anselm_secret"], "ops": [
-            {"op": "place_item", "instance": "ITFO_WINE", "waypoint": "NW_MONASTERY_WINEMAKER_03"}]},
+            {"op": "place_item", "instance": "ITFO_WINE", "waypoint": "NW_MONASTERY_WINEMAKER_03", "count": 10}]},
     ] + journal_rules()
 
 

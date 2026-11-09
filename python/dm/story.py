@@ -138,7 +138,7 @@ def _check_place(args, state):
 
 
 def _world_place(args):
-    item = gothic.world.place_item(args["instance"], args["waypoint"])
+    item = gothic.world.place_item(args["instance"], args["waypoint"], args.get("count", 1), args.get("position"))
     quest = args.get("quest")
     if quest:
         # the first row sits directly under the title, so it stays blank

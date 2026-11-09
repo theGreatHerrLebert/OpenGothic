@@ -369,16 +369,30 @@ struct PyWorld {
     return requireWorld()->findPoint(name,false)!=nullptr;
     }
 
-  PyItem placeItem(const std::string& instance, const std::string& waypoint) {
+  // Places an item on the ground at a waypoint, or at an exact spot if one is given.
+  PyItem placeItem(const std::string& instance, const std::string& waypoint, int count, py::object position) {
     auto*  w  = requireWorld();
     size_t id = 0;
     if(instanceClass(*w, upper(instance), id)!="C_ITEM")
       throw std::invalid_argument("not an item instance: " + instance);
-    if(w->findPoint(waypoint,false)==nullptr)
-      throw std::invalid_argument("no such waypoint: " + waypoint);
-    auto* it = w->addItem(id, std::string_view(waypoint));
+    Tempest::Vec3 at;
+    if(position.is_none()) {
+      auto* wp = w->findPoint(waypoint,false);
+      if(wp==nullptr)
+        throw std::invalid_argument("no such waypoint: " + waypoint);
+      at = wp->position();
+      } else {
+      auto p = position.cast<py::sequence>();
+      at = Tempest::Vec3(p[0].cast<float>(), p[1].cast<float>(), p[2].cast<float>());
+      }
+    const auto ground = w->physic()->landRay(at + Tempest::Vec3(0,100,0), 1000);
+    if(ground.hasCol)
+      at.y = ground.v.y + 10;
+    auto* it = w->addItem(id, at);
     if(it==nullptr)
       throw std::runtime_error("could not place item: " + instance);
+    if(count>1)
+      it->setCount(size_t(count));
     it->setStoryItem(true);
     PyItem r;
     r.ptr = it;
@@ -573,7 +587,8 @@ PYBIND11_EMBEDDED_MODULE(gothic, m) {
       .def("instance_kind", &PyWorld::instanceKind, py::arg("instance"),
            "'npc', 'item', or None for a Daedalus instance name.")
       .def("has_waypoint", &PyWorld::hasWaypoint, py::arg("name"))
-      .def("place_item", &PyWorld::placeItem, py::arg("instance"), py::arg("waypoint"))
+      .def("place_item", &PyWorld::placeItem, py::arg("instance"), py::arg("waypoint") = "",
+           py::arg("count") = 1, py::arg("position") = py::none())
       .def("remove_npc", &PyWorld::removeNpc, py::arg("npc"))
       .def("find_npc", &PyWorld::findNpc, py::arg("instance"), py::arg("nth") = 0,
            "Find a live NPC by Daedalus instance name, or None.")
