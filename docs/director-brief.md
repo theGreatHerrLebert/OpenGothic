@@ -47,7 +47,7 @@ every line for natural German and for who is talking to whom comes before submit
 A conversation can only be left from its main menu, so a player cannot walk away by
 accident with topics unexplored. A finished topic returns to the menu by itself; offer
 "Zurück" only where more can still be asked. A decision that must be faced may have no
-way out. Every line must make sense as a response to what was just said.
+way out, and a story may still end a conversation deliberately. Every line must make sense as a response to what was just said.
 
 ## What you cannot do yet
 
