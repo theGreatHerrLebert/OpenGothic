@@ -267,7 +267,7 @@ def journal_rules():
         for fact_id, text, status in JOURNAL]
 
 
-def plan():
+def plan(start_day=0):
     """Everything before the theft. Tilo is an ordinary novice until the first night."""
     return [
         {"op": "commit_fact", "id": "truth", "text": HIDDEN_TRUTH, "known_by": []},
@@ -276,7 +276,7 @@ def plan():
         {"op": "rename_npc", "instance": ANSELM, "display_name": "Anselm"},
         {"op": "rename_npc", "instance": TILO, "display_name": "Tilo"},
         {"op": "attach_dialogue_graph", "npc": TILO, "graph": TILO_BEFORE},
-        {"op": "add_rule", "id": "the_theft", "when": [], "at_night": True, "unseen_by_near": TILO, "ops": [
+        {"op": "add_rule", "id": "the_theft", "when": [], "after_night_of": start_day, "unseen_by_near": TILO, "ops": [
             {"op": "place_item", "instance": "ITAR_NOV_L", "waypoint": "NW_MONASTERY_WINEMAKER_01", "quest": ROBE},
             {"op": "relocate_npc", "instance": TILO, "waypoint": "NW_CITY_HABOUR_POOR_AREA_PATH_08",
              "armor": "ITAR_VLK_L", "display_name": "Tilo"},
