@@ -46,7 +46,11 @@ ENGLISH = [
     ('"Ende"', '"End"'), ('" · braucht "', '" · needs "'), ('aria-label="Seiten"', 'aria-label="Pages"'),
     ('>Geschichtenprobe<', '>Story trial<'), ('<a href="/">Inspektor</a>', '<a href="/">Inspector</a>'), ('<a href="/characters">Figuren</a>', '<a href="/characters">Characters</a>'),
     ('<html lang="de">', '<html lang="en">'),
-    # graph and place labels of the reference story, as embedded in the page
+]
+
+# Labels of the reference story, translated inside its data and graph. Only these whole quoted labels are swapped
+# there, so the story's own dialogue cannot be caught by a short interface word such as "Ja".
+LABELS = [
     ('"Kloster, nach dem Diebstahl"', '"Monastery, after the theft"'), ('"Kloster, vor dem Diebstahl"', '"Monastery, before the theft"'), ('"Kloster, beim Näherkommen"', '"Monastery, on approach"'), ('"Hafenkneipe, immer verfügbar"', '"Harbour tavern, always available"'), ('"Hafengassen, immer verfügbar"', '"Harbour alleys, always available"'),
     ('"Bis du gehst, wenn nach Hause geschickt"', '"Until you leave, if ordered home"'), ('"An der Kelter, nach der Heimkehr"', '"At the winery, after being ordered home"'), ('"Bis du gehst, wenn ausgeliefert"', '"Until you leave, if turned in"'), ('"Bis du gehst, wenn ihm geholfen wurde"', '"Until you leave, if helped"'), ('"Nachdem Tilo ausgeliefert wurde"', '"After Tilo is turned in"'), ('"Nachdem die Belohnung bezahlt wurde"', '"After the reward is paid"'), ('"Nachdem Tilo geholfen wurde"', '"After Tilo is helped"'),
     ('"Tilos Name"', '"Tilo\'s name"'), ('"Tilo fehlt"', '"Tilo is missing"'), ('"seine Weingänge"', '"his wine trips"'), ('"Silber gestohlen"', '"silver was stolen"'), ('"zwei Leuchter"', '"two candlesticks"'), ('"Belohnung ausgesetzt"', '"reward offered"'), ('"sein Vater"', '"his father"'), ('"Würfelschulden"', '"dice debt"'), ('"Spur zum Hafen"', '"try the harbour"'), ('"Anselms Angebot"', '"Anselm\'s offer"'), ('"Harek ist misstrauisch"', '"Harek is wary"'), ('"Silber an Harek verkauft"', '"silver sold to Harek"'), ('"versteckt am Hafen"', '"hiding near harbour"'), ('"am Hafen getroffen"', '"met him at the harbour"'), ('"Tilo getroffen"', '"met Tilo"'), ('"Fass-Novize getroffen"', '"met the barrel novice"'), ('"wirkte gehetzt"', '"he looked stressed"'), ('"Tilo ausgeliefert"', '"Tilo turned in"'), ('"Tilo geholfen"', '"Tilo helped"'), ('"Belohnung bezahlt"', '"reward paid"'), ('"Geheimnis erzählt"', '"secret told"'), ('"Tilo erpresst"', '"Tilo shaken down"'), ('"Tilo gestanden"', '"Tilo confessed"'),
@@ -56,8 +60,8 @@ ENGLISH = [
 ENGLISH.sort(key=lambda pair: -len(pair[0]))  # longer literals first, so a short one cannot break a longer match
 
 
-def translate(html, language):
+def translate(html, language, pairs=None):
     if language != "de":
-        for german, english in ENGLISH:
+        for german, english in ENGLISH if pairs is None else pairs:
             html = html.replace(german, english)
     return html

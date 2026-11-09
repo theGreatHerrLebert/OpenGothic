@@ -397,9 +397,12 @@ def load_scores():
 
 
 class Handler(http.server.BaseHTTPRequestHandler):
-    def _localized(self, html):
+    def _language(self):
         cookies = http.cookies.SimpleCookie(self.headers.get("Cookie", ""))
-        language = cookies["lang"].value if "lang" in cookies else "en"
+        return cookies["lang"].value if "lang" in cookies and cookies["lang"].value == "de" else "en"
+
+    def _localized(self, html):
+        language = self._language()
         html = inspector_i18n.translate(html, language)
         for link in (f'<a href="{self.path}">', f'<a href="?lang={language}" hreflang="{language}">'):
             html = html.replace(link, link[:-1] + ' aria-current="page">', 1)
@@ -424,9 +427,12 @@ class Handler(http.server.BaseHTTPRequestHandler):
             return self.end_headers()
         if self.path == "/":
             data, graph = build()
-            html = PAGE.read_text(encoding="utf-8").replace("%%GRAPH%%", graph).replace(
-                "/*DATA*/null", json.dumps(data, ensure_ascii=False).replace("</", "<\\/"))
-            self._send(self._localized(html), "text/html; charset=utf-8")
+            language = self._language()
+            # Translate the page first, then insert the story, whose own text only has its labels swapped.
+            labels = lambda text: inspector_i18n.translate(text, language, inspector_i18n.LABELS)
+            html = self._localized(PAGE.read_text(encoding="utf-8")).decode("utf-8").replace("%%GRAPH%%", labels(graph)).replace(
+                "/*DATA*/null", labels(json.dumps(data, ensure_ascii=False)).replace("</", "<\\/"))
+            self._send(html.encode("utf-8"), "text/html; charset=utf-8")
         elif self.path == "/gothic.css":
             self._send((ROOT / "inspector" / "gothic.css").read_bytes(), "text/css; charset=utf-8")
         elif self.path == "/characters":
