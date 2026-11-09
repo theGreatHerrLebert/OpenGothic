@@ -166,7 +166,7 @@ HAREK_GRAPH = {"voice": VOICES[HAREK], "start": "a", "nodes": {
 }}
 
 TILO_GRAPH = {"voice": VOICES[TILO], "start": "a", "nodes": {
-    "a": node("Was willst du? Ich bin hier Stammgast, klar? Die Leute am Hafen kennen mich. Also such dir jemand anderen zum Anglotzen.",
+    "a": node("Du? Was machst du denn hier? Ich meine ... was glotzt du so? Ich bin hier Stammgast, klar? Die Leute am Hafen kennen mich.",
               ["tilo_cornered"], again="Was willst du denn noch? Lass mich in Ruhe.", choices=[
                   go("Ich weiß von den Leuchtern.", "b", requires=["candlesticks"], uses=["candlesticks"]),
                   go("Ich weiß, was du gestohlen hast.", "b", requires=["silver_stolen"], unless="candlesticks", uses=["silver_stolen"]),
@@ -174,7 +174,7 @@ TILO_GRAPH = {"voice": VOICES[TILO], "start": "a", "nodes": {
                   go("Du siehst nicht aus wie einer von hier.", "a3"),
                   go("Dein Freund Anselm macht sich Sorgen.", "b2", requires=["friend_offer"], uses=["friend_offer"]),
                   end("Schon gut. Ich gehe wieder.")]),
-    "a2": node("Kloster? Nie gehört. Ich bin Seemann. Sobald die Blockade weg ist, heuere ich an, und dann siehst du mich hier nie wieder.",
+    "a2": node("Kloster? Das war einmal. Ich bin jetzt Seemann. Sobald die Blockade weg ist, heuere ich an, und du hast mich nie gesehen, klar?",
                [], [go("Du siehst nicht aus wie ein Seemann.", "b"), go(BACK, "a"), end("Wie du meinst.")]),
     "a3": node("Ach ja? Ich bin Seemann, Mann. Ich warte nur, bis die Blockade weg ist. Geh weiter, hier gibt es nichts zu sehen.",
                [], [go(BACK, "a"), end("Wie du meinst.")]),
@@ -196,12 +196,19 @@ TILO_GRAPH = {"voice": VOICES[TILO], "start": "a", "nodes": {
 }}
 
 PARLAN_REWARD = {"voice": VOICES[PARLAN], "start": "a", "nodes": {
-    "a": node("Der Novize Tilo hat alles gestanden. Er wird seine Strafe tragen. Du hast dem Kloster einen großen Dienst erwiesen, und Innos vergisst das nicht. Hier ist dein Lohn.",
-              ["parlan_paid"], [end("Es war mir eine Ehre.")]),
+    "a": node("Der Novize Tilo hat alles gestanden. Er wird seine Strafe tragen. Du hast dem Kloster einen großen Dienst erwiesen. Nimm zweihundert Goldstücke, oder wähle etwas aus unseren Spruchrollen.",
+              [], [go("Ich nehme das Gold.", "gold"), go("Ich nehme die Spruchrollen.", "scrolls")]),
+    "gold": node("Hier ist dein Lohn. Innos vergisst das nicht.", ["parlan_paid", "reward_gold"], [end("Es war mir eine Ehre.")]),
+    "scrolls": node("Eine weise Wahl. Welche sollen es sein?", [], [
+        go("Feuerball.", "fire"), go("Eisblock.", "ice"), go("Heilung.", "heal"), go("Licht.", "light")]),
+    "fire": node("Dann nimm sie. Innos führe deine Hand.", ["parlan_paid", "reward_fire"], [end("Es war mir eine Ehre.")]),
+    "ice": node("Dann nimm sie. Innos führe deine Hand.", ["parlan_paid", "reward_ice"], [end("Es war mir eine Ehre.")]),
+    "heal": node("Dann nimm sie. Innos führe deine Hand.", ["parlan_paid", "reward_heal"], [end("Es war mir eine Ehre.")]),
+    "light": node("Dann nimm sie. Innos führe deine Hand.", ["parlan_paid", "reward_light"], [end("Es war mir eine Ehre.")]),
 }}
 
 ANSELM_BITTER = {"voice": VOICES[ANSELM], "start": "a", "nodes": {
-    "a": node("Zweihundert Goldstücke, ja? Dafür hast du ihn verkauft. Sprich mich nicht mehr an.",
+    "a": node("Dein Lohn, ja? Dafür hast du ihn verkauft. Sprich mich nicht mehr an.",
               [], [end("Er war ein Dieb.")]),
 }}
 
@@ -296,8 +303,16 @@ def plan(start_day=0):
             {"op": "remove_npc", "instance": TILO},
             {"op": "add_scene", "id": "parlan_reward", "npc": PARLAN, "graph": PARLAN_REWARD, "within": 600},
             {"op": "add_scene", "id": "anselm_bitter", "npc": ANSELM, "graph": ANSELM_BITTER, "within": 450, "requires": ["parlan_paid"]}]},
-        {"op": "add_rule", "id": "reward_paid", "when": ["parlan_paid"], "ops": [
+        {"op": "add_rule", "id": "reward_gold", "when": ["reward_gold"], "ops": [
             {"op": "give_item", "instance": "ITMI_GOLD", "count": 200}]},
+        {"op": "add_rule", "id": "reward_fire", "when": ["reward_fire"], "ops": [
+            {"op": "give_item", "instance": "ITSC_INSTANTFIREBALL", "count": 3}]},
+        {"op": "add_rule", "id": "reward_ice", "when": ["reward_ice"], "ops": [
+            {"op": "give_item", "instance": "ITSC_ICECUBE", "count": 3}]},
+        {"op": "add_rule", "id": "reward_heal", "when": ["reward_heal"], "ops": [
+            {"op": "give_item", "instance": "ITSC_LIGHTHEAL", "count": 3}]},
+        {"op": "add_rule", "id": "reward_light", "when": ["reward_light"], "ops": [
+            {"op": "give_item", "instance": "ITSC_LIGHT", "count": 3}]},
         {"op": "add_rule", "id": "tilo_helped", "when": ["tilo_helped"], "ops": [
             {"op": "detach_dialogue_graph", "npc": BARREL},
             {"op": "remove_npc", "instance": TILO},
