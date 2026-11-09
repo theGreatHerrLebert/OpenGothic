@@ -469,6 +469,9 @@ PYBIND11_EMBEDDED_MODULE(gothic, m) {
       .def_property_readonly("hp_max",   &PyPlayer::hpMax)
       .def_property_readonly("alive",    &PyPlayer::alive)
       .def_property_readonly("name",     &PyPlayer::name)
+      .def_property_readonly("guild",
+           [](const PyPlayer&) { return int(requirePlayer()->guild()); },
+           "Guild id, comparable with Daedalus constants such as GIL_KDF.")
       .def_property_readonly("busy",
            [](const PyPlayer&) { return requirePlayer()->interactive()!=nullptr; },
            "True while using a bed, chest or other interactive object.")

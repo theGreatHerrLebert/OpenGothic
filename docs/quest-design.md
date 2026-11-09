@@ -14,6 +14,9 @@ visibly hurt the story. The Director follows these along with `director-brief.md
 - Consequences must happen: reward, changed attitudes, a secret delivered, people gone.
 - Each ending and reward should be weighed in the game's economy. Equal options stay equal.
 
+- A quest knows who the player is now. Someone too important is not drawn in: the world still
+  moves on, but nobody brings it to them. A High Fire Mage is not sent after a runaway novice.
+
 **Information**
 - The player needs to learn that something happened, what it was, and why.
 - Reach important facts through different approaches: asking someone who knows, tricking

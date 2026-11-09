@@ -264,6 +264,8 @@ ROBE = {"description": "Zerknitterte Novizenrobe",
         "lines": ["Jemand hat sie an der Weinpresse zurückgelassen.", "Der Stoff riecht nach Wein und kaltem Schweiß."]}
 
 
+# A mage is too important to be drawn in. Tilo still vanishes, but nobody tells him about it.
+TOO_IMPORTANT = ["GIL_KDF"]
 FATE = ["tilo_turned_in", "tilo_helped"]  # once decided, the early scenes no longer make sense
 
 
@@ -305,10 +307,10 @@ def plan(start_day=0):
              "armor": "ITAR_VLK_L", "display_name": "Tilo"},
             {"op": "attach_dialogue_graph", "npc": TILO, "graph": TILO_GRAPH},
             {"op": "attach_dialogue_graph", "npc": BARREL, "graph": BARREL_GRAPH},
-            {"op": "add_scene", "id": "gorax", "npc": GORAX, "graph": GORAX_SCENE, "within": 500, "unless": FATE},
-            {"op": "add_scene", "id": "parlan", "npc": PARLAN, "graph": PARLAN_SCENE, "within": 500,
+            {"op": "add_scene", "id": "gorax", "not_guilds": TOO_IMPORTANT, "npc": GORAX, "graph": GORAX_SCENE, "within": 500, "unless": FATE},
+            {"op": "add_scene", "id": "parlan", "not_guilds": TOO_IMPORTANT, "npc": PARLAN, "graph": PARLAN_SCENE, "within": 500,
              "requires": ["tilo_absent"], "unless": FATE},
-            {"op": "add_scene", "id": "anselm", "npc": ANSELM, "graph": ANSELM_SCENE, "within": 450,
+            {"op": "add_scene", "id": "anselm", "not_guilds": TOO_IMPORTANT, "npc": ANSELM, "graph": ANSELM_SCENE, "within": 450,
              "requires": ["reward"], "unless": FATE}]},
         {"op": "add_rule", "id": "anselm_stays", "when": ["anselm_met"], "unless": FATE, "ops": [
             {"op": "attach_dialogue_graph", "npc": ANSELM, "graph": ANSELM_SCENE}]},

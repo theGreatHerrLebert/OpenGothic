@@ -195,7 +195,7 @@ def test_scene_and_rule():
     fake.world.__init__()
     fake.dialog.__init__()
     w, d = fake.world, fake.dialog
-    fake.player = types.SimpleNamespace(position=(0, 0, 0), given=[], busy=False,
+    fake.player = types.SimpleNamespace(position=(0, 0, 0), given=[], busy=False, guild=1,
                                         give_item=lambda i, c=1: fake.player.given.append((i, c)))
     started = []
     for n in w.npcs.values():
@@ -214,6 +214,12 @@ def test_scene_and_rule():
     s.on_tick()
     assert started == []                 # too far away
     w.npcs["PARLAN"].position = (100, 0, 0)
+    fake.player.guild = 5
+    fake.daedalus = types.SimpleNamespace(get=lambda name, i=0: 5)
+    s.state["scenes"]["s"]["not_guilds"] = ["GIL_KDF"]
+    s.on_tick()
+    assert started == []                 # too important
+    s.state["scenes"]["s"]["not_guilds"] = []
     w.npcs["PARLAN"].sees = False
     s.on_tick()
     assert started == []                 # through a wall

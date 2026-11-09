@@ -182,6 +182,7 @@ def _fold_scene(args, state):
     state.setdefault("scenes", {})[args["id"]] = {
         "npc": args["npc"].upper(), "graph": args["graph"], "within": args.get("within", SCENE_RANGE),
         "requires": args.get("requires", []), "unless": args.get("unless"), "done": False,
+        "not_guilds": args.get("not_guilds", []),
     }
 
 
@@ -470,6 +471,10 @@ class Story:
             blocked = [blocked]
         return all(flags.get(f) for f in required) and not any(flags.get(f) for f in blocked)
 
+    def _guild_excluded(self, scene):
+        guild = gothic.player.guild
+        return any(gothic.daedalus.get(name, 0) == guild for name in scene.get("not_guilds", []))
+
     def _end_scene(self, finished):
         scene_id, npc = self.active_scene
         self.active_scene = None
@@ -497,6 +502,8 @@ class Story:
         px, _, pz = gothic.player.position
         for scene_id, scene in self.state.get("scenes", {}).items():
             if scene["done"] or not self._conditions(scene):
+                continue
+            if self._guild_excluded(scene):
                 continue
             npc = gothic.world.find_npc(scene["npc"])
             if npc is None or not npc.alive:
