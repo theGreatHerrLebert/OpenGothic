@@ -104,7 +104,7 @@ Zeile etwa 7 bis 8 Sekunden. Fortschritt erscheint auch in der Anzeige im Spiel:
 python/dm_runtime/tts/venv-mlx/bin/python python/dm/bake_voices.py bake <graphs.json> "Titel der Geschichte"
 ```
 
-## 7. Claude als Spielleiter anbinden (optional)
+## 7. Einen KI-Agenten als Spielleiter anbinden (optional)
 
 Der Spielleiter liest das Spiel über einen MCP-Server. Eine Umgebung dafür anlegen:
 
@@ -113,7 +113,13 @@ python3.11 -m venv python/dm_runtime/mcp
 python/dm_runtime/mcp/bin/pip install mcp
 ```
 
-Dann im Projektordner eine Datei `.mcp.json` anlegen, mit deinem eigenen Pfad statt `/PFAD/ZU`:
+**Mit Codex** genügt ein Befehl im Projektordner:
+
+```sh
+codex mcp add gothic -- "$PWD/python/dm_runtime/mcp/bin/python" -I "$PWD/python/dm/mcp_server.py"
+```
+
+**Mit Claude Code** im Projektordner eine Datei `.mcp.json` anlegen, mit deinem eigenen Pfad statt `/PFAD/ZU`:
 
 ```json
 {
@@ -126,7 +132,8 @@ Dann im Projektordner eine Datei `.mcp.json` anlegen, mit deinem eigenen Pfad st
 }
 ```
 
-Wie der Spielleiter arbeitet, steht in `docs/director-brief.md` und `docs/quest-design.md`.
+Wie der Spielleiter arbeitet, steht in `docs/director-brief.md` und `docs/quest-design.md`. Hinweise für Agenten, die am
+Code arbeiten, stehen in `AGENTS.md`; Codex liest diese Datei von selbst.
 
 ## Wenn etwas nicht geht
 
