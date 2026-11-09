@@ -159,6 +159,8 @@ class DialogMenu : public Tempest::Widget {
     bool                                agentMode     = false;
     bool                                agentOpened   = false;
     int                                 agentSelected = -1;
+    bool                                agentFirstLine = false;
+    uint64_t                            skipBlockedMs  = 0;
 
     bool                                dlgAnimation        = true;
     bool                                showSubtitles       = true;

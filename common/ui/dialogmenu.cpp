@@ -73,6 +73,8 @@ void DialogMenu::tick(uint64_t dt) {
     return;
     }
 
+  skipBlockedMs = skipBlockedMs>dt ? skipBlockedMs-dt : 0;
+
   if(remPrint>0 || choiceAnimTime>0 || current.time>0 || pscreen.size()>0)
     update();
 
@@ -201,6 +203,11 @@ bool DialogMenu::agentSay(std::string_view text, bool isPlayer, uint64_t timeMs,
   Npc& speaker = isPlayer ? *pl : *other;
   Npc& hearer  = isPlayer ? *other : *pl;
   hearer.stopDlgAnim();
+
+  // a conversation the NPC started can open mid-action; a stray click must not lose it
+  if(agentFirstLine)
+    skipBlockedMs = 2500;
+  agentFirstLine  = false;
 
   current.txt     = std::string(text);
   current.msgTime = timeMs;
@@ -350,6 +357,7 @@ bool DialogMenu::onStart(Npc &p, Npc &ot) {
   if(std::find(agentNpcs.begin(),agentNpcs.end(),&ot)!=agentNpcs.end()) {
     agentMode      = true;
     agentOpened    = true;
+    agentFirstLine = true;
     agentSelected  = -1;
     choice.clear();
     state          = State::Active;
@@ -492,6 +500,8 @@ void DialogMenu::startTrade() {
   }
 
 void DialogMenu::skipPhrase() {
+  if(skipBlockedMs>0)
+    return;
   if(current.time>0) {
     if(pl!=nullptr)
       pl->setAiOutputBarrier(0,false);
