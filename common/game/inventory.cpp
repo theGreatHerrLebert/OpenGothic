@@ -862,14 +862,41 @@ void Inventory::applyArmor(Item &it, Npc &owner, int32_t sgn) {
     }
   }
 
+static void showStoryLetter(const Item& it, Npc& owner) {
+  auto* sym = owner.world().script().findSymbol(it.clsId());
+  if(sym==nullptr || std::string_view(sym->name()).substr(0,5)!="ITWR_")
+    return;
+
+  DocumentMenu::Page page;
+  for(auto& line:it.handle().text) {
+    if(line.empty() && page.text.empty())
+      continue; // the first row is a blank that keeps the inventory tooltip tidy
+    page.text += line;
+    page.text += "\n";
+    }
+  if(page.text.empty())
+    return;
+
+  DocumentMenu::Show doc; // same layout as the game's own letters
+  doc.img     = "letters.TGA";
+  doc.font    = "FONT_10_BOOK.TGA";
+  doc.margins = Tempest::Margin(50);
+  doc.pages.push_back(std::move(page));
+  Gothic::inst().onShowDocument(doc);
+  owner.world().recordDocumentRead(owner,it.clsId());
+  }
+
 bool Inventory::use(size_t cls, Npc &owner, uint8_t slotHint, bool force) {
   Item* it=findByClass(cls);
   if(it==nullptr)
     return false;
 
-  // quest evidence stays in the inventory: it cannot be worn or used
-  if(it->isStoryItem() && it->isMission())
+  // quest evidence stays in the inventory: it cannot be worn or used, but a letter can be read
+  if(it->isStoryItem() && it->isMission()) {
+    if(owner.isPlayer())
+      showStoryLetter(*it,owner);
     return false;
+    }
 
   auto& itData   = it->handle();
   auto  mainflag = ItmFlags(itData.main_flag);

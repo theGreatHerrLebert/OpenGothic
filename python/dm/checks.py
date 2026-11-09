@@ -53,13 +53,41 @@ def validate_all(checks):
     return None
 
 
+def _validate_transfer(transfer):
+    if not isinstance(transfer, dict) or "item" not in transfer:
+        return "takes and gives need an item"
+    if gothic.world.instance_kind(transfer["item"]) != "item":
+        return f"not an item instance: {transfer['item']}"
+    count = transfer.get("count", 1)
+    if type(count) is not int or not 0 < count <= 100000:  # the engine call takes an int, and fails after the other half ran
+        return "count must be a positive whole number"
+    return None
+
+
 def validate_graph(graph):
     for key, node in graph["nodes"].items():
         for choice in node.get("choices", []):
             problem = validate_all(choice.get("checks"))
+            for field in ("takes", "gives"):
+                if choice.get(field) is not None:
+                    problem = problem or _validate_transfer(choice[field])
             if problem:
                 return f"{key}: {problem}"
     return None
+
+
+def can_pay(choice):
+    """A line that hands something over only appears while the hero actually carries it."""
+    takes = choice.get("takes")
+    return takes is None or _holds({"type": "has_item", "item": takes["item"], "count": takes.get("count", 1)})
+
+
+def transfer(choice):
+    takes, gives = choice.get("takes"), choice.get("gives")
+    if takes:
+        gothic.player.remove_item(takes["item"], takes.get("count", 1))
+    if gives:
+        gothic.player.give_item(gives["item"], gives.get("count", 1))
 
 
 def _holds(check):

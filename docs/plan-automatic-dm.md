@@ -202,7 +202,7 @@ Stories can only talk, set flags, move people and hand out items today, and expe
 carries a lot. New verbs come one rung at a time, cheapest first, because each makes a story harder to keep from
 breaking. A rung is finished when it has typed operations, submission checks and a path-walking test.
 
-1. **Inventory.** Taking an item from the hero, real handovers on a dialogue line (`takes`, `gives`), and letters on
+1. **Inventory (built, not yet tried in the running game).** Taking an item from the hero, real handovers on a dialogue line (`takes`, `gives`), and letters on
    the game's own document screen (`doc_create` and friends in `common/gothic.cpp`), with "has read it" as a flag. The
    stories already pretend to do this: letters are borrowed vanilla items with a new description, and nothing can
    leave the hero's inventory. Each letter needs its own text and must survive save and load.

@@ -4,14 +4,15 @@
     {"event": "cast_spell", "target": "VLK_4006_BOTE", "spell": "SPL_FIREBOLT"}
     {"event": "hit", "target": "VLK_432_MOE", "unseen": true}
 
-Events: took_item (picked up from the ground), hit, knocked_down, killed, cast_spell, entered_room. The player is the
+Events: took_item (picked up from the ground), hit, knocked_down, killed, cast_spell, entered_room, read_item (a letter
+opened from the inventory). The player is the
 actor. All fields other than "event" are optional. "seen_by" needs that NPC among those who could see it happen; "unseen"
 needs nobody to have seen it. `target` may be "PLAYER", for what is done to the hero.
 """
 
 import gothic
 
-EVENTS = {"took_item", "hit", "knocked_down", "killed", "cast_spell", "entered_room"}
+EVENTS = {"took_item", "hit", "knocked_down", "killed", "cast_spell", "entered_room", "read_item"}
 PLAYER = "PLAYER"
 
 

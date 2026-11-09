@@ -3215,6 +3215,8 @@ void Npc::commitSpell() {
   if(owner.version().game==2)
     owner.script().invokeSpell(*this,currentTarget,*active);
 
+  owner.recordSpellCast(*this,currentTarget,splId);
+
   if(active->isSpellShoot()) {
     const int lvl = (castLevel-CS_Emit_0)+1;
     DamageCalculator::Damage dmg={};
@@ -3242,7 +3244,6 @@ void Npc::commitSpell() {
     visual.setMagicWeaponKey(owner,SpellFxKey::Init);
     if(currentTarget!=nullptr) {
       currentTarget->lastHitSpell = splId;
-      owner.recordSpellCast(*this,*currentTarget,splId);
       currentTarget->perceptionProcess(*this,nullptr,0,PERC_ASSESSMAGIC);
       }
     }

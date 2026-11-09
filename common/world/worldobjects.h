@@ -140,7 +140,8 @@ class WorldObjects final {
       int32_t                  spell = -1;
       std::vector<std::string> seenBy;
       };
-    void           recordSpellCast(Npc& caster, Npc& target, int32_t spell);
+    void           recordSpellCast(Npc& caster, Npc* target, int32_t spell);
+    void           recordDocumentRead(Npc& reader, size_t item);
     auto           takePerceptions() -> std::vector<PerceptionRecord>;
 
     void           resetPositionToTA();

@@ -55,7 +55,8 @@ way out, and a story may still end a conversation deliberately. Every line must 
 
 Flags record what the story remembers. A `checks` list on a scene, a rule or a dialogue choice tests what is true right
 now: `has_item`, `wears`, `guild`, `npc_state` (burning, asleep, frozen and so on), `npc_dead`, `obsessed`, `hour`, and
-`not`. A checked choice never counts as the way out of a node. Often the best use is a hint: one line mentions a rule
+`not`. A choice can also carry `takes` and `gives` (`{"item": ..., "count": ...}`): it only appears while the hero has
+the item, and the item really changes hands. A checked choice never counts as the way out of a node. Often the best use is a hint: one line mentions a rule
 that is already true, such as a sleep scroll working on a guard, and the player makes the plan.
 
 ## What you cannot do yet

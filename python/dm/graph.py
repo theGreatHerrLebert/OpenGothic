@@ -42,12 +42,12 @@ def validate(graph):
         choices = node.get("choices")
         if not choices:
             return f"node has no choices: {key}"
-        if all(c.get("requires") or c.get("unless") or c.get("checks") for c in choices):
+        if all(c.get("requires") or c.get("unless") or c.get("checks") or c.get("takes") for c in choices):
             return f"node has only conditional choices: {key}"
         for choice in choices:
             if not choice.get("text"):
                 return f"choice has no text: {key}"
-            if choice.get("requires") or choice.get("unless") or choice.get("checks"):
+            if choice.get("requires") or choice.get("unless") or choice.get("checks") or choice.get("takes"):
                 if choice.get("goto") not in nodes and not choice.get("ends"):
                     return f"choice goes nowhere: {key}"
                 continue
@@ -134,7 +134,7 @@ class Player:
                 continue
             if flags.get(choice.get("unless")):
                 continue
-            if not checks.all_hold(choice.get("checks")):
+            if not checks.all_hold(choice.get("checks")) or not checks.can_pay(choice):
                 continue
             shown.append(choice)
         return shown
@@ -182,6 +182,7 @@ class Player:
             if index is None:
                 return
             self.choice = self.visible[index]
+            checks.transfer(self.choice)
             is_question = self.choice.get("goto") and self.choice["goto"] not in self.path
             if is_question and not self.choice.get("repeat"):
                 self.on_flag(self._asked_flag(self.choice))

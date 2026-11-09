@@ -45,6 +45,9 @@ The second kind costs almost nothing to write, since the solution already exists
 
 Checks are defined in `python/dm/checks.py` and work on scenes, rules and dialogue choices. They are unit-tested against a fake game and have not yet been exercised in a running game. The knowledge checker ignores them, as it does guild gates.
 
+A letter is a quest item whose instance starts with `ITWR_`: using it opens the game's parchment screen with its quest
+lines and raises `read_item`. An item holds six rows, so a letter has room for about five lines for now.
+
 ## Known limits
 
 - The hint search matches item names in spoken lines. It is noisy, and needs a person or a model to read it.

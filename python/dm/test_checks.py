@@ -85,3 +85,25 @@ for bad, word in [({"event": "nope"}, "unknown"), ({"event": "took_item", "item"
     assert word in perc.validate(bad), bad
 assert perc.validate(None) is None and perc.validate({"event": "hit", "target": "PLAYER"}) is None
 print("perceptions ok")
+
+# Handing things over.
+removed, given = [], []
+fake.player.remove_item = lambda i, c=1: removed.append((i, c))
+fake.player.give_item = lambda i, c=1: given.append((i, c))
+fake.player.items = [{"instance": "ITWR_LETTER", "count": 1}]
+hand = {"text": "Hier.", "ends": True, "takes": {"item": "ITWR_LETTER"}, "gives": {"item": "ITMI_GOLD", "count": 5}}
+node = {"start": "a", "nodes": {"a": {"line": "x", "choices": [hand, {"text": "Nein.", "ends": True}]}}}
+assert graph.validate(node) is None and checks.validate_graph(node) is None
+assert "only conditional" in graph.validate({"start": "a", "nodes": {"a": {"line": "x", "choices": [hand]}}})
+player.node = node["nodes"]["a"]
+assert len(player._visible_choices()) == 2
+checks.transfer(hand)
+assert removed == [("ITWR_LETTER", 1)] and given == [("ITMI_GOLD", 5)]
+fake.player.items = []
+assert [c["text"] for c in player._visible_choices()] == ["Nein."]
+assert "not an item" in checks.validate_graph({"nodes": {"a": {"choices": [{"text": "y", "takes": {"item": "BURNER"}}]}}})
+assert "need an item" in checks.validate_graph({"nodes": {"a": {"choices": [{"text": "y", "gives": {}}]}}})
+assert perc.validate({"event": "read_item", "item": "ITWR_LETTER"}) is None
+for count in (1.5, 0, -1, True, "2"):
+    assert "whole number" in checks.validate_graph({"nodes": {"a": {"choices": [{"text": "y", "gives": {"item": "ITMI_GOLD", "count": count}}]}}}), count
+print("handover ok")

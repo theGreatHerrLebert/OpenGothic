@@ -993,15 +993,28 @@ void WorldObjects::recordPerception(const PerceptionMsg& msg, Npc& pl) {
   pushPerception(std::move(record));
   }
 
-void WorldObjects::recordSpellCast(Npc& caster, Npc& target, int32_t spell) {
+void WorldObjects::recordSpellCast(Npc& caster, Npc* target, int32_t spell) {
   auto* pl = owner.player();
-  if(pl==nullptr || (&caster!=pl && &target!=pl))
+  if(pl==nullptr || (&caster!=pl && target!=pl))
     return;
   PerceptionRecord record;
   record.kind   = "cast_spell";
   record.actor  = perceptionName(caster,*pl);
-  record.target = perceptionName(target,*pl);
+  if(target!=nullptr)
+    record.target = perceptionName(*target,*pl);
   record.spell  = spell;
+  pushPerception(std::move(record));
+  }
+
+void WorldObjects::recordDocumentRead(Npc& reader, size_t item) {
+  auto* pl = owner.player();
+  if(pl==nullptr || &reader!=pl)
+    return;
+  PerceptionRecord record;
+  record.kind  = "read_item";
+  record.actor = perceptionName(reader,*pl);
+  if(auto* sym = owner.script().findSymbol(item))
+    record.item = sym->name();
   pushPerception(std::move(record));
   }
 
