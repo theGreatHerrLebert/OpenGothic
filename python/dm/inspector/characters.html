@@ -19,7 +19,7 @@ input{width:100%;box-sizing:border-box;font:14px var(--body);background:var(--pa
 input:focus-visible,a:focus-visible{outline:2px solid var(--ember);outline-offset:1px}
 .group{margin-top:8px}
 .who{display:block;padding:5px 8px;border-radius:3px;color:var(--ink);text-decoration:none}
-.who:hover{color:var(--ember)}.who[aria-current]{background:var(--chip);font-weight:600}
+.who{cursor:pointer}.who:hover{color:var(--ember);background:var(--chip)}.who[aria-current]{background:var(--chip);font-weight:600}
 .who small{display:block;color:var(--soft);font-size:12px;font-weight:400;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .sheet{background:var(--paper);border:1px solid var(--line);border-radius:4px;padding:20px 22px}
 .role{font:500 18.5px/1.4 var(--disp);margin:0 0 10px}
@@ -87,8 +87,9 @@ function renderList(){const q=$("#q").value.trim().toLowerCase(),now=current(),n
  GROUPS.forEach(([prefix,title])=>{const people=DATA.characters.filter(s=>(s.npc||"").startsWith(prefix)&&(prefix||!GROUPS.some(g=>g[0]&&(s.npc||"").startsWith(g[0])))&&(!q||hay(s).includes(q)));if(!people.length)return;const g=el("div","group");g.append(el("div","label",title));people.forEach(s=>g.append(link(s.file,s.name||s.file,s.error?"unreadable":s.role)));n.append(g);shown+=people.length});
  if(!shown&&q)n.append(el("p","meta","No sheet matches."))}
 function route(){if(!current()&&DATA.characters.length){history.replaceState(null,"","#"+encodeURIComponent(DATA.characters[0].file))}
- const id=current();renderList();if(id==="world")return showFacts();
- const s=DATA.characters.find(c=>c.file===id);if(s)showSheet(s);else{$("#view").textContent="";$("#view").append(el("p","meta","No sheet selected."))}}
+ const id=current(),rail=$(".rail"),kept=rail.scrollTop;renderList();rail.scrollTop=kept;
+ if(id==="world")showFacts();else{const c=DATA.characters.find(x=>x.file===id);if(c)showSheet(c);else{$("#view").textContent="";$("#view").append(el("p","meta","No sheet selected."))}}
+ const top=$("#view").getBoundingClientRect().top;if(top<0)window.scrollBy(0,top-16)}
 $("#q").oninput=()=>{renderList();if(current()==="world")showFacts()};
 addEventListener("hashchange",route);
 fetch("/characters.json").then(r=>{if(!r.ok)throw 0;return r.json()}).then(d=>{DATA=d;route()}).catch(()=>{$("#view").textContent="";$("#view").append(el("p","meta","Could not load the sheets. Is the inspector server still running?"))});
