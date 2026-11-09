@@ -301,12 +301,10 @@ def _world_journal(args):
 
 def _check_detach(args, state):
     _require(args, "npc")
-    if args["npc"].upper() not in state["graphs"]:
-        raise PlanError(f"NPC has no story dialogue: {args['npc']}")
 
 
 def _fold_detach(args, state):
-    del state["graphs"][args["npc"].upper()]
+    state["graphs"].pop(args["npc"].upper(), None)
 
 
 def _world_detach(args):

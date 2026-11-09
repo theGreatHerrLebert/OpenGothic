@@ -42,6 +42,7 @@ PLOT = {
         "tilo_cornered": fact(topic=True),
         "tilo_met": fact(topic=True),
         "barrel_met": fact(topic=True),
+        "anselm_met": fact(topic=True),
         "tilo_stressed": fact(topic=True),
     },
     "items": [{"ref": "ROBE", "teaches": ["tilo_absent"], "needs": []}],
@@ -116,7 +117,7 @@ PARLAN_SCENE = {"voice": VOICES[PARLAN], "start": "a", "nodes": {
 
 ANSELM_SCENE = {"voice": VOICES[ANSELM], "start": "a", "nodes": {
     "a": node("Warte! Du warst bei Meister Parlan, nicht wahr? Es geht um Tilo. Er ist mein Freund. Was immer sie dir erzählen, er ist kein schlechter Kerl.",
-              ["tilo_named"], [
+              ["anselm_met", "tilo_named"], again="Gibt es etwas Neues von Tilo?", choices=[
                   go("Glaubst du, er hat das Silber gestohlen?", "b", requires=["silver_stolen"], uses=["silver_stolen"]),
                   go("Wo könnte er stecken?", "c"),
                   go("Warum sorgst du dich so um ihn?", "d"),
@@ -299,8 +300,11 @@ def plan(start_day=0):
              "requires": ["tilo_absent"], "unless": FATE},
             {"op": "add_scene", "id": "anselm", "npc": ANSELM, "graph": ANSELM_SCENE, "within": 450,
              "requires": ["reward"], "unless": FATE}]},
+        {"op": "add_rule", "id": "anselm_stays", "when": ["anselm_met"], "unless": FATE, "ops": [
+            {"op": "attach_dialogue_graph", "npc": ANSELM, "graph": ANSELM_SCENE}]},
         {"op": "add_rule", "id": "tilo_turned_in", "when": ["tilo_turned_in"], "ops": [
             {"op": "detach_dialogue_graph", "npc": BARREL},
+            {"op": "detach_dialogue_graph", "npc": ANSELM},
             {"op": "remove_npc", "instance": TILO},
             {"op": "add_scene", "id": "parlan_reward", "npc": PARLAN, "graph": PARLAN_REWARD, "within": 600},
             {"op": "add_scene", "id": "anselm_bitter", "npc": ANSELM, "graph": ANSELM_BITTER, "within": 450, "requires": ["parlan_paid"]}]},
@@ -316,6 +320,7 @@ def plan(start_day=0):
             {"op": "give_item", "instance": "ITSC_LIGHT", "count": 20}]},
         {"op": "add_rule", "id": "tilo_helped", "when": ["tilo_helped"], "ops": [
             {"op": "detach_dialogue_graph", "npc": BARREL},
+            {"op": "detach_dialogue_graph", "npc": ANSELM},
             {"op": "remove_npc", "instance": TILO},
             {"op": "add_scene", "id": "anselm_grateful", "npc": ANSELM, "graph": ANSELM_GRATEFUL, "within": 450, "requires": ["friend_offer"]}]},
         {"op": "add_rule", "id": "secret_told", "when": ["anselm_secret"], "ops": [
