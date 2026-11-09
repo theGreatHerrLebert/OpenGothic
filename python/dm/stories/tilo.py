@@ -179,9 +179,9 @@ TILO_GRAPH = {"voice": VOICES[TILO], "start": "a", "nodes": {
     "a3": node("Ach ja? Ich bin Seemann, Mann. Ich warte nur, bis die Blockade weg ist. Geh weiter, hier gibt es nichts zu sehen.",
                [], [go(BACK, "a"), end("Wie du meinst.")]),
     "b2": node("Anselm? Der ... der sollte sich nicht um mich sorgen. Sag ihm das. Sag ihm, es tut mir leid.",
-               [], [go("Was hast du getan?", "b"), end("Ich sage es ihm.")]),
+               [], [go("Was hast du getan?", "b"), go(BACK, "a")]),
     "b": node("Ich ... wer hat dir das erzählt? Harek? Verdammt. Hör zu, das ist nicht so, wie es aussieht. Ich kann das erklären.",
-              [], [go("Dann erklär es.", "c"), end("Spar dir das.")]),
+              [], [go("Dann erklär es.", "c"), go(BACK, "a")]),
     "c": node("Ich hab gewürfelt, hier am Hafen. Erst lief es gut, und dann waren es auf einmal dreihundert Gold. Harek hätte mich aufgeschlitzt. Also hab ich die Leuchter aus der Kapelle genommen. Ich wollte sie zurückholen, ehrlich!",
               ["tilo_confessed", "candlesticks", "gambling", "silver_stolen", "silver_sold"], [
                   go("Du kommst mit mir zu Parlan.", "d", requires=["reward"], uses=["reward"]),
@@ -323,11 +323,16 @@ def plan(start_day=0):
 
 
 def _simplify_dead_ends(graph):
-    """A finished topic returns to its menu by itself; "Zurück" stays where more can be asked."""
-    for node in graph["nodes"].values():
-        choices = node["choices"]
-        back = [c for c in choices if c["text"] == BACK]
-        if back and all(c["text"] == BACK or c.get("ends") for c in choices):
+    """Only the main menu can end a talk. A finished topic returns there by itself,
+    and "Zurück" stays only where more can be asked."""
+    for key, node in graph["nodes"].items():
+        if key == graph["start"]:
+            continue
+        back = [c for c in node["choices"] if c["text"] == BACK]
+        if not back:
+            continue
+        node["choices"] = [c for c in node["choices"] if not c.get("ends")]
+        if all(c["text"] == BACK for c in node["choices"]):
             node["returns"] = back[0]["goto"]
             node["choices"] = []
 
