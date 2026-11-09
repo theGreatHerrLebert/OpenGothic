@@ -15,7 +15,7 @@ HAREK = "VLK_4006_BOTE"
 
 BARREL = "NOV_607_NOVIZE"
 
-VOICES = {BARREL: "08", GORAX: "14", PARLAN: "05", ANSELM: "13", HAREK: "09", TILO: "03"}
+VOICES = {BARREL: "08", GORAX: "14", PARLAN: "05", ANSELM: "08", HAREK: "09", TILO: "03"}
 
 
 def fact(*known_by, essential=False, needs=(), topic=False):
