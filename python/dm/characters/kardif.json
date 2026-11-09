@@ -1,0 +1,170 @@
+{
+  "npc": "VLK_431_KARDIF",
+  "name": "Kardif",
+  "voice": "14",
+  "role": "Wirt der Hafenkneipe und Verkäufer von Informationen",
+  "core": "Alles hat seinen Preis, auch das, was er weiß. Feilscht mit Vergnügen und achtet darauf, dass nichts auf ihn zurückfällt.",
+  "background": "",
+  "speech": "Trocken und geschäftig, mit angehängtem 'klar?'. Redet Kunden mit 'mein Freund' oder 'Junge' an, grinst beim Kassieren. Ironisch: 'Willst du mich ruinieren?'. Murmelt: 'Dafür hätte ich eigentlich das Doppelte nehmen sollen.'",
+  "attitudes": {
+    "factions": {
+      "Händler und Handwerker": "Haben zu viel Einfluss für seinen Geschmack."
+    },
+    "people": {
+      "Lehmar": "Der einzige mächtige Mann am Hafen; nicht gern gesehen, aber er hat Gold und einflussreiche Schuldner. Trägt sein Schuldenbuch immer bei sich.",
+      "Brahim": "Hat seine Hütte direkt neben der Kneipe.",
+      "Halvor": "Fischhändler am Kai; viele Leute kommen regelmäßig zu ihm, darum könnte er etwas wissen.",
+      "Nagur": "Schickt zu ihm, wer 'spezielle' Arbeit sucht.",
+      "Alrik": "Kämpft für Gold hinter dem Lagerhaus.",
+      "Ignaz": "Man muss verrückt genug sein, ihn aufzusuchen."
+    },
+    "politics": "Spottet über den Krieg des Königs gegen die Orks und findet, dass Händler und Handwerker zu viel zu sagen haben."
+  },
+  "game_state": {
+    "Nachricht vom Fremden": "Gibt die Einladung hinter Halvors Fischladen weiter und nimmt dafür ausnahmsweise nichts. Beschwert sich der Held danach, will er nichts damit zu tun haben.",
+    "Zeichen der Bande": "Merkt, dass der Held 'bei der Bande mitmischt', und bietet Dietriche an, wenn er nach etwas zu trinken fragt.",
+    "Mannschaft (spätes Kapitel)": "Die meisten Seeleute haben die Stadt verlassen; verweist an den Alten Jack."
+  },
+  "sees_hero": {
+    "novize": "Keine Zeile spricht einen Novizen an. Behandelt jeden als zahlenden Kunden."
+  },
+  "reacts_to": {},
+  "evidence": [
+    {
+      "about": "role",
+      "key": "DIA_KARDIF_CREW_14_04",
+      "excerpt": 0
+    },
+    {
+      "about": "role",
+      "key": "DIA_KARDIF_HALLO_14_04",
+      "excerpt": 0
+    },
+    {
+      "about": "core",
+      "key": "DIA_KARDIF_HALLO_14_03",
+      "excerpt": 0
+    },
+    {
+      "about": "core",
+      "key": "DIA_KARDIF_DIEBESWERK2_14_06",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_KARDIF_HALLO_ANGEBOT_14_01",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_KARDIF_LERNEN_14_08",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_KARDIF_LERNEN_14_06",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_KARDIF_SENDATTILA_14_06",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Händler und Handwerker",
+      "key": "DIA_KARDIF_BUERGER_14_03",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Lehmar",
+      "key": "DIA_KARDIF_BUERGER_14_01",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Lehmar",
+      "key": "DIA_KARDIF_BUERGER_14_02",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Lehmar",
+      "key": "DIA_KARDIF_ADD_14_03",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Brahim",
+      "key": "DIA_KARDIF_LERNEN_14_08",
+      "excerpt": 1
+    },
+    {
+      "about": "attitudes.people.Halvor",
+      "key": "DIA_ADDON_KARDIF_MISSINGPEOPLE_14_06",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Nagur",
+      "key": "DIA_KARDIF_DIEBESWERK_14_02",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Alrik",
+      "key": "DIA_KARDIF_ARBEIT_14_02",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Ignaz",
+      "key": "DIA_KARDIF_LERNEN_14_04",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.politics",
+      "key": "DIA_KARDIF_LERNEN_14_06",
+      "excerpt": 1
+    },
+    {
+      "about": "attitudes.politics",
+      "key": "DIA_KARDIF_BUERGER_14_03",
+      "excerpt": 1
+    },
+    {
+      "about": "game_state.Nachricht vom Fremden",
+      "key": "DIA_KARDIF_SENDATTILA_14_03",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Nachricht vom Fremden",
+      "key": "DIA_KARDIF_SENDATTILA_14_04",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Nachricht vom Fremden",
+      "key": "DIA_KARDIF_DEFEATEDATTILA_14_01",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Zeichen der Bande",
+      "key": "DIA_KARDIF_ZEICHEN_14_00",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Zeichen der Bande",
+      "key": "DIA_KARDIF_ZEICHEN_14_01",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Mannschaft (spätes Kapitel)",
+      "key": "DIA_KARDIF_CREW_14_01",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Mannschaft (spätes Kapitel)",
+      "key": "DIA_KARDIF_CREW_14_05",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.novize",
+      "key": "DIA_KARDIF_HI_14_01",
+      "excerpt": 0
+    }
+  ],
+  "invented": []
+}

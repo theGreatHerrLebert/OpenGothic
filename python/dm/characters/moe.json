@@ -1,0 +1,94 @@
+{
+  "npc": "VLK_432_MOE",
+  "name": "Moe",
+  "voice": "01",
+  "role": "Schläger im Hafenviertel, der vor der Hafenkneipe 'Eintritt' verlangt",
+  "core": "Nimmt Fremden ab, was er kann, und genießt es. Fühlt sich im Hafenviertel sicher, weil sich die Miliz nicht mit ihm anlegt.",
+  "background": "",
+  "speech": "Grob und höhnisch, nennt jeden 'Kleiner'. Grinst beim Drohen: 'sonst schmeckst du gleich den Staub der Straße'. Spielt gern den Gekränkten oder Tugendhaften: 'auf dem Pfad der Tugend'.",
+  "attitudes": {
+    "factions": {
+      "Miliz": "Traut sich nicht her; im Hafenviertel nehmen sie die Dinge selbst in die Hand."
+    },
+    "people": {
+      "Lehmar": "Richtet 'schöne Grüße' von ihm aus. Mehr sagen seine Zeilen nicht."
+    },
+    "politics": ""
+  },
+  "game_state": {
+    "Paladinmord (spätes Kapitel)": "Beteuert, das Hafenviertel habe mit dem Mord an dem Paladin nichts zu tun. Lord Andre stecke seine Nase in Dinge, die ihn nichts angehen, und die feinen Pinkel verstünden nicht, wie es hier unten läuft.",
+    "Paladine (spätes Kapitel)": "Freut sich, als die aufgeblasenen Paladine den Hafen verlassen."
+  },
+  "sees_hero": {
+    "novize": "Keine Zeile spricht einen Novizen an. Behandelt ihn wie jeden Neuen: 50 Goldstücke, sonst Prügel."
+  },
+  "reacts_to": {},
+  "evidence": [
+    {
+      "about": "role",
+      "key": "DIA_MOE_HALLO_GEHEN_01_03",
+      "excerpt": 0
+    },
+    {
+      "about": "core",
+      "key": "DIA_MOE_HALLO_ZAHLEN_01_01",
+      "excerpt": 0
+    },
+    {
+      "about": "core",
+      "key": "DIA_MOE_HALLO_MILIZ_01_02",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_MOE_HALLO_WITZ_01_01",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_MOE_HALLO_AERGER_01_01",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_MOE_HARBOR_RUMORS_01_03",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Miliz",
+      "key": "DIA_MOE_HARBOR_MILITIA_01_01",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Lehmar",
+      "key": "DIA_MOE_LEHMARGELDEINTREIBEN_01_00",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Paladinmord (spätes Kapitel)",
+      "key": "DIA_MOE_HARBOR_RUMORS_01_08",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Paladinmord (spätes Kapitel)",
+      "key": "DIA_MOE_HARBOR_RUMORS_01_06",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Paladinmord (spätes Kapitel)",
+      "key": "DIA_MOE_HARBOR_RUMORS_01_07",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Paladine (spätes Kapitel)",
+      "key": "DIA_MOE_HARBOR_RUMORS_01_16",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.novize",
+      "key": "DIA_MOE_HALLO_GEHEN_01_02",
+      "excerpt": 0
+    }
+  ],
+  "invented": []
+}

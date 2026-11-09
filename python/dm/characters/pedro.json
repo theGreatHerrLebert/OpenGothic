@@ -1,0 +1,167 @@
+{
+  "npc": "NOV_600_PEDRO",
+  "name": "Pedro",
+  "voice": "09",
+  "role": "Novize und Wächter der Pforte des Klosters",
+  "core": "Korrekter Pfortenwächter, der die Regeln des Klosters feierlich hersagt. Fühlt sich dabei übersehen und nimmt es für eine zweite Wurst mit den Regeln nicht so genau.",
+  "background": "Steht an der Pforte, prüft die Gaben der Bewerber und übergibt neuen Novizen Schlüssel und Robe.",
+  "speech": "Gegenüber Fremden förmlich und feierlich: 'ein demütiger Diener Innos'', 'Was ist dein Begehr?'. Betont Regelwörter wie NIEMALS, GEHORSAM, PFLICHT. Bei der Wurst plötzlich umgangssprachlich: 'das merkt kein Schwein'.",
+  "attitudes": {
+    "factions": {
+      "Kloster": "Lebt dort, um Innos zu dienen; Novizen arbeiten und studieren, wenn sich die Gelegenheit bietet.",
+      "Magier": "Schuldet ihnen Gehorsam und Respekt; sie wachen über die Novizen und erforschen die Magie.",
+      "Novizen": "Neue Novizen wollen sich aus seiner Sicht immer nur beliebt machen."
+    },
+    "people": {
+      "Parlan": "Nennt ihn Meister; schickt jeden neuen Novizen zu ihm, zum Segen und zur Vergebung der Sünden.",
+      "Gorax": "Wer ihm keine zweite Wurst gibt, will sich in seinen Augen nur bei Gorax beliebt machen.",
+      "Neoras": "Rechnet damit, dass man für Feuernesseln von ihm den Schlüssel zur Bibliothek bekommt."
+    },
+    "politics": ""
+  },
+  "game_state": {
+    "Verrat und Gefangenschaft (spätes Kapitel)": "Beteuert, man habe ihn verhext und ihm eine Stimme in den Kopf gepflanzt, er habe das Kloster nie aus freiem Willen verraten. Fleht um sein Leben und bietet Informationen gegen die Flucht von der Insel. Der Orkische Oberst hat ihn tagelang verhört und geschlagen."
+  },
+  "sees_hero": {
+    "novize": "Nennt ihn nach der Aufnahme Bruder und schickt ihn zu Parlan. Will ihm eine zweite Wurst abschwatzen und wird spitz, wenn er sie nicht bekommt."
+  },
+  "reacts_to": {},
+  "evidence": [
+    {
+      "about": "role",
+      "key": "DIA_PEDRO_WELCOME_09_01",
+      "excerpt": 0
+    },
+    {
+      "about": "role",
+      "key": "DIA_PEDRO_MONASTERY_09_01",
+      "excerpt": 0
+    },
+    {
+      "about": "core",
+      "key": "DIA_PEDRO_WURST_09_01",
+      "excerpt": 0
+    },
+    {
+      "about": "core",
+      "key": "DIA_PEDRO_WURST_09_04",
+      "excerpt": 0
+    },
+    {
+      "about": "core",
+      "key": "DIA_PEDRO_RULES_09_01",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_PEDRO_AUFNAHME_YES_09_01",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_PEDRO_AUFNAHME_YES_09_03",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_PEDRO_AUFNAHME_09_03",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_PEDRO_WELCOME_09_01",
+      "excerpt": 1
+    },
+    {
+      "about": "speech",
+      "key": "DIA_PEDRO_WELCOME_09_02",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_PEDRO_RULES_09_04",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_PEDRO_WURST_09_04",
+      "excerpt": 1
+    },
+    {
+      "about": "attitudes.factions.Kloster",
+      "key": "DIA_PEDRO_MONASTERY_09_01",
+      "excerpt": 1
+    },
+    {
+      "about": "attitudes.factions.Magier",
+      "key": "DIA_PEDRO_MONASTERY_09_02",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Magier",
+      "key": "DIA_PEDRO_RULES_09_04",
+      "excerpt": 1
+    },
+    {
+      "about": "attitudes.factions.Novizen",
+      "key": "DIA_PEDRO_WURST_NEIN_09_01",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Parlan",
+      "key": "DIA_PEDRO_AUFNAHME_YES_09_06",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Gorax",
+      "key": "DIA_PEDRO_WURST_NEIN_09_01",
+      "excerpt": 1
+    },
+    {
+      "about": "attitudes.people.Neoras",
+      "key": "DIA_PEDRO_WURST_09_05",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Verrat und Gefangenschaft (spätes Kapitel)",
+      "key": "DIA_PEDRO_DI_YOU_09_05",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Verrat und Gefangenschaft (spätes Kapitel)",
+      "key": "DIA_PEDRO_DI_YOU_09_06",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Verrat und Gefangenschaft (spätes Kapitel)",
+      "key": "DIA_PEDRO_DI_YOU_09_07",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Verrat und Gefangenschaft (spätes Kapitel)",
+      "key": "DIA_PEDRO_DI_YOU_VERSCHON_09_01",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.novize",
+      "key": "DIA_PEDRO_AUFNAHME_YES_09_01",
+      "excerpt": 1
+    },
+    {
+      "about": "sees_hero.novize",
+      "key": "DIA_PEDRO_AUFNAHME_YES_09_04",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.novize",
+      "key": "DIA_PEDRO_WURST_09_02",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.novize",
+      "key": "DIA_PEDRO_WURST_NEIN_09_01",
+      "excerpt": 1
+    }
+  ],
+  "invented": []
+}

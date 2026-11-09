@@ -1,0 +1,135 @@
+{
+  "npc": "NOV_604_DYRIAN",
+  "name": "Dyrian",
+  "voice": "13",
+  "role": "Novize, der auf die Entscheidung des Hohen Rates über seinen Verbleib wartet",
+  "core": "Hat Angst und klammert sich an jede Hoffnung, im Kloster bleiben zu dürfen. Gesteht sein Vergehen ein und ist doch berechnend genug, einen Handel anzubieten.",
+  "background": "Nahm beim Fegen in den Räumen der Magier ein Buch mit, leugnete es aus Angst und wurde mit dem Buch in seiner Kammer von Meister Hyglas erwischt.",
+  "speech": "Traurig und knapp ('(traurig) Was willst du?'), fügt sich: 'ich bin der Gnade Innos' und der der Magier ausgeliefert'. Kommt Hoffnung auf, wird er eifrig: 'Hey, hast du tatsächlich die Prüfung des Feuers gefordert?'.",
+  "attitudes": {
+    "factions": {
+      "Hoher Rat": "Entscheidet, ob er bleiben darf.",
+      "Magier": "Sieht sich ihrer Gnade ausgeliefert."
+    },
+    "people": {
+      "Hyglas": "Hat ihn überführt und aufgebracht den Hohen Rat informiert."
+    },
+    "politics": ""
+  },
+  "game_state": {
+    "Wunsch des Helden": "Setzt sich der Held bei der Aufnahme für ihn ein, ist er überglücklich und will sein Leben ändern. Tut er es nicht, sitzt Dyrian später in der Kneipe, trinkt und gibt dem Helden die Schuld."
+  },
+  "sees_hero": {
+    "novize": "Trübsinnig, bis er von der geforderten Prüfung des Feuers hört. Dann bietet er eine Schlaf-Spruchrolle an, wenn der Held dafür als Magier seinen Wunsch für ihn einsetzt.",
+    "feuermagier": "Hat der Held sein Wort gehalten, dankt er stürmisch, erschrickt über sich selbst und nennt ihn Meister. Hat der Held ihn sitzen lassen, verachtet er ihn als Lügner und will nichts mehr mit ihm zu tun haben."
+  },
+  "reacts_to": {},
+  "evidence": [
+    {
+      "about": "role",
+      "key": "DIA_DYRIAN_JOB_13_02",
+      "excerpt": 0
+    },
+    {
+      "about": "core",
+      "key": "DIA_DYRIAN_WURST_13_01",
+      "excerpt": 0
+    },
+    {
+      "about": "core",
+      "key": "DIA_DYRIAN_JOB_13_01",
+      "excerpt": 0
+    },
+    {
+      "about": "core",
+      "key": "DIA_DYRIAN_SCROLL_HOW_13_02",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_DYRIAN_WHATDONE_13_01",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_DYRIAN_WHATDONE_13_03",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_DYRIAN_HELLO_13_00",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_DYRIAN_CANHELP_13_01",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_DYRIAN_SCROLL_13_00",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Hoher Rat",
+      "key": "DIA_DYRIAN_WHATDONE_13_04",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Magier",
+      "key": "DIA_DYRIAN_CANHELP_13_01",
+      "excerpt": 1
+    },
+    {
+      "about": "attitudes.people.Hyglas",
+      "key": "DIA_DYRIAN_WHATDONE_13_02",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Hyglas",
+      "key": "DIA_DYRIAN_WHATDONE_13_04",
+      "excerpt": 1
+    },
+    {
+      "about": "game_state.Wunsch des Helden",
+      "key": "DIA_DYRIAN_HELLOAGAIN_13_02",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Wunsch des Helden",
+      "key": "DIA_DYRIAN_KNEIPE_13_02",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.novize",
+      "key": "DIA_DYRIAN_SCROLL_13_02",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.novize",
+      "key": "DIA_DYRIAN_SCROLL_HOW_13_01",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.feuermagier",
+      "key": "DIA_DYRIAN_HELLOAGAIN_13_00",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.feuermagier",
+      "key": "DIA_DYRIAN_HELLOAGAIN_13_01",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.feuermagier",
+      "key": "DIA_DYRIAN_KNEIPE_CANEXPLAIN_13_02",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.feuermagier",
+      "key": "DIA_DYRIAN_NACHHER_13_01",
+      "excerpt": 0
+    }
+  ],
+  "invented": []
+}

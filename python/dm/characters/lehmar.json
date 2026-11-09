@@ -1,0 +1,112 @@
+{
+  "npc": "VLK_484_LEHMAR",
+  "name": "Lehmar",
+  "voice": "09",
+  "role": "Geldverleiher",
+  "core": "Verleiht Geld gegen 20 Prozent und treibt es mit Drohungen ein. Gelangweilt, weil ohnehin jeder wiederkommt.",
+  "background": "",
+  "speech": "Gelangweilt und grob, kurze Sätze: '(gelangweilt) Wie viel willst du?', 'Schwirr ab!', 'Und jetzt zieh Leine!', 'verstanden?'. Droht gelassen: 'Sonst werde ich dich finden und töten. So einfach ist das.'",
+  "attitudes": {
+    "factions": {},
+    "people": {
+      "Lares": "Hat die Schuld des Helden für ihn beglichen; nennt ihn Mistkerl."
+    },
+    "politics": ""
+  },
+  "game_state": {
+    "Überfällige Schulden": "Erhöht auf 30 Prozent statt 20 und erteilt eine Lektion, wenn nicht genug Geld da ist. 'Nimm es nicht persönlich, ich hab einen Ruf zu verlieren.'",
+    "Schuldenbuch gestohlen": "Zerknirscht; verdächtigt den Helden, glaubt seine Unschuld nicht."
+  },
+  "sees_hero": {
+    "novize": "Keine Zeile spricht einen Novizen an. Fragt jeden, wie viel er will."
+  },
+  "reacts_to": {},
+  "evidence": [
+    {
+      "about": "role",
+      "key": "DIA_LEHMAR_ENTSCHULDIGUNG_09_03",
+      "excerpt": 0
+    },
+    {
+      "about": "core",
+      "key": "DIA_LEHMAR_GELDLEIHEN_09_01",
+      "excerpt": 0
+    },
+    {
+      "about": "core",
+      "key": "DIA_LEHMAR_WARUMGELD_09_01",
+      "excerpt": 0
+    },
+    {
+      "about": "core",
+      "key": "DIA_LEHMAR_WARUMGELD_09_01",
+      "excerpt": 1
+    },
+    {
+      "about": "speech",
+      "key": "DIA_LEHMAR_ENTSCHULDIGUNG_09_01",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_LEHMAR_NOCHMALGELD_09_01",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_LEHMAR_GELDEINTREIBEN_SCHULDENZAHLEN_09_01",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_LEHMAR_GELDLEIHEN_200_09_01",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Lares",
+      "key": "DIA_ADDON_LEHMAR_GELDZURUECK_09_00",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Lares",
+      "key": "DIA_ADDON_LEHMAR_GELDZURUECK_09_01",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Überfällige Schulden",
+      "key": "DIA_LEHMAR_GELDEINTREIBEN_09_01",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Überfällige Schulden",
+      "key": "DIA_LEHMAR_GELDEINTREIBEN_SCHULDENZAHLEN_09_02",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Überfällige Schulden",
+      "key": "DIA_LEHMAR_GELDEINTREIBEN_SCHULDENZAHLEN_09_03",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Schuldenbuch gestohlen",
+      "key": "DIA_LEHMAR_ADD_09_00",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Schuldenbuch gestohlen",
+      "key": "DIA_LEHMAR_ADD_09_01",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Schuldenbuch gestohlen",
+      "key": "DIA_LEHMAR_ADD_09_03",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.novize",
+      "key": "DIA_LEHMAR_ENTSCHULDIGUNG_09_03",
+      "excerpt": 1
+    }
+  ],
+  "invented": []
+}

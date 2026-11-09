@@ -1,0 +1,74 @@
+{
+  "npc": "VLK_437_BRAHIM",
+  "name": "Brahim",
+  "voice": "07",
+  "role": "Kartenzeichner und Kartenhändler",
+  "core": "Verkauft freundlich seine Karten und hält die Gegend für ein Loch, aus dem man besser verschwindet.",
+  "background": "Ein alter Mann; die Zeiten, in denen er selbst losgezogen ist, sind vorbei.",
+  "speech": "Höflicher Verkäufer: 'Sie ist sehr günstig - und bis du dich eingewöhnt hast, äußerst nützlich.'. Über die Stadt trocken: 'Kein Wunder, dass sich die Leute aus dem Staub machen.'",
+  "attitudes": {
+    "factions": {},
+    "people": {},
+    "politics": ""
+  },
+  "game_state": {
+    "Alte Karte (spätes Kapitel)": "Fand eine Art Schatzkarte in einem Packen alter Karten und verkauft sie dem Helden. Überlässt das Losziehen den Jüngeren."
+  },
+  "sees_hero": {
+    "novize": "Eine Verkaufszeile spricht ihn als Angehörigen des Klosters an: besser als seine Karten finde er dort keine. Sie unterscheidet nicht zwischen Novize und Magier."
+  },
+  "reacts_to": {},
+  "evidence": [
+    {
+      "about": "role",
+      "key": "DIA_BRAHIM_GREET_07_01",
+      "excerpt": 0
+    },
+    {
+      "about": "core",
+      "key": "DIA_BRAHIM_GREET_07_03",
+      "excerpt": 0
+    },
+    {
+      "about": "core",
+      "key": "DIA_ADDON_BRAHIM_MISSINGPEOPLE_07_02",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_BRAHIM_KAP3_FIRST_EXIT_KEEPIT_07_01",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_BRAHIM_GREET_07_03",
+      "excerpt": 1
+    },
+    {
+      "about": "speech",
+      "key": "DIA_ADDON_BRAHIM_MISSINGPEOPLE_07_03",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Alte Karte (spätes Kapitel)",
+      "key": "DIA_BRAHIM_KAP3_FIRST_EXIT_WHEREGETIT_07_01",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Alte Karte (spätes Kapitel)",
+      "key": "DIA_BRAHIM_KAP3_FIRST_EXIT_CONTENT_07_01",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Alte Karte (spätes Kapitel)",
+      "key": "DIA_BRAHIM_KAP3_FIRST_EXIT_KEEPIT_07_02",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.novize",
+      "key": "DIA_BRAHIM_BUY_07_01",
+      "excerpt": 0
+    }
+  ],
+  "invented": []
+}

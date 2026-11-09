@@ -1,0 +1,130 @@
+{
+  "npc": "NOV_603_AGON",
+  "name": "Agon",
+  "voice": "07",
+  "role": "Novize, zieht Heilpflanzen für Meister Neoras",
+  "core": "Hochmütig und überzeugt, dass Innos ihn zum Magier bestimmt hat. Schiebt jeden beiseite, der ihm im Weg steht.",
+  "background": "Seine Familie stand nach eigenen Worten schon immer hoch in der Gunst Innos'.",
+  "speech": "Kalt, herablassend, knapp: '(geringschätzend) Was willst Du?', 'Das sehe ich.'. Spricht vom eigenen Weg: 'Den Weg, den Innos mir vorherbestimmt hat.'. Unter Druck höhnisch und drohend.",
+  "attitudes": {
+    "factions": {
+      "Novizen": "Sollen zusammenhalten, soviel sie wollen, aber ihm nicht die Zeit stehlen und nicht in den Weg kommen."
+    },
+    "people": {
+      "Babo": "Nennt ihn einfältig und lässt sich von ihm nicht aufhalten. Weicht aus, wenn man nach dem Streit fragt.",
+      "Parlan": "Weist Neue an ihn, wenn sie Arbeit brauchen.",
+      "Neoras": "Für ihn werden die Heilpflanzen gezogen."
+    },
+    "politics": ""
+  },
+  "game_state": {
+    "Prüfung der Magie": "Wird beim Versteck der Prüfung misstrauisch und gewalttätig. Kommt er zuerst an, triumphiert er; kommt der Held zuerst, will er ihn töten. Hält selbst Glückwünsche für eine Falle."
+  },
+  "sees_hero": {
+    "novize": "Mustert den Neuen geringschätzig. Bietet allenfalls an, ein gutes Wort für ihn einzulegen, sobald er selbst Magier ist."
+  },
+  "reacts_to": {},
+  "evidence": [
+    {
+      "about": "role",
+      "key": "DIA_AGON_GETHERB_07_01",
+      "excerpt": 0
+    },
+    {
+      "about": "core",
+      "key": "DIA_AGON_YOUANDBABO_07_02",
+      "excerpt": 0
+    },
+    {
+      "about": "core",
+      "key": "DIA_AGON_YOUANDBABO_07_03",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_AGON_YOUANDBABO_INNOSWAY_07_01",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_AGON_HELLO_07_00",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_AGON_NEW_07_01",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_AGON_GOLEMDEAD_SHUTUP_07_01",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_AGON_GOLEMLIVES_07_02",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Novizen",
+      "key": "DIA_AGON_YOUANDBABO_ALLTOGETHER_07_01",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Novizen",
+      "key": "DIA_AGON_YOUANDBABO_ALLTOGETHER_07_02",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Babo",
+      "key": "DIA_AGON_YOUANDBABO_07_03",
+      "excerpt": 1
+    },
+    {
+      "about": "attitudes.people.Babo",
+      "key": "DIA_AGON_YOUANDBABO_07_01",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Parlan",
+      "key": "DIA_AGON_NEW_07_02",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Neoras",
+      "key": "DIA_AGON_GETHERB_07_01",
+      "excerpt": 1
+    },
+    {
+      "about": "game_state.Prüfung der Magie",
+      "key": "DIA_AGON_GOLEMDEAD_07_01",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Prüfung der Magie",
+      "key": "DIA_AGON_GOLEMDEAD_CONGRAT_07_01",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Prüfung der Magie",
+      "key": "DIA_AGON_GOLEMLIVES_07_02",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Prüfung der Magie",
+      "key": "DIA_AGON_GOLEMDEAD_CONGRAT_07_03",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.novize",
+      "key": "DIA_AGON_NEW_07_01",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.novize",
+      "key": "DIA_AGON_YOUANDBABO_UNDERSTAND_07_01",
+      "excerpt": 0
+    }
+  ],
+  "invented": []
+}

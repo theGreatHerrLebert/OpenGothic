@@ -1,0 +1,179 @@
+{
+  "npc": "NOV_605_OPOLOS",
+  "name": "Opolos",
+  "voice": "12",
+  "role": "Novize, hütet die Schafe des Klosters",
+  "core": "Bodenständiger Schafhirte, der seit Jahren darauf wartet, studieren zu dürfen. Greift dafür auch zu einem 'ausgeliehenen' Rezept.",
+  "background": "Seit drei Jahren im Kloster und hat noch nie studiert. Früher hat er Leute verprügelt und kann zeigen, wie man die Arme trainiert.",
+  "speech": "Locker und begeisterungsfähig: 'Oh Mann, Wahnsinn!', 'Klar, ich hab früher mal Leute verprügelt.', 'Ach Scheiße'. Spricht offen und gibt Ratschläge. Liest er etwas, murmelt er: 'Aha ... hm ... ja ... verstehe ... soso ...'.",
+  "attitudes": {
+    "factions": {
+      "Kloster": "Kennt die Regeln genau: Magier nicht belügen, Brüder nicht angehen, Eigentum respektieren, sonst Strafe bei Parlan.",
+      "Magier": "Man darf sie niemals belügen."
+    },
+    "people": {
+      "Agon": "Warnt vor ihm: führt sich auf, als wäre er der Erwählte, und sein Wort wiegt mehr, weil er der Neffe des Statthalters ist.",
+      "Babo": "Neu, kam kurz vor dem Helden; fegt seit dem Streit mit Agon den Hof.",
+      "Parlan": "Von ihm hängt ab, ob er von den Schafen entbunden wird und in die Bibliothek darf.",
+      "Neoras": "Hat die Rezepte, die er so gern sehen würde."
+    },
+    "politics": ""
+  },
+  "game_state": {
+    "Bibliothek": "Wird ihm das Studium erlaubt, dankt er dem Helden und ist glücklich. Bleibt es ihm verwehrt, schimpft er kurz und macht weiter.",
+    "Bedrohung (spätes Kapitel)": "Fragt, was draußen vor sich geht, und merkt, dass die Magier nervös sind. Vertraut darauf, dass der Hohe Rat das Problem löst, fragt aber nach dem Verrat an Pedro, ob der Feind stärker ist."
+  },
+  "sees_hero": {
+    "novize": "Begrüßt ihn offen als den Neuen, warnt vor Agon und bietet Krafttraining gegen ein Rezept von Neoras an. Beneidet ihn, wenn er früh den Bibliotheksschlüssel bekommt.",
+    "feuermagier": "Bedankt sich und nennt ihn Meister; meint, ein Meister habe sicher keine Zeit für einen einfachen Novizen."
+  },
+  "reacts_to": {},
+  "evidence": [
+    {
+      "about": "role",
+      "key": "DIA_OPOLOS_HELLO_12_01",
+      "excerpt": 0
+    },
+    {
+      "about": "core",
+      "key": "DIA_OPOLOS_HOWLONG_12_01",
+      "excerpt": 0
+    },
+    {
+      "about": "core",
+      "key": "DIA_OPOLOS_BEIBRINGEN_12_04",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_OPOLOS_HOWLONG_12_01",
+      "excerpt": 1
+    },
+    {
+      "about": "background",
+      "key": "DIA_OPOLOS_BEIBRINGEN_12_01",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_OPOLOS_WURST_12_01",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_OPOLOS_REZEPT_12_05",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_OPOLOS_REZEPT_12_02",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Kloster",
+      "key": "DIA_OPOLOS_MONASTERY_12_01",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Kloster",
+      "key": "DIA_OPOLOS_MONASTERY_12_02",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Magier",
+      "key": "DIA_OPOLOS_MONASTERY_12_01",
+      "excerpt": 1
+    },
+    {
+      "about": "attitudes.people.Agon",
+      "key": "DIA_OPOLOS_AGON_12_01",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Agon",
+      "key": "DIA_OPOLOS_AGON_12_05",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Babo",
+      "key": "DIA_OPOLOS_AGON_12_02",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Babo",
+      "key": "DIA_OPOLOS_AGON_12_03",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Parlan",
+      "key": "DIA_OPOLOS_HOWLONG_12_04",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Neoras",
+      "key": "DIA_OPOLOS_BEIBRINGEN_12_04",
+      "excerpt": 1
+    },
+    {
+      "about": "game_state.Bibliothek",
+      "key": "DIA_OPOLOS_HELLOAGAIN_12_00",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Bibliothek",
+      "key": "DIA_OPOLOS_HOWISIT_12_01",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Bibliothek",
+      "key": "DIA_OPOLOS_REZEPT_12_05",
+      "excerpt": 1
+    },
+    {
+      "about": "game_state.Bedrohung (spätes Kapitel)",
+      "key": "DIA_OPOLOS_KAP3_PERM_12_02",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Bedrohung (spätes Kapitel)",
+      "key": "DIA_OPOLOS_KAP3_PERM_DMT_12_04",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Bedrohung (spätes Kapitel)",
+      "key": "DIA_OPOLOS_KAP3_PERM_PEDRO_12_02",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.novize",
+      "key": "DIA_OPOLOS_HELLO_12_00",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.novize",
+      "key": "DIA_OPOLOS_MONASTERY_12_03",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.novize",
+      "key": "DIA_OPOLOS_BEIBRINGEN_12_05",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.novize",
+      "key": "DIA_OPOLOS_BIBLOTHEK_12_03",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.feuermagier",
+      "key": "DIA_OPOLOS_HELLOAGAIN_12_01",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.feuermagier",
+      "key": "DIA_OPOLOS_HOWISIT_12_02",
+      "excerpt": 0
+    }
+  ],
+  "invented": []
+}

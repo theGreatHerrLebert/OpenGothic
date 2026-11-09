@@ -1,0 +1,263 @@
+{
+  "npc": "KDF_500_PYROKAR",
+  "name": "Pyrokar",
+  "voice": "11",
+  "role": "Feuermagier im Hohen Rat; stellt dem Helden eine Prüfung und nimmt ihm den Schwur des Feuers ab",
+  "core": "Spricht als Autorität des Klosters und duldet von Novizen keine Widerrede: Gehorsam und Demut zuerst. Überrascht ihn etwas, überspielt er es hinterher: erst ungläubig, dann 'Wir waren uns sicher'.",
+  "background": "Hat viele Novizen bei der Prüfung des Feuers sterben sehen. Spricht mit dem Wir des Rates; hat mit den Wassermagiern abgesprochen, dass sie sich um die Vermissten und die Erdbeben kümmern.",
+  "speech": "Feierlich und von oben herab, oft im Wir: 'Wir werden deine Worte überdenken', 'So soll es geschehen.', 'Möge Innos dich schützen.'. Schneidet Widerworte ab: 'Kein Aber!'. Entlässt Novizen mit 'du darfst jetzt gehen'. Wird barsch und ungehalten, wenn man auf etwas besteht.",
+  "attitudes": {
+    "factions": {
+      "Novizen": "Haben zu arbeiten und zu gehorchen; Demut ist ihre Pflicht, nicht das Verlangen.",
+      "Hoher Rat": "Entscheidet gemeinsam; jeder Magier aus dem Rat stellt dem Prüfling eine eigene Prüfung.",
+      "Wassermagier": "Hat ihnen die Sache mit den Vermissten und den Erdbeben überlassen und sieht keinen Grund einzuschreiten.",
+      "Paladine": "Ist daran interessiert, wie Lord Hagen die Lage beurteilt, und erwartet dessen Antwort ohne Verzug."
+    },
+    "people": {
+      "Parlan": "Verlässt sich darauf, dass Parlan die Novizen zur Arbeit einteilt; er nimmt neue Magier in die ersten Kreise auf.",
+      "Lord Hagen": "Oberster Befehlshaber der Paladine; der Held darf erst als Magier zu ihm.",
+      "Agon": "Fragt nach der Prüfung als Erstes nach ihm und wundert sich, dass er es nicht vor dem Helden geschafft hat.",
+      "Karras, Hyglas, Marduk": "Brüder mit eigenem Fachgebiet: Anrufungen und Beschwörungen, Feuer, Eis und Donner."
+    },
+    "politics": "Mischt sich nicht ein, solange ihm kein Grund zu Ohren kommt: Vermisste und Erdbeben sind Sache der Wassermagier."
+  },
+  "game_state": {
+    "Auge Innos' und Pedro (spätes Kapitel)": "Das Auge wurde gewaltsam entwendet; Pedro, einer der treuesten Anhänger und Anwärter auf die hohe Robe, ist übergelaufen. Der Feind hat sich seiner bemächtigt. Pyrokar erklärt es damit, dass er zu lange allein draußen vor den Toren war.",
+    "Xardas (spätes Kapitel)": "Vertraut ihm nicht und erträgt seinen Namen kaum. Kommt zum Sonnenkreis nur, um 'diesen Hund' wegen des versteckten Buches zur Rede zu stellen.",
+    "Der Erwählte (spätes Kapitel)": "Nennt den Helden später Erwählter und erkennt in ihm den Mann wieder, dem er einst den Brief in die Barriere mitgab.",
+    "Suchende (spätes Kapitel)": "Nennt sie Schergen Beliars; nur im Kloster kann Besessenen geholfen werden."
+  },
+  "sees_hero": {
+    "novize": "Ein neuer Novize, der seine Arbeit zu tun und zu schweigen hat. Fordert der Held die Prüfung des Feuers, warnt er ihn barsch und hält ihn für unüberlegt. Dass er sie besteht, glaubt er erst nicht.",
+    "feuermagier": "Nimmt ihn mit dem Eid in die Gemeinschaft auf und nennt die Erwartung gleich mit: ein WÜRDIGER Diener Innos' soll er werden. Schickt ihn zu Lord Hagen und erwartet sofort dessen Antwort. Gewährt ihm das Recht der ersten Tat."
+  },
+  "reacts_to": {},
+  "evidence": [
+    {
+      "about": "role",
+      "key": "DIA_PYROKAR_FIRE_11_07",
+      "excerpt": 0
+    },
+    {
+      "about": "role",
+      "key": "DIA_PYROKAR_TODO_11_00",
+      "excerpt": 0
+    },
+    {
+      "about": "role",
+      "key": "DIA_PYROKAR_OATH_11_01",
+      "excerpt": 0
+    },
+    {
+      "about": "core",
+      "key": "DIA_PYROKAR_GOAWAY_11_00",
+      "excerpt": 0
+    },
+    {
+      "about": "core",
+      "key": "DIA_PYROKAR_AUGE_11_04",
+      "excerpt": 0
+    },
+    {
+      "about": "core",
+      "key": "DIA_PYROKAR_SUCCESS_11_01",
+      "excerpt": 0
+    },
+    {
+      "about": "core",
+      "key": "DIA_PYROKAR_MAGICAN_11_01",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_PYROKAR_FIRE_11_03",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_ADDON_PYROKAR_MISSINGPEOPLE_11_01",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_PYROKAR_HAGEN_11_05",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_PYROKAR_WUNSCH_DYRIAN_11_01",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_PYROKAR_NACHRICHT_11_03",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_ADDON_PYROKAR_MISSINGPEOPLE_11_05",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_PYROKAR_ALL_11_07",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_PYROKAR_FIRE_11_03",
+      "excerpt": 1
+    },
+    {
+      "about": "attitudes.factions.Novizen",
+      "key": "DIA_PYROKAR_WELCOME_11_01",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Novizen",
+      "key": "DIA_PYROKAR_AUGE_11_04",
+      "excerpt": 1
+    },
+    {
+      "about": "attitudes.factions.Hoher Rat",
+      "key": "DIA_PYROKAR_FIRE_11_07",
+      "excerpt": 1
+    },
+    {
+      "about": "attitudes.factions.Wassermagier",
+      "key": "DIA_ADDON_PYROKAR_MISSINGPEOPLE_11_01",
+      "excerpt": 1
+    },
+    {
+      "about": "attitudes.factions.Paladine",
+      "key": "DIA_PYROKAR_OATH_11_09",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Paladine",
+      "key": "DIA_PYROKAR_OATH_11_10",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Parlan",
+      "key": "DIA_PYROKAR_WELCOME_11_00",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Parlan",
+      "key": "DIA_PYROKAR_LERNEN_11_05",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Lord Hagen",
+      "key": "DIA_PYROKAR_OATH_11_08",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Agon",
+      "key": "DIA_PYROKAR_SUCCESS_11_03",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Karras, Hyglas, Marduk",
+      "key": "DIA_PYROKAR_LERNEN_11_04",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Karras, Hyglas, Marduk",
+      "key": "DIA_PYROKAR_LERNEN_11_05",
+      "excerpt": 1
+    },
+    {
+      "about": "attitudes.politics",
+      "key": "DIA_ADDON_PYROKAR_MISSINGPEOPLE_11_03",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Auge Innos' und Pedro (spätes Kapitel)",
+      "key": "DIA_PYROKAR_GIVEINNOSEYE_11_03",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Auge Innos' und Pedro (spätes Kapitel)",
+      "key": "DIA_PYROKAR_GIVEINNOSEYE_WER_11_05",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Auge Innos' und Pedro (spätes Kapitel)",
+      "key": "DIA_PYROKAR_GIVEINNOSEYE_WER_11_08",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Xardas (spätes Kapitel)",
+      "key": "DIA_PYROKAR_SPOKETOVATRAS_11_09",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Xardas (spätes Kapitel)",
+      "key": "DIA_PYROKAR_BUCHZURUECK_11_09",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Der Erwählte (spätes Kapitel)",
+      "key": "DIA_PYROKAR_TEACH_11_02",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Der Erwählte (spätes Kapitel)",
+      "key": "DIA_PYROKAR_TEACH_11_06",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Suchende (spätes Kapitel)",
+      "key": "DIA_PYROKAR_BACKFROMOW_11_07",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Suchende (spätes Kapitel)",
+      "key": "DIA_PYROKAR_BUCHDERBESSENEN_11_14",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.novize",
+      "key": "DIA_PYROKAR_WELCOME_11_00",
+      "excerpt": 1
+    },
+    {
+      "about": "sees_hero.novize",
+      "key": "DIA_PYROKAR_HAGEN_11_06",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.novize",
+      "key": "DIA_PYROKAR_FIRE_11_03",
+      "excerpt": 2
+    },
+    {
+      "about": "sees_hero.novize",
+      "key": "DIA_PYROKAR_SUCCESS_11_01",
+      "excerpt": 1
+    },
+    {
+      "about": "sees_hero.feuermagier",
+      "key": "DIA_PYROKAR_MAGICAN_11_02",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.feuermagier",
+      "key": "DIA_PYROKAR_OATH_11_06",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.feuermagier",
+      "key": "DIA_PYROKAR_OATH_11_10",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.feuermagier",
+      "key": "DIA_PYROKAR_WUNSCH_11_01",
+      "excerpt": 0
+    }
+  ],
+  "invented": []
+}

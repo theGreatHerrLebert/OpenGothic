@@ -1,0 +1,292 @@
+{
+  "facts": [
+    {
+      "fact": "Pedro ist Wächter der Pforte des Klosters.",
+      "about": "Kloster: Personen",
+      "key": "DIA_PEDRO_WELCOME_09_01",
+      "excerpt": 0
+    },
+    {
+      "fact": "Nur Diener Innos' dürfen das Kloster betreten.",
+      "about": "Kloster: Regeln",
+      "key": "DIA_PEDRO_EINLASS_09_01",
+      "excerpt": 0
+    },
+    {
+      "fact": "Wer nur beten will, soll einen Wegschrein aufsuchen.",
+      "about": "Kloster: Orte",
+      "key": "DIA_PEDRO_EINLASS_09_02",
+      "excerpt": 0
+    },
+    {
+      "fact": "Für die Aufnahme als Novize verlangt das Kloster ein Schaf und 1000 Goldstücke.",
+      "about": "Kloster: Aufnahme",
+      "key": "DIA_ADDON_PEDRO_TEMPEL_09_04",
+      "excerpt": 0
+    },
+    {
+      "fact": "Die Entscheidung, Diener Innos' zu werden, ist nicht rückgängig zu machen.",
+      "about": "Kloster: Aufnahme",
+      "key": "DIA_PEDRO_TEMPEL_09_06",
+      "excerpt": 0
+    },
+    {
+      "fact": "Meister Parlan segnet neue Novizen und wäscht sie von ihren Sünden rein.",
+      "about": "Kloster: Aufnahme",
+      "key": "DIA_PEDRO_AUFNAHME_YES_09_06",
+      "excerpt": 1
+    },
+    {
+      "fact": "Neue Novizen wenden sich im Kloster an Parlan.",
+      "about": "Kloster: Zuständigkeit",
+      "key": "DIA_PEDRO_AUFNAHME_YES_09_04",
+      "excerpt": 1
+    },
+    {
+      "fact": "Wer im Kloster keine Arbeit hat, bekommt von Parlan eine zugeteilt.",
+      "about": "Kloster: Zuständigkeit",
+      "key": "DIA_AGON_NEW_07_02",
+      "excerpt": 1
+    },
+    {
+      "fact": "Die Angehörigen des Klosters dürfen niemals lügen oder ein Verbrechen begehen.",
+      "about": "Kloster: Regeln",
+      "key": "DIA_PEDRO_RULES_09_01",
+      "excerpt": 1
+    },
+    {
+      "fact": "Novizen schulden allen Feuermagiern Gehorsam und Respekt.",
+      "about": "Kloster: Regeln",
+      "key": "DIA_PEDRO_RULES_09_04",
+      "excerpt": 2
+    },
+    {
+      "fact": "Novizen erledigen alle Arbeiten im Kloster.",
+      "about": "Kloster: Regeln",
+      "key": "DIA_PEDRO_RULES_09_06",
+      "excerpt": 0
+    },
+    {
+      "fact": "Bei Regelverstößen ist eine Strafe bei Meister Parlan zu zahlen.",
+      "about": "Kloster: Regeln",
+      "key": "DIA_OPOLOS_MONASTERY_12_02",
+      "excerpt": 1
+    },
+    {
+      "fact": "Die Bibliothek ist der verschlossene Raum links neben der Pforte.",
+      "about": "Kloster: Orte",
+      "key": "DIA_OPOLOS_BIBLOTHEK_12_01",
+      "excerpt": 0
+    },
+    {
+      "fact": "Laut Opolos gibt es den Bibliotheksschlüssel erst, wenn Parlan das Studium erlaubt.",
+      "about": "Kloster: Zuständigkeit",
+      "key": "DIA_OPOLOS_BIBLOTHEK_12_02",
+      "excerpt": 0
+    },
+    {
+      "fact": "Laut Pedro kann man den Bibliotheksschlüssel bekommen, wenn man Neoras Feuernesseln bringt.",
+      "about": "Kloster: Zuständigkeit",
+      "key": "DIA_PEDRO_WURST_09_05",
+      "excerpt": 0
+    },
+    {
+      "fact": "Auf der anderen Seite der Brücke wachsen Feuernesseln.",
+      "about": "Kloster: Orte",
+      "key": "DIA_PEDRO_WURST_JA_09_01",
+      "excerpt": 0
+    },
+    {
+      "fact": "Opolos hütet die Schafe.",
+      "about": "Kloster: Zuständigkeit",
+      "key": "DIA_OPOLOS_HOWLONG_12_03",
+      "excerpt": 0
+    },
+    {
+      "fact": "Agon kümmert sich um den Kräutergarten.",
+      "about": "Kloster: Zuständigkeit",
+      "key": "DIA_OPOLOS_AGON_12_01",
+      "excerpt": 1
+    },
+    {
+      "fact": "Im Kräutergarten werden Heilpflanzen für die Tränke von Meister Neoras gezogen.",
+      "about": "Kloster: Zuständigkeit",
+      "key": "DIA_AGON_GETHERB_07_01",
+      "excerpt": 1
+    },
+    {
+      "fact": "Agon ist laut Opolos der Neffe des Statthalters; sein Wort wiegt mehr als das anderer Novizen.",
+      "about": "Kloster: Beziehungen",
+      "key": "DIA_OPOLOS_AGON_12_05",
+      "excerpt": 1
+    },
+    {
+      "fact": "Babo fegt seit einem Streit mit Agon den Hof.",
+      "about": "Kloster: Beziehungen",
+      "key": "DIA_OPOLOS_AGON_12_03",
+      "excerpt": 1
+    },
+    {
+      "fact": "Babo gibt an, Agon habe ihm die Schuld am Verfaulen der Feuernesseln zugeschoben.",
+      "about": "Kloster: Beziehungen",
+      "key": "DIA_BABO_YOUANDAGON_03_03",
+      "excerpt": 0
+    },
+    {
+      "fact": "Novizen tragen einen Stab als Zeichen ihrer Wehrhaftigkeit.",
+      "about": "Kloster: Regeln",
+      "key": "DIA_BABO_HELLO_03_04",
+      "excerpt": 1
+    },
+    {
+      "fact": "Der Paladin Sergio hält sich zurzeit im Kloster auf.",
+      "about": "Kloster: Personen",
+      "key": "DIA_BABO_ANLIEGEN_03_01",
+      "excerpt": 1
+    },
+    {
+      "fact": "Dyrian wartet auf die Entscheidung des Hohen Rates, ob er bleiben darf.",
+      "about": "Kloster: Personen",
+      "key": "DIA_DYRIAN_JOB_13_02",
+      "excerpt": 1
+    },
+    {
+      "fact": "Dyrian wurde mit einem mitgenommenen Buch in seiner Kammer erwischt.",
+      "about": "Kloster: Personen",
+      "key": "DIA_DYRIAN_WHATDONE_13_03",
+      "excerpt": 1
+    },
+    {
+      "fact": "Wer die Prüfung des Feuers ablegt, bekommt von jedem Magier des Hohen Rates eine Prüfung.",
+      "about": "Kloster: Prüfungen",
+      "key": "DIA_PYROKAR_FIRE_11_07",
+      "excerpt": 0
+    },
+    {
+      "fact": "Viele Novizen sind bei der Prüfung des Feuers gestorben.",
+      "about": "Kloster: Prüfungen",
+      "key": "DIA_PYROKAR_FIRE_11_03",
+      "excerpt": 0
+    },
+    {
+      "fact": "Nur einer der Novizen kann die Prüfung der Magie bestehen.",
+      "about": "Kloster: Prüfungen",
+      "key": "DIA_PYROKAR_TEST_11_02",
+      "excerpt": 0
+    },
+    {
+      "fact": "Für die Prüfung der Magie sind Agon, Igaraz und Ulf erwählt.",
+      "about": "Kloster: Prüfungen",
+      "key": "DIA_PYROKAR_TEST_11_04",
+      "excerpt": 0
+    },
+    {
+      "fact": "Jeder neue Magier hat das Recht der ersten Tat.",
+      "about": "Kloster: Regeln",
+      "key": "DIA_PYROKAR_WUNSCH_11_01",
+      "excerpt": 0
+    },
+    {
+      "fact": "Karras lehrt Anrufungen und Beschwörungen, Hyglas die Magie des Feuers.",
+      "about": "Kloster: Zuständigkeit",
+      "key": "DIA_PYROKAR_LERNEN_11_04",
+      "excerpt": 0
+    },
+    {
+      "fact": "Marduk beherrscht Eis und Donner; Parlan nimmt in die ersten Kreise auf.",
+      "about": "Kloster: Zuständigkeit",
+      "key": "DIA_PYROKAR_LERNEN_11_05",
+      "excerpt": 2
+    },
+    {
+      "fact": "Um die Vermissten kümmern sich nach Absprache die Wassermagier, nicht das Kloster.",
+      "about": "Kloster: Beziehungen",
+      "key": "DIA_ADDON_PYROKAR_MISSINGPEOPLE_11_01",
+      "excerpt": 2
+    },
+    {
+      "fact": "Im Hafenviertel ist Lehmar der einzige mächtige Mann.",
+      "about": "Hafenviertel: Personen",
+      "key": "DIA_KARDIF_BUERGER_14_01",
+      "excerpt": 0
+    },
+    {
+      "fact": "Lehmar verleiht Geld zu 20 Prozent; bei Verzug verlangt er 30.",
+      "about": "Hafenviertel: Regeln",
+      "key": "DIA_LEHMAR_GELDEINTREIBEN_09_01",
+      "excerpt": 0
+    },
+    {
+      "fact": "Lehmar trägt sein Schuldenbuch angeblich immer bei sich.",
+      "about": "Hafenviertel: Personen",
+      "key": "DIA_KARDIF_ADD_14_03",
+      "excerpt": 1
+    },
+    {
+      "fact": "Kardif verlangt für jede Information Gold.",
+      "about": "Hafenviertel: Personen",
+      "key": "DIA_KARDIF_HALLO_14_04",
+      "excerpt": 0
+    },
+    {
+      "fact": "Brahims Hütte steht direkt neben Kardifs Kneipe.",
+      "about": "Hafenviertel: Orte",
+      "key": "DIA_KARDIF_LERNEN_14_08",
+      "excerpt": 1
+    },
+    {
+      "fact": "Der Fischhändler Halvor hat seinen Laden unten am Kai.",
+      "about": "Hafenviertel: Orte",
+      "key": "DIA_ADDON_KARDIF_MISSINGPEOPLE_14_06",
+      "excerpt": 1
+    },
+    {
+      "fact": "Halvor hat Waren von Banditen weiterverkauft.",
+      "about": "Hafenviertel: Beziehungen",
+      "key": "DIA_HALVOR_MESSAGE_06_02",
+      "excerpt": 0
+    },
+    {
+      "fact": "Moe verlangt 50 Goldstücke Eintritt für die Hafenkneipe.",
+      "about": "Hafenviertel: Regeln",
+      "key": "DIA_MOE_HALLO_RUHIG_01_01",
+      "excerpt": 0
+    },
+    {
+      "fact": "Die Miliz geht nach Moes Worten höchstens in die 'Rote Laterne'.",
+      "about": "Hafenviertel: Orte",
+      "key": "DIA_MOE_HALLO_MILIZ_01_03",
+      "excerpt": 0
+    },
+    {
+      "fact": "Alrik kämpft für Gold hinter dem Lagerhaus.",
+      "about": "Hafenviertel: Personen",
+      "key": "DIA_KARDIF_ARBEIT_14_02",
+      "excerpt": 0
+    },
+    {
+      "fact": "Carl ist Schmied im Hafenviertel.",
+      "about": "Hafenviertel: Personen",
+      "key": "DIA_KARDIF_LERNEN_14_02",
+      "excerpt": 0
+    },
+    {
+      "fact": "Im Hafen sollen besonders viele Leute verschwunden sein.",
+      "about": "Hafenviertel: Lage",
+      "key": "DIA_ADDON_KARDIF_MISSINGPEOPLE_14_02",
+      "excerpt": 0
+    },
+    {
+      "fact": "Das einzige Schiff, das zuletzt ankam, ist das der Paladine.",
+      "about": "Hafenviertel: Lage",
+      "key": "DIA_MOE_HARBOR_SHIP_01_01",
+      "excerpt": 0
+    },
+    {
+      "fact": "Coragon führt eine Kneipe in der Unterstadt.",
+      "about": "Stadt: Personen",
+      "key": "DIA_ADDON_KARDIF_MISSINGPEOPLE_14_05",
+      "excerpt": 0
+    }
+  ]
+}

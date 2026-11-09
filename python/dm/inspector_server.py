@@ -159,6 +159,14 @@ def load_reviews():
     return json.loads(REVIEWS.read_text(encoding="utf-8")) if REVIEWS.exists() else {}
 
 
+def _with_quotes(entries, quotes):
+    """Restore the private quoted game text for display on this machine only."""
+    for entry in entries:
+        excerpts = quotes.get(entry.get("key"), [])
+        index = entry.get("excerpt", 0)
+        entry["quote"] = excerpts[index] if index < len(excerpts) else "(quote not available)"
+
+
 def character_data():
     """Every sheet and the world facts, read fresh so edits show on reload."""
     sheets = []
@@ -168,6 +176,11 @@ def character_data():
         except ValueError as error:  # one hand-edited file must not hide the others
             sheets.append({"file": path.stem, "error": str(error)})
     facts = json.loads(WORLD_FACTS.read_text(encoding="utf-8"))["facts"] if WORLD_FACTS.exists() else []
+    path = voices.RUNTIME_DIR / "quotes.json"
+    quotes = json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
+    _with_quotes(facts, quotes)
+    for sheet in sheets:
+        _with_quotes(sheet.get("evidence", []), quotes)
     return {"characters": sheets, "facts": facts}
 
 

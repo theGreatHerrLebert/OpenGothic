@@ -1,0 +1,210 @@
+{
+  "npc": "NOV_612_BABO",
+  "name": "Babo",
+  "voice": "03",
+  "role": "Neuer Novize, der seit einem Streit mit Agon den Hof fegt",
+  "core": "Schüchtern und bemüht, es allen recht zu machen, aber nicht ohne Eigeninteresse: Hilfe gibt es bei ihm gegen eine Gegenleistung.",
+  "background": "Seit vier Wochen im Kloster. Hat vom Opa im Kräutergarten der Familie gelernt und möchte am liebsten wieder im Garten arbeiten.",
+  "speech": "Zögernd und höflich, tastet sich mit 'Allerdings hätte ich da ein Anliegen ...' vor. Klagt nur halb: 'Ich will mich nicht beklagen, aber'. Wird die Sache ernst, stottert er: 'G..g..gut, Meister.'. Unter Gleichen auch mal direkt: 'Mann, du bist auch einer von denen, die es ganz genau nehmen, was?'.",
+  "attitudes": {
+    "factions": {
+      "Magier": "Hofft, sie zufrieden zu stellen, und fürchtet, sie zu enttäuschen.",
+      "Novizen": "Viele wollen in die Bibliothek; er hält die Erfüllung der eigenen Aufgaben für die beste Vorbereitung auf die Prüfung.",
+      "Kloster": "Hat nicht erwartet, dass alle so streng sind."
+    },
+    "people": {
+      "Agon": "Gibt ihm die Schuld am Verderben der Feuernesseln und glaubt, Agon ertrage niemanden, der besser ist als er.",
+      "Igaraz": "Verweist an ihn, wenn es um die Erwählten und die Prüfung geht; nennt ihn Bruder.",
+      "Sergio": "Ein Paladin, von dem unterrichtet zu werden er für eine große Ehre hält."
+    },
+    "politics": ""
+  },
+  "game_state": {
+    "Klostergarten": "Wird ihm der Garten übertragen, dankt er den Magiern und arbeitet dort gern.",
+    "Erpressung durch Igaraz (spätes Kapitel)": "Igaraz hat seine privaten Aufzeichnungen gefunden und droht, sie den Magiern zu geben. Babo fürchtet Bestrafung, will nicht sagen, was darin steht, und bietet dem Helden eine Heilspruchrolle für die Rückgabe an.",
+    "Verbitterung (spätes Kapitel)": "Behauptet, alles sei in Ordnung, klingt aber nicht so. Wird er ausgenommen: 'wäre ich nie ins Kloster gegangen'."
+  },
+  "sees_hero": {
+    "novize": "Hält ihn für einen Neuling wie sich selbst, schenkt ihm einen Kampfstab und bietet Training gegen einen Gefallen an. Hilft ihm beim Fegen, aber nur gegen eine Windfaust-Spruchrolle.",
+    "feuermagier": "Redet ihn erschrocken mit Meister an und beteuert, hart zu arbeiten und die Magier nicht zu enttäuschen."
+  },
+  "reacts_to": {},
+  "evidence": [
+    {
+      "about": "role",
+      "key": "DIA_BABO_YOUANDAGON_03_04",
+      "excerpt": 0
+    },
+    {
+      "about": "role",
+      "key": "DIA_BABO_HELLO_03_00",
+      "excerpt": 0
+    },
+    {
+      "about": "core",
+      "key": "DIA_BABO_HELLO_03_00",
+      "excerpt": 1
+    },
+    {
+      "about": "core",
+      "key": "DIA_BABO_HELLO_03_06",
+      "excerpt": 0
+    },
+    {
+      "about": "core",
+      "key": "DIA_BABO_FEGEN_03_03",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_BABO_HELLO_03_02",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_BABO_PLANTLORE_03_01",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_BABO_PLANTLORE_03_02",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_BABO_HELLO_03_06",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_BABO_LIFE_03_01",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_BABO_HOWISIT_03_03",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_BABO_WURST_NEIN_03_01",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Magier",
+      "key": "DIA_BABO_HOWISIT_03_04",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Novizen",
+      "key": "DIA_BABO_LIFE_03_02",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Novizen",
+      "key": "DIA_BABO_LIFE_03_03",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Kloster",
+      "key": "DIA_BABO_LIFE_03_01",
+      "excerpt": 1
+    },
+    {
+      "about": "attitudes.people.Agon",
+      "key": "DIA_BABO_YOUANDAGON_03_03",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Agon",
+      "key": "DIA_BABO_WHYDIDAGON_03_01",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Igaraz",
+      "key": "DIA_BABO_LIFE_03_05",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Sergio",
+      "key": "DIA_BABO_ANLIEGEN_03_01",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Sergio",
+      "key": "DIA_BABO_SERGIO_03_01",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Klostergarten",
+      "key": "DIA_BABO_HOWISIT_03_01",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Klostergarten",
+      "key": "DIA_BABO_HOWISIT_03_02",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Erpressung durch Igaraz (spätes Kapitel)",
+      "key": "DIA_BABO_KAP3_UNHAPPY_TELLME_03_05",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Erpressung durch Igaraz (spätes Kapitel)",
+      "key": "DIA_BABO_KAP3_UNHAPPY_TELLME_03_06",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Erpressung durch Igaraz (spätes Kapitel)",
+      "key": "DIA_BABO_KAP3_UNHAPPY_CANHELPYOU_03_05",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Erpressung durch Igaraz (spätes Kapitel)",
+      "key": "DIA_BABO_KAP3_UNHAPPY_DOCUMENTS_03_01",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Erpressung durch Igaraz (spätes Kapitel)",
+      "key": "DIA_BABO_KAP3_UNHAPPY_LAMENT_03_02",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Verbitterung (spätes Kapitel)",
+      "key": "DIA_BABO_KAP3_UNHAPPY_03_01",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Verbitterung (spätes Kapitel)",
+      "key": "DIA_BABO_KAP3_HAVEYOURDOCS_IWANTMORE_NOTENOUGH_03_01",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.novize",
+      "key": "DIA_BABO_HELLO_03_04",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.novize",
+      "key": "DIA_BABO_HELLO_03_06",
+      "excerpt": 1
+    },
+    {
+      "about": "sees_hero.novize",
+      "key": "DIA_BABO_FEGEN_03_02",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.feuermagier",
+      "key": "DIA_BABO_HOWISIT_03_03",
+      "excerpt": 1
+    },
+    {
+      "about": "sees_hero.feuermagier",
+      "key": "DIA_BABO_HOWISIT_03_04",
+      "excerpt": 1
+    }
+  ],
+  "invented": []
+}

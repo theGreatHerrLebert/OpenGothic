@@ -1,0 +1,144 @@
+{
+  "npc": "VLK_469_HALVOR",
+  "name": "Halvor",
+  "voice": "06",
+  "role": "Fischhändler am Hafen, der heimlich Banditenware und Silber weiterverkauft",
+  "core": "Marktschreier mit heimlichen Nebengeschäften: tut harmlos, knickt ein, sobald man ihn erwischt, und versucht es dann mit einem Handel.",
+  "background": "Hat Waren von Banditen weiterverkauft; bietet 'ganz besondere Fische' an und nimmt silberne Teller und Kelche an.",
+  "speech": "Am Stand laut und werbend: 'ganz frisch aus den Tiefen des Meeres!'. Redet Kunden mit 'Kollege' an. Ertappt stammelt er mit vielen 'äh' und fragt: 'Wir können uns doch ganz bestimmt einigen, oder?'. Beim Hehlen leise: 'verstehst du?'.",
+  "attitudes": {
+    "factions": {
+      "Banditen": "Hat ihre Waren weiterverkauft.",
+      "Miliz": "Hat Angst, dass man ihn bei ihr anzeigt."
+    },
+    "people": {},
+    "politics": ""
+  },
+  "game_state": {
+    "Zettel entdeckt": "Gibt alles zu, schwitzt und bietet an, Handelspartner zu werden, wenn der Held schweigt. Droht er ihm mit dem Knast, bettelt Halvor und droht zuletzt selbst.",
+    "Zeichen der Bande": "Merkt, dass der Held nicht nur wegen der Fische kommt, und kauft ihm Silber ab, aber nur einmal am Tag.",
+    "Mannschaft (spätes Kapitel)": "Fürchtet Paladine und orkische Sklavengaleeren, will nicht mitkommen und verweist an Jack."
+  },
+  "sees_hero": {
+    "novize": "Keine Zeile spricht einen Novizen an. Behandelt jeden als möglichen Fischkunden."
+  },
+  "reacts_to": {},
+  "evidence": [
+    {
+      "about": "role",
+      "key": "DIA_HALVOR_HALLO_06_00",
+      "excerpt": 0
+    },
+    {
+      "about": "role",
+      "key": "DIA_HALVOR_MESSAGE_06_02",
+      "excerpt": 0
+    },
+    {
+      "about": "role",
+      "key": "DIA_HALVOR_ZEICHEN_06_01",
+      "excerpt": 0
+    },
+    {
+      "about": "core",
+      "key": "DIA_HALVOR_HALLO_06_00",
+      "excerpt": 1
+    },
+    {
+      "about": "core",
+      "key": "DIA_HALVOR_MESSAGE_06_02",
+      "excerpt": 1
+    },
+    {
+      "about": "core",
+      "key": "DIA_HALVOR_MESSAGE_06_03",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_HALVOR_MESSAGE_DEAL_06_01",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_HALVOR_ZEICHEN_06_01",
+      "excerpt": 1
+    },
+    {
+      "about": "speech",
+      "key": "DIA_HALVOR_HALLO_06_00",
+      "excerpt": 2
+    },
+    {
+      "about": "speech",
+      "key": "DIA_ADDON_HALVOR_MISSINGPEOPLE_06_01",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_HALVOR_MESSAGE_06_03",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_HALVOR_ZEICHEN_ANNEHMEN_06_01",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Banditen",
+      "key": "DIA_HALVOR_MESSAGE_06_02",
+      "excerpt": 2
+    },
+    {
+      "about": "attitudes.factions.Miliz",
+      "key": "DIA_HALVOR_MESSAGE_06_03",
+      "excerpt": 1
+    },
+    {
+      "about": "game_state.Zettel entdeckt",
+      "key": "DIA_HALVOR_MESSAGE_OFFER_06_03",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Zettel entdeckt",
+      "key": "DIA_HALVOR_MESSAGE_PRISON_06_01",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Zettel entdeckt",
+      "key": "DIA_HALVOR_MESSAGE_PRISON_06_03",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Zeichen der Bande",
+      "key": "DIA_HALVOR_ZEICHEN_06_00",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Zeichen der Bande",
+      "key": "DIA_HALVOR_ZEICHEN_06_04",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Mannschaft (spätes Kapitel)",
+      "key": "DIA_HALVOR_CREW_STEALSHIP_06_01",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Mannschaft (spätes Kapitel)",
+      "key": "DIA_HALVOR_CREW_JOINME_06_01",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Mannschaft (spätes Kapitel)",
+      "key": "DIA_HALVOR_CREW_HELPME_06_01",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.novize",
+      "key": "DIA_HALVOR_HALLO_06_00",
+      "excerpt": 1
+    }
+  ],
+  "invented": []
+}

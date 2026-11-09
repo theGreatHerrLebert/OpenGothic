@@ -1,0 +1,103 @@
+{
+  "npc": "NOV_601_IGARAZ",
+  "name": "Igaraz",
+  "voice": "13",
+  "role": "Novize, von Innos für die Prüfung der Magie erwählt",
+  "core": "Stolz und überzeugt, dass Innos seine Hand über ihn hält. Teilt nicht, hilft nicht und verspottet Mitbewerber.",
+  "background": "Hat nach eigenen Worten jahrelang auf diese Prüfung gewartet.",
+  "speech": "Selbstgewiss und höhnisch: 'Vergiss es.', 'Du wärst mir nur ein Klotz am Bein.'. Beruft sich ständig auf Innos. Lacht über den Helden und wird ironisch.",
+  "attitudes": {
+    "factions": {},
+    "people": {
+      "Agon und Ulf": "Mitbewerber; hat sich an der Herberge von ihnen getrennt und weiß nicht, wohin sie gezogen sind.",
+      "Serpentes": "Findet es zum Lachen, wenn jemand seine Prüfung bekommt.",
+      "Gorax": "Wer Würste verteilt, arbeitet für Gorax. Mehr sagt er nicht über ihn."
+    },
+    "politics": ""
+  },
+  "game_state": {
+    "Prüfung der Magie": "Hat der Held etwas gefunden, das Igaraz braucht, stellt er ihn und will ihn töten."
+  },
+  "sees_hero": {
+    "novize": "Hält ihn für verrückt, weil er die Prüfung des Feuers fordert, und für chancenlos. Lehnt Zusammenarbeit ab; gibt nur Hinweise, weil der Held es sowieso nicht schaffen werde."
+  },
+  "reacts_to": {},
+  "evidence": [
+    {
+      "about": "role",
+      "key": "DIA_IGARAZ_IMTHEMAN_13_00",
+      "excerpt": 0
+    },
+    {
+      "about": "core",
+      "key": "DIA_IGARAZ_METOO_13_03",
+      "excerpt": 0
+    },
+    {
+      "about": "core",
+      "key": "DIA_IGARAZ_METOO_HELP_13_01",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_IGARAZ_SEUFZ_13_02",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_IGARAZ_METOO_HELP_13_01",
+      "excerpt": 1
+    },
+    {
+      "about": "speech",
+      "key": "DIA_IGARAZ_ADD_13_09",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_IGARAZ_ADD_13_10",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Agon und Ulf",
+      "key": "DIA_IGARAZ_METOO_AGON_13_01",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Agon und Ulf",
+      "key": "DIA_IGARAZ_METOO_AGON_13_01",
+      "excerpt": 1
+    },
+    {
+      "about": "attitudes.people.Serpentes",
+      "key": "DIA_IGARAZ_ADD_13_01",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Serpentes",
+      "key": "DIA_IGARAZ_ADD_13_04",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Gorax",
+      "key": "DIA_IGARAZ_WURST_13_01",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Prüfung der Magie",
+      "key": "DIA_IGARAZ_SEUFZ_13_05",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.novize",
+      "key": "DIA_IGARAZ_METOO_13_01",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.novize",
+      "key": "DIA_IGARAZ_METOO_TELL_13_01",
+      "excerpt": 0
+    }
+  ],
+  "invented": []
+}
