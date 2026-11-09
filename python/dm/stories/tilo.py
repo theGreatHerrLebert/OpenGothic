@@ -38,6 +38,8 @@ PLOT = {
         "silver_sold": fact(HAREK, TILO),
         "tilo_nearby": fact(HAREK, essential=True, needs=["harbour_lead"]),
         "tilo_cornered": fact(topic=True),
+        "tilo_met": fact(topic=True),
+        "tilo_stressed": fact(topic=True),
     },
     "items": [{"ref": "ROBE", "teaches": ["tilo_absent"], "needs": []}],
 }
@@ -82,11 +84,14 @@ GORAX_SCENE = {"voice": VOICES[GORAX], "start": "a", "nodes": {
     "a": node("Hey du! Hast du den Novizen Tilo gesehen? Der Bengel ist heute früh nicht zur Arbeit erschienen. Die Presse steht still, und der Wein keltert sich schließlich nicht von selbst!",
               ["tilo_named", "tilo_absent"], [
                   go("Ich habe am Hafen einen Kerl getroffen, der nicht dorthin passt.", "c", requires=["tilo_cornered"], uses=["tilo_cornered"]),
-                  go("Wer ist dieser Tilo?", "b"),
+                  go("Ich habe ihn gesehen. Er sah ganz schön gestresst aus.", "d", requires=["tilo_stressed"], uses=["tilo_stressed"]),
+                  go("Wer ist dieser Tilo?", "b", unless="tilo_met"),
                   end("Ich bin nicht dein Laufbursche."),
                   end("Wenn ich ihn sehe, sage ich es dir.")]),
     "b": node("Er bringt unseren Wein in die Stadt. Seit Wochen kommt er später und später zurück. Wenn er sich mit Gesindel abgibt, kann er was erleben.",
               ["wine_trips"], [go(BACK, "a"), end("Ich halte die Augen offen.")], uses=["tilo_named"]),
+    "d": node("Gestresst? Der soll arbeiten und nicht grübeln. Sag ihm das, wenn du ihn findest.",
+              [], [go(BACK, "a"), end("Mache ich.")], uses=["tilo_named"]),
     "c": node("Am Hafen? Das sähe ihm ähnlich, dem Taugenichts! Sprich mit Meister Parlan, er wird das erfahren wollen!",
               [], [go(BACK, "a"), end("Mache ich.")], uses=["tilo_named"]),
 }}
@@ -202,7 +207,19 @@ ANSELM_GRATEFUL = {"voice": VOICES[ANSELM], "start": "a", "nodes": {
               ["anselm_secret"], [end("Das bleibt unter uns.")]),
 }}
 
-CONVERSATIONS = {GORAX: GORAX_SCENE, PARLAN: PARLAN_SCENE, ANSELM: ANSELM_SCENE, HAREK: HAREK_GRAPH, TILO: TILO_GRAPH}
+TILO_BEFORE = {"voice": VOICES[TILO], "start": "a", "nodes": {
+    "a": node("Was ist? Ich hab zu tun. Gorax reißt mir den Kopf ab, wenn die Fässer nicht fertig sind.",
+              ["tilo_met", "tilo_named"], again="Du schon wieder? Ich hab wirklich zu tun.", choices=[
+                  go("Du siehst ganz schön gestresst aus!", "b"),
+                  go("Was machst du hier eigentlich?", "c"),
+                  end("Ich geh dann mal.")]),
+    "b": node("Gestresst? Ich? Quatsch. Ich komm schon klar. Ich hab Freunde in der Stadt, weißt du. Das regelt sich.",
+              ["tilo_stressed"], [go(BACK, "a"), end("Wie du meinst.")]),
+    "c": node("Ich helfe beim Wein. Und ich bring ihn in die Stadt. Am Hafen kennen sie mich, da bin ich nicht bloß irgendein Novize.",
+              [], [go(BACK, "a"), end("Ich geh dann mal.")]),
+}}
+
+CONVERSATIONS = {TILO + "_BEFORE": TILO_BEFORE, GORAX: GORAX_SCENE, PARLAN: PARLAN_SCENE, ANSELM: ANSELM_SCENE, HAREK: HAREK_GRAPH, TILO: TILO_GRAPH}
 
 HIDDEN_TRUTH = ("Tilo, cheated at dice by Harek and owing him 300 gold, stole two silver candlesticks from the "
                 "chapel at night, left his robe at the wine press, paid Harek and tried to sign on with a ship. "
@@ -216,15 +233,24 @@ FATE = ["tilo_turned_in", "tilo_helped"]  # once decided, the early scenes no lo
 
 
 def plan():
+    """Everything before the theft. Tilo is an ordinary novice until the first night."""
     return [
         {"op": "commit_fact", "id": "truth", "text": HIDDEN_TRUTH, "known_by": []},
         {"op": "spawn_npc", "instance": HAREK, "waypoint": "NW_CITY_HABOUR_TAVERN01_01", "display_name": "Harek"},
         {"op": "attach_dialogue_graph", "npc": HAREK, "graph": HAREK_GRAPH},
-        {"op": "place_item", "instance": "ITAR_NOV_L", "waypoint": "NW_MONASTERY_WINEMAKER_01", "quest": ROBE},
         {"op": "rename_npc", "instance": ANSELM, "display_name": "Anselm"},
-        {"op": "add_scene", "id": "gorax", "npc": GORAX, "graph": GORAX_SCENE, "within": 500, "unless": FATE},
-        {"op": "add_scene", "id": "parlan", "npc": PARLAN, "graph": PARLAN_SCENE, "within": 500, "requires": ["tilo_absent"], "unless": FATE},
-        {"op": "add_scene", "id": "anselm", "npc": ANSELM, "graph": ANSELM_SCENE, "within": 450, "requires": ["reward"], "unless": FATE},
+        {"op": "rename_npc", "instance": TILO, "display_name": "Tilo"},
+        {"op": "attach_dialogue_graph", "npc": TILO, "graph": TILO_BEFORE},
+        {"op": "add_rule", "id": "the_theft", "when": [], "at_night": True, "unseen_by_near": TILO, "ops": [
+            {"op": "place_item", "instance": "ITAR_NOV_L", "waypoint": "NW_MONASTERY_WINEMAKER_01", "quest": ROBE},
+            {"op": "relocate_npc", "instance": TILO, "waypoint": "NW_CITY_HABOUR_POOR_AREA_PATH_08",
+             "armor": "ITAR_VLK_L", "display_name": "Tilo"},
+            {"op": "attach_dialogue_graph", "npc": TILO, "graph": TILO_GRAPH},
+            {"op": "add_scene", "id": "gorax", "npc": GORAX, "graph": GORAX_SCENE, "within": 500, "unless": FATE},
+            {"op": "add_scene", "id": "parlan", "npc": PARLAN, "graph": PARLAN_SCENE, "within": 500,
+             "requires": ["tilo_absent"], "unless": FATE},
+            {"op": "add_scene", "id": "anselm", "npc": ANSELM, "graph": ANSELM_SCENE, "within": 450,
+             "requires": ["reward"], "unless": FATE}]},
         {"op": "add_rule", "id": "tilo_turned_in", "when": ["tilo_turned_in"], "ops": [
             {"op": "remove_npc", "instance": TILO},
             {"op": "add_scene", "id": "parlan_reward", "npc": PARLAN, "graph": PARLAN_REWARD, "within": 600},
@@ -236,13 +262,10 @@ def plan():
             {"op": "add_scene", "id": "anselm_grateful", "npc": ANSELM, "graph": ANSELM_GRATEFUL, "within": 450, "requires": ["friend_offer"]}]},
         {"op": "add_rule", "id": "secret_told", "when": ["anselm_secret"], "ops": [
             {"op": "place_item", "instance": "ITFO_WINE", "waypoint": "NW_MONASTERY_WINEMAKER_03"}]},
-        {"op": "relocate_npc", "instance": TILO, "waypoint": "NW_CITY_HABOUR_POOR_AREA_PATH_08",
-         "armor": "ITAR_VLK_L", "display_name": "Tilo"},
-        {"op": "attach_dialogue_graph", "npc": TILO, "graph": TILO_GRAPH},
     ]
 
 
 def all_graphs():
-    return {"gorax": GORAX_SCENE, "parlan": PARLAN_SCENE, "anselm": ANSELM_SCENE, "harek": HAREK_GRAPH,
+    return {"tilo_before": TILO_BEFORE, "gorax": GORAX_SCENE, "parlan": PARLAN_SCENE, "anselm": ANSELM_SCENE, "harek": HAREK_GRAPH,
             "tilo": TILO_GRAPH, "parlan_reward": PARLAN_REWARD, "anselm_bitter": ANSELM_BITTER,
             "anselm_grateful": ANSELM_GRATEFUL}

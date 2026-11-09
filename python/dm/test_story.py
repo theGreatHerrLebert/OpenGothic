@@ -186,6 +186,21 @@ def test_scene_and_rule():
     s.on_tick()
     assert fake.player.given == [("ITGOLD", 5)] and started == ["PARLAN"]  # both happen once
 
+    # a night rule waits for dark and for the player to be away
+    s.apply_plan({"reason": "r", "ops": [{"op": "add_rule", "id": "night", "when": [], "at_night": True,
+                  "unseen_by_near": "PARLAN", "ops": [{"op": "give_item", "instance": "ITNIGHT"}]}]})
+    w.time = (12, 0)
+    w.npcs["PARLAN"].position = (100, 0, 0)
+    s.on_tick()
+    assert ("ITNIGHT", 1) not in fake.player.given
+    w.time = (23, 0)
+    s.on_tick()
+    assert ("ITNIGHT", 1) not in fake.player.given
+    w.npcs["PARLAN"].position = (9000, 0, 0)
+    s.on_tick()
+    assert ("ITNIGHT", 1) in fake.player.given
+    World.time = (20, 0)
+
 
 def rejected(story, ops, fragment):
     try:
