@@ -8,6 +8,7 @@ are stored in python/dm_runtime/reviews.json.
 """
 
 import copy
+import hashlib
 import http.server
 import importlib
 import json
@@ -95,6 +96,62 @@ def build():
     return data, "\n".join(L)
 
 
+def _text_hash(text):
+    return "t:" + hashlib.sha256(text.encode("utf-8")).hexdigest()[:16]
+
+
+_audio_hashes = {}
+
+
+def _audio_hash(url):
+    """Hash of a generated audio file, or None if there is none."""
+    if not url:
+        return None
+    voice, name = url.split("/")[-2:]
+    path = voices.VOICE_DIR / voice / name
+    stamp = (str(path), path.stat().st_mtime_ns)
+    if stamp not in _audio_hashes:
+        _audio_hashes[stamp] = "a:" + hashlib.sha256(path.read_bytes()).hexdigest()[:16]
+    return _audio_hashes[stamp]
+
+
+def content_index(data):
+    """What each review applies to: an approval only counts for this exact text or audio."""
+    index = {}
+    for conv in data["convs"]:
+        for key, node in conv["nodes"].items():
+            base = f"{conv['id']}__{key}"
+            index[base] = _text_hash(node["line"])
+            index[base + "__voice"] = _audio_hash(node.get("audio"))
+            if node.get("again"):
+                index[base + "__again"] = _text_hash(node["again"])
+                index[base + "__again__voice"] = _audio_hash(node.get("audioAgain"))
+            for i, choice in enumerate(node["choices"]):
+                index[f"{base}__c{i}"] = _text_hash(choice["text"])
+                index[f"{base}__c{i}__voice"] = _audio_hash(choice.get("audio"))
+    return index
+
+
+def current_reviews():
+    """Reviews still valid for what the story says now. Changed lines count as unreviewed."""
+    index = content_index(build()[0])
+    return {key: value for key, value in load_reviews().items()
+            if value.get("hash") is not None and value["hash"] == index.get(key)}
+
+
+def adopt_existing_reviews():
+    """Bind reviews written before hashing to the content as it is now."""
+    index = content_index(build()[0])
+    with REVIEW_LOCK:
+        reviews = load_reviews()
+        for key, value in reviews.items():
+            if "hash" not in value and index.get(key):
+                value["hash"] = index[key]
+        temporary = REVIEWS.with_suffix(".tmp")
+        temporary.write_text(json.dumps(reviews, ensure_ascii=False, indent=1), encoding="utf-8")
+        temporary.replace(REVIEWS)
+
+
 def load_reviews():
     return json.loads(REVIEWS.read_text(encoding="utf-8")) if REVIEWS.exists() else {}
 
@@ -114,7 +171,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
                 "/*DATA*/null", json.dumps(data, ensure_ascii=False).replace("</", "<\\/"))
             self._send(html.encode("utf-8"), "text/html; charset=utf-8")
         elif self.path == "/reviews":
-            self._send(json.dumps(load_reviews(), ensure_ascii=False).encode("utf-8"))
+            self._send(json.dumps(current_reviews(), ensure_ascii=False).encode("utf-8"))
         else:
             match = AUDIO_PATH.match(self.path)
             path = voices.VOICE_DIR / match[1] / f"{match[2]}.wav" if match else None
@@ -127,10 +184,12 @@ class Handler(http.server.BaseHTTPRequestHandler):
         if self.path != "/reviews":
             return self._send(b"{}", status=404)
         request = json.loads(self.rfile.read(int(self.headers["Content-Length"])))
+        target = content_index(build()[0]).get(request["id"])
         with REVIEW_LOCK:
             reviews = load_reviews()
             if request.get("verdict"):
-                reviews[request["id"]] = {"verdict": request["verdict"], "reason": request.get("reason", "")}
+                reviews[request["id"]] = {"verdict": request["verdict"], "reason": request.get("reason", ""),
+                                          "hash": target}
             else:
                 reviews.pop(request["id"], None)
             # write to a temporary file first, so a crash can never leave a partial file
@@ -144,5 +203,6 @@ class Handler(http.server.BaseHTTPRequestHandler):
 
 
 if __name__ == "__main__":
+    adopt_existing_reviews()
     print(f"Story inspector: http://127.0.0.1:{PORT}")
     http.server.ThreadingHTTPServer(("127.0.0.1", PORT), Handler).serve_forever()
