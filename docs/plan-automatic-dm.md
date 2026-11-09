@@ -59,6 +59,12 @@ characters may be drafted by a model from the game's own dialogue and corrected 
 
 *Done when* about 15 usable people have sheets, and the count shows whether enough stories are possible.
 
+**Knowledge base.** The fact sheet grows into a small graph of people, places, factions, items and quests.
+Build it from the game's own data first, since scripts and dialogue are exact and match this install. Add fan
+wikis only for what scripts cannot tell, keeping each fact's source and marking wiki facts as secondary, because
+wikis describe versions, mods and opinions and may carry licence terms that matter if anything is shared.
+Stories are generated offline, so the Director can look things up there; nothing is fetched during play.
+
 ### 2. The throwaway experiment
 
 Fix the scoring and the kill criterion **before** generating anything. Record 3 to 5 snapshots of real
