@@ -106,13 +106,13 @@ def submit_plan(reason: str, ops: list) -> str:
 
 
 @mcp.tool()
-def report_status(stage: str, done: int | None = None, total: int | None = None) -> str:
-    """Show what the DM is doing on the in-game panel. Stage is schreibt, prüft, Stimmen or bereit; counts are optional.
+def report_status(stage: str, done: int | None = None, total: int | None = None, quest: str | None = None) -> str:
+    """Show what the DM is doing on the in-game panel. Stage is schreibt, prüft, Stimmen or bereit; counts and quest title are optional.
 
     Works without the game. The panel clears itself after two minutes without a new report.
     """
     try:
-        status.report(stage, done, total)
+        status.report(stage, done, total, quest)
     except ValueError as error:
         return json.dumps({"ok": False, "error": str(error)}, ensure_ascii=False)
     return json.dumps({"ok": True, "panel": status.read()}, ensure_ascii=False)

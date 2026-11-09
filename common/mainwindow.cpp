@@ -828,18 +828,26 @@ void MainWindow::drawDmOverlay(Painter& p) {
   const float scale = Gothic::interfaceScale(this);
   auto&       fnt   = Resources::font(scale);
   const int   pad   = int(8.f*scale);
-  const int   width = int(220.f*scale);
   const int   barH  = int(6.f*scale);
   const int   textH = int(fnt.pixelSize());
-  const int   x     = w()-std::max(10,margins().right)-width;
+  const int   x     = std::max(10,margins().left);
   const int   y     = std::max(10,margins().top);
 
+  const auto  split = st.text.find('\n');
+  // Separate strings: the font's drawText reads to the terminating zero, whatever length it is given.
+  const auto  first = st.text.substr(0,split);
+  const auto  quest = split==std::string::npos ? std::string() : st.text.substr(split+1);
+  const int   lines = quest.empty() ? 1 : 2;
+  const int   width = std::max({int(220.f*scale), fnt.textSize(first).w+2*pad, fnt.textSize(quest).w+2*pad});
+
   p.setBrush(Brush(Color(0.f,0.f,0.f,0.55f),Painter::Alpha));
-  p.drawRect(x,y,width,textH+barH+3*pad);
+  p.drawRect(x,y,width,lines*textH+barH+3*pad);
 
-  fnt.drawText(p,x+pad,y+pad+textH,st.text);
+  fnt.drawText(p,x+pad,y+pad+textH,first);
+  if(!quest.empty())
+    fnt.drawText(p,x+pad,y+pad+2*textH,quest);
 
-  const int barX = x+pad, barY = y+2*pad+textH, barW = width-2*pad;
+  const int barX = x+pad, barY = y+2*pad+lines*textH, barW = width-2*pad;
   p.setBrush(Brush(Color(1.f,1.f,1.f,0.15f),Painter::Alpha));
   p.drawRect(barX,barY,barW,barH);
 

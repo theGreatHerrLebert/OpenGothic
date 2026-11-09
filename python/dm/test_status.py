@@ -15,6 +15,10 @@ with tempfile.TemporaryDirectory() as d:
     assert text == "DM: Stimmen 23/46" and progress == 0.5
     status.report("schreibt")
     assert status.read() == ("DM: schreibt...", -1.0)
+    status.report("Stimmen", 1, 2, "Der Bestienvogt")
+    assert status.read() == ("DM: Stimmen 1/2\nDer Bestienvogt", 0.5)
+    status.report("bereit", quest="Der Bestienvogt")
+    assert status.read()[0] == "DM: bereit\nDer Bestienvogt"
     at = status.time.time()
     assert status.read(at + status.STALE_SECONDS + 1) is None   # a dead tool does not stay on screen
     status.report("bereit")

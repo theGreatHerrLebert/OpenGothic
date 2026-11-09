@@ -149,7 +149,7 @@ Requirements:
 **Overlay.** A small corner panel with a toggle key, for example `DM · schreibt … → prüft 3/5 → Stimmen 23/41 →
 bereit`. It doubles as phase 6's spoiler-free health report.
 
-- It shows only the process: no titles, names or places, and not which check failed.
+- It shows the process and the quest's title, at the player's request: no names, places or plot, and not which check failed.
 - Voices and checks show real counts. Writing has no known length, so it gets a moving indicator, not a
   percentage.
 - A small Tempest widget, fed from Python over the existing bridge.

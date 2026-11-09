@@ -172,7 +172,7 @@ def spoken_lines(graph):
             yield voices.HERO_VOICE, choice["text"], None
 
 
-def bake(path):
+def bake(path, quest=None):
     with open(path, encoding="utf-8") as f:
         graphs = json.load(f)
     todo = sorted({line for g in graphs.values() for line in spoken_lines(g)
@@ -206,9 +206,9 @@ def bake(path):
             continue
         level_match(target, reference)
         print(f"{n}/{len(todo)} {voice} {text[:50]}", flush=True)
-        status.report("Stimmen", n, len(todo))
+        status.report("Stimmen", n, len(todo), quest)
     print(f"{len(todo) - len(failed)} generated, {len(failed)} failed", flush=True)
-    status.report("bereit")
+    status.report("bereit", quest=quest)
     if failed:
         sys.exit(1)
 
@@ -221,4 +221,4 @@ if __name__ == "__main__":
     elif sys.argv[1] == "named":
         named_refs(sys.argv[2], sys.argv[3], sys.argv[4:])
     else:
-        bake(sys.argv[2])
+        bake(sys.argv[2], sys.argv[3] if len(sys.argv) > 3 else None)
