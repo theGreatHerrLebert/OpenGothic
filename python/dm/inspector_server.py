@@ -184,6 +184,55 @@ def character_data():
     return {"characters": sheets, "facts": facts}
 
 
+EXPERIMENT = voices.RUNTIME_DIR / "experiment"
+EXPERIMENT_PAGE = ROOT / "inspector" / "experiment.html"
+SCORES = EXPERIMENT / "scores.json"
+def _blind_id(name):
+    return hashlib.sha256(("experiment-1:" + name).encode("utf-8")).hexdigest()[:10]
+
+
+def experiment_data():
+    """All stories in one fixed, shuffled order that hides which author wrote each."""
+    graphs = json.loads((EXPERIMENT / "graphs.json").read_text(encoding="utf-8"))
+    stories, total, ready = [], 0, 0
+
+    def url(voice, text, delivery=None):
+        nonlocal total, ready
+        total += 1
+        found = audio_url(voice, text, delivery)
+        ready += bool(found)
+        return found
+
+    for path in sorted((EXPERIMENT / "stories").glob("s*_*.json")):
+        if path.name.endswith((".first.json", ".final.json")):
+            continue
+        data = json.loads(path.read_text(encoding="utf-8"))
+        convs = []
+        for key in data["conversations"]:
+            graph = graphs[f"{path.stem}__{key}"]
+            nodes = []
+            for node_key, node in graph["nodes"].items():
+                choices = [{"text": c["text"], "audio": None if c["text"] == "Zurück." else url(voices.HERO_VOICE, c["text"]),
+                            "info": (("→ " + c["goto"]) if c.get("goto") else "Ende")
+                            + ((" · braucht " + " oder ".join(c["requires"])) if c.get("requires") else "")}
+                           for c in node["choices"]]
+                entry = {"key": node_key, "line": node["line"], "audio": url(graph["voice"], node["line"]),
+                         "returns": node.get("returns"), "choices": choices}
+                if node.get("again"):
+                    entry["again"] = node["again"]
+                    entry["audioAgain"] = url(graph["voice"], node["again"])
+                nodes.append(entry)
+            convs.append({"who": key, "when": "", "nodes": nodes})
+        stories.append({"id": _blind_id(path.stem), "title": data["title"], "premise": data.get("premise", ""),
+                        "hidden_truth": data["hidden_truth"], "convs": convs})
+    stories.sort(key=lambda s: s["id"])
+    return {"stories": stories, "total": total, "ready": ready}
+
+
+def load_scores():
+    return json.loads(SCORES.read_text(encoding="utf-8")) if SCORES.exists() else {}
+
+
 class Handler(http.server.BaseHTTPRequestHandler):
     def _send(self, body, kind="application/json", status=200):
         self.send_response(status)
@@ -204,6 +253,12 @@ class Handler(http.server.BaseHTTPRequestHandler):
             self._send(CHARACTERS_PAGE.read_bytes(), "text/html; charset=utf-8")
         elif self.path == "/characters.json":
             self._send(json.dumps(character_data(), ensure_ascii=False).encode("utf-8"))
+        elif self.path == "/experiment":
+            self._send(EXPERIMENT_PAGE.read_bytes(), "text/html; charset=utf-8")
+        elif self.path == "/experiment/data":
+            self._send(json.dumps(experiment_data(), ensure_ascii=False).encode("utf-8"))
+        elif self.path == "/experiment/scores":
+            self._send(json.dumps(load_scores(), ensure_ascii=False).encode("utf-8"))
         elif self.path == "/reviews":
             self._send(json.dumps(current_reviews(), ensure_ascii=False).encode("utf-8"))
         else:
@@ -215,9 +270,17 @@ class Handler(http.server.BaseHTTPRequestHandler):
                 self._send(b"{}", status=404)
 
     def do_POST(self):
-        if self.path != "/reviews":
+        if self.path not in ("/reviews", "/experiment/score"):
             return self._send(b"{}", status=404)
         request = json.loads(self.rfile.read(int(self.headers["Content-Length"])))
+        if self.path == "/experiment/score":
+            with REVIEW_LOCK:
+                scores = load_scores()
+                scores[request.pop("id")] = request
+                temporary = SCORES.with_suffix(".tmp")
+                temporary.write_text(json.dumps(scores, ensure_ascii=False, indent=1), encoding="utf-8")
+                temporary.replace(SCORES)
+            return self._send(b"{}")
         target = content_index(build()[0]).get(request["id"])
         with REVIEW_LOCK:
             reviews = load_reviews()
