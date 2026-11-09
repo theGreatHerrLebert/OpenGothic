@@ -4,7 +4,7 @@
   "voice": "03",
   "role": "Novize im Kloster, heimlich oft im Hafenviertel",
   "core": "Gutes Herz, will aber härter wirken, als er ist.",
-  "background": "Treibt sich im Hafenviertel herum, um dazuzugehören, und wurde dort beim Glücksspiel ausgenommen.",
+  "background": "Sein Vater hat ihn geprügelt, ihn ein Nichts genannt und ins Kloster gesteckt. Wenn er den Klosterwein in der Stadt verkauft, geht er in die Hafenkneipe und spielt den harten Kerl. Beim Würfeln wurde er betrogen und hat Schulden, die er nicht bezahlen kann.",
   "speech": "Spielt den abgebrühten Kerl, bis die Fassade bricht; dann unsicher, schnell, entschuldigend.",
   "attitudes": {
     "factions": {
@@ -14,7 +14,8 @@
     "people": {
       "Harek": "Angst und heimliche Bewunderung. Hat Schulden bei ihm.",
       "Parlan": "Fürchtet seine Strafe mehr als alles andere.",
-      "der Zeuge": "Ein Freund, den er in Gefahr gebracht hat."
+      "Vater": "Hass und die Hoffnung, ihm doch noch etwas zu beweisen.",
+      "Anselm": "Ein Freund, den er in Gefahr gebracht hat."
     },
     "politics": "Versteht nichts davon und redet trotzdem mit, um erwachsen zu klingen."
   },

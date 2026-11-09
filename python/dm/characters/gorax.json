@@ -1,0 +1,21 @@
+{
+  "npc": "KDF_508_GORAX",
+  "name": "Gorax",
+  "voice": "14",
+  "role": "Magier des Feuers, leitet Weinkeller und Vorräte des Klosters",
+  "core": "Sieht zuerst den Betrieb, dann die Menschen. Streng, aber nicht grausam.",
+  "speech": "Knapp, verärgert, praktisch. Spricht über Arbeit, nicht über Gefühle.",
+  "attitudes": {
+    "factions": {
+      "Novizen": "Arbeitskräfte, die man im Auge behalten muss."
+    },
+    "people": {
+      "Tilo": "Unzuverlässig, kommt aus der Stadt immer später zurück.",
+      "Parlan": "Respektiert ihn, verheimlicht ihm aber seinen besten Wein."
+    },
+    "politics": "Solange der Wein verkauft wird, ist alles in Ordnung."
+  },
+  "game_state": {
+    "Diebstahl": "Ärgert sich mehr über die stillstehende Presse als über das Silber."
+  }
+}

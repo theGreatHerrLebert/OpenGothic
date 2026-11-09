@@ -230,6 +230,26 @@ def _world_give(args):
     return None
 
 
+def _check_spawn(args, state):
+    _require(args, "instance", "waypoint")
+    _npc_instance(args["instance"])
+    if gothic.world.find_npc(args["instance"]) is not None:
+        raise PlanError(f"NPC already exists: {args['instance']}")
+    if not gothic.world.has_waypoint(args["waypoint"]):
+        raise PlanError(f"no such waypoint: {args['waypoint']}")
+    state.setdefault("returning", []).append(args["instance"].upper())
+
+
+def _world_spawn(args):
+    npc = gothic.world.spawn(args["instance"], args["waypoint"])
+    npc.stand_here()
+    if "armor" in args:
+        npc.wear(args["armor"])
+    if "display_name" in args:
+        npc.display_name = args["display_name"]
+    return lambda: gothic.world.remove_npc(npc)
+
+
 def _check_relocate(args, state):
     _require(args, "instance", "waypoint")
     name = _npc_instance(args["instance"])
@@ -281,6 +301,7 @@ OPS = {
     "finish_scene": (_check_finish_scene, _fold_finish_scene, None),
     "add_rule": (_check_rule, _fold_rule, None),
     "fire_rule": (_check_fire_rule, _fold_fire_rule, None),
+    "spawn_npc": (_check_spawn, _noop, _world_spawn),
     "give_item": (_check_give, _noop, _world_give),
     "relocate_npc": (_check_relocate, _noop, _world_relocate),
 }
@@ -400,7 +421,10 @@ class Story:
     def _conditions(self, entry):
         flags = self.state["flags"]
         required = entry.get("requires", entry.get("when", []))
-        return all(flags.get(f) for f in required) and not flags.get(entry.get("unless"))
+        blocked = entry.get("unless") or []
+        if isinstance(blocked, str):
+            blocked = [blocked]
+        return all(flags.get(f) for f in required) and not any(flags.get(f) for f in blocked)
 
     def _end_scene(self, finished):
         scene_id, npc = self.active_scene

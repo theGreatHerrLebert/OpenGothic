@@ -1,0 +1,26 @@
+{
+  "npc": "NOV_610_NOVIZE",
+  "name": "Anselm",
+  "voice": "13",
+  "role": "Novize im Kloster, Tilos einziger Freund",
+  "core": "Loyal und ängstlich; will das Richtige tun, ohne jemanden zu verraten.",
+  "speech": "Leise, stockend, sorgenvoll; sucht Verbündete.",
+  "attitudes": {
+    "factions": {
+      "Kloster": "Glaubt daran, fürchtet aber dessen Strafen."
+    },
+    "people": {
+      "Tilo": "Bester Freund. Kennt die Geschichte mit dessen Vater.",
+      "Parlan": "Hat Angst vor ihm.",
+      "Gorax": "Weiß von seinem versteckten Wein."
+    },
+    "politics": "Interessiert ihn nicht."
+  },
+  "game_state": {
+    "Diebstahl": "Ahnt, dass Tilo dahintersteckt, und will es nicht glauben."
+  },
+  "reacts_to": {
+    "tilo_helped": "Ewige Dankbarkeit; teilt sein Geheimnis.",
+    "tilo_turned_in": "Verbitterung; will nicht mehr mit dem Helden reden."
+  }
+}

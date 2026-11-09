@@ -1,0 +1,23 @@
+{
+  "npc": "KDF_504_PARLAN",
+  "name": "Parlan",
+  "voice": "05",
+  "role": "Magier des Feuers, Aufseher der Novizen",
+  "core": "Gerechtigkeit und Ordnung des Klosters stehen über dem Einzelnen.",
+  "speech": "Würdevoll, bestimmt, beruft sich auf Innos.",
+  "attitudes": {
+    "factions": {
+      "Kloster": "Sein Leben und seine Verantwortung."
+    },
+    "people": {
+      "Tilo": "Ein Novize unter seiner Obhut; umso schwerer wiegt der Verrat."
+    },
+    "politics": "Überlässt die Welt den Paladinen und das Kloster Innos."
+  },
+  "game_state": {
+    "Diebstahl": "Eine Schande für das Haus Innos', die Gerechtigkeit verlangt."
+  },
+  "reacts_to": {
+    "parlan_paid": "Betrachtet den Helden als Freund des Klosters."
+  }
+}

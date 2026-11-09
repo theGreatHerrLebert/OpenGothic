@@ -92,12 +92,15 @@ class Player:
             return
         self.path.append(key)
         self.stage = "say"
-        flag = self.node.get("sets")
-        already = flag is not None and self.get_flags().get(flag)
+        flags = self.node.get("sets") or []
+        if isinstance(flags, str):
+            flags = [flags]
+        already = bool(flags) and self.get_flags().get(flags[0])
         self.line = self.node["again"] if self.node.get("again") and already else self.node["line"]
-        if flag and flag not in self.flagged:
-            self.flagged.add(flag)
-            self.on_flag(flag)
+        for flag in flags:
+            if flag not in self.flagged:
+                self.flagged.add(flag)
+                self.on_flag(flag)
 
     def _visible_choices(self):
         flags = self.get_flags()
