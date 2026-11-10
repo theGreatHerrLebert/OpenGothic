@@ -46,6 +46,37 @@ with tempfile.TemporaryDirectory() as d:
     assert library.stage_of(sid, rev="lines-v1") == (library.ACCEPTED, False)
     assert library.stage_of(sid, rev="lines-v2") == (library.IN_PROGRESS, True)   # a re-recorded line reopens it
 
+    # editing text: kept apart from the story, used by everything that plays, and limited to spoken lines
+    library.EDITS = root / "edits.json"
+    graph = {"voice": "05", "start": "a", "nodes": {"a": {"line": "Alt.", "again": "Wieder.", "delivery": "drohend",
+                                                          "variants": [{"when": "x", "line": "Anders."}],
+                                                          "choices": [{"text": "Ja.", "ends": True}]}}}
+    story.write_text(json.dumps({"title": "Zweite", "plan": [{"op": "add_scene", "id": "s", "graph": graph}],
+                                 "conversations": {"VLK_1": graph}}), encoding="utf-8")
+    before = story.read_text(encoding="utf-8")
+    assert library.edit_line(sid, "VLK_1__a", "  Neu   gesagt. ") == ("05", "Alt.", "Neu gesagt.", "drohend")
+    assert library.edit_line(sid, "VLK_1__a__again", "Nochmal.")[2] == "Nochmal."
+    assert library.edit_line(sid, "VLK_1__a__v0", "Ganz anders.")[2] == "Ganz anders."
+    assert library.edit_line(sid, "VLK_1__a__c0", "Ja, gut.") == ("15", "Ja.", "Ja, gut.", None)  # the hero, no delivery
+    data, conversations = library.generated(sid)
+    node = conversations["VLK_1"]["nodes"]["a"]
+    assert (node["line"], node["again"], node["variants"][0]["line"], node["choices"][0]["text"]) == \
+        ("Neu gesagt.", "Nochmal.", "Ganz anders.", "Ja, gut.")
+    assert data["plan"][0]["graph"]["nodes"]["a"]["line"] == "Neu gesagt."   # what plays is what was edited
+    assert story.read_text(encoding="utf-8") == before                       # the story file is untouched
+    for bad in (("VLK_1__a", ""), ("VLK_1__a", "x" * 700), ("VLK_1__zz", "x"), ("VLK_9__a", "x"),
+                ("VLK_1__a__c9", "x"), ("VLK_1__a__goto", "x")):
+        try:
+            library.edit_line(sid, *bad)
+            raise AssertionError(f"accepted {bad}")
+        except ValueError:
+            pass
+    try:
+        library.edit_line(library.DEMO_ID, "a__b", "x")
+        raise AssertionError("edited the demo")
+    except ValueError:
+        pass
+
     library.STAGE_FILE.write_text("{half", encoding="utf-8")
     assert library.stage_of(sid) == (library.PROPOSED, False)              # a broken file never breaks the page
 

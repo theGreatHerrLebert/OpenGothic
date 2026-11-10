@@ -41,6 +41,8 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
 .takes{flex-basis:100%;display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:2px 0 0;padding:6px 8px;border-left:2px solid var(--ember);background:rgba(90,60,20,.08)}
 .takes::before{content:attr(data-label);font:400 14px var(--small);color:var(--soft);margin-right:2px}
 .take{display:inline-flex;gap:4px;align-items:center;padding:2px 6px 2px 2px;border:1px dashed var(--line);border-radius:2px}.take.on{border-style:solid;border-color:var(--ok);background:rgba(53,82,26,.08)}
+textarea.edit{font:inherit;width:100%;box-sizing:border-box;margin:4px 0;background:#f4ead2;color:var(--ink);border:1px solid var(--ember);border-radius:2px;padding:6px 8px}
+button.pen{font-size:15px;opacity:.55;margin-left:4px}button.pen:hover,button.pen:focus-visible{opacity:1}
 .take .meta{font-size:12px}.take.fresh{outline:2px solid var(--gold);outline-offset:1px}@media(prefers-reduced-motion:no-preference){.take.fresh{animation:arrive .5s ease-out}}@keyframes arrive{from{transform:scale(.9);opacity:.3}}.takes .linkbtn{margin-left:auto}
 button.v.busy::before{content:"";display:inline-block;width:.8em;height:.8em;margin-right:6px;vertical-align:-1px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}@media(prefers-reduced-motion:reduce){button.v.busy::before{animation:none;border-right-color:currentColor;opacity:.6}}
@@ -88,11 +90,11 @@ textarea{width:100%;box-sizing:border-box;margin-top:8px;font:14px/1.4 var(--bod
 if(!window.mermaid)document.write('<script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"><\/script>');
 if(!window.svgPanZoom)document.write('<script src="https://cdn.jsdelivr.net/npm/svg-pan-zoom@3.6.1/dist/svg-pan-zoom.min.js"><\/script>');</script>
 <script>
-const DATA=/*DATA*/null;
+let DATA=/*DATA*/null;
 const $=(s,e=document)=>e.querySelector(s), el=(t,c,x)=>{const n=document.createElement(t);if(c)n.className=c;if(x!=null)n.textContent=x;return n};
 const known=new Set(); let reviews={}, db=null, col=null;
 /* voice state, declared before the first render uses it */
-const busy=new Set(),takesOpen=new Map(),fresh=new Map();DATA.takes=DATA.takes||{};let refJob=null,refAsk=null,takePlayer=null;
+const busy=new Set(),takesOpen=new Map(),fresh=new Map(),editing=new Set(),drafts=new Map(),carets=new Map();DATA.takes=DATA.takes||{};let refJob=null,refAsk=null,takePlayer=null;
 function visible(c){const r=c.requires;if(r&&r.length&&!r.some(f=>known.has(f)))return false;return !(c.unless&&known.has(c.unless))}
 function stats(){const v=Object.values(reviews);return{a:v.filter(r=>r.verdict==="approve").length,r:v.filter(r=>r.verdict==="reject").length}}
 function renderStatus(){const s=$("#status");s.textContent="";const add=(c,t)=>s.append(el("span","st "+c,t));
@@ -107,7 +109,7 @@ async function approveBoth(ids){const clear=ids.every(i=>reviews[i]&&reviews[i].
 function bothButton(id,hasAudio){const ids=hasAudio?[id,id+"__voice"]:[id];const on=ids.every(i=>reviews[i]&&reviews[i].verdict==="approve");const b=el("button","v a"+(on?" on":""),hasAudio?"Beides annehmen":"Annehmen");b.type="button";b.dataset.f=id+":both";b.setAttribute("aria-pressed",on);b.onclick=()=>approveBoth(ids);return b}
 let player=null;function play(url,b){if(player)player.pause();player=new Audio(url);b.textContent="Läuft";player.onended=player.onpause=()=>{b.textContent="Abspielen"};player.play().catch(()=>{b.textContent="Abspielen"})}
 function playButton(url){if(!url)return el("span","meta noaudio","keine Aufnahme");const p=el("button","v play","Abspielen");p.type="button";p.onclick=()=>play(url,p);return p}
-function voiceRow(url,id){const w=el("div","voice");if(!url)return w;w.append(el("span","label","Stimme"),reviewControls(id));
+function voiceRow(url,id){const w=el("div","voice");if(!url){if(busy.has(id)){const b=el("button","v busy","Spricht …");b.type="button";b.disabled=true;w.append(el("span","label","Stimme"),b)}return w}w.append(el("span","label","Stimme"),reviewControls(id));
  const busyNow=busy.has(id),again=el("button","v"+(busyNow?" busy":""),busyNow?"Spricht …":"Neu sprechen");again.type="button";again.disabled=busyNow;again.title="Eine neue Aufnahme neben der jetzigen. Ersetzt wird erst mit „Diese nehmen“.";again.onclick=()=>resample(id);w.append(again);
  if(DATA.takes[id]&&!takesOpen.has(id)){const t=el("button","v",DATA.takes[id]+" Takes");t.type="button";t.onclick=()=>loadTakes(id,false);w.append(t)}
  const strip=takesStrip(id);if(strip)w.append(strip);return w}
@@ -120,12 +122,12 @@ function renderConvs(){seenLines=new Map();const host=$("#convs");host.textConte
  const cond=[];if(c.scene)cond.push("spricht an ab "+(c.within||450)+" Einheiten");if(c.requires.length)cond.push("braucht: "+c.requires.join(", "));const u=Array.isArray(c.unless)?c.unless:[c.unless].filter(Boolean);if(u.length)cond.push("nicht nach: "+u.join(", "));if(cond.length)s.append(el("p","cond",cond.join(" · ")));
  Object.entries(c.nodes).forEach(([key,n])=>{const id=c.id+"__"+key;const r=reviews[id];const box=el("article","node"+(r?(r.verdict==="approve"?" approved":" rejected"):""));
   const top=el("div","");top.style.cssText="display:flex;gap:8px;align-items:baseline;flex-wrap:wrap";top.append(el("span","nid",key===c.start?key+" · Anfang":key));if(n.delivery)top.append(el("span","meta","Vortrag: "+n.delivery));box.append(top);
-  box.append(el("p","line","„"+n.line+"“"));if(n.again)box.append(el("p","again","Spätere Treffen: „"+n.again+"“"));
+  box.append(textLine("p","line","",n.line,id));if(n.again)box.append(textLine("p","again","Spätere Treffen: ",n.again,id+"__again"));
   if((n.teaches||[]).length||(n.uses||[]).length){const tg=el("div","tags");(n.uses||[]).forEach(f=>tg.append(el("span","tag u","nutzt "+f)));(n.teaches||[]).forEach(f=>tg.append(el("span","tag t","lehrt "+f)));box.append(tg)}
   const rev=el("div","review");const dupN=firstSeen(n.audio||n.line,c.speaker+" · "+key);if(dupN)rev.append(playButton(n.audio),el("span","meta","gleiche Zeile wie "+dupN+", dort bewertet"));else rev.append(playButton(n.audio),bothButton(id,!!n.audio),el("span","label","Text"),reviewControls(id),voiceRow(n.audio,id+"__voice"));box.append(rev);const rb=reasonBox(id);if(rb)box.append(rb);const rv=reasonBox(id+"__voice");if(rv)box.append(rv);if(n.again){const ag=el("div","review");ag.append(playButton(n.audioAgain),bothButton(id+"__again",!!n.audioAgain),el("span","label","Spätere Zeile"),reviewControls(id+"__again"),voiceRow(n.audioAgain,id+"__again__voice"));box.append(ag);[id+"__again",id+"__again__voice"].forEach(x=>{const r=reasonBox(x);if(r)box.append(r)})}
-  (n.variants||[]).forEach((v,i)=>{const vid=id+"__v"+i,when=Array.isArray(v.when)?v.when.join(" + "):v.when;box.append(el("p","again","Wenn "+when+": „"+v.line+"“"));
+  (n.variants||[]).forEach((v,i)=>{const vid=id+"__v"+i,when=Array.isArray(v.when)?v.when.join(" + "):v.when;box.append(textLine("p","again","Wenn "+when+": ",v.line,vid));
    const vr=el("div","review");vr.append(playButton(v.audio),bothButton(vid,!!v.audio),el("span","label","Variante"),reviewControls(vid),voiceRow(v.audio,vid+"__voice"));box.append(vr);[vid,vid+"__voice"].forEach(x=>{const r=reasonBox(x);if(r)box.append(r)})});
-  const ul=el("ul","ch");n.choices.forEach((ch,i)=>{const cid=id+"__c"+i;const li=el("li","c"+(visible(ch)?"":" hidden"));const left=el("div");left.style.minWidth="0";left.append(el("div","ct","Held: „"+ch.text+"“"));
+  const ul=el("ul","ch");n.choices.forEach((ch,i)=>{const cid=id+"__c"+i;const li=el("li","c"+(visible(ch)?"":" hidden"));const left=el("div");left.style.minWidth="0";left.append(textLine("div","ct","Held: ",ch.text,cid));
    const m=[];m.push(ch.ends?"endet":"→ "+ch.goto);if(ch.requires)m.push("braucht "+ch.requires.join(" oder "));if(ch.unless)m.push("außer "+ch.unless);if(!visible(ch))m.push("gerade verborgen");left.append(el("div","meta",m.join(" · ")));const ctl=el("div","review");ctl.style.marginTop="0";const silent=ch.text==="Zurück.";const dupC=silent?null:firstSeen(ch.audio||ch.text,c.speaker+" · "+key);if(dupC)ctl.append(playButton(ch.audio),el("span","meta","gleiche Zeile wie "+dupC+", dort bewertet"));else if(silent)ctl.append(el("span","meta","stumm, geht zurück"));else ctl.append(playButton(ch.audio),bothButton(cid,!!ch.audio),el("span","label","Text"),reviewControls(cid),voiceRow(ch.audio,cid+"__voice"));li.append(left,ctl);[cid,cid+"__voice"].forEach(x=>{const rc=reasonBox(x,"reason");if(rc)li.append(rc)});ul.append(li)});box.append(ul);if(n.returns)box.append(el("p","meta","Dann zurück zu den Fragen in "+n.returns));s.append(box)});grp.d.append(s)});
  Object.entries(groups).forEach(([sp,g])=>{const ids=DATA.convs.filter(c=>c.speaker===sp).map(c=>c.id+"__");const vs=Object.entries(reviews).filter(([k])=>ids.some(p=>k.startsWith(p))).map(([,v])=>v);const rej=vs.filter(v=>v.verdict==="reject").length;g.prog.textContent=vs.length+" bewertet"+(rej?" · "+rej+" abgelehnt":"")});applyFilters()}
 function filters(){return{q:$("#find").value.trim().toLowerCase(),show:$("#show").value,who:$("#who").value}}
@@ -210,6 +212,31 @@ function renderVoices(){const host=$("#voicepanel");host.textContent="";(DATA.vo
   else[1,2,3,4].forEach(k=>{const b=el("button","v"+(v.count===k?" on a":""),String(k));b.type="button";b.disabled=!!refJob||!v.lines;b.setAttribute("aria-pressed",String(v.count===k));b.onclick=()=>{refAsk={voice:v.voice,count:k};renderVoices()};acts.append(b)});
   row.append(acts);host.append(row)});
  if(!(DATA.voices||[]).length)host.append(el("p","meta","Diese Geschichte spricht nicht."))}
+/* Editing a line's text, for generated stories. The voice follows the new text; both reviews start over. */
+function textLine(tag,cls,prefix,text,editId){const p=el(tag,cls);
+ if(editing.has(editId)){const t=el("textarea","edit");t.value=drafts.has(editId)?drafts.get(editId):text;t.dataset.f="edit:"+editId;t.oninput=()=>drafts.set(editId,t.value);
+  const keep=()=>carets.set(editId,t.selectionStart);t.addEventListener("keyup",keep);t.addEventListener("click",keep);t.addEventListener("input",keep);t.rows=Math.max(2,Math.ceil(text.length/70));t.setAttribute("aria-label","Text bearbeiten");
+  const save=el("button","v a","Speichern"),cancel=el("button","v","Abbrechen");save.type=cancel.type="button";
+  const stop=()=>{editing.delete(editId);drafts.delete(editId);carets.delete(editId);renderAll()};save.onclick=()=>saveLine(editId,t.value);cancel.onclick=stop;
+  t.onkeydown=e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();saveLine(editId,t.value)}else if(e.key==="Escape"){e.preventDefault();stop()}};
+  const row=el("div","acts");row.append(save,cancel,el("span","meta","Enter speichert, Esc bricht ab"));if(prefix)p.append(el("span","",prefix));p.append(t,row);
+  /* a newly opened editor takes focus with the cursor at the end; a re-rendered one keeps the cursor where it was */
+  setTimeout(()=>{const at=carets.has(editId)?carets.get(editId):t.value.length;if(!carets.has(editId)||document.activeElement===t){t.focus({preventScroll:true});t.setSelectionRange(at,at);carets.set(editId,at)}});return p}
+ p.textContent=prefix+"„"+text+"“";
+ if(DATA.id!=="tilo"){const b=el("button","linkbtn pen","✎");b.type="button";b.title="Text bearbeiten";b.setAttribute("aria-label","Text bearbeiten");b.onclick=()=>{editing.add(editId);renderAll()};p.append(" ",b)}
+ return p}
+function audioOf(id){const parts=id.split("__"),c=DATA.convs.find(x=>x.id===parts[0]),n=c&&c.nodes[parts[1]],w=parts[2]||"";if(!n)return null;
+ if(!w)return n.audio;if(w==="again")return n.audioAgain;if(w[0]==="v")return (n.variants[+w.slice(1)]||{}).audio;if(w[0]==="c")return (n.choices[+w.slice(1)]||{}).audio;return null}
+async function refreshData(){DATA=await (await fetch("/story/data?id="+encodeURIComponent(DATA.id))).json();DATA.takes=DATA.takes||{};
+ reviews=await (await fetch("/reviews?story="+encodeURIComponent(DATA.id))).json();renderAll();renderVoices();loadStage()}
+async function saveLine(id,text){const voice=id+"__voice";
+ try{const j=await post("/line/edit",{story:DATA.id,id,text});editing.delete(id);drafts.delete(id);carets.delete(id);
+  takesOpen.delete(voice);fresh.delete(voice);   /* the takes shown belonged to the old text */
+  if(j.job)busy.add(voice);await refreshData();
+  if(!j.job){$("#save").textContent="Gespeichert.";return}
+  $("#save").textContent="Gespeichert. Die neue Zeile wird gesprochen …";const s=await waitFor(j.job);busy.delete(voice);await refreshData();
+  if(s.state==="failed")$("#save").textContent="Text gespeichert, Sprechen fehlgeschlagen: "+s.error;else{$("#save").textContent="Gespeichert und neu gesprochen.";const url=audioOf(id);if(url)playTake(url,null)}}
+ catch(e){busy.delete(voice);renderAll();$("#save").textContent="Nicht gespeichert: "+(e.message||e)}}
 renderVoices();
 drawGraph().catch(e=>{$("#save").textContent="Graph-Fehler: "+(e.message||e)});
 </script>

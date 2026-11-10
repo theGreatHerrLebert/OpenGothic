@@ -559,13 +559,12 @@ def speak_all(lines, quest=None, model=None):
         target = voices.audio_path(voice, text, delivery)
         reference = voices.reference_name(voice, delivery)
         target.parent.mkdir(parents=True, exist_ok=True)
-        # generation is sampled, so a line that yields nothing can work on a retry
-        made = any(model.speak(text, reference, target) for _attempt in range(2))
+        # written privately and moved into place when complete, so nobody plays a half-written line
+        made = _publish(model.speak, text, reference, target)
         if not made:  # one bad line must not cost the rest of the story
             failed.append((voice, text))
             print(f"{n}/{len(lines)} FAILED {voice} {text[:50]}", flush=True)
             continue
-        level_match(target, reference)
         print(f"{n}/{len(lines)} {voice} {text[:50]}", flush=True)
         status.report("Stimmen", n, len(lines), quest)
         _report("running", n, len(lines), text)
@@ -667,6 +666,8 @@ def run_job(job, model):
         return _new_takes(lines, model)
     if job["kind"] == "spare":
         return _spares(lines, model)
+    if job["kind"] == "speak":   # a line whose text was just edited
+        return speak_all([line for line in lines if not voices.audio_path(*line).exists()], model=model)
     if job["kind"] == "reference":
         game = known_game()
         if not game:

@@ -206,7 +206,8 @@ def story_view(story_id):
         return None, None
     # everything the view reads: the story, its voiced dialogue and the names the checker validates against
     stamp = (library.revision(story_id),
-             *(f.stat().st_mtime_ns if f.exists() else 0 for f in (EXPERIMENT / "graphs.json", EXPERIMENT / "world_names.json")))
+             *(f.stat().st_mtime_ns if f.exists() else 0
+               for f in (EXPERIMENT / "graphs.json", EXPERIMENT / "world_names.json", library.EDITS)))
     if _views.get(story_id, (None,))[0] != stamp:
         _views[story_id] = (stamp, generated_view(story_id))
     page, graph = _views[story_id][1]
@@ -732,6 +733,13 @@ class Handler(http.server.BaseHTTPRequestHandler):
             self._send(json.dumps(state, ensure_ascii=False).encode("utf-8"))
         elif self.path == "/library/data":
             self._send(json.dumps(library_data(), ensure_ascii=False).encode("utf-8"))
+        elif self.path == "/story/data":   # the page's data again, after a line was edited
+            story_id = dict(urllib.parse.parse_qsl(query)).get("id", "")
+            data = story_view(story_id)[0]
+            if data is None:
+                return self._send(b"{}", status=404)
+            data = {**data, "id": story_id, "voices": voice_panel(story_id, data), "takes": takes_index(data)}
+            self._send(json.dumps(data, ensure_ascii=False).encode("utf-8"))
         elif self.path.startswith("/story/"):
             story_id = self.path[len("/story/"):]
             data, graph = story_view(story_id)
@@ -800,7 +808,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
 
     def do_POST(self):
         if self.path not in ("/reviews", "/experiment/score", "/library/stage", "/library/play", "/voice/resample",
-                             "/voice/reference", "/voice/choose", "/voice/discard"):
+                             "/voice/reference", "/voice/choose", "/voice/discard", "/line/edit"):
             return self._send(b"{}", status=404)
         problem, request = self._read_json()
         if problem:
@@ -826,6 +834,8 @@ class Handler(http.server.BaseHTTPRequestHandler):
             return self._reference(request)
         if self.path in ("/voice/choose", "/voice/discard"):
             return self._take(request, self.path.endswith("choose"))
+        if self.path == "/line/edit":
+            return self._edit(request)
         story_id = request.get("story", library.DEMO_ID)
         data = story_view(story_id)[0] if isinstance(story_id, str) else None
         target = content_index(data).get(request.get("id")) if data else None
@@ -874,6 +884,20 @@ class Handler(http.server.BaseHTTPRequestHandler):
         ready = bake_voices.spare_path(*line).exists()
         job = bake_voices.queue({"kind": "resample", "lines": [list(line)]})
         self._send(json.dumps({"job": job, "ready": ready}).encode("utf-8"))
+
+    def _edit(self, request):
+        story_id, review_id, text = request.get("story"), request.get("id"), request.get("text")
+        if not all(isinstance(x, str) for x in (story_id, review_id, text)):
+            return self._error("bad request")
+        try:
+            voice, old, new, delivery = library.edit_line(story_id, review_id, text)
+        except ValueError as problem:
+            return self._error(str(problem), status=409)
+        job = None
+        if new != old and voice and (voices.REF_DIR / f"{voices.reference_name(voice, delivery)}.wav").exists() \
+                and not voices.audio_path(voice, new, delivery).exists() and not ensure_worker():
+            job = bake_voices.queue({"kind": "speak", "lines": [[voice, new, delivery]]})  # the new text, voiced now
+        self._send(json.dumps({"job": job, "text": new}, ensure_ascii=False).encode("utf-8"))
 
     def _take(self, request, choose):
         story_id = request.get("story")

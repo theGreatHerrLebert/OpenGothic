@@ -52,6 +52,13 @@ ENGLISH = [
     ('"Ende"', '"End"'), ('" · braucht "', '" · needs "'), ('aria-label="Seiten"', 'aria-label="Pages"'),
     ('>Geschichtenprobe<', '>Story trial<'), ('<a href="/">Geschichten</a>', '<a href="/">Stories</a>'), ('<a href="/characters">Figuren</a>', '<a href="/characters">Characters</a>'),
     ('<html lang="de">', '<html lang="en">'),
+    # editing a line's text
+    ('textLine("p","again","Spätere Treffen: "', 'textLine("p","again","Later meetings: "'), ('textLine("p","again","Wenn "+when+": "', 'textLine("p","again","If "+when+": "'),
+    ('textLine("div","ct","Held: "', 'textLine("div","ct","Hero: "'),
+    ('t.setAttribute("aria-label","Text bearbeiten")', 't.setAttribute("aria-label","Edit text")'), ('el("button","v a","Speichern")', 'el("button","v a","Save")'),
+    ('"Enter speichert, Esc bricht ab"', '"Enter saves, Esc cancels"'), ('b.title="Text bearbeiten";b.setAttribute("aria-label","Text bearbeiten")', 'b.title="Edit text";b.setAttribute("aria-label","Edit text")'),
+    ('"Gespeichert. Die neue Zeile wird gesprochen …"', '"Saved. The new line is being spoken…"'), ('"Text gespeichert, Sprechen fehlgeschlagen: "', '"Text saved, speaking failed: "'),
+    ('"Gespeichert und neu gesprochen."', '"Saved and spoken again."'), ('"Nicht gespeichert: "', '"Not saved: "'), ('el("button","v busy","Spricht …")', 'el("button","v busy","Speaking…")'),
     # takes and voices on the story page
     ('busyNow?"Spricht …":"Neu sprechen"', 'busyNow?"Speaking…":"Re-sample"'), ('again.title="Eine neue Aufnahme neben der jetzigen. Ersetzt wird erst mit „Diese nehmen“."', 'again.title="A new take next to the current one. Nothing is replaced until you pick “Use this”."'),
     ('DATA.takes[id]+" Takes"', 'DATA.takes[id]+" takes"'), ('"Der Stimmen-Prozess läuft nicht."', '"The voice process is not running."'), ('"Neu sprechen fehlgeschlagen: "', '"Re-sampling failed: "'),

@@ -7,10 +7,13 @@ Generated stories are named by their blind id only. Their file name says which s
 wrote them, and the scoring page must stay blind, so the stem never leaves this module.
 """
 
+import copy
 import hashlib
 import json
 import pathlib
+import re
 import sys
+import threading
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 from dm import check_story  # noqa: E402  (installs the offline gothic module before dm.story is imported)
@@ -23,6 +26,11 @@ MOVES = {PROPOSED: {IN_PROGRESS}, IN_PROGRESS: {PROPOSED, ACCEPTED}, ACCEPTED: {
 
 EXPERIMENT = voices.RUNTIME_DIR / "experiment"
 STAGE_FILE = voices.RUNTIME_DIR / "story_stages.json"
+# Text fixed by hand in the inspector, kept apart from the stories and graphs.json, so the blind story trial still
+# shows what was generated. Keyed like graphs.json: "<story file stem>__<conversation>".
+EDITS = EXPERIMENT / "edits.json"
+EDIT_LOCK = threading.Lock()
+MAX_LINE = 600
 DEMO_ID = "tilo"
 DEMO_SOURCE = pathlib.Path(__file__).resolve().parent / "stories" / "tilo.py"
 
@@ -125,10 +133,59 @@ def generated(story_id):
     data = json.loads(path.read_text(encoding="utf-8"))
     graphs_file = EXPERIMENT / "graphs.json"
     baked = json.loads(graphs_file.read_text(encoding="utf-8")) if graphs_file.exists() else {}
-    conversations = {key: baked.get(f"{path.stem}__{key}", graph) for key, graph in data["conversations"].items()}
+    edits = load_edits()
+    conversations = {key: edits.get(f"{path.stem}__{key}") or baked.get(f"{path.stem}__{key}", graph)
+                     for key, graph in data["conversations"].items()}
     data["plan"] = _with_graphs(data["plan"], data["conversations"], conversations)
     data["conversations"] = conversations
     return data, conversations
+
+
+def load_edits():
+    try:
+        return json.loads(EDITS.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
+
+
+def edit_line(story_id, review_id, text):
+    """Replaces one spoken text of a generated story: CONV__node, CONV__node__again, CONV__node__v0 or CONV__node__c0.
+    Returns (voice, old text, new text, delivery). Raises ValueError for anything that is not a plain line."""
+    text = " ".join(str(text).split())
+    if not text or len(text) > MAX_LINE:
+        raise ValueError(f"a line has 1 to {MAX_LINE} characters")
+    if story_id == DEMO_ID:
+        raise ValueError("the demo story is written in Python and is edited there")
+    path = path_of(story_id)
+    parts = review_id.split("__")
+    if path is None or len(parts) not in (2, 3):
+        raise ValueError("unknown line")
+    with EDIT_LOCK:
+        _, conversations = generated(story_id)
+        graph = copy.deepcopy(conversations.get(parts[0]) or {})
+        node = graph.get("nodes", {}).get(parts[1])
+        if node is None:
+            raise ValueError("unknown line")
+        what = parts[2] if len(parts) == 3 else ""
+        if what == "":
+            holder, field, voice = node, "line", graph.get("voice")
+        elif what == "again" and node.get("again"):
+            holder, field, voice = node, "again", graph.get("voice")
+        elif re.fullmatch(r"v\d+", what) and int(what[1:]) < len(node.get("variants", [])):
+            holder, field, voice = node["variants"][int(what[1:])], "line", graph.get("voice")
+        elif re.fullmatch(r"c\d+", what) and int(what[1:]) < len(node["choices"]):
+            holder, field, voice = node["choices"][int(what[1:])], "text", voices.HERO_VOICE
+        else:
+            raise ValueError("unknown line")
+        old = holder[field]
+        holder[field] = text
+        edits = load_edits()
+        edits[f"{path.stem}__{parts[0]}"] = graph
+        temporary = EDITS.with_suffix(".tmp")
+        temporary.write_text(json.dumps(edits, ensure_ascii=False, indent=1), encoding="utf-8")
+        temporary.replace(EDITS)
+    delivery = None if field == "text" else node.get("delivery")
+    return voice, old, text, delivery
 
 
 def _with_graphs(ops, written, voiced):
