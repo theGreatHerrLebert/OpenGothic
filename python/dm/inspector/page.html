@@ -185,7 +185,7 @@ const post=(url,body)=>fetch(url,{method:"POST",headers:{"Content-Type":"applica
 function setAudio(id,url){const parts=id.slice(0,-"__voice".length).split("__"),c=DATA.convs.find(x=>x.id===parts[0]),n=c&&c.nodes[parts[1]],w=parts[2]||"";if(!n)return;
  if(!w)n.audio=url;else if(w==="again")n.audioAgain=url;else if(w[0]==="v")n.variants[+w.slice(1)].audio=url;else if(w[0]==="c")n.choices[+w.slice(1)].audio=url}
 async function waitFor(job,progress){for(;;){await new Promise(r=>setTimeout(r,300));const s=await (await fetch("/voice/status?job="+encodeURIComponent(job))).json();
- if(s.finished===true)return s;if(progress&&s.job===job&&s.total)progress(s);if(!s.worker&&s.state!=="loading")throw new Error(s.error||"Der Stimmen-Prozess läuft nicht.")}}
+ if(s.finished===true)return s;if(progress&&s.job===job&&s.total)progress(s);if(!s.worker)throw new Error(s.error||"Der Stimmen-Prozess läuft nicht.")}}
 async function resample(id){busy.add(id);renderAll();$("#save").textContent="";
  try{const j=await post("/voice/resample",{story:DATA.id,id});const s=await waitFor(j.job);if(s.state==="failed")throw new Error(s.error);await loadTakes(id,true)}
  catch(e){$("#save").textContent="Neu sprechen fehlgeschlagen: "+(e.message||e)}finally{busy.delete(id);renderAll()}}

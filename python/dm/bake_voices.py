@@ -418,6 +418,7 @@ def needed_voices(graphs):
 
 
 def remember_game(game):
+    SETTINGS.parent.mkdir(parents=True, exist_ok=True)  # a fresh checkout has no runtime folder yet
     SETTINGS.write_text(json.dumps({"game": str(pathlib.Path(game).resolve())}), encoding="utf-8")
 
 
@@ -711,8 +712,8 @@ def worker():
         try:
             failed = run_job(job, model)
             error = f"{len(failed)} lines failed" if failed else None
-        except Exception as problem:  # the inspector shows why; the worker keeps going
-            error = str(problem)
+        except (Exception, SystemExit) as problem:  # the inspector shows why; the worker keeps going
+            error = str(problem) or type(problem).__name__
         _finish(job.get("id"), error, _job["result"])
         if not quiet or error:
             _job["finished"] = job.get("id")

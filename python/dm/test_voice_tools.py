@@ -96,6 +96,14 @@ with tempfile.TemporaryDirectory() as d:
     b.voices.VOICE_DIR, b.voices.REF_DIR, b.JOBS = saved
     b.JOBS_DONE = b.JOBS / "done"
 
+# remembering the install works on a fresh checkout, before any runtime folder exists
+with tempfile.TemporaryDirectory() as d:
+    saved_settings = b.SETTINGS
+    b.SETTINGS = pathlib.Path(d) / "fresh" / "dm_runtime" / "settings.json"
+    b.remember_game(d)
+    assert b.known_game() == str(pathlib.Path(d).resolve())
+    b.SETTINGS = saved_settings
+
 assert make_pack.slug("Der heilige Hering") == "der-heilige-hering" and make_pack.slug("Über Öl!") == "ueber-oel"
 
 with tempfile.TemporaryDirectory() as d:
