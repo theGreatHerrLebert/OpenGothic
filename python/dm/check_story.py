@@ -30,6 +30,33 @@ def _spawned(ops):
     return found
 
 
+DEED_CHECKS = {"npc_state", "npc_dead", "hour", "has_item", "wears", "obsessed"}
+
+
+def deeds(data):
+    """What in a story the player does with their hands rather than their mouth: rules that react to an action
+    (`on`), and conditions on the state of the world. Guild and conversation flags do not count."""
+    found = []
+
+    def walk(o, where):
+        if isinstance(o, dict):
+            where = o.get("id", where)
+            if isinstance(o.get("on"), dict):
+                found.append(f"{where}: {o['on'].get('event')}")
+            for check in o.get("checks") or []:
+                if isinstance(check, dict) and check.get("type") in DEED_CHECKS:
+                    found.append(f"{where}: {check['type']}")
+            for value in o.values():
+                walk(value, where)
+        elif isinstance(o, list):
+            for value in o:
+                walk(value, where)
+
+    walk(data.get("plan", []), "plan")
+    walk(data.get("conversations", {}), "conversations")
+    return found
+
+
 def lint(data):
     """Defects no conversation-level check sees: story logic that can never happen, and text that cannot be spoken."""
     errors, warnings = [], []
@@ -77,6 +104,9 @@ def lint(data):
             for text in texts:
                 if STAGE_DIRECTION.search(text):
                     errors.append(f"{name}.{key}: stage direction would be read aloud: {text[:50]}")
+    if not deeds(data):
+        warnings.append("no deed: every way through this story is talking; see 'Deeds, not only words' in "
+                        "docs/director-brief.md")
     return errors, warnings
 
 

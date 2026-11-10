@@ -21,6 +21,8 @@ visibly hurt the story. The Director follows these along with `director-brief.md
 - The player needs to learn that something happened, what it was, and why.
 - Reach important facts through different approaches: asking someone who knows, tricking
   someone who would not tell, confronting the culprit, or finding evidence.
+- At least one approach is a deed: taking, reading, sneaking, striking, casting, or being in the right place at the
+  right hour. A story that can only be talked through wastes the game it is in.
 - An approach can close another. Revealing your interest burns the later deception.
 - Everything must work out of order, including arriving knowing nothing. Cold visits offer
   hooks, not answers. Learning things in reverse needs its own lines.
@@ -67,7 +69,7 @@ A line that could belong to anyone is filler.
 
 **Voice**
 - Rough, colloquial German in the style of the original game. Keep attitude in every line.
-- Generate from a long reference of several ordinary lines; use real lines matching a delivery
-  for emotion, such as threats for "drohend". Reference lines for one person should come from
+- Generate from a reference of two ordinary lines, about 10 to 15 seconds: four sounded no better in a blind test and
+  took longer. Use real lines matching a delivery for emotion, such as threats for "drohend". Reference lines for one person should come from
   one sound, or the depth shifts between lines.
 - Cloned voices stay private on this machine and never ship.

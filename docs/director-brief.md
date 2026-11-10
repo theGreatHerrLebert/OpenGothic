@@ -30,9 +30,46 @@ Read `docs/quest-design.md` first. It holds the rules for quests and characters.
 - A clue must never get the player in trouble for finding it.
 - A character's physical state must match the committed truth, including what they
   wear. Someone who left his robe behind does not still wear one.
+- At least one moment is resolved by a deed, not a conversation. See below.
 - Only NPCs in the safe list returned by `get_story_state` may be removed. Attaching a
   dialogue replaces all of that NPC's other conversations, so use only safe NPCs or
   NPCs with no scripted role.
+
+## Deeds, not only words
+
+A story the player can only talk through is a radio play. Gothic is played with the hands: taking, sneaking, hitting,
+casting, reading, being somewhere at the right hour. Every story needs at least one moment the player resolves by
+doing something in the world, and the best let a deed replace a conversation: the guard who will not talk can also be
+put to sleep, the letter nobody mentions can also be found. `check_story.py` warns about a story without one.
+
+What a story can notice and test today:
+
+- **What the player does.** A rule with `on` fires when the game sees it happen: `took_item`, `hit`, `knocked_down`,
+  `killed`, `cast_spell`, `entered_room`, `read_item`, `drew_weapon`. Narrow it with `target`, `item`, `spell`, and with
+  `seen_by` (that person saw it) or `unseen` (nobody did).
+  `{"op": "add_rule", "id": "found_letter", "when": [], "on": {"event": "read_item", "item": "ITWR_..."},
+  "ops": [{"op": "set_flag", "name": "letter_read", "value": true}]}`
+- **How the world stands.** `checks` on a scene, rule or choice: `npc_state` (asleep, burning, frozen, fleeing,
+  unconscious and others), `npc_dead`, `hour`, `has_item`, `wears`, `obsessed`.
+- **Things and people in places.** `place_item` puts an item on a waypoint, with a quest description; a letter is an
+  `ITWR_` item that opens on use and raises `read_item`. `send_npc` and `relocate_npc` move someone, `spawn_npc` brings
+  an existing character into the world. The inspector's map shows who stands where at each hour of each chapter and
+  copies the nearest waypoint, so a scene can happen where people really are.
+
+Patterns that work with that:
+
+- **Evidence lies somewhere.** Place it on a waypoint; a rule on `took_item` teaches the fact. Taken in front of its
+  owner (`seen_by`) is a different branch from taken `unseen`.
+- **A letter says what nobody will.** It is one of the two sources an essential fact needs.
+- **Only at night.** A scene with an `hour` check, or someone relocated after dark: the player has to come back.
+- **The direct way.** Knocking the culprit down (`knocked_down`) makes him talk in a scene that requires that flag;
+  a sleeping guard (`npc_state`) lets the player past without the bribe.
+- **Deeds are seen.** A theft, a blow or a spell that someone witnesses changes how that person and those who hear of it
+  treat the hero.
+
+A deed must be findable. One line or one object points at it, as Lares mentions the sleep spell once; never make the
+player guess. A deed and a conversation reaching the same fact are two different approaches, which is what the
+two-sources rule asks for.
 
 ## Writing dialogue
 
@@ -73,7 +110,8 @@ use it rarely: a comment on what the player just did, from a rule with `on`, lan
 
 ## What you cannot do yet
 
-There is no operation for creating a new NPC, so stories use existing NPCs. Generating
+Stories cannot invent new people: `spawn_npc` brings an existing character into the world and `rename_npc` gives it
+a new name. Generating
 voices is a separate step run after a plan is accepted; unvoiced lines appear as
 silent subtitles. Consequences of a choice are recorded as flags for you to act on
 later.
