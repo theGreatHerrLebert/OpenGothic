@@ -339,23 +339,28 @@ def _run_in_venv(argv):
 
 
 class MlxVoice:
-    """One process per line through mlx-audio's command line, as before."""
+    """The model loaded once for the whole run: starting a process per line cost half of every line's time."""
 
     def __init__(self):
-        self.env = dict(os.environ, HF_HOME=str(TTS_DIR / "hf"))
+        os.environ.setdefault("HF_HOME", str(TTS_DIR / "hf"))  # before the import, which reads it
+        from mlx_audio.tts.generate import generate_audio
+        from mlx_audio.tts.utils import load_model
+        self.generate = generate_audio
+        self.model = load_model(model_path=MODEL)
 
     def speak(self, text, reference, target):
-        command = [sys.executable, "-m", "mlx_audio.tts.generate", "--model", MODEL,
-                   "--lang_code", "german", "--text", text,
-                   "--ref_audio", str(voices.REF_DIR / f"{reference}.wav"),
-                   "--ref_text", (voices.REF_DIR / f"{reference}.txt").read_text(encoding="utf-8"),
-                   "--output_path", None, "--file_prefix", "line", "--audio_format", "wav"]
         with tempfile.TemporaryDirectory() as tmp:
-            command[command.index("--output_path") + 1] = tmp
-            result = subprocess.run(command, env=self.env, capture_output=True)
+            try:
+                self.generate(text=text, model=self.model, lang_code="german",
+                              ref_audio=str(voices.REF_DIR / f"{reference}.wav"),
+                              ref_text=(voices.REF_DIR / f"{reference}.txt").read_text(encoding="utf-8"),
+                              output_path=tmp, file_prefix="line", audio_format="wav", verbose=False)
+            except Exception as error:  # one bad line must not end the run; the caller retries it once
+                print("generation failed:", error, flush=True)
+                return False
             produced = sorted(pathlib.Path(tmp).glob("line*.wav"))
-            if result.returncode == 0 and produced:
-                produced[0].replace(target)
+            if produced:
+                shutil.move(str(produced[0]), str(target))
                 return True
         return False
 
