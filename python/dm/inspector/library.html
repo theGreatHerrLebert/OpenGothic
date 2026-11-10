@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="de">
+<title>Geschichten</title>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,400;0,500;0,700;1,400;1,500&family=Almendra+SC&family=Grenze+Gotisch:wght@500;700&family=IM+Fell+English:ital@0;1&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+body{margin:0;background:var(--bg);color:var(--ink)}a{color:var(--ember)}
+.wrap{max-width:1280px;margin:0 auto;padding:28px max(16px,env(safe-area-inset-left,0px)) 80px max(16px,env(safe-area-inset-right,0px))}
+h1{margin:0 0 10px}
+details.intro{max-width:78ch;margin:0 0 18px}details.intro summary{cursor:pointer;color:var(--gold);font:16px var(--small)}
+details.intro p,details.intro li{margin:6px 0}details.intro ul{margin:6px 0;padding-left:20px}
+.tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 16px}
+.tools input,.tools select{font:15px var(--body);padding:7px 9px;background:#1e140c;color:#e8d9b5;border:1px solid #6b5333;border-radius:2px}
+.tools input{flex:1 1 260px;min-width:0}
+.meta{font:13px var(--mono);color:var(--soft)}
+.board{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;align-items:start}
+@media(max-width:900px){.board{grid-template-columns:minmax(0,1fr)}}
+.col h2{font-size:26px;margin:0 0 8px;display:flex;gap:10px;align-items:baseline}.col h2 .meta{font-size:14px}
+.cards{display:grid;gap:10px}
+.card{padding:12px 14px;cursor:pointer;outline:none}
+.card:focus-visible,.card.sel{outline:2px solid var(--gold);outline-offset:2px}
+.card h3{font-size:21px;margin:0 0 4px;color:var(--ink)}.card h3 a{color:inherit;text-decoration:none}
+.prem{font:16px/1.35 var(--hand);margin:0 0 8px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.bar{height:5px;background:var(--chip);margin:6px 0;position:relative;overflow:hidden}.bar i{position:absolute;inset:0 auto 0 0;background:var(--ok)}.bar b{position:absolute;inset:0 0 0 auto;background:var(--bad)}
+.chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}.chip{font:12px var(--mono);padding:2px 6px;background:var(--chip);border-radius:1px}.chip.bad{background:var(--badbg);color:var(--bad)}.chip.good{background:var(--okbg);color:var(--ok)}
+.acts{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.acts button{font:14px var(--small);padding:3px 9px;background:transparent;color:var(--ink);border:1px solid var(--line);border-radius:1px;cursor:pointer}
+.acts button:disabled{opacity:.45;cursor:default}
+.empty{font:15px var(--hand);color:var(--soft);padding:8px 0}
+.kbd{margin-top:18px}
+</style>
+<link rel="stylesheet" href="/gothic.css">
+<main class="wrap">
+<nav class="topnav" aria-label="Seiten"><a href="/">Geschichten</a><a href="/map">Karte</a><a href="/characters">Figuren</a><a href="/experiment">Geschichtenprobe</a><span class="lang"><a href="?lang=en" hreflang="en">EN</a><a href="?lang=de" hreflang="de">DE</a></span></nav>
+<h1>Geschichten</h1>
+<details class="intro" id="intro" open><summary>Was ist das hier?</summary>
+<p>Die Werkstatt des Spielleiters. Jede Geschichte, die er kennt, steht auf einer von drei Stufen.</p>
+<ul>
+<li><strong>Vorgeschlagen:</strong> geschrieben, aber noch von niemandem durchgesehen.</li>
+<li><strong>In Arbeit:</strong> du gehst sie Zeile für Zeile durch, Text und Stimme getrennt.</li>
+<li><strong>Angenommen:</strong> geprüft und spielbar. Annehmen geht erst, wenn die Prüfung keine Fehler findet und jede Zeile angenommen ist. Ändert sich die Geschichte danach, fällt sie zurück auf „In Arbeit“.</li>
+</ul>
+<p>Noch nicht dabei: Texte direkt hier bearbeiten und eine Übersicht der Spielwelt. Die Figuren stehen unter „Figuren“. „Im Spiel starten“ braucht ein laufendes Spiel mit OPENGOTHIC_PY_BRIDGE=1.</p>
+</details>
+<div class="tools" role="search">
+<input id="find" type="search" placeholder="Titel, Inhalt, Figuren suchen" aria-label="Titel, Inhalt, Figuren suchen">
+<select id="show" aria-label="Filter"><option value="">Alle Geschichten</option><option value="open">Unbewertete Zeilen</option><option value="rejected">Mit abgelehnten Zeilen</option><option value="errors">Mit Prüffehlern</option><option value="ready">Bereit zum Annehmen</option></select>
+<select id="who" aria-label="Figur"><option value="">Alle Figuren</option></select>
+<span class="meta" id="found" role="status"></span>
+</div>
+<div class="board" id="board"><p class="meta">Lädt …</p></div>
+<p class="meta" id="save" role="status"></p>
+<p class="meta kbd">Tasten: / sucht, Pfeile wählen, Enter öffnet, Umschalt+Pfeil rechts oder links verschiebt die Stufe, P startet im Spiel.</p>
+</main>
+<script>
+const $=s=>document.querySelector(s),el=(t,c,x)=>{const n=document.createElement(t);if(c)n.className=c;if(x!=null)n.textContent=x;return n};
+const STAGES=[["proposed","Vorgeschlagen"],["in_progress","In Arbeit"],["accepted","Angenommen"]];
+const NEXT={proposed:"in_progress",in_progress:"accepted"},PREV={in_progress:"proposed",accepted:"in_progress"};
+let LIB=[],sel=null;
+const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+if(store.get("intro")==="closed")$("#intro").open=false;
+$("#intro").ontoggle=()=>store.set("intro",$("#intro").open?"open":"closed");
+function filters(){return{q:$("#find").value.trim().toLowerCase(),show:$("#show").value,who:$("#who").value}}
+function matches(s,f){if(f.who&&!s.speakers.includes(f.who))return false;
+ if(f.q&&!(s.title+" "+s.premise+" "+s.speakers.join(" ")).toLowerCase().includes(f.q))return false;
+ if(f.show==="open")return s.reviewed<s.lines;if(f.show==="rejected")return s.rejected>0;if(f.show==="errors")return s.errors>0;
+ if(f.show==="ready")return s.stage==="in_progress"&&!s.blockers.length;return true}
+async function move(s,stage){$("#save").textContent="";const r=await fetch("/library/stage",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({id:s.id,stage})});
+ if(!r.ok){const e=await r.json().catch(()=>({}));$("#save").textContent="Nicht verschoben: "+(e.error||r.status);return}sel=s.id;await load()}
+async function play(s){$("#save").textContent="Wird ans Spiel geschickt …";const r=await fetch("/library/play",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({id:s.id})});
+ const e=await r.json().catch(()=>({}));$("#save").textContent=r.ok?"„"+s.title+"“ läuft im Spiel.":"Nicht gestartet: "+(e.error||r.status)}
+function open(s){location.href="/story/"+encodeURIComponent(s.id)}
+function button(text,fn,disabled,title){const b=el("button","",text);b.type="button";b.disabled=!!disabled;if(title)b.title=title;b.onclick=e=>{e.stopPropagation();fn()};return b}
+function card(s){const c=el("article","card panel");c.tabIndex=0;c.dataset.id=s.id;if(s.id===sel)c.classList.add("sel");
+ const h=el("h3");const a=el("a","",s.title);a.href="/story/"+encodeURIComponent(s.id);h.append(a);c.append(h);
+ if(s.premise)c.append(el("p","prem",s.premise));
+ const bar=el("div","bar"),ok=el("i"),bad=el("b");ok.style.width=(s.lines?100*(s.reviewed-s.rejected)/s.lines:0)+"%";bad.style.width=(s.lines?100*s.rejected/s.lines:0)+"%";bar.append(ok,bad);c.append(bar);
+ const chips=el("div","chips");chips.append(el("span","chip",s.reviewed+" von "+s.lines+" Zeilen bewertet"));
+ if(s.rejected)chips.append(el("span","chip bad",s.rejected+" abgelehnt"));if(s.errors)chips.append(el("span","chip bad",s.errors+" Prüffehler"));
+ if(s.changed)chips.append(el("span","chip bad","seit der Annahme geändert"));if(s.demo)chips.append(el("span","chip","Referenz"));if(s.bonus)chips.append(el("span","chip","Bonus"));
+ if(s.stage==="in_progress"&&!s.blockers.length)chips.append(el("span","chip good","bereit zum Annehmen"));c.append(chips);
+ const acts=el("div","acts");
+ if(s.stage==="proposed")acts.append(button("Bearbeitung beginnen",()=>move(s,"in_progress")));
+ if(s.stage==="in_progress")acts.append(button("Annehmen",()=>move(s,"accepted"),s.blockers.length,s.blockers.join(", ")),button("Zurück",()=>move(s,"proposed")));
+ if(s.stage==="accepted")acts.append(button("Im Spiel starten",()=>play(s)),button("Wieder öffnen",()=>move(s,"in_progress")));
+ c.append(acts);c.onclick=()=>open(s);c.onfocus=()=>{sel=s.id;document.querySelectorAll(".card.sel").forEach(x=>x.classList.remove("sel"));c.classList.add("sel")};
+ c.onkeydown=e=>{if(e.target!==c)return;if(e.key==="Enter"){e.preventDefault();open(s)}else if(e.shiftKey&&e.key==="ArrowRight"&&NEXT[s.stage]){e.preventDefault();move(s,NEXT[s.stage])}
+  else if(e.shiftKey&&e.key==="ArrowLeft"&&PREV[s.stage]){e.preventDefault();move(s,PREV[s.stage])}else if(e.key.toLowerCase()==="p"&&s.stage==="accepted"){e.preventDefault();play(s)}};
+ return c}
+function render(){const f=filters(),active=!!(f.q||f.show||f.who),board=$("#board");const focused=document.activeElement&&document.activeElement.dataset&&document.activeElement.dataset.id;board.textContent="";let shown=0;
+ STAGES.forEach(([key,label])=>{const all=LIB.filter(s=>s.stage===key),list=all.filter(s=>matches(s,f));shown+=list.length;
+  const col=el("section","col");col.dataset.stage=key;const h=el("h2","",label);h.append(el("span","meta",active?list.length+" / "+all.length:String(all.length)));col.append(h);
+  const cards=el("div","cards");list.forEach(s=>cards.append(card(s)));if(!list.length)cards.append(el("p","empty",active?"Nichts passt.":"Noch leer."));col.append(cards);board.append(col)});
+ $("#found").textContent=active?shown+" von "+LIB.length+" Geschichten":"";
+ const again=focused&&document.querySelector('.card[data-id="'+CSS.escape(focused)+'"]');if(again)again.focus({preventScroll:true})}
+function grid(){return[...document.querySelectorAll(".col")].map(c=>[...c.querySelectorAll(".card")])}
+addEventListener("keydown",e=>{if(e.metaKey||e.ctrlKey||e.altKey)return;const typing=/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName);
+ if(e.key==="/"&&!typing){e.preventDefault();$("#find").focus();return}
+ if(e.key==="Escape"&&e.target===$("#find")){$("#find").value="";render();$("#find").blur();return}
+ if(typing&&!(e.target===$("#find")&&e.key==="ArrowDown"))return;
+ if(e.shiftKey||!["ArrowUp","ArrowDown","ArrowLeft","ArrowRight"].includes(e.key))return;
+ const g=grid();let ci=g.findIndex(col=>col.includes(document.activeElement)),ri=ci<0?-1:g[ci].indexOf(document.activeElement);
+ if(ci<0){ci=g.findIndex(col=>col.length);if(ci<0)return;e.preventDefault();g[ci][0].focus();return}
+ e.preventDefault();
+ if(e.key==="ArrowDown")ri=Math.min(ri+1,g[ci].length-1);else if(e.key==="ArrowUp")ri=Math.max(ri-1,0);
+ else{const step=e.key==="ArrowRight"?1:-1;let n=ci+step;while(n>=0&&n<g.length&&!g[n].length)n+=step;if(n<0||n>=g.length)return;ci=n;ri=Math.min(ri,g[ci].length-1)}
+ g[ci][ri].focus()});
+["find","show","who"].forEach(id=>$("#"+id).addEventListener(id==="find"?"input":"change",render));
+async function load(){LIB=await (await fetch("/library/data")).json();
+ const who=$("#who"),chosen=who.value;[...who.options].slice(1).forEach(o=>o.remove());[...new Set(LIB.flatMap(s=>s.speakers))].sort().forEach(n=>who.append(new Option(n,n)));who.value=chosen;render()}
+load().catch(()=>{$("#board").textContent="";$("#save").textContent="Die Geschichten konnten nicht geladen werden. Läuft der Inspektor noch?"});
+</script>

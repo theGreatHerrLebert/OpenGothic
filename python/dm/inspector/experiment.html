@@ -32,12 +32,12 @@ details.flow{margin:10px 0}details.flow summary,details.truth summary{cursor:poi
 </style>
 <link rel="stylesheet" href="/gothic.css">
 <main class="wrap">
-<nav class="topnav" aria-label="Seiten"><a href="/">Inspektor</a><a href="/characters">Figuren</a><a href="/experiment">Geschichtenprobe</a><span class="lang"><a href="?lang=en" hreflang="en">EN</a><a href="?lang=de" hreflang="de">DE</a></span></nav>
+<nav class="topnav" aria-label="Seiten"><a href="/">Geschichten</a><a href="/map">Karte</a><a href="/characters">Figuren</a><a href="/experiment">Geschichtenprobe</a><span class="lang"><a href="?lang=en" hreflang="en">EN</a><a href="?lang=de" hreflang="de">DE</a></span></nav>
 <h1>Geschichtenprobe</h1>
 <p class="meta" id="status" role="status">Lädt …</p><button id="retry" class="choice" type="button" hidden>Erneut speichern</button>
 <div class="bar" id="bar"></div>
 <div id="view"></div>
-<div class="dock" id="dock" role="region" aria-label="Wiedergabe" hidden><button class="choice" type="button" id="dPause">Pause</button><button class="choice" type="button" id="dNext">Weiter</button><button class="choice" type="button" id="dStop">Stopp</button><label class="meta">Tempo <select id="dRate"><option>1</option><option>1.25</option><option>1.5</option></select></label><span id="dText"></span></div>
+<div class="dock" id="dock" role="region" aria-label="Wiedergabe" hidden><button class="choice" type="button" id="dPrev">Zurück</button><button class="choice" type="button" id="dPause">Pause</button><button class="choice" type="button" id="dNext">Weiter</button><button class="choice" type="button" id="dStop">Stopp</button><label class="meta">Tempo <select id="dRate"><option>1</option><option>1.25</option><option>1.5</option></select></label><span id="dText"></span></div>
 </main>
 <script src="/vendor/mermaid.min.js"></script>
 <script src="/vendor/svg-pan-zoom.min.js"></script>
@@ -73,7 +73,9 @@ function queueOf(s){const l=[];s.convs.forEach(c=>c.nodes.forEach(n=>{if(n.audio
 function qPlay(i){if(i>=Q.list.length)return qStop();Q.i=i;const x=Q.list[i];if(player)player.pause();player=new Audio(x.u);player.playbackRate=Number($("#dRate").value);player.onended=()=>qPlay(Q.i+1);player.play().catch(()=>{});$("#dock").hidden=false;$("#dText").textContent=(i+1)+"/"+Q.list.length+" · "+x.w+": "+x.t;$("#dPause").textContent="Pause"}
 function qStop(){if(player)player.pause();player=null;Q.list=[];$("#dock").hidden=true}
 $("#dPause").onclick=()=>{if(!player)return;if(player.paused){player.play();$("#dPause").textContent="Pause"}else{player.pause();$("#dPause").textContent="Fortsetzen"}};
-$("#dNext").onclick=()=>qPlay(Q.i+1);$("#dStop").onclick=qStop;$("#dRate").onchange=()=>{if(player)player.playbackRate=Number($("#dRate").value)};
+$("#dNext").onclick=()=>qPlay(Q.i+1);
+/* like a music player: early in a line go to the previous one, later restart this one */
+$("#dPrev").onclick=()=>{if(!Q.list.length)return;if(player&&player.currentTime>3){player.currentTime=0;player.play().catch(()=>{});$("#dPause").textContent="Pause"}else{qPlay(Math.max(0,Q.i-1));$("#dPause").textContent="Pause"}};$("#dStop").onclick=qStop;$("#dRate").onchange=()=>{if(player)player.playbackRate=Number($("#dRate").value)};
 function go(i){if(i<0||i>=D.stories.length)return;qStop();cur=i;render();scrollTo(0,0);const h=document.querySelector("#view h2");if(h)h.focus({preventScroll:true})}
 function nextOpen(){const n=D.stories.length;for(let k=1;k<=n;k++){const i=(cur+k)%n;if(!D.stories[i].bonus&&!(S[D.stories[i].id]||{}).worth)return go(i)}}
 const pending=new Map(),failed=new Set();

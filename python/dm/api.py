@@ -72,3 +72,10 @@ def submit(reason, ops):
         _reply({"ok": True, "queued": True})
     except story.PlanError as err:
         _reply({"ok": False, "error": str(err)})
+
+
+def play(reason, ops):
+    """Start the game master if it is not running yet, then queue a whole story."""
+    import dm
+    dm.start()
+    submit(reason, ops)

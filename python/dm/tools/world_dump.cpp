@@ -1,4 +1,4 @@
-// Dumps the placed items, containers and locks of the game's worlds as JSON lines.
+// Dumps the placed items, containers, locks, waypoints and the paths between them of the game's worlds as JSON lines.
 //
 //   c++ -std=c++20 -Ilib/ZenKit/include -Ibuild/lib/ZenKit/include python/dm/tools/world_dump.cpp build/lib/ZenKit/libzenkit.a \
 //       build/lib/ZenKit/vendor/libsquish/libsquish.a -o build/world_dump
@@ -54,5 +54,7 @@ int main(int, char** argv) {
     World w; w.load(r.get(), GameVersion::GOTHIC_2);
     for(auto& v:w.world_vobs) walk(out,name,v);
     for(auto& p:w.way_net->points) out<<"{\"world\":\""<<name<<"\",\"kind\":\"waypoint\",\"name\":\""<<esc(p->name)<<"\",\"x\":"<<p->position.x<<",\"y\":"<<p->position.y<<",\"z\":"<<p->position.z<<"}\n";
+    for(auto& [a,b]:w.way_net->edges)  // the paths between waypoints: they outline a world that has no map
+      if(a && b) out<<"{\"world\":\""<<name<<"\",\"kind\":\"edge\",\"a\":\""<<esc(a->name)<<"\",\"b\":\""<<esc(b->name)<<"\"}\n";
     }
   }

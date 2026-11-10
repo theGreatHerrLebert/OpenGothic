@@ -104,7 +104,7 @@ def check(path, names_path):
             return Npc(name.upper()) if name.upper() in npcs and name.upper() not in spawned else None
 
     errors = []
-    data = json.loads(pathlib.Path(path).read_text(encoding="utf-8"))
+    data = path if isinstance(path, dict) else json.loads(pathlib.Path(path).read_text(encoding="utf-8"))
     spawned = _spawned(data.get("plan", []))
     gothic.world = World()
     for key in ("title", "hidden_truth", "plot", "conversations", "plan"):

@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="de">
-<title>Der Fall Tilo</title>
+<title>Geschichte</title>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,400;0,500;0,700;1,400;1,500&family=Almendra+SC&family=Grenze+Gotisch:wght@500;700&family=IM+Fell+English:ital@0;1&family=IBM+Plex+Mono:wght@400;500&display=swap">
@@ -46,12 +46,16 @@ textarea{width:100%;box-sizing:border-box;margin-top:8px;font:14px/1.4 var(--bod
 .save{font:12px var(--mono);color:var(--soft);min-height:16px}
 #graphbox>pre{height:100%;margin:0;padding:0}
 .tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 14px}.tools input,.tools select{font:15px var(--body);padding:6px 8px;background:#1e140c;color:#e8d9b5;border:1px solid #6b5333;border-radius:2px}.tools input{flex:1 1 220px}.tools .meta{margin-left:auto}
+.crumbs{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:baseline;margin:0 0 6px}.crumbs a{color:var(--ember)}
+.stagebar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 14px}.stagebar .why{font:13px var(--mono);color:var(--soft)}
 .linkbtn{background:none;border:0;color:var(--ember);cursor:pointer;font:12px var(--mono);padding:0}
 </style>
 <link rel="stylesheet" href="/gothic.css">
 <main class="wrap">
-<nav class="topnav" aria-label="Seiten"><a href="/">Inspektor</a><a href="/characters">Figuren</a><a href="/experiment">Geschichtenprobe</a><span class="lang"><a href="?lang=en" hreflang="en">EN</a><a href="?lang=de" hreflang="de">DE</a></span></nav>
-<h1>Der Fall Tilo</h1>
+<nav class="topnav" aria-label="Seiten"><a href="/">Geschichten</a><a href="/map">Karte</a><a href="/characters">Figuren</a><a href="/experiment">Geschichtenprobe</a><span class="lang"><a href="?lang=en" hreflang="en">EN</a><a href="?lang=de" hreflang="de">DE</a></span></nav>
+<p class="crumbs"><a href="/" id="back">← Geschichten</a><span class="meta" id="pos"></span></p>
+<h1 id="title"></h1>
+<div class="stagebar" id="stagebar" role="group" aria-label="Stufe"></div>
 <p class="lead">Eine Referenzgeschichte, nicht das laufende Spiel: Das Wissen rechts ist nur simuliert. Jede Zeile der Geschichte, in der Reihenfolge, in der man ihr begegnen kann. Bewerte Text und Sprecher getrennt und begründe alles, was du ablehnst. Hake rechts Tatsachen an, um zu sehen, welche Zeilen des Helden mit diesem Wissen erscheinen.</p>
 <div class="status" id="status" role="status"></div>
 <details class="truth"><summary>Rahmen und verborgene Wahrheit (Spoiler)</summary><p id="frame"></p><p id="truth"></p></details>
@@ -83,10 +87,10 @@ function renderStatus(){const s=$("#status");s.textContent="";const add=(c,t)=>s
  DATA.warnings.forEach(w=>add("warn",w));const st=stats();add("",st.a+" angenommen");add("",st.r+" abgelehnt");}
 async function setVerdict(id,verdict,text){const prev=reviews[id]||{};const next=prev.verdict===verdict&&text===undefined?null:{verdict,reason:text!==undefined?text:(prev.reason||"")};
  if(next)reviews[id]=next;else delete reviews[id];renderAll();
- try{const r=await fetch("/reviews",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({id,...(next||{})})});if(!r.ok)throw 0;$("#save").textContent="Gespeichert."}catch(e){$("#save").textContent="Speichern fehlgeschlagen. Läuft der Inspektor noch?"}}
+ try{const r=await fetch("/reviews",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({story:DATA.id,id,...(next||{})})});if(!r.ok)throw 0;$("#save").textContent="Gespeichert.";loadStage()}catch(e){$("#save").textContent="Speichern fehlgeschlagen. Läuft der Inspektor noch?"}}
 async function approveBoth(ids){const clear=ids.every(i=>reviews[i]&&reviews[i].verdict==="approve");
  for(const i of ids){if(clear)delete reviews[i];else reviews[i]={verdict:"approve",reason:""}}renderAll();
- try{const rs=await Promise.all(ids.map(id=>fetch("/reviews",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(clear?{id}:{id,verdict:"approve",reason:""})})));if(rs.some(r=>!r.ok))throw 0;$("#save").textContent="Gespeichert."}catch(e){$("#save").textContent="Speichern fehlgeschlagen. Läuft der Inspektor noch?"}}
+ try{const rs=await Promise.all(ids.map(id=>fetch("/reviews",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(clear?{story:DATA.id,id}:{story:DATA.id,id,verdict:"approve",reason:""})})));if(rs.some(r=>!r.ok))throw 0;$("#save").textContent="Gespeichert.";loadStage()}catch(e){$("#save").textContent="Speichern fehlgeschlagen. Läuft der Inspektor noch?"}}
 function bothButton(id,hasAudio){const ids=hasAudio?[id,id+"__voice"]:[id];const on=ids.every(i=>reviews[i]&&reviews[i].verdict==="approve");const b=el("button","v a"+(on?" on":""),hasAudio?"Beides annehmen":"Annehmen");b.type="button";b.dataset.f=id+":both";b.setAttribute("aria-pressed",on);b.onclick=()=>approveBoth(ids);return b}
 let player=null;function play(url,b){if(player)player.pause();player=new Audio(url);b.textContent="Läuft";player.onended=player.onpause=()=>{b.textContent="Abspielen"};player.play().catch(()=>{b.textContent="Abspielen"})}
 function playButton(url){if(!url)return el("span","meta noaudio","keine Aufnahme");const p=el("button","v play","Abspielen");p.type="button";p.onclick=()=>play(url,p);return p}
@@ -125,7 +129,7 @@ function renderAll(){const f=document.activeElement&&document.activeElement.data
 addEventListener("keydown",e=>{if(e.key==="/"&&!/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)){e.preventDefault();$("#find").focus()}});
 $("#frame").textContent=DATA.frame;$("#truth").textContent=DATA.truth;$("#clear").onclick=()=>{known.clear();renderRail();renderConvs()};
 renderAll();renderRail();
-fetch("/reviews").then(r=>r.json()).then(v=>{reviews=v;renderAll()}).catch(()=>{$("#save").textContent="Bewertungen konnten nicht geladen werden."});
+fetch("/reviews?story="+encodeURIComponent(DATA.id)).then(r=>r.json()).then(v=>{reviews=v;renderAll();loadStage()}).catch(()=>{$("#save").textContent="Bewertungen konnten nicht geladen werden."});
 function factInfo(id){const box=$("#info");box.hidden=false;box.textContent="";const sources=[],needs=[];
  DATA.convs.forEach(c=>{Object.entries(c.nodes).forEach(([k,n])=>{if((n.teaches||[]).includes(id))sources.push(c.speaker+" ("+k+")");n.choices.forEach(ch=>{if((ch.requires||[]).includes(id))needs.push(c.speaker+": „"+ch.text+"“")})});if((c.requires||[]).includes(id))needs.push("Szene beginnt: "+c.id)});
  const v=DATA.facts[id]||{};box.append(el("div","label",id),el("p","",(v.essential?"Wesentlich. ":"")+"Bekannt bei: "+((v.knownBy||[]).join(", ")||"niemandem im Besonderen")));
@@ -135,8 +139,27 @@ async function drawGraph(){if(!window.mermaid){$("#graphbox").textContent="Die G
  await mermaid.run();const svg=$("#graphbox svg");if(!svg)return;svg.removeAttribute("style");svg.setAttribute("width","100%");svg.setAttribute("height","100%");
  if(window.svgPanZoom)svgPanZoom(svg,{controlIconsEnabled:true,minZoom:.2,maxZoom:12,fit:true,center:true,zoomScaleSensitivity:.25});
  let down=null;svg.addEventListener("pointerdown",e=>{down=[e.clientX,e.clientY]});
- svg.addEventListener("click",e=>{if(down&&Math.hypot(e.clientX-down[0],e.clientY-down[1])>5)return;const g=e.target.closest(".node");if(!g)return;const m=g.id.match(/flowchart-(c|f|r)_(.+)-\d+$/);if(!m)return;
+ svg.addEventListener("click",e=>{if(down&&Math.hypot(e.clientX-down[0],e.clientY-down[1])>5)return;const g=e.target.closest(".node");if(!g)return;const raw=g.id.match(/flowchart-(.+)-\d+$/);if(!raw)return;const mapped=DATA.nodeMap&&DATA.nodeMap[raw[1]];const m=mapped?[null,mapped[0],mapped[1]]:raw[1].match(/^(c|f|r)_(.+)$/);if(!m)return;
   if(m[1]==="c"){openConv(m[2])}else if(m[1]==="f")factInfo(m[2])});
  const st=document.createElement("style");st.textContent="#graphbox .node{cursor:pointer}";document.head.append(st)}
+document.title=DATA.title;$("#title").textContent=DATA.title;
+const STAGES={proposed:"Vorgeschlagen",in_progress:"In Arbeit",accepted:"Angenommen"};let LIB=[];
+function stageButton(text,fn,disabled){const b=el("button","v",text);b.type="button";b.disabled=!!disabled;b.onclick=fn;return b}
+async function moveStage(stage){$("#save").textContent="";const r=await fetch("/library/stage",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({id:DATA.id,stage})});
+ if(!r.ok){const e=await r.json().catch(()=>({}));$("#save").textContent="Nicht verschoben: "+(e.error||r.status);return}await loadStage()}
+async function playStory(){$("#save").textContent="Wird ans Spiel geschickt …";const r=await fetch("/library/play",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({id:DATA.id})});
+ const e=await r.json().catch(()=>({}));$("#save").textContent=r.ok?"Läuft im Spiel.":"Nicht gestartet: "+(e.error||r.status)}
+function renderStage(){const me=LIB.find(x=>x.id===DATA.id);const bar=$("#stagebar");bar.textContent="";if(!me)return;
+ bar.append(el("span","st"+(me.stage==="accepted"?" good":""),STAGES[me.stage]+(me.changed?" · seit der Annahme geändert":"")));
+ if(me.stage==="proposed")bar.append(stageButton("Bearbeitung beginnen",()=>moveStage("in_progress")));
+ if(me.stage==="in_progress"){const block=me.blockers.length;bar.append(stageButton("Annehmen",()=>moveStage("accepted"),block),stageButton("Zurück zu vorgeschlagen",()=>moveStage("proposed")));if(block)bar.append(el("span","why","Fehlt noch: "+me.blockers.join(", ")))}
+ if(me.stage==="accepted")bar.append(stageButton("Im Spiel starten",playStory),stageButton("Wieder öffnen",()=>moveStage("in_progress")));
+ const same=LIB.filter(x=>x.stage===me.stage),i=same.findIndex(x=>x.id===DATA.id),pos=$("#pos");pos.textContent="";
+ const link=(x,t)=>{const a=el("a","",t);a.href="/story/"+encodeURIComponent(x.id);return a};
+ if(same[i-1])pos.append(link(same[i-1],"‹ "+same[i-1].title));pos.append(el("span",""," "+(i+1)+" von "+same.length+" · "+STAGES[me.stage]+" "));if(same[i+1])pos.append(link(same[i+1],same[i+1].title+" ›"));
+ window._neighbors=[same[i-1],same[i+1]]}
+async function loadStage(){try{LIB=await (await fetch("/library/data")).json();renderStage()}catch(e){}}
+addEventListener("keydown",e=>{if(e.metaKey||e.ctrlKey||e.altKey||/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName))return;const n=window._neighbors||[];
+ if(e.key==="["&&n[0])location.href="/story/"+encodeURIComponent(n[0].id);else if(e.key==="]"&&n[1])location.href="/story/"+encodeURIComponent(n[1].id);else if(e.key==="Escape"&&!document.querySelector("textarea:focus"))location.href="/"});
 drawGraph().catch(e=>{$("#save").textContent="Graph-Fehler: "+(e.message||e)});
 </script>

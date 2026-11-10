@@ -77,7 +77,17 @@ python3 python/dm/fetch_vendor.py
 Dann <http://127.0.0.1:8765> öffnen. Oben rechts stellst du mit **EN | DE** die Sprache um, der Browser merkt sich die
 Wahl. Der Inspektor ist nur auf deinem eigenen Rechner erreichbar.
 
-- **Inspektor:** die Referenzgeschichte „Der Fall Tilo“, Zeile für Zeile, mit Ablaufgraph.
+- **Geschichten:** alle Geschichten in drei Spalten: vorgeschlagen, in Arbeit, angenommen. Ein Klick öffnet eine
+  Geschichte Zeile für Zeile mit Ablaufgraph. Annehmen geht erst, wenn die Prüfung keine Fehler findet und jede Zeile
+  angenommen ist. Angenommene Geschichten startest du mit „Im Spiel starten“ direkt im laufenden Spiel. Die Stufen
+  stehen in `python/dm_runtime/story_stages.json`.
+- **Karte:** wer sich wo aufhält, nach Welt, Kapitel und Uhrzeit, auf den Karten aus dem Spiel. Ein Klick auf einen
+  Punkt zeigt die Figuren dort, ein Klick auf die Karte den nächsten Wegpunkt zum Kopieren. Die Daten baut ein Skript
+  einmal aus deiner Installation (es braucht `mechanics/world.jsonl` aus `tools/world_dump.cpp`):
+
+  ```sh
+  python3 python/dm/map_data.py ~/games/gothicii-gold-de
+  ```
 - **Figuren:** die Charakterbögen mit Belegzitaten aus dem Spiel. Die Zitate schneidet ein Skript aus deiner eigenen
   Installation, einmal ausführen genügt:
 
@@ -89,27 +99,35 @@ Wahl. Der Inspektor ist nur auf deinem eigenen Rechner erreichbar.
 
 ## 6. Stimmen erzeugen (optional)
 
-Ohne Stimmen läuft alles, die Zeilen erscheinen dann als stumme Untertitel.
+Ohne Stimmen läuft alles, die Zeilen erscheinen dann als stumme Untertitel. Die Stimmen sind Nachbildungen der
+Originalsprecher aus deiner eigenen Installation. Sie bleiben auf deinem Rechner: nicht weitergeben, nicht hochladen.
 
-Eine eigene Python-Umgebung für das Sprachmodell anlegen:
-
-```sh
-python3.11 -m venv python/dm_runtime/tts/venv-mlx
-python/dm_runtime/tts/venv-mlx/bin/pip install mlx-audio
-```
-
-Referenzstimmen aus deiner Installation ziehen. Jede Nummer ist ein Sprecher des Spiels, 15 ist der Held:
+Einmal das Sprachmodell einrichten. Auf einem Mac mit Apple-Chip läuft es über MLX, sonst über PyTorch (mit
+NVIDIA-Grafikkarte schnell, ohne sehr langsam). Das lädt einige GB:
 
 ```sh
-python3 python/dm/bake_voices.py refs ~/games/gothicii-gold-de 01 03 04 05 06 07 08 09 10 12 13 14 15 16
+python3 python/dm/bake_voices.py setup
 ```
 
-Dann die Zeilen einer Geschichte erzeugen. Die erste Ausführung lädt das Sprachmodell herunter, danach dauert jede
-Zeile etwa 7 bis 8 Sekunden. Fortschritt erscheint auch in der Anzeige im Spiel:
+Dann alle Zeilen einer Geschichte erzeugen. Der Befehl holt zuerst für jeden Sprecher, der fehlt, vier Zeilen aus deiner
+Installation als Vorlage und erzeugt dann jede Zeile, etwa 7 bis 8 Sekunden pro Zeile auf einem Mac. Abgebrochene Läufe
+setzen fort, wo sie aufgehört haben. Der Fortschritt erscheint auch in der Anzeige im Spiel:
 
 ```sh
-python/dm_runtime/tts/venv-mlx/bin/python python/dm/bake_voices.py bake <graphs.json> "Titel der Geschichte"
+python3 python/dm/bake_voices.py all ~/games/gothicii-gold-de <graphs.json> "Titel der Geschichte"
 ```
+
+Unter Windows heißt der Befehl `py` statt `python3`, und Pfade stehen in Anführungszeichen, etwa `"C:/Spiele/Gothic II"`.
+
+### Eine Geschichte weitergeben
+
+```sh
+python3 python/dm/make_pack.py "Der heilige Hering"
+```
+
+legt `python/dm_runtime/packs/der-heilige-hering.zip` an: die Geschichte, ihre Dialoge und eine Anleitung, aber keine
+Stimmen. Wer das Paket bekommt, erzeugt die Stimmen mit den Befehlen oben aus der eigenen Installation und startet die
+Geschichte mit `python/dm/play_story.py`, das auch unter Windows läuft.
 
 ## 7. Einen KI-Agenten als Spielleiter anbinden (optional)
 

@@ -8,6 +8,7 @@ are stored in python/dm_runtime/reviews.json.
 """
 
 import copy
+from html import escape as html_escape
 import hashlib
 import http.cookies
 import http.server
@@ -24,6 +25,8 @@ ROOT = pathlib.Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT.parent))
 sys.modules.setdefault("gothic", types.ModuleType("gothic"))
 
+from dm import library  # noqa: E402  (first: it installs the offline gothic module the story checker needs)
+from dm import bridge  # noqa: E402
 from dm import knowledge as k  # noqa: E402
 from dm import inspector_i18n  # noqa: E402
 from dm import voices  # noqa: E402
@@ -31,6 +34,10 @@ from dm.stories import tilo as t  # noqa: E402
 
 PORT = 8765
 PAGE = ROOT / "inspector" / "page.html"
+LIBRARY_PAGE = ROOT / "inspector" / "library.html"
+MAP_PAGE = ROOT / "inspector" / "map.html"
+MAP_DIR = voices.RUNTIME_DIR / "map"
+MAP_IMAGE = re.compile(r"^/map/image/(MAP_[A-Z0-9_]+\.png)$")
 CHARACTERS_PAGE = ROOT / "inspector" / "characters.html"
 CHARACTERS = ROOT / "characters"
 WORLD_FACTS = ROOT / "world_facts.json"
@@ -58,7 +65,7 @@ def build():
             if o["op"]=="add_scene": scenes[o["id"]]=o
     order=[("barrel","Novize neben Gorax","Kloster, nach dem Diebstahl"),("tilo_before","Tilo","Kloster, vor dem Diebstahl"),("gorax","Gorax","Kloster, beim Näherkommen"),("parlan","Parlan","Kloster, beim Näherkommen"),("anselm","Anselm","Kloster, beim Näherkommen"),("harek","Harek","Hafenkneipe, immer verfügbar"),("tilo","Tilo","Hafengassen, immer verfügbar"),("tilo_ordered_home","Tilo","Bis du gehst, wenn nach Hause geschickt"),("tilo_back_at_work","Tilo","An der Kelter, nach der Heimkehr"),("tilo_after_turned_in","Tilo","Bis du gehst, wenn ausgeliefert"),("tilo_after_help","Tilo","Bis du gehst, wenn ihm geholfen wurde"),("parlan_reward","Parlan","Nachdem Tilo ausgeliefert wurde"),("anselm_bitter","Anselm","Nachdem die Belohnung bezahlt wurde"),("anselm_grateful","Anselm","Nachdem Tilo geholfen wurde")]
     g=t.all_graphs()
-    data={"frame":re.sub(r"\s+"," ",t.__doc__.split("Frame:")[1]).strip(),"truth":t.HIDDEN_TRUTH,"errors":errors,"warnings":warnings,"facts":{f:dict(essential=v.get("essential",False),topic=v.get("topic",False),needs=v.get("needs",[]),knownBy=[names.get(n,n) for n in v.get("known_by",[])]) for f,v in plot["facts"].items()},
+    data={"title":"Der Fall Tilo","frame":re.sub(r"\s+"," ",t.__doc__.split("Frame:")[1]).strip(),"truth":t.HIDDEN_TRUTH,"errors":errors,"warnings":warnings,"facts":{f:dict(essential=v.get("essential",False),topic=v.get("topic",False),needs=v.get("needs",[]),knownBy=[names.get(n,n) for n in v.get("known_by",[])]) for f,v in plot["facts"].items()},
     "convs":[{"id":i,"speaker":s,"where":w,"requires":scenes.get(i,{}).get("requires",[]),"unless":scenes.get(i,{}).get("unless") or [],"within":scenes.get(i,{}).get("within"),"scene":i in scenes,"start":g[i]["start"],"nodes":g[i]["nodes"]} for i,s,w in order],
     "rules":[{"id":r["id"],"when":r["when"],"ops":[{k:v for k,v in o.items() if k in("op","instance","count","id","waypoint","requires")} for o in r["ops"]]} for r in rules]}
     lab={"tilo_named":"Tilos Name","tilo_absent":"Tilo fehlt","wine_trips":"seine Weingänge","silver_stolen":"Silber gestohlen","candlesticks":"zwei Leuchter","reward":"Belohnung ausgesetzt","tilo_past":"sein Vater","gambling":"Würfelschulden","harbour_lead":"Spur zum Hafen","friend_offer":"Anselms Angebot","harek_wary":"Harek ist misstrauisch","silver_sold":"Silber an Harek verkauft","tilo_nearby":"versteckt am Hafen","tilo_cornered":"am Hafen getroffen","tilo_met":"Tilo getroffen","barrel_met":"Fass-Novize getroffen","tilo_stressed":"wirkte gehetzt","tilo_turned_in":"Tilo ausgeliefert","tilo_helped":"Tilo geholfen","parlan_paid":"Belohnung bezahlt","anselm_secret":"Geheimnis erzählt","tilo_threatened":"Tilo erpresst","tilo_confessed":"Tilo gestanden"}
@@ -115,7 +122,10 @@ def _audio_hash(url):
         return None
     voice, name = url.split("/")[-2:]
     path = voices.VOICE_DIR / voice / name
-    stamp = (str(path), path.stat().st_mtime_ns)
+    try:
+        stamp = (str(path), path.stat().st_mtime_ns)
+    except FileNotFoundError:  # deleted since the page data was built
+        return None
     if stamp not in _audio_hashes:
         _audio_hashes[stamp] = "a:" + hashlib.sha256(path.read_bytes()).hexdigest()[:16]
     return _audio_hashes[stamp]
@@ -138,24 +148,159 @@ def content_index(data):
     return index
 
 
-def current_reviews():
-    """Reviews still valid for what the story says now. Changed lines count as unreviewed."""
-    index = content_index(build()[0])
-    return {key: value for key, value in load_reviews().items()
-            if value.get("hash") is not None and value["hash"] == index.get(key)}
+def story_reviews(story_id):
+    """Reviews of one story that still match what it says now. Changed lines count as unreviewed."""
+    index = content_index(story_view(story_id)[0])
+    prefix = story_id + "/"
+    return {key[len(prefix):]: value for key, value in load_reviews().items()
+            if key.startswith(prefix) and value.get("hash") is not None and value["hash"] == index.get(key[len(prefix):])}
 
 
 def adopt_existing_reviews():
-    """Bind reviews written before hashing to the content as it is now."""
+    """Move reviews from before the story library under the demo story, and bind unhashed ones to its content."""
     index = content_index(build()[0])
+    prefix = library.DEMO_ID + "/"
     with REVIEW_LOCK:
-        reviews = load_reviews()
-        for key, value in reviews.items():
-            if "hash" not in value and index.get(key):
-                value["hash"] = index[key]
-        temporary = REVIEWS.with_suffix(".tmp")
-        temporary.write_text(json.dumps(reviews, ensure_ascii=False, indent=1), encoding="utf-8")
-        temporary.replace(REVIEWS)
+        reviews = {}
+        for key, value in load_reviews().items():
+            if "/" not in key:
+                if "hash" not in value and index.get(key):
+                    value["hash"] = index[key]
+                key = prefix + key
+            reviews[key] = value
+        _write_reviews(reviews)
+
+
+def _write_reviews(reviews):
+    # write to a temporary file first, so a crash can never leave a partial file
+    temporary = REVIEWS.with_suffix(".tmp")
+    temporary.write_text(json.dumps(reviews, ensure_ascii=False, indent=1), encoding="utf-8")
+    temporary.replace(REVIEWS)
+
+
+_views = {}
+
+
+def story_view(story_id):
+    """(page data, Mermaid source) for any story, or (None, None). Rebuilt only when the story changes."""
+    if story_id == library.DEMO_ID:
+        return build()
+    path = library.path_of(story_id)
+    if path is None:
+        return None, None
+    # everything the view reads: the story, its voiced dialogue and the names the checker validates against
+    stamp = (library.revision(story_id),
+             *(f.stat().st_mtime_ns if f.exists() else 0 for f in (EXPERIMENT / "graphs.json", EXPERIMENT / "world_names.json")))
+    if _views.get(story_id, (None,))[0] != stamp:
+        _views[story_id] = (stamp, generated_view(story_id))
+    page, graph = _views[story_id][1]
+    return _with_audio(page), graph
+
+
+def _with_audio(page):
+    """Recordings are looked up on every request: voices are baked and deleted while the server runs."""
+    page = {**page, "convs": copy.deepcopy(page["convs"])}
+    for conv in page["convs"]:
+        for node in conv["nodes"].values():
+            node["audio"] = audio_url(conv["voice"], node["line"], node.get("delivery"))
+            if node.get("again"):
+                node["audioAgain"] = audio_url(conv["voice"], node["again"], node.get("delivery"))
+            for choice in node["choices"]:
+                choice["audio"] = None if choice["text"] == "Zurück." else audio_url(voices.HERO_VOICE, choice["text"])
+    return page
+
+
+def _describe_check(check):
+    kind = check.get("type")
+    if kind == "wears":
+        return "trägt " + check["item"]
+    if kind == "guild":
+        return "Gilde " + check["guild"]
+    if kind == "has_item":
+        return f"hat {check.get('count', 1)}× {check['item']}"
+    if kind == "not":
+        return "nicht: " + _describe_check(check["check"])
+    return kind
+
+
+def generated_view(story_id):
+    """The page data of a generated story, in the same shape as the demo story's."""
+    data, conversations = library.generated(story_id)
+    labels, cast = _conversation_names(data, _sheet_names())
+    report = library.check(story_id)
+    starts, rules = {}, []
+
+    def strings(value):
+        return [v for v in _as_list(value) if isinstance(v, str)]
+
+    def walk(ops, when=(), unless=()):
+        for op in ops:
+            if op["op"] == "add_rule":
+                rules.append({"id": op["id"], "when": strings(op.get("when")),
+                              "ops": [{key: value for key, value in o.items() if key in ("op", "instance", "count", "id", "waypoint")}
+                                      for o in op["ops"]]})
+                walk(op["ops"], (*when, *strings(op.get("when"))), (*unless, *strings(op.get("unless"))))
+            elif op["op"] in ("add_scene", "attach_dialogue_graph"):
+                key = next((k for k, g in data["conversations"].items() if g == op["graph"]), None)
+                if key is not None and key not in starts:
+                    starts[key] = {"scene": op["op"] == "add_scene", "within": op.get("within"),
+                                   "requires": [*when, *strings(op.get("requires"))],
+                                   "unless": [*unless, *strings(op.get("unless"))],
+                                   "checks": [_describe_check(c) for c in op.get("checks", [])]
+                                   + ["nicht für " + g for g in op.get("not_guilds", [])]}
+
+    walk(data["plan"])
+    convs = []
+    for key, graph in conversations.items():
+        start = starts.get(key, {})
+        nodes = copy.deepcopy(graph["nodes"])
+        for node in nodes.values():
+            node["teaches"] = strings(node.get("teaches")) or strings(node.get("sets"))
+            for choice in node["choices"]:
+                choice["requires"] = strings(choice.get("requires")) or None
+        where = start.get("checks", []) if key in starts else ["nie gestartet"]
+        convs.append({"id": key, "voice": graph.get("voice"), "speaker": labels[key].split(" · ")[0], "where": " · ".join(where),
+                      "requires": start.get("requires", []), "unless": start.get("unless", []),
+                      "within": start.get("within"), "scene": start.get("scene", False),
+                      "start": graph["start"], "nodes": nodes})
+    flow = story_graph(data, labels, cast)
+    node_map = {f"c{i}": ["c", key] for i, key in enumerate(data["conversations"])}
+    node_map.update({fid: ["f", info["id"]] for fid, info in flow["facts"].items()})
+    facts = {name: {"essential": bool(v.get("essential")), "topic": bool(v.get("topic")), "needs": v.get("needs", []),
+                    "knownBy": [cast.get(n, n) for n in v.get("known_by", [])]}
+             for name, v in data["plot"].get("facts", {}).items()}
+    page = {"title": data.get("title", story_id), "frame": data.get("premise", ""), "truth": data.get("hidden_truth", ""),
+            "errors": report["errors"], "warnings": report["warnings"], "facts": facts, "convs": convs, "rules": rules,
+            "nodeMap": node_map}
+    return page, flow["mermaid"]
+
+
+def fingerprint(story_id, index):
+    """What an acceptance holds for: the story's source and every line and recording as it is reviewed now."""
+    content = json.dumps([library.revision(story_id), sorted(index.items(), key=lambda pair: pair[0])])
+    return hashlib.sha256(content.encode("utf-8")).hexdigest()[:12]
+
+
+def library_data():
+    """Every story with its stage, review progress and what still blocks acceptance."""
+    reviews = load_reviews()
+    result = []
+    for entry in library.entries():
+        data, _ = story_view(entry["id"])
+        if data is None:
+            continue
+        index = content_index(data)
+        prefix = entry["id"] + "/"
+        valid = {key[len(prefix):]: value for key, value in reviews.items() if key.startswith(prefix)
+                 and value.get("hash") is not None and value["hash"] == index.get(key[len(prefix):])}
+        reviewable = [key for key, content in index.items() if content is not None]
+        speakers = sorted({c["speaker"] for c in data["convs"]})
+        entry["stage"], entry["changed"] = library.stage_of(entry["id"], rev=fingerprint(entry["id"], index))
+        result.append({**entry, "lines": len(reviewable), "reviewed": sum(1 for key in reviewable if key in valid),
+                       "rejected": sum(1 for key in reviewable if valid.get(key, {}).get("verdict") == "reject"),
+                       "errors": len(data["errors"]), "warnings": len(data["warnings"]), "speakers": speakers,
+                       "blockers": library.gate(data["errors"], valid, index)})
+    return result
 
 
 def load_reviews():
@@ -190,8 +335,7 @@ def character_data():
 EXPERIMENT = voices.RUNTIME_DIR / "experiment"
 EXPERIMENT_PAGE = ROOT / "inspector" / "experiment.html"
 SCORES = EXPERIMENT / "scores.json"
-def _blind_id(name):
-    return hashlib.sha256(("experiment-1:" + name).encode("utf-8")).hexdigest()[:10]
+_blind_id = library.blind_id
 
 
 def _as_list(value):
@@ -372,10 +516,7 @@ def experiment_data():
 MAX_BODY, MAX_TEXT = 200_000, 20_000
 
 
-def _story_paths():
-    stories = EXPERIMENT / "stories"
-    return [p for p in sorted(stories.glob("s*_*.json")) + sorted(stories.glob("x*_*.json"))
-            if not p.name.endswith((".first.json", ".final.json"))]
+_story_paths = library.story_paths
 
 
 def _clean_score(request):
@@ -426,11 +567,34 @@ class Handler(http.server.BaseHTTPRequestHandler):
             self.send_header("Content-Length", "0")
             return self.end_headers()
         if self.path == "/":
-            data, graph = build()
+            self._send(self._localized(LIBRARY_PAGE.read_text(encoding="utf-8")), "text/html; charset=utf-8")
+        elif self.path == "/map":
+            self._send(self._localized(MAP_PAGE.read_text(encoding="utf-8")), "text/html; charset=utf-8")
+        elif self.path == "/map/data":
+            path = MAP_DIR / "map_data.json"
+            if not path.exists():
+                return self._send(b"{}", status=404)
+            self._send(path.read_bytes())
+        elif MAP_IMAGE.match(self.path):
+            path = MAP_DIR / MAP_IMAGE.match(self.path)[1]
+            if not path.exists():
+                return self._send(b"", "image/png", status=404)
+            self._send(path.read_bytes(), "image/png")
+        elif self.path == "/library/data":
+            self._send(json.dumps(library_data(), ensure_ascii=False).encode("utf-8"))
+        elif self.path.startswith("/story/"):
+            story_id = self.path[len("/story/"):]
+            data, graph = story_view(story_id)
+            if data is None:
+                return self._send(b"unknown story", "text/plain; charset=utf-8", status=404)
+            data = {**data, "id": story_id}
             language = self._language()
-            # Translate the page first, then insert the story, whose own text only has its labels swapped.
-            labels = lambda text: inspector_i18n.translate(text, language, inspector_i18n.LABELS)
-            html = self._localized(PAGE.read_text(encoding="utf-8")).decode("utf-8").replace("%%GRAPH%%", labels(graph)).replace(
+            # Translate the page first, then insert the story. Only the demo story's own labels are translated,
+            # generated stories stay in the language they were written in.
+            labels = (lambda text: inspector_i18n.translate(text, language, inspector_i18n.LABELS)) \
+                if story_id == library.DEMO_ID else (lambda text: text)
+            mermaid = labels(graph) if story_id == library.DEMO_ID else html_escape(graph, quote=False)
+            html = self._localized(PAGE.read_text(encoding="utf-8")).decode("utf-8").replace("%%GRAPH%%", mermaid).replace(
                 "/*DATA*/null", labels(json.dumps(data, ensure_ascii=False)).replace("</", "<\\/"))
             self._send(html.encode("utf-8"), "text/html; charset=utf-8")
         elif self.path in ("/vendor/mermaid.min.js", "/vendor/svg-pan-zoom.min.js"):
@@ -452,7 +616,10 @@ class Handler(http.server.BaseHTTPRequestHandler):
         elif self.path == "/experiment/scores":
             self._send(json.dumps(load_scores(), ensure_ascii=False).encode("utf-8"))
         elif self.path == "/reviews":
-            self._send(json.dumps(current_reviews(), ensure_ascii=False).encode("utf-8"))
+            story_id = dict(urllib.parse.parse_qsl(query)).get("story", library.DEMO_ID)
+            if story_view(story_id)[0] is None:
+                return self._send(b"{}", status=404)
+            self._send(json.dumps(story_reviews(story_id), ensure_ascii=False).encode("utf-8"))
         else:
             match = AUDIO_PATH.match(self.path)
             path = voices.VOICE_DIR / match[1] / f"{match[2]}.wav" if match else None
@@ -482,7 +649,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
         return (None, request) if isinstance(request, dict) else ("expected an object", None)
 
     def do_POST(self):
-        if self.path not in ("/reviews", "/experiment/score"):
+        if self.path not in ("/reviews", "/experiment/score", "/library/stage", "/library/play"):
             return self._send(b"{}", status=404)
         problem, request = self._read_json()
         if problem:
@@ -498,20 +665,52 @@ class Handler(http.server.BaseHTTPRequestHandler):
                 temporary.write_text(json.dumps(scores, ensure_ascii=False, indent=1), encoding="utf-8")
                 temporary.replace(SCORES)
             return self._send(b"{}")
-        target = content_index(build()[0]).get(request.get("id"))
+        if self.path == "/library/stage":
+            return self._stage(request)
+        if self.path == "/library/play":
+            return self._play(request)
+        story_id = request.get("story", library.DEMO_ID)
+        data = story_view(story_id)[0] if isinstance(story_id, str) else None
+        target = content_index(data).get(request.get("id")) if data else None
         if target is None or request.get("verdict") not in (None, "approve", "reject") or len(str(request.get("reason", ""))) > MAX_TEXT:
             return self._send(b'{"error": "bad review"}', status=400)
         with REVIEW_LOCK:
             reviews = load_reviews()
+            key = story_id + "/" + request["id"]
             if request.get("verdict"):
-                reviews[request["id"]] = {"verdict": request["verdict"], "reason": request.get("reason", ""),
-                                          "hash": target}
+                reviews[key] = {"verdict": request["verdict"], "reason": request.get("reason", ""), "hash": target}
             else:
-                reviews.pop(request["id"], None)
-            # write to a temporary file first, so a crash can never leave a partial file
-            temporary = REVIEWS.with_suffix(".tmp")
-            temporary.write_text(json.dumps(reviews, ensure_ascii=False, indent=1), encoding="utf-8")
-            temporary.replace(REVIEWS)
+                reviews.pop(key, None)
+            _write_reviews(reviews)
+        self._send(b"{}")
+
+    def _error(self, message, status=400):
+        self._send(json.dumps({"error": message}, ensure_ascii=False).encode("utf-8"), status=status)
+
+    def _stage(self, request):
+        story_id = request.get("id")
+        data = story_view(story_id)[0] if isinstance(story_id, str) else None
+        if data is None:
+            return self._error("unknown story")
+        index = content_index(data)
+        rev = fingerprint(story_id, index)
+        with REVIEW_LOCK:
+            blockers = library.gate(data["errors"], story_reviews(story_id), index)
+            problem = library.move(story_id, request.get("stage"), blockers, rev)
+        if problem:
+            return self._error(problem, status=409)
+        self._send(json.dumps({"stage": library.stage_of(story_id, rev=rev)[0]}).encode("utf-8"))
+
+    def _play(self, request):
+        story_id = request.get("id")
+        data = story_view(story_id)[0] if isinstance(story_id, str) else None
+        if data is None:
+            return self._error("unknown story")
+        if library.stage_of(story_id, rev=fingerprint(story_id, content_index(data)))[0] != library.ACCEPTED:
+            return self._error("only accepted stories can be played", status=409)
+        reply = bridge.call("play", data["title"], library.plan(story_id))
+        if reply.get("error") or reply.get("ok") is False:
+            return self._error(reply.get("error") or "the game refused the story", status=502)
         self._send(b"{}")
 
     def log_message(self, *args):

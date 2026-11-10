@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="de">
+<title>Karte</title>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,400;0,500;0,700;1,400;1,500&family=Almendra+SC&family=Grenze+Gotisch:wght@500;700&family=IM+Fell+English:ital@0;1&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+body{margin:0;background:var(--bg);color:var(--ink)}a{color:var(--ember)}
+.wrap{max-width:1500px;margin:0 auto;padding:24px max(16px,env(safe-area-inset-left,0px)) 60px max(16px,env(safe-area-inset-right,0px))}
+h1{margin:0 0 10px}
+.controls{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;margin:0 0 12px}
+.group{display:flex;flex-wrap:wrap;gap:4px;align-items:center}
+.group button{font:15px var(--small);padding:5px 10px;background:var(--chip);color:var(--ink);border:1px solid var(--line);border-radius:1px;cursor:pointer}
+.group button[aria-pressed="true"]{background:var(--ember);color:#1a110a;border-color:var(--ember)}
+.controls select,.controls input[type=search]{font:15px var(--body);padding:6px 8px;background:#1e140c;color:#e8d9b5;border:1px solid #6b5333;border-radius:2px}
+.controls input[type=search]{min-width:200px}
+.label{color:var(--soft)}
+.time{display:flex;gap:8px;align-items:center}.time input{width:min(320px,60vw)}.time output{font:500 18px var(--mono);color:var(--gold);min-width:5ch}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:16px;align-items:start}
+@media(max-width:980px){.layout{grid-template-columns:minmax(0,1fr)}}
+#stage{position:relative;height:min(78vh,860px);background:#0d0a07;border:1px solid var(--line);overflow:hidden}
+#stage svg{width:100%;height:100%;display:block;touch-action:none}
+.side{display:grid;gap:12px;max-height:min(78vh,860px);overflow:auto}
+.panel{padding:12px 14px}
+.panel h2{font-size:22px;margin:0 0 6px}
+.meta{font:13px var(--mono);color:var(--soft)}
+.people{list-style:none;margin:6px 0 0;padding:0;display:grid;gap:6px}
+.people li{border-top:1px dashed var(--line);padding-top:6px}
+.people .who{font:500 17px var(--body)}.people .what{font:14px var(--body)}
+.wp{font:12px var(--mono);background:none;border:1px solid var(--line);color:var(--ink);cursor:pointer;padding:1px 6px;border-radius:1px}
+.dot{cursor:pointer}.dot text{font:600 11px var(--mono);fill:#1a110a;pointer-events:none;text-anchor:middle;dominant-baseline:central}
+.dot.sel circle{stroke:#fff;stroke-width:2.5}
+.legend{display:flex;flex-wrap:wrap;gap:6px 12px;font:13px var(--body)}.legend span{display:inline-flex;gap:5px;align-items:center}.legend i{width:11px;height:11px;border-radius:50%;display:inline-block;border:1px solid #1a110a}
+.hint{font:15px var(--hand);color:var(--soft)}
+</style>
+<link rel="stylesheet" href="/gothic.css">
+<main class="wrap">
+<nav class="topnav" aria-label="Seiten"><a href="/">Geschichten</a><a href="/map">Karte</a><a href="/characters">Figuren</a><a href="/experiment">Geschichtenprobe</a><span class="lang"><a href="?lang=en" hreflang="en">EN</a><a href="?lang=de" hreflang="de">DE</a></span></nav>
+<h1>Karte</h1>
+<div class="controls">
+ <div class="group" id="worlds" role="group" aria-label="Welt"></div>
+ <select id="mapsel" aria-label="Karte"></select>
+ <div class="group" id="chapters" role="group" aria-label="Kapitel"><span class="label">Kapitel</span></div>
+</div>
+<div class="controls">
+ <div class="time"><span class="label">Uhrzeit</span><input id="time" type="range" min="0" max="1410" step="30" value="720" aria-label="Uhrzeit"><output id="clock">12:00</output></div>
+ <div class="group" id="quick" role="group" aria-label="Tageszeit"></div>
+ <input id="find" type="search" placeholder="Figur oder Ort suchen" aria-label="Figur oder Ort suchen">
+ <select id="guild" aria-label="Gilde"><option value="">Alle Gilden</option></select>
+ <label class="label"><input type="checkbox" id="main"> nur Hauptfiguren</label>
+ <label class="label"><input type="checkbox" id="cond"> auch bedingte Auftritte</label>
+</div>
+<div class="layout">
+ <div id="stage"><p class="hint" style="padding:16px">Lädt …</p></div>
+ <aside class="side">
+  <div class="panel" id="detail"><p class="hint">Klick auf einen Punkt zeigt, wer dort ist. Klick auf die Karte zeigt den nächsten Wegpunkt.</p></div>
+  <div class="panel"><div class="legend" id="legend"></div><p class="meta" id="count" role="status"></p></div>
+ </aside>
+</div>
+<p class="meta">Tasten: / sucht, Pfeile links und rechts ändern die Uhrzeit, 1 bis 6 wählt das Kapitel. Die Orte kommen aus den Tagesabläufen des Spiels. Abläufe, die erst ein Gespräch auslöst, stehen bei der Figur, aber nicht auf der Karte.</p>
+</main>
+<script src="/vendor/svg-pan-zoom.min.js"></script>
+<script>if(!window.svgPanZoom)document.write('<script src="https://cdn.jsdelivr.net/npm/svg-pan-zoom@3.6.1/dist/svg-pan-zoom.min.js"><\/script>');</script>
+<script>
+const $=s=>document.querySelector(s),el=(t,c,x)=>{const n=document.createElement(t);if(c)n.className=c;if(x!=null)n.textContent=x;return n};
+const NS="http://www.w3.org/2000/svg",svgEl=(t,a)=>{const n=document.createElementNS(NS,t);for(const k in a)n.setAttribute(k,a[k]);return n};
+const WORLD_NAMES={"NEWWORLD.ZEN":"Khorinis","OLDWORLD.ZEN":"Minental","ADDONWORLD.ZEN":"Jharkendar","DRAGONISLAND.ZEN":"Dracheninsel"};
+const GUILDS=[["GIL_VLK","Bürger","#d8b26a"],["GIL_MIL","Miliz","#c0392b"],["GIL_PAL","Paladine","#e8e0c8"],["GIL_KDF","Feuermagier","#e8732a"],["GIL_NOV","Novizen","#f0a860"],["GIL_KDW","Wassermagier","#4aa3c8"],
+ ["GIL_SLD","Söldner","#8a5a2b"],["GIL_DJG","Drachenjäger","#6e3b1f"],["GIL_BAU","Bauern","#7da24a"],["GIL_BDT","Banditen","#7a1f14"],["GIL_PIR","Piraten","#2f6f6a"],["GIL_OUT","Außenseiter","#9b8bb4"]];
+const COLOR=Object.fromEntries(GUILDS.map(g=>[g[0],g[2]])),OTHER="#a8997b";
+let D=null,world=null,map=null,chapter=1,minutes=720,zoomer=null,selected=null,people=[];
+const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+const hhmm=m=>String(Math.floor(m/60)).padStart(2,"0")+":"+String(m%60).padStart(2,"0");
+const readable=a=>a.toLowerCase().replace(/_/g," ");
+function active(entry,t){const f=entry.from,u=entry.to;if(f===u)return true;return f<u?(t>=f&&t<u):(t>=f||t<u)}
+function placeOf(p){const r=p.routines[chapter];if(!r)return null;const e=(p.schedules[r]||[]).find(x=>active(x,minutes));return e?{...e,routine:r}:null}
+function toImage(x,z){const m=map;return[(x-m.left)/(m.right-m.left)*m.width,(m.top-z)/(m.top-m.bottom)*m.height]}
+function fromImage(px,py){const m=map;return[m.left+px/m.width*(m.right-m.left),m.top-py/m.height*(m.top-m.bottom)]}
+function filters(){return{q:$("#find").value.trim().toLowerCase(),guild:$("#guild").value,main:$("#main").checked,cond:$("#cond").checked}}
+const conditional=p=>p.spawn.conditions.length>0;
+function visiblePeople(){const f=filters(),W=D.worlds[world];let unplaced=0;const out=[];
+ W.people.forEach(p=>{if(!p.routines[chapter])return;if(f.guild&&p.guild!==f.guild)return;if(f.main&&p.type!=="NPCTYPE_MAIN")return;if(!f.cond&&conditional(p))return;
+  const at=placeOf(p);if(!at||at.x==null){unplaced++;return}
+  if(f.q&&!(p.name+" "+p.instance+" "+at.wp).toLowerCase().includes(f.q))return;
+  const [px,py]=toImage(at.x,at.z);if(px<0||py<0||px>map.width||py>map.height)return;out.push({p,at,px,py})});
+ return{out,unplaced}}
+function cluster(points,radius){const used=new Array(points.length).fill(false),groups=[];
+ points.forEach((a,i)=>{if(used[i])return;const g=[a];used[i]=true;points.forEach((b,j)=>{if(!used[j]&&Math.hypot(a.px-b.px,a.py-b.py)<radius){used[j]=true;g.push(b)}});
+  const cx=g.reduce((s,x)=>s+x.px,0)/g.length,cy=g.reduce((s,x)=>s+x.py,0)/g.length;groups.push({cx,cy,members:g})});return groups}
+function colorOf(g){const c={};g.members.forEach(m=>c[m.p.guild]=(c[m.p.guild]||0)+1);const top=Object.entries(c).sort((a,b)=>b[1]-a[1])[0][0];return COLOR[top]||OTHER}
+/* screen pixels per map pixel, zoom included: dots keep their size on screen whatever the map's proportions */
+function screenScale(){const vp=document.querySelector(".svg-pan-zoom_viewport");const m=vp&&vp.getScreenCTM();return m&&m.a>0?m.a:1}
+function drawDots(){const layer=$("#dots");if(!layer)return;layer.textContent="";const z=screenScale();
+ const {out,unplaced}=visiblePeople();people=out;const groups=cluster(out,34/z);
+ groups.forEach((g,i)=>{const n=g.members.length,r=(n>1?8+Math.min(10,Math.sqrt(n)*2.4):6)/z;const dot=svgEl("g",{class:"dot",tabindex:"0",role:"button"});
+  dot.setAttribute("aria-label",n>1?n+" Figuren":g.members[0].p.name);
+  const c=svgEl("circle",{cx:g.cx,cy:g.cy,r,fill:colorOf(g),stroke:"#1a110a","stroke-width":1.2/z});if(g.members.some(m=>conditional(m.p)))c.setAttribute("stroke-dasharray",(3/z)+" "+(2/z));dot.append(c);
+  if(n>1){const t=svgEl("text",{x:g.cx,y:g.cy});t.textContent=n;t.style.fontSize=(11/z)+"px";dot.append(t)}
+  const key=g.members.map(m=>m.p.instance).sort().join(",");if(selected===key)dot.classList.add("sel");
+  const open=()=>{selected=key;showGroup(g);drawDots()};dot.addEventListener("click",e=>{e.stopPropagation();open()});dot.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();open()}});
+  const title=svgEl("title",{});title.textContent=g.members.map(m=>m.p.name).join(", ");dot.append(title);layer.append(dot)});
+ $("#count").textContent=out.length+" Figuren sichtbar"+(unplaced?" · "+unplaced+" ohne bekannten Ort":"")}
+function copyButton(wp){const b=el("button","wp",wp);b.type="button";b.title="Wegpunkt kopieren";b.onclick=()=>{navigator.clipboard&&navigator.clipboard.writeText(wp).then(()=>{b.textContent="kopiert";setTimeout(()=>b.textContent=wp,1200)}).catch(()=>{})};return b}
+function personItem(m){const li=el("li");li.append(el("div","who",m.p.name),el("div","what",readable(m.at.activity)+" · "+hhmm(m.at.from)+"–"+hhmm(m.at.to)));
+ const row=el("div","meta");row.append(copyButton(m.at.wp)," "+(m.p.guild||"").replace("GIL_","")+" · "+m.at.routine);li.append(row);
+ const other=(m.p.other_routines||[]).map(r=>r.replace(/^RTN_/,"").replace(/_\d+$/,""));if(other.length)li.append(el("div","meta","Weitere Abläufe: "+other.join(", ")));
+ if(conditional(m.p))li.append(el("div","meta","Erscheint nur wenn: "+m.p.spawn.conditions.join(" und ")));
+ if(m.p.leaves)li.append(el("div","meta","Verlässt die Welt in Kapitel "+m.p.leaves.chapter+(m.p.leaves.conditions.length?", wenn "+m.p.leaves.conditions.join(" und "):"")));return li}
+function showGroup(g){const d=$("#detail");d.textContent="";const wps=[...new Set(g.members.map(m=>m.at.wp))];
+ d.append(el("h2","",g.members.length>1?g.members.length+" Figuren":g.members[0].p.name),el("p","meta",WORLD_NAMES[world]+" · Kapitel "+chapter+" · "+hhmm(minutes)));
+ const ul=el("ul","people");g.members.sort((a,b)=>a.p.name.localeCompare(b.p.name)).forEach(m=>ul.append(personItem(m)));d.append(ul);if(wps.length>1)d.append(el("p","meta",wps.length+" Wegpunkte"))}
+function showPlace(px,py){const [x,z]=fromImage(px,py),W=D.worlds[world];let best=null;
+ for(const [name,[wx,wz]] of Object.entries(W.waypoints)){const d=Math.hypot(wx-x,wz-z);if(!best||d<best[1])best=[name,d,wx,wz]}
+ if(!best)return;selected=null;drawDots();const near=people.filter(m=>Math.hypot(m.at.x-best[2],m.at.z-best[3])<1500).sort((a,b)=>Math.hypot(a.at.x-best[2],a.at.z-best[3])-Math.hypot(b.at.x-best[2],b.at.z-best[3]));
+ const d=$("#detail");d.textContent="";d.append(el("h2","","Ort"));const p=el("p");p.append(copyButton(best[0]));d.append(p,el("p","meta","x "+Math.round(best[2])+" · z "+Math.round(best[3])+" · "+Math.round(best[1])+" Einheiten vom Klick"));
+ d.append(el("p","meta",near.length?near.length+" Figuren in der Nähe um "+hhmm(minutes)+":":"Um "+hhmm(minutes)+" ist niemand in der Nähe."));const ul=el("ul","people");near.slice(0,30).forEach(m=>ul.append(personItem(m)));d.append(ul)}
+function drawMap(){const stage=$("#stage");stage.textContent="";if(zoomer){zoomer.destroy();zoomer=null}
+ if(!map||!(map.image||map.schematic)){stage.append(el("p","hint","Für diese Welt gibt es keine Karte im Spiel."));drawDots();return}
+ const svg=svgEl("svg",{viewBox:"0 0 "+map.width+" "+map.height,"aria-label":"Karte"});const vp=svgEl("g",{class:"svg-pan-zoom_viewport"});
+ if(map.image)vp.append(svgEl("image",{href:"/map/image/"+map.image,x:0,y:0,width:map.width,height:map.height}));
+ else{/* the game has no map here: draw the world's own paths between waypoints instead */
+  vp.append(svgEl("rect",{x:0,y:0,width:map.width,height:map.height,fill:"#d9c59c"}));const W=D.worlds[world],paths=svgEl("g",{stroke:"#5e4829","stroke-width":1.6,"stroke-linecap":"round",opacity:.8});
+  W.paths.forEach(([a,b])=>{const A=W.waypoints[a],B=W.waypoints[b];if(!A||!B)return;const[x1,y1]=toImage(A[0],A[1]),[x2,y2]=toImage(B[0],B[1]);paths.append(svgEl("line",{x1,y1,x2,y2,"vector-effect":"non-scaling-stroke"}))});vp.append(paths)}
+ vp.append(svgEl("g",{id:"dots"}));svg.append(vp);stage.append(svg);
+ if(map.schematic)stage.append(Object.assign(el("p","meta","Keine Karte im Spiel: gezeichnet aus den Wegen der Welt."),{style:"position:absolute;left:10px;bottom:4px;margin:0"}));
+ let down=null;svg.addEventListener("pointerdown",e=>{down=[e.clientX,e.clientY]});
+ svg.addEventListener("click",e=>{if(down&&Math.hypot(e.clientX-down[0],e.clientY-down[1])>5)return;const pt=svg.createSVGPoint();pt.x=e.clientX;pt.y=e.clientY;const q=pt.matrixTransform(vp.getScreenCTM().inverse());showPlace(q.x,q.y)});
+ if(window.svgPanZoom)zoomer=svgPanZoom(svg,{viewportSelector:".svg-pan-zoom_viewport",controlIconsEnabled:true,minZoom:1,maxZoom:14,fit:true,center:true,zoomScaleSensitivity:.3,onZoom:()=>drawDots()});
+ drawDots()}
+function pressed(group,value){group.querySelectorAll("button").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.v===String(value))))}
+function chooseWorld(w){world=w;store.set("map.world",w);pressed($("#worlds"),w);const sel=$("#mapsel");sel.textContent="";const maps=D.worlds[w].maps.filter(m=>m.image||m.schematic);
+ const base="MAP_"+w.replace(".ZEN","");maps.forEach(m=>{const rest=m.texture.replace(/\.TGA$/,"").slice(base.length).replace(/^_/,"").replace(/_/g," ").toLowerCase();sel.append(new Option(m.schematic?"Wegenetz":(rest||"Übersicht"),m.texture))});sel.hidden=!maps.length;
+ const main=maps.find(m=>m.texture==="MAP_"+w.replace(".ZEN","")+".TGA")||maps[0];map=main||null;if(main)sel.value=main.texture;
+ const guilds=[...new Set(D.worlds[w].people.map(p=>p.guild))].filter(Boolean).sort(),g=$("#guild"),chosen=g.value;[...g.options].slice(1).forEach(o=>o.remove());guilds.forEach(x=>g.append(new Option(x.replace("GIL_",""),x)));g.value=guilds.includes(chosen)?chosen:"";
+ selected=null;drawMap()}
+function setChapter(c){chapter=c;pressed($("#chapters"),c);selected=null;drawDots()}
+function setTime(m){minutes=((m%1440)+1440)%1440;$("#time").value=minutes;$("#clock").textContent=hhmm(minutes);drawDots()}
+async function load(){const r=await fetch("/map/data");if(!r.ok){$("#stage").textContent="";$("#stage").append(el("p","hint","Noch keine Kartendaten. Einmal ausführen: python3 python/dm/map_data.py <Gothic-Ordner>"));return}D=await r.json();
+ Object.keys(D.worlds).forEach(w=>{const b=el("button","",WORLD_NAMES[w]||w);b.type="button";b.dataset.v=w;b.onclick=()=>chooseWorld(w);$("#worlds").append(b)});
+ for(let c=1;c<=6;c++){const b=el("button","",String(c));b.type="button";b.dataset.v=c;b.onclick=()=>setChapter(c);$("#chapters").append(b)}
+ [["Morgen",420],["Mittag",720],["Abend",1140],["Nacht",120]].forEach(([t,m])=>{const b=el("button","",t);b.type="button";b.onclick=()=>setTime(m);$("#quick").append(b)});
+ GUILDS.forEach(([k,label,c])=>{const s=el("span");const i=el("i");i.style.background=c;s.append(i,label);$("#legend").append(s)});
+ /* a link can open a view directly: /map?world=OLDWORLD.ZEN&chapter=4&time=21:00 */
+ const q=new URLSearchParams(location.search),wanted=(q.get("world")||"").toUpperCase(),saved=store.get("map.world");
+ const c=Number(q.get("chapter"));chapter=c>=1&&c<=6?c:1;pressed($("#chapters"),chapter);const t=/^(\d{1,2}):(\d{2})$/.exec(q.get("time")||"");if(t){minutes=(Number(t[1])*60+Number(t[2]))%1440;$("#time").value=minutes;$("#clock").textContent=hhmm(minutes)}
+ chooseWorld(D.worlds[wanted]?wanted:D.worlds[saved]?saved:Object.keys(D.worlds)[0])}
+$("#mapsel").onchange=()=>{map=D.worlds[world].maps.find(m=>m.texture===$("#mapsel").value);selected=null;drawMap()};
+$("#time").oninput=()=>setTime(Number($("#time").value));
+["find","guild","main","cond"].forEach(id=>$("#"+id).addEventListener(id==="find"?"input":"change",()=>{selected=null;drawDots()}));
+addEventListener("keydown",e=>{if(e.metaKey||e.ctrlKey||e.altKey)return;const typing=/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)&&e.target.type!=="range";
+ if(e.key==="/"&&!typing){e.preventDefault();$("#find").focus()}else if(typing)return;else if(/^[1-6]$/.test(e.key))setChapter(Number(e.key));
+ else if(e.key==="ArrowRight"&&e.target.type!=="range"){e.preventDefault();setTime(minutes+30)}else if(e.key==="ArrowLeft"&&e.target.type!=="range"){e.preventDefault();setTime(minutes-30)}});
+load().catch(()=>{$("#stage").textContent="Die Kartendaten konnten nicht geladen werden. Läuft der Inspektor noch?"});
+</script>
