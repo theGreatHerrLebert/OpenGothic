@@ -79,3 +79,9 @@ def play(reason, ops):
     import dm
     dm.start()
     submit(reason, ops)
+
+
+def play_demo():
+    """The demo story, built here: its theft waits for the first night after today, which only the game knows."""
+    from dm.stories import tilo
+    play("Der Fall Tilo", tilo.plan(start_day=gothic.world.day))

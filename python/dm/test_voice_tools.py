@@ -49,14 +49,24 @@ with tempfile.TemporaryDirectory() as d:
     library.EXPERIMENT = root
     library.STAGE_FILE = root / "stages.json"
     make_pack.PACKS = root / "packs"
+    b.voices.REF_DIR = root / "refs"
+    b.voices.REF_DIR.mkdir()
     story = {"title": "Der Probefall", "premise": "p", "hidden_truth": "t", "plot": {}, "plan": [],
              "conversations": {"VLK_1_A": graphs["a"]}}
     (root / "stories" / "s9_9.json").write_text(json.dumps(story), encoding="utf-8")
     (root / "graphs.json").write_text(json.dumps({"s9_9__VLK_1_A": graphs["a"]}), encoding="utf-8")
+    try:
+        make_pack.build("Der Probefall")                      # voice 05 threatening, but nobody knows its game lines
+        raise AssertionError("packed a delivery voice it cannot rebuild")
+    except SystemExit:
+        pass
+    (b.voices.REF_DIR / "05_drohend.keys.json").write_text('["DIA_X_05_01", "DIA_Y_05_02"]', encoding="utf-8")
     path, names, lines = make_pack.build("Der Probefall")
-    assert names == ["der-probefall/story.json", "der-probefall/graphs.json", "der-probefall/LIESMICH.md"]
+    assert names == ["der-probefall/story.json", "der-probefall/graphs.json", "der-probefall/refs.json",
+                     "der-probefall/LIESMICH.md"]
     with zipfile.ZipFile(path) as pack:
         packed = json.loads(pack.read("der-probefall/graphs.json"))
+        assert json.loads(pack.read("der-probefall/refs.json")) == {"05_drohend": ["DIA_X_05_01", "DIA_Y_05_02"]}
         everything = b"".join(pack.read(n) for n in pack.namelist())
     assert list(packed) == ["der-probefall__VLK_1_A"]
     assert b"s9_9" not in everything                         # the file name says where a story came from

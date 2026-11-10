@@ -156,10 +156,9 @@ def check(story_id):
 
 
 def plan(story_id):
-    """The operations that start a story in the game."""
+    """The operations that start a generated story in the game. The demo is built inside the game, see dm.api."""
     if story_id == DEMO_ID:
-        from dm.stories import tilo
-        return tilo.plan()
+        raise ValueError("the demo story's plan depends on the game day; start it with dm.api.play_demo")
     data, _ = generated(story_id)
     return None if data is None else data["plan"]
 

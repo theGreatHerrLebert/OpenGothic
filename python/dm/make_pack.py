@@ -85,20 +85,41 @@ def build(name):
     graphs = {f"{folder}__{key}": graph for key, graph in conversations.items()}
     lines = sum(1 for line in {(voice, text, delivery) for graph in graphs.values()
                                for voice, text, delivery in _spoken(graph)})
+    # a delivery (a threatening 09, say) is cloned from hand-picked game lines; the pack names them, never the audio
+    refs = {}
+    for name in _needed(graphs):
+        if "_" in name:
+            keys = _reference_keys(name)
+            if not keys:
+                raise SystemExit(f"cannot tell which game lines make the voice {name}; rebuild it with bake_voices.py named")
+            refs[name] = keys
     PACKS.mkdir(parents=True, exist_ok=True)
     target = PACKS / f"{folder}.zip"
     with zipfile.ZipFile(target, "w", zipfile.ZIP_DEFLATED) as pack:
         pack.writestr(f"{folder}/story.json", json.dumps(data, ensure_ascii=False, indent=1))
         pack.writestr(f"{folder}/graphs.json", json.dumps(graphs, ensure_ascii=False, indent=1))
+        if refs:
+            pack.writestr(f"{folder}/refs.json", json.dumps(refs, indent=1))
         pack.writestr(f"{folder}/LIESMICH.md", README.format(title=entry["title"], slug=folder, lines=lines))
         names = pack.namelist()
     assert not any(n.lower().endswith((".wav", ".mp3", ".ogg", ".safetensors")) for n in names)
+    assert not any(n.endswith(".txt") for n in names)   # a reference's text quotes the game
     return target, names, lines
 
 
 def _spoken(graph):
     from dm import bake_voices
     return bake_voices.spoken_lines(graph)
+
+
+def _needed(graphs):
+    from dm import bake_voices
+    return bake_voices.needed_voices(graphs)
+
+
+def _reference_keys(name):
+    from dm import bake_voices
+    return bake_voices.reference_keys(name)
 
 
 if __name__ == "__main__":

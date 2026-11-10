@@ -104,6 +104,8 @@ def build():
             n["audio"] = audio_url(voice, n["line"], n.get("delivery"))
             if n.get("again"):
                 n["audioAgain"] = audio_url(voice, n["again"], n.get("delivery"))
+            for variant in n.get("variants", []):
+                variant["audio"] = audio_url(voice, variant["line"], n.get("delivery"))
             for choice in n["choices"]:
                 choice["audio"] = audio_url(voices.HERO_VOICE, choice["text"])
     return data, "\n".join(L)
@@ -142,6 +144,9 @@ def content_index(data):
             if node.get("again"):
                 index[base + "__again"] = _text_hash(node["again"])
                 index[base + "__again__voice"] = _audio_hash(node.get("audioAgain"))
+            for i, variant in enumerate(node.get("variants", [])):  # spoken instead of the line once a flag is set
+                index[f"{base}__v{i}"] = _text_hash(variant["line"])
+                index[f"{base}__v{i}__voice"] = _audio_hash(variant.get("audio"))
             for i, choice in enumerate(node["choices"]):
                 index[f"{base}__c{i}"] = _text_hash(choice["text"])
                 index[f"{base}__c{i}__voice"] = _audio_hash(choice.get("audio"))
@@ -205,6 +210,8 @@ def _with_audio(page):
             node["audio"] = audio_url(conv["voice"], node["line"], node.get("delivery"))
             if node.get("again"):
                 node["audioAgain"] = audio_url(conv["voice"], node["again"], node.get("delivery"))
+            for variant in node.get("variants", []):
+                variant["audio"] = audio_url(conv["voice"], variant["line"], node.get("delivery"))
             for choice in node["choices"]:
                 choice["audio"] = None if choice["text"] == "Zurück." else audio_url(voices.HERO_VOICE, choice["text"])
     return page
@@ -708,7 +715,8 @@ class Handler(http.server.BaseHTTPRequestHandler):
             return self._error("unknown story")
         if library.stage_of(story_id, rev=fingerprint(story_id, content_index(data)))[0] != library.ACCEPTED:
             return self._error("only accepted stories can be played", status=409)
-        reply = bridge.call("play", data["title"], library.plan(story_id))
+        reply = bridge.call("play_demo") if story_id == library.DEMO_ID else \
+            bridge.call("play", data["title"], library.plan(story_id))
         if reply.get("error") or reply.get("ok") is False:
             return self._error(reply.get("error") or "the game refused the story", status=502)
         self._send(b"{}")

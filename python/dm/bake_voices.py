@@ -208,7 +208,32 @@ def named_refs(game, name, keys):
         spoken.append(re.sub(r"\([^)]*\)\s*", "", lines[key]).strip())
     _write_mono(voices.REF_DIR / f"{name}.wav", frames)
     (voices.REF_DIR / f"{name}.txt").write_text(" ".join(spoken), encoding="utf-8")
+    # the keys say which game lines were used, so another install can build the same reference (see make_pack)
+    (voices.REF_DIR / f"{name}.keys.json").write_text(json.dumps(list(keys)), encoding="utf-8")
     print(name, " ".join(spoken))
+
+
+def reference_keys(name):
+    """The game lines a hand-picked reference was cut from, or None. Older references are matched by their text."""
+    saved = voices.REF_DIR / f"{name}.keys.json"
+    if saved.exists():
+        return json.loads(saved.read_text(encoding="utf-8"))
+    text_file, lines_file = voices.REF_DIR / f"{name}.txt", voices.RUNTIME_DIR / "mechanics" / "lines.json"
+    if not text_file.exists() or not lines_file.exists():
+        return None
+    spoken = text_file.read_text(encoding="utf-8")
+    voice = name.split("_")[0]
+    found = []
+    for key, line in json.loads(lines_file.read_text(encoding="utf-8")).items():
+        clean = re.sub(r"\([^)]*\)\s*", "", line).strip()
+        if key.endswith(tuple(f"_{voice}_{n:02d}" for n in range(100))) and len(clean) > 20 and clean in spoken:
+            found.append((spoken.index(clean), key))
+    keys = [key for _, key in sorted(found)]
+    if not keys or len(" ".join(re.sub(r"\([^)]*\)\s*", "", json.loads(lines_file.read_text(encoding="utf-8"))[k]).strip()
+                                for k in keys)) != len(spoken):
+        return None  # only a complete match is trustworthy
+    saved.write_text(json.dumps(keys), encoding="utf-8")
+    return keys
 
 
 def _samples(path):
@@ -411,8 +436,13 @@ def bake_all(game, path, quest=None):
         graphs = json.load(f)
     named = [name for name in needed_voices(graphs) if "_" in name]
     missing_named = [name for name in named if not (voices.REF_DIR / f"{name}.wav").exists()]
-    if missing_named:
-        raise SystemExit("these voices need hand-picked lines, see `named`: " + " ".join(missing_named))
+    keys_file = pathlib.Path(path).with_name("refs.json")   # shipped by make_pack: which game lines to use
+    shipped = json.loads(keys_file.read_text(encoding="utf-8")) if keys_file.exists() else {}
+    for name in missing_named:
+        if name not in shipped:
+            raise SystemExit(f"voice {name} needs hand-picked lines, see `named`")
+        print("reference voice from your install:", name, flush=True)
+        named_refs(game, name, shipped[name])
     plain = [name for name in needed_voices(graphs) if "_" not in name and not (voices.REF_DIR / f"{name}.wav").exists()]
     if plain:
         print("reference voices from your install:", " ".join(plain), flush=True)

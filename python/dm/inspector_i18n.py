@@ -52,6 +52,8 @@ ENGLISH = [
     ('"Ende"', '"End"'), ('" · braucht "', '" · needs "'), ('aria-label="Seiten"', 'aria-label="Pages"'),
     ('>Geschichtenprobe<', '>Story trial<'), ('<a href="/">Geschichten</a>', '<a href="/">Stories</a>'), ('<a href="/characters">Figuren</a>', '<a href="/characters">Characters</a>'),
     ('<html lang="de">', '<html lang="en">'),
+    # variants on the story page
+    ('el("p","again","Wenn "+when+": „"', 'el("p","again","If "+when+": „"'), ('el("span","label","Variante")', 'el("span","label","Variant")'),
     # map
     (' auch bedingte Auftritte</label>', ' conditional appearances too</label>'), ('"Erscheint nur wenn: "', '"Appears only if: "'), ('" und "', '" and "'),
     ('"Verlässt die Welt in Kapitel "', '"Leaves the world in chapter "'), ('", wenn "', '", if "'), ('m.schematic?"Wegenetz":', 'm.schematic?"path network":'),
