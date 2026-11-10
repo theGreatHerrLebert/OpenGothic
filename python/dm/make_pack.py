@@ -43,6 +43,8 @@ Dann alle Zeilen dieser Geschichte, {lines} Stück. Der Pfad ist dein Gothic-Ord
 Das holt zuerst je Sprecher vier Zeilen aus deiner Installation als Vorlage und erzeugt dann jede Zeile. Abgebrochene
 Läufe setzen dort fort, wo sie aufgehört haben.
 
+Eine Warnung, dass SoX fehlt, kannst du übergehen: Das Sprachmodell braucht es für diese Stimmen nicht.
+
 ## 3. Spielen
 
 Das Spiel mit Brücke starten. Unter Windows lege den Brückenordner fest, damit Spiel und Skript ihn gleich finden:
