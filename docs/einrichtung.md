@@ -81,6 +81,11 @@ Wahl. Der Inspektor ist nur auf deinem eigenen Rechner erreichbar.
   Geschichte Zeile für Zeile mit Ablaufgraph. Annehmen geht erst, wenn die Prüfung keine Fehler findet und jede Zeile
   angenommen ist. Angenommene Geschichten startest du mit „Im Spiel starten“ direkt im laufenden Spiel. Die Stufen
   stehen in `python/dm_runtime/story_stages.json`.
+  Klingt eine Stimme komisch, erzeugt **Neu sprechen** eine weitere Aufnahme daneben, ohne die alte zu ersetzen. Die
+  Aufnahmen einer Zeile stehen dann als Takes darunter: anhören, mit **Diese nehmen** eine davon ins Spiel bringen, die
+  anderen bleiben erhalten. Lehnst du eine Stimme ab, wird die nächste Aufnahme schon im Hintergrund vorbereitet, dann
+  erscheint sie beim Klick sofort. Rechts unter **Stimmen** stellst du ein, aus wie vielen Spielzeilen die Vorlage einer
+  Stimme gebaut wird; alle Zeilen dieser Stimme in der Geschichte werden dann neu gesprochen, die alten bleiben als Takes.
 - **Karte:** wer sich wo aufhält, nach Welt, Kapitel und Uhrzeit, auf den Karten aus dem Spiel. Ein Klick auf einen
   Punkt zeigt die Figuren dort, ein Klick auf die Karte den nächsten Wegpunkt zum Kopieren. Die Daten baut ein Skript
   einmal aus deiner Installation (es braucht `mechanics/world.jsonl` aus `tools/world_dump.cpp`):

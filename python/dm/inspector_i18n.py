@@ -52,6 +52,16 @@ ENGLISH = [
     ('"Ende"', '"End"'), ('" · braucht "', '" · needs "'), ('aria-label="Seiten"', 'aria-label="Pages"'),
     ('>Geschichtenprobe<', '>Story trial<'), ('<a href="/">Geschichten</a>', '<a href="/">Stories</a>'), ('<a href="/characters">Figuren</a>', '<a href="/characters">Characters</a>'),
     ('<html lang="de">', '<html lang="en">'),
+    # takes and voices on the story page
+    ('busyNow?"Spricht …":"Neu sprechen"', 'busyNow?"Speaking…":"Re-sample"'), ('again.title="Eine neue Aufnahme neben der jetzigen. Ersetzt wird erst mit „Diese nehmen“."', 'again.title="A new take next to the current one. Nothing is replaced until you pick “Use this”."'),
+    ('DATA.takes[id]+" Takes"', 'DATA.takes[id]+" takes"'), ('"Der Stimmen-Prozess läuft nicht."', '"The voice process is not running."'), ('"Neu sprechen fehlgeschlagen: "', '"Re-sampling failed: "'),
+    ('" ist jetzt im Spiel. Die Stimme ist wieder unbewertet."', '" now plays in the game. Its voice needs a new review."'), ('el("span","meta","im Spiel")', 'el("span","meta","in the game")'),
+    ('el("button","v","Nehmen")', 'el("button","v","Use")'), ('u.title="Diese Aufnahme ins Spiel nehmen"', 'u.title="Use this take in the game"'), ('x.title="Take entfernen"', 'x.title="Remove take"'), ('x.setAttribute("aria-label","Take "+t.n+" entfernen")', 'x.setAttribute("aria-label","Remove take "+t.n)'), ('el("button","linkbtn","zuklappen")', 'el("button","linkbtn","collapse")'),
+    ('"Vorlage nicht geändert: "', '"Reference not changed: "'), ('(v.voice==="15"?"Held":"Stimme "+v.voice)', '(v.voice==="15"?"Hero":"Voice "+v.voice)'), ('(v.seconds?"Vorlage "+v.seconds+" s":"keine Vorlage")', '(v.seconds?"reference "+v.seconds+" s":"no reference")'),
+    ('(v.count?" aus "+v.count+" Spielzeilen":"")', '(v.count?" from "+v.count+" game lines":"")'), ('" Zeilen hier"', '" lines here"'), ('el("span","meta","Spielzeilen:")', 'el("span","meta","Game lines:")'),
+    ('refJob.total?refJob.done+" / "+refJob.total:"Vorlage …"', 'refJob.total?refJob.done+" / "+refJob.total:"Reference…"'), ('" Zeilen neu sprechen, aus "', '" lines spoken again, from "'), ('" Spielzeilen?"', '" game lines?"'),
+    ('el("button","v a","Ja")', 'el("button","v a","Yes")'), ('el("button","v","Abbrechen")', 'el("button","v","Cancel")'), ('"Diese Geschichte spricht nicht."', '"This story has no spoken lines."'),
+    ('<div class="label">Stimmen</div><div id="voicepanel">', '<div class="label">Voices</div><div id="voicepanel">'),
     # variants on the story page
     ('el("p","again","Wenn "+when+": „"', 'el("p","again","If "+when+": „"'), ('el("span","label","Variante")', 'el("span","label","Variant")'),
     # map

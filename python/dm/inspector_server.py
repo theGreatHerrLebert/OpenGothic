@@ -13,9 +13,11 @@ import hashlib
 import http.cookies
 import http.server
 import importlib
+import atexit
 import json
 import pathlib
 import re
+import subprocess
 import sys
 import threading
 import types
@@ -27,6 +29,7 @@ sys.modules.setdefault("gothic", types.ModuleType("gothic"))
 
 from dm import library  # noqa: E402  (first: it installs the offline gothic module the story checker needs)
 from dm import bridge  # noqa: E402
+from dm import bake_voices  # noqa: E402
 from dm import knowledge as k  # noqa: E402
 from dm import inspector_i18n  # noqa: E402
 from dm import voices  # noqa: E402
@@ -44,12 +47,19 @@ WORLD_FACTS = ROOT / "world_facts.json"
 REVIEWS = voices.RUNTIME_DIR / "reviews.json"
 REVIEW_LOCK = threading.Lock()  # requests arrive on separate threads
 AUDIO_PATH = re.compile(r"^/audio/([0-9A-Za-z_]+)/([0-9a-f]{20})\.wav$")
+TAKE_PATH = re.compile(r"^/take/([0-9A-Za-z_]+)/([0-9a-f]{20})/([0-9]{1,4})\.wav$")
 
 
 def audio_url(voice, text, delivery=None):
-    if not voice or not voices.audio_path(voice, text, delivery).exists():
+    if not voice:
         return None
-    return "/audio/" + "/".join(voices.audio_path(voice, text, delivery).parts[-2:])
+    path = voices.audio_path(voice, text, delivery)
+    try:
+        version = path.stat().st_mtime_ns
+    except FileNotFoundError:
+        return None
+    # the version makes a browser fetch a re-sampled take instead of replaying the old one from its cache
+    return "/audio/" + "/".join(path.parts[-2:]) + f"?v={version}"
 
 
 def build():
@@ -99,6 +109,7 @@ def build():
     L+=["  classDef conv fill:#7A1F14,stroke:#2a1c10,color:#F0E2C0","  classDef fact fill:#EADBB6,stroke:#7A5F36,color:#2A1C10","  classDef ess fill:#D9A441,stroke:#7A1F14,color:#2A1C10","  classDef effect fill:#3E5A22,stroke:#2a1c10,color:#F0E2C0"]
     for conv in data["convs"]:
         voice = g[conv["id"]].get("voice")
+        conv["voice"] = voice
         conv["nodes"] = copy.deepcopy(conv["nodes"])
         for n in conv["nodes"].values():
             n["audio"] = audio_url(voice, n["line"], n.get("delivery"))
@@ -122,7 +133,7 @@ def _audio_hash(url):
     """Hash of a generated audio file, or None if there is none."""
     if not url:
         return None
-    voice, name = url.split("/")[-2:]
+    voice, name = url.split("?")[0].split("/")[-2:]
     path = voices.VOICE_DIR / voice / name
     try:
         stamp = (str(path), path.stat().st_mtime_ns)
@@ -286,6 +297,113 @@ def fingerprint(story_id, index):
     """What an acceptance holds for: the story's source and every line and recording as it is reviewed now."""
     content = json.dumps([library.revision(story_id), sorted(index.items(), key=lambda pair: pair[0])])
     return hashlib.sha256(content.encode("utf-8")).hexdigest()[:12]
+
+
+# --- voices: re-sample a take, or rebuild a voice's reference, through a worker that keeps the model loaded ---
+
+_worker = {"process": None}
+WORKER_LOCK = threading.Lock()
+TAKE_LOCK = threading.Lock()  # choosing and removing takes of the same recording must not interleave
+
+
+def ensure_worker():
+    """Starts the voice worker once. It loads the model a single time and ends with this server."""
+    with WORKER_LOCK:
+        process = _worker["process"]
+        if process is not None and process.poll() is None:
+            return None
+        python = bake_voices.venv_python()
+        if not python.exists():
+            return "the speech model is not installed: python3 python/dm/bake_voices.py setup"
+        log = open(voices.RUNTIME_DIR / "voice_worker.log", "ab")
+        # the worker ends when this pipe closes, which happens however this server ends
+        _worker["process"] = subprocess.Popen([str(python), str(ROOT / "bake_voices.py"), "worker"],
+                                              stdout=log, stderr=subprocess.STDOUT, stdin=subprocess.PIPE)
+        return None
+
+
+@atexit.register
+def _stop_worker():
+    process = _worker["process"]
+    if process is not None and process.poll() is None:
+        process.terminate()
+
+
+def line_of(data, review_id):
+    """(voice, text, delivery) of a voice review such as CONV__node__voice, CONV__node__again__voice,
+    CONV__node__v0__voice or CONV__node__c1__voice, or None."""
+    if not review_id.endswith("__voice"):
+        return None
+    parts = review_id[:-len("__voice")].split("__")
+    if len(parts) not in (2, 3):
+        return None
+    conv = next((c for c in data["convs"] if c["id"] == parts[0]), None)
+    node = conv and conv["nodes"].get(parts[1])
+    if node is None:
+        return None
+    what = parts[2] if len(parts) == 3 else ""
+    if what == "":
+        return conv["voice"], node["line"], node.get("delivery")
+    if what == "again" and node.get("again"):
+        return conv["voice"], node["again"], node.get("delivery")
+    if re.fullmatch(r"v\d+", what) and int(what[1:]) < len(node.get("variants", [])):
+        return conv["voice"], node["variants"][int(what[1:])]["line"], node.get("delivery")
+    if re.fullmatch(r"c\d+", what) and int(what[1:]) < len(node["choices"]):
+        return voices.HERO_VOICE, node["choices"][int(what[1:])]["text"], None
+    return None
+
+
+def takes_index(data):
+    """How many takes each voice review has, for lines that were re-sampled."""
+    found = {}
+    for conv in data["convs"]:
+        for key, node in conv["nodes"].items():
+            base = f"{conv['id']}__{key}"
+            ids = [base] + ([base + "__again"] if node.get("again") else []) \
+                + [f"{base}__v{i}" for i in range(len(node.get("variants", [])))] \
+                + [f"{base}__c{i}" for i in range(len(node["choices"]))]
+            for review_id in ids:
+                line = line_of(data, review_id + "__voice")
+                count = len(bake_voices.list_takes(*line)) if line and line[0] else 0
+                if count > 1:
+                    found[review_id + "__voice"] = count
+    return found
+
+
+def takes_of(line):
+    path = voices.audio_path(*line)
+    chosen = bake_voices.chosen_take(*line)
+    return [{"n": n, "url": f"/take/{line[0]}/{path.stem}/{n}.wav?v={(bake_voices.takes_dir(*line) / f'{n}.wav').stat().st_mtime_ns}",
+             "chosen": n == chosen} for n in bake_voices.list_takes(*line)]
+
+
+def story_graphs(story_id):
+    if story_id == library.DEMO_ID:
+        return t.all_graphs()
+    return library.generated(story_id)[1]
+
+
+def voice_panel(story_id, data):
+    """The voices a story speaks with, who uses them, and how long each reference is."""
+    graphs = story_graphs(story_id)
+    used = {}
+    for conv in data["convs"]:
+        if conv.get("voice"):
+            used.setdefault(conv["voice"], set()).add(conv["speaker"])
+    if any(c for conv in data["convs"] for n in conv["nodes"].values() for c in n["choices"]):
+        used.setdefault(voices.HERO_VOICE, set())
+    panel = []
+    for voice, speakers in sorted(used.items()):
+        reference = voices.REF_DIR / f"{voice}.wav"
+        seconds = None
+        if reference.exists():
+            import wave
+            with wave.open(str(reference)) as w:
+                seconds = round(w.getnframes() / w.getframerate(), 1)
+        keys = bake_voices.reference_keys(voice) if reference.exists() else None
+        panel.append({"voice": voice, "speakers": sorted(speakers), "seconds": seconds,
+                      "count": len(keys) if keys else None, "lines": len(bake_voices.voice_lines(graphs, voice))})
+    return panel
 
 
 def library_data():
@@ -587,6 +705,31 @@ class Handler(http.server.BaseHTTPRequestHandler):
             if not path.exists():
                 return self._send(b"", "image/png", status=404)
             self._send(path.read_bytes(), "image/png")
+        elif self.path == "/voice/takes":
+            q = dict(urllib.parse.parse_qsl(query))
+            data = story_view(q.get("story", ""))[0]
+            line = line_of(data, q.get("id", "")) if data else None
+            if line is None:
+                return self._send(b"{}", status=404)
+            self._send(json.dumps({"takes": takes_of(line), "current": audio_url(*line),
+                                   "spare": bake_voices.spare_path(*line).exists()}).encode("utf-8"))
+        elif TAKE_PATH.match(self.path):
+            m = TAKE_PATH.match(self.path)
+            path = voices.VOICE_DIR / m[1] / "takes" / m[2] / f"{m[3]}.wav"
+            if not path.exists():
+                return self._send(b"{}", status=404)
+            self._send(path.read_bytes(), "audio/wav")
+        elif self.path == "/voice/status":
+            finished = bake_voices.job_result(dict(urllib.parse.parse_qsl(query)).get("job"))
+            if finished is not None:
+                return self._send(json.dumps({**finished, "finished": True}, ensure_ascii=False).encode("utf-8"))
+            try:
+                state = json.loads(bake_voices.JOB_STATUS.read_text(encoding="utf-8"))
+            except (OSError, ValueError):
+                state = {"state": "idle"}
+            process = _worker["process"]
+            state["worker"] = process is not None and process.poll() is None
+            self._send(json.dumps(state, ensure_ascii=False).encode("utf-8"))
         elif self.path == "/library/data":
             self._send(json.dumps(library_data(), ensure_ascii=False).encode("utf-8"))
         elif self.path.startswith("/story/"):
@@ -594,7 +737,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
             data, graph = story_view(story_id)
             if data is None:
                 return self._send(b"unknown story", "text/plain; charset=utf-8", status=404)
-            data = {**data, "id": story_id}
+            data = {**data, "id": story_id, "voices": voice_panel(story_id, data), "takes": takes_index(data)}
             language = self._language()
             # Translate the page first, then insert the story. Only the demo story's own labels are translated,
             # generated stories stay in the language they were written in.
@@ -656,7 +799,8 @@ class Handler(http.server.BaseHTTPRequestHandler):
         return (None, request) if isinstance(request, dict) else ("expected an object", None)
 
     def do_POST(self):
-        if self.path not in ("/reviews", "/experiment/score", "/library/stage", "/library/play"):
+        if self.path not in ("/reviews", "/experiment/score", "/library/stage", "/library/play", "/voice/resample",
+                             "/voice/reference", "/voice/choose", "/voice/discard"):
             return self._send(b"{}", status=404)
         problem, request = self._read_json()
         if problem:
@@ -676,6 +820,12 @@ class Handler(http.server.BaseHTTPRequestHandler):
             return self._stage(request)
         if self.path == "/library/play":
             return self._play(request)
+        if self.path == "/voice/resample":
+            return self._resample(request)
+        if self.path == "/voice/reference":
+            return self._reference(request)
+        if self.path in ("/voice/choose", "/voice/discard"):
+            return self._take(request, self.path.endswith("choose"))
         story_id = request.get("story", library.DEMO_ID)
         data = story_view(story_id)[0] if isinstance(story_id, str) else None
         target = content_index(data).get(request.get("id")) if data else None
@@ -689,6 +839,10 @@ class Handler(http.server.BaseHTTPRequestHandler):
             else:
                 reviews.pop(key, None)
             _write_reviews(reviews)
+        if request.get("verdict") == "reject":   # start the next take now, so re-sampling can swap it in at once
+            line = line_of(data, request["id"])
+            if line and not ensure_worker():
+                bake_voices.queue({"kind": "spare", "lines": [list(line)]}, urgent=False)
         self._send(b"{}")
 
     def _error(self, message, status=400):
@@ -707,6 +861,46 @@ class Handler(http.server.BaseHTTPRequestHandler):
         if problem:
             return self._error(problem, status=409)
         self._send(json.dumps({"stage": library.stage_of(story_id, rev=rev)[0]}).encode("utf-8"))
+
+    def _resample(self, request):
+        story_id = request.get("story")
+        data = story_view(story_id)[0] if isinstance(story_id, str) else None
+        line = line_of(data, str(request.get("id", ""))) if data else None
+        if line is None or not voices.audio_path(*line).exists():
+            return self._error("no recording to re-sample")
+        problem = ensure_worker()
+        if problem:
+            return self._error(problem, status=503)
+        ready = bake_voices.spare_path(*line).exists()
+        job = bake_voices.queue({"kind": "resample", "lines": [list(line)]})
+        self._send(json.dumps({"job": job, "ready": ready}).encode("utf-8"))
+
+    def _take(self, request, choose):
+        story_id = request.get("story")
+        data = story_view(story_id)[0] if isinstance(story_id, str) else None
+        line = line_of(data, str(request.get("id", ""))) if data else None
+        number = request.get("n")
+        if line is None or not isinstance(number, int):
+            return self._error("bad request")
+        try:
+            with TAKE_LOCK:
+                (bake_voices.choose_take if choose else bake_voices.discard_take)(line, number)
+        except ValueError as problem:
+            return self._error(str(problem), status=409)
+        self._send(json.dumps({"takes": takes_of(line), "current": audio_url(*line)}).encode("utf-8"))
+
+    def _reference(self, request):
+        story_id = request.get("story")
+        data = story_view(story_id)[0] if isinstance(story_id, str) else None
+        voice, count = request.get("voice"), request.get("count")
+        if data is None or not isinstance(voice, str) or not re.fullmatch(r"\d{2}", voice) \
+                or count not in (1, 2, 3, 4, 5, 6):
+            return self._error("bad request")
+        problem = ensure_worker()
+        if problem:
+            return self._error(problem, status=503)
+        job = bake_voices.queue({"kind": "reference", "voice": voice, "count": count, "graphs": story_graphs(story_id)})
+        self._send(json.dumps({"job": job}).encode("utf-8"))
 
     def _play(self, request):
         story_id = request.get("id")

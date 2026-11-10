@@ -9,6 +9,8 @@ The voices are cloned from your own Gothic install and never leave your machine.
     bake_voices.py bake <graphs.json>
     bake_voices.py level
     bake_voices.py named <GOTHIC install> <voice>_<delivery> KEY KEY ...   (reference from chosen lines)
+    bake_voices.py voice <GOTHIC install> <voice> <lines> <graphs.json>   (new reference length, then its lines again)
+    bake_voices.py worker   (started by the inspector: keeps the model loaded and prepares spare takes)
 
 On Apple Silicon the model runs on MLX, everywhere else on PyTorch (CUDA if an NVIDIA card is found, else the
 CPU, which is slow). Commands that need the model restart themselves inside the environment `setup` made.
@@ -26,6 +28,8 @@ import struct
 import subprocess
 import sys
 import tempfile
+import threading
+import time
 import wave
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
@@ -38,6 +42,10 @@ TORCH_MODEL = "Qwen/Qwen3-TTS-12Hz-1.7B-Base"   # the same model for PyTorch
 TORCH_CUDA_INDEX = "https://download.pytorch.org/whl/cu128"
 REF_LINES = 2      # game lines per reference voice: 10-15 s, the recommended length; 4 lines sounded no better in a blind test and were slower
 REF_RATE = 24000   # sample rate of reference clips
+SETTINGS = voices.RUNTIME_DIR / "settings.json"     # remembers the Gothic install, for the inspector's buttons
+JOB_STATUS = voices.RUNTIME_DIR / "voice_job.json"  # what the worker is doing, read by the inspector
+JOBS = voices.RUNTIME_DIR / "voice_jobs"            # requests to the worker, oldest first, user requests before spares
+JOBS_DONE = JOBS / "done"                            # one result per finished request, so no waiting caller misses its own
 LOUDNESS_BOOST = 1.0  # relative to the original recording of the voice
 PEAK_LIMIT = 32000    # keeps scaled audio from clipping
 
@@ -187,6 +195,7 @@ def extract_refs(game, wanted):
             raise SystemExit(f"no usable lines for voice {voice} in this install")
         _write_mono(voices.REF_DIR / f"{voice}.wav", frames)
         (voices.REF_DIR / f"{voice}.txt").write_text(" ".join(lines[k[:-4]] for k in chosen), encoding="utf-8")
+        (voices.REF_DIR / f"{voice}.keys.json").write_text(json.dumps([k[:-4] for k in chosen]), encoding="utf-8")
 
 
 def named_refs(game, name, keys):
@@ -348,6 +357,9 @@ class MlxVoice:
         self.generate = generate_audio
         self.model = load_model(model_path=MODEL)
 
+    def forget(self, reference):
+        pass  # nothing is prepared ahead: every line reads the reference afresh
+
     def speak(self, text, reference, target):
         with tempfile.TemporaryDirectory() as tmp:
             try:
@@ -378,6 +390,9 @@ class TorchVoice:
                                                    dtype=torch.bfloat16 if cuda else torch.float32)
         self.prompts = {}
 
+    def forget(self, reference):
+        self.prompts.pop(reference, None)
+
     def speak(self, text, reference, target):
         if reference not in self.prompts:
             self.prompts[reference] = self.model.create_voice_clone_prompt(
@@ -402,6 +417,161 @@ def needed_voices(graphs):
                    for g in graphs.values() for voice, _, delivery in spoken_lines(g) if voice})
 
 
+def remember_game(game):
+    SETTINGS.write_text(json.dumps({"game": str(pathlib.Path(game).resolve())}), encoding="utf-8")
+
+
+def known_game():
+    """The Gothic install last used here, or OPENGOTHIC_GAME, or None."""
+    if os.environ.get("OPENGOTHIC_GAME"):
+        return os.environ["OPENGOTHIC_GAME"]
+    try:
+        return json.loads(SETTINGS.read_text(encoding="utf-8"))["game"]
+    except (OSError, ValueError, KeyError):
+        return None
+
+
+_job = {"id": None, "finished": None, "result": None}
+
+
+def _report(state, done=0, total=0, message="", error=None, result=None):
+    temporary = JOB_STATUS.with_suffix(".tmp")
+    temporary.write_text(json.dumps({"state": state, "done": done, "total": total, "message": message, "error": error,
+                                     "job": _job["id"], "finished": _job["finished"], "result": result},
+                                    ensure_ascii=False),
+                         encoding="utf-8")
+    temporary.replace(JOB_STATUS)
+
+
+def job_result(job_id):
+    """The outcome of a finished request, or None while it is queued or running."""
+    if not re.fullmatch(r"[0-9]-[0-9]+-[0-9]+", job_id or ""):
+        return None
+    try:
+        return json.loads((JOBS_DONE / f"{job_id}.json").read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return None
+
+
+def _finish(job_id, error, result):
+    JOBS_DONE.mkdir(parents=True, exist_ok=True)
+    temporary = JOBS_DONE / f"{job_id}.tmp"
+    temporary.write_text(json.dumps({"state": "failed" if error else "done", "error": error, "result": result},
+                                    ensure_ascii=False), encoding="utf-8")
+    temporary.replace(JOBS_DONE / f"{job_id}.json")
+    for old in sorted(JOBS_DONE.glob("*.json"))[:-100]:  # keep the recent ones
+        old.unlink(missing_ok=True)
+
+
+def _publish(speak, text, reference, target):
+    """Generates into a private file and moves it into place only when written and levelled, so nobody can list,
+    play or choose a half-written take."""
+    partial = target.with_name(f".{target.stem}.{os.getpid()}.partial.wav")
+    try:
+        if not any(speak(text, reference, partial) for _attempt in range(2)):
+            return False
+        level_match(partial, reference)
+        os.replace(partial, target)
+        return True
+    finally:
+        partial.unlink(missing_ok=True)
+
+
+def spare_path(voice, text, delivery=None):
+    """A take made ahead of time, so re-sampling can show it at once. Kept apart from the recordings."""
+    target = voices.audio_path(voice, text, delivery)
+    return target.parent / "spare" / target.name
+
+
+# Takes: re-sampling never overwrites. Every take of a line is kept in takes/<recording>/<n>.wav, and the recording the
+# game plays is a copy of the chosen one, so a worse take costs nothing and any earlier one can come back.
+
+def takes_dir(voice, text, delivery=None):
+    target = voices.audio_path(voice, text, delivery)
+    return target.parent / "takes" / target.stem
+
+
+def list_takes(voice, text, delivery=None):
+    folder = takes_dir(voice, text, delivery)
+    return sorted(int(p.stem) for p in folder.glob("*.wav") if p.stem.isdigit()) if folder.exists() else []
+
+
+def chosen_take(voice, text, delivery=None):
+    marker = takes_dir(voice, text, delivery) / "chosen"
+    try:
+        return int(marker.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return None
+
+
+def _keep_current(line):
+    """Before the first new take, the recording as it is becomes take 1."""
+    folder, current = takes_dir(*line), voices.audio_path(*line)
+    if not list_takes(*line) and current.exists():
+        folder.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(current, folder / "1.wav")
+        (folder / "chosen").write_text("1", encoding="utf-8")
+
+
+def choose_take(line, number):
+    """Makes a take the recording the game plays."""
+    source = takes_dir(*line) / f"{number}.wav"
+    if not source.exists():
+        raise ValueError("no such take")
+    target = voices.audio_path(*line)
+    temporary = target.with_name(f".{target.stem}.{os.getpid()}.{threading.get_ident()}.choosing.wav")
+    shutil.copyfile(source, temporary)
+    os.replace(temporary, target)
+    (takes_dir(*line) / "chosen").write_text(str(number), encoding="utf-8")
+
+
+def discard_take(line, number):
+    if number == chosen_take(*line):
+        raise ValueError("the take in use cannot be removed")
+    (takes_dir(*line) / f"{number}.wav").unlink(missing_ok=True)
+
+
+def new_take(line, model):
+    """One more take of a line, from the spare one if it is ready. Returns its number, or None."""
+    _keep_current(line)
+    folder = takes_dir(*line)
+    folder.mkdir(parents=True, exist_ok=True)
+    number = max(list_takes(*line), default=0) + 1
+    target, spare = folder / f"{number}.wav", spare_path(*line)
+    if spare.exists():
+        os.replace(spare, target)
+        return number
+    return number if _publish(model.speak, line[1], voices.reference_name(line[0], line[2]), target) else None
+
+
+def load_voice_model():
+    return MlxVoice() if backend() == "mlx" else TorchVoice()
+
+
+def speak_all(lines, quest=None, model=None):
+    """Generates each missing (voice, text, delivery). Returns the lines that failed."""
+    if not lines:
+        return []
+    model = model or load_voice_model()
+    failed = []
+    for n, (voice, text, delivery) in enumerate(lines, 1):
+        target = voices.audio_path(voice, text, delivery)
+        reference = voices.reference_name(voice, delivery)
+        target.parent.mkdir(parents=True, exist_ok=True)
+        # generation is sampled, so a line that yields nothing can work on a retry
+        made = any(model.speak(text, reference, target) for _attempt in range(2))
+        if not made:  # one bad line must not cost the rest of the story
+            failed.append((voice, text))
+            print(f"{n}/{len(lines)} FAILED {voice} {text[:50]}", flush=True)
+            continue
+        level_match(target, reference)
+        print(f"{n}/{len(lines)} {voice} {text[:50]}", flush=True)
+        status.report("Stimmen", n, len(lines), quest)
+        _report("running", n, len(lines), text)
+    status.report("bereit", quest=quest)
+    return failed
+
+
 def bake(path, quest=None):
     with open(path, encoding="utf-8") as f:
         graphs = json.load(f)
@@ -412,31 +582,146 @@ def bake(path, quest=None):
     missing = [name for name in needed_voices(graphs) if not (voices.REF_DIR / f"{name}.wav").exists()]
     if missing:
         raise SystemExit("missing reference voices: " + " ".join(missing) + ". Run `all` or `refs` first.")
-    if not todo:
-        return
-    model = MlxVoice() if backend() == "mlx" else TorchVoice()
-    failed = []
-    for n, (voice, text, delivery) in enumerate(todo, 1):
-        target = voices.audio_path(voice, text, delivery)
-        reference = voices.reference_name(voice, delivery)
-        target.parent.mkdir(parents=True, exist_ok=True)
-        # generation is sampled, so a line that yields nothing can work on a retry
-        made = any(model.speak(text, reference, target) for _attempt in range(2))
-        if not made:  # one bad line must not cost the rest of the story
-            failed.append((voice, text))
-            print(f"{n}/{len(todo)} FAILED {voice} {text[:50]}", flush=True)
-            continue
-        level_match(target, reference)
-        print(f"{n}/{len(todo)} {voice} {text[:50]}", flush=True)
-        status.report("Stimmen", n, len(todo), quest)
+    failed = speak_all(todo, quest)
     print(f"{len(todo) - len(failed)} generated, {len(failed)} failed", flush=True)
-    status.report("bereit", quest=quest)
     if failed:
         sys.exit(1)
 
 
+def voice_lines(graphs, voice):
+    """Every line a voice speaks in these graphs, without a delivery of its own."""
+    return sorted({line for g in graphs.values() for line in spoken_lines(g) if line[0] == voice and not line[2]},
+                  key=lambda line: line[1])
+
+
+def rebuild_voice(game, voice, count, graphs, quest=None, model=None):
+    """A new reference from `count` game lines, then a new take of every line of that voice in the graphs, put in use.
+    The earlier takes and the earlier reference (<voice>.previous.*) are kept, so the change can be undone."""
+    if not 1 <= count <= 6:
+        raise ValueError("a reference is built from 1 to 6 game lines")
+    if "_" in voice:
+        raise ValueError("a voice with a delivery is built from hand-picked lines, see `named`")
+    for suffix in (".wav", ".txt", ".keys.json"):
+        current = voices.REF_DIR / f"{voice}{suffix}"
+        if current.exists():
+            shutil.copyfile(current, voices.REF_DIR / f"{voice}.previous{suffix}")
+    for old in (voices.VOICE_DIR / voice / "spare").glob("*.wav"):
+        old.unlink()  # spare takes from the old reference no longer fit
+    extract_refs(game, [f"{voice}:{count}"])
+    lines = [line for line in voice_lines(graphs, voice) if voices.audio_path(*line).exists()]
+    model = model or load_voice_model()
+    model.forget(voice)  # a model that prepared the old reference must not keep using it
+    failed = []
+    for n, line in enumerate(lines, 1):
+        number = new_take(line, model)
+        if number is None:
+            failed.append(line)
+        else:
+            choose_take(line, number)
+        _report("running", n, len(lines), line[1])
+        status.report("Stimmen", n, len(lines), quest)
+    status.report("bereit", quest=quest)
+    return failed
+
+
+def queue(job, urgent=True):
+    """Hands a request to the worker. Urgent ones (the user waits) run before spare takes."""
+    JOBS.mkdir(parents=True, exist_ok=True)
+    name = f"{0 if urgent else 1}-{time.time_ns()}-{os.getpid()}"
+    temporary = JOBS / f"{name}.tmp"
+    temporary.write_text(json.dumps({**job, "id": name}, ensure_ascii=False), encoding="utf-8")
+    temporary.replace(JOBS / f"{name}.json")
+    return name
+
+
+def _new_takes(lines, model):
+    """A new take for each line, without touching the one in use. Then the next spare is prepared."""
+    failed, made = [], []
+    for n, line in enumerate(lines, 1):
+        number = new_take(line, model)
+        if number is None:
+            failed.append(line)
+        made.append(number)
+        _report("running", n, len(lines), line[1])
+    queue({"kind": "spare", "lines": [list(line) for line in lines]}, urgent=False)
+    _job["result"] = {"takes": made}
+    return failed
+
+
+def _spares(lines, model):
+    for voice, text, delivery in lines:
+        spare = spare_path(voice, text, delivery)
+        reference = voices.reference_name(voice, delivery)
+        if spare.exists() or not voices.audio_path(voice, text, delivery).exists():
+            continue
+        spare.parent.mkdir(parents=True, exist_ok=True)
+        _publish(model.speak, text, reference, spare)
+    return []
+
+
+def run_job(job, model):
+    """One request: resample (lines), spare (lines) or reference (voice, count, graphs)."""
+    lines = [tuple(line) for line in job.get("lines", [])]
+    if job["kind"] == "resample":
+        return _new_takes(lines, model)
+    if job["kind"] == "spare":
+        return _spares(lines, model)
+    if job["kind"] == "reference":
+        game = known_game()
+        if not game:
+            raise ValueError("unknown Gothic install: run bake_voices.py all once, or set OPENGOTHIC_GAME")
+        return rebuild_voice(game, job["voice"], int(job["count"]), job["graphs"], model=model)
+    raise ValueError("unknown job")
+
+
+def _end_with_parent():
+    """The inspector keeps a pipe to our stdin. When it goes away, however it ends, reading returns, and so do we.
+    Unlike watching the parent's process id, this works on Windows too."""
+    def watch():
+        try:
+            sys.stdin.buffer.read()
+        finally:
+            os._exit(0)
+    threading.Thread(target=watch, daemon=True).start()
+
+
+def worker():
+    """Keeps the model loaded and works through requests. Ends when the inspector that started it is gone."""
+    _end_with_parent()
+    JOBS.mkdir(parents=True, exist_ok=True)
+    _report("loading")
+    model = load_voice_model()
+    _report("idle")
+    while True:
+        pending = sorted(JOBS.glob("*.json"))
+        if not pending:
+            time.sleep(0.15)
+            continue
+        path = pending[0]
+        try:
+            job = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            path.unlink(missing_ok=True)
+            continue
+        path.unlink(missing_ok=True)
+        _job["id"], _job["result"] = job.get("id"), None
+        quiet = job["kind"] == "spare"   # spare takes happen behind the user's back
+        if not quiet:
+            _report("running", 0, 0, "starting")
+        try:
+            failed = run_job(job, model)
+            error = f"{len(failed)} lines failed" if failed else None
+        except Exception as problem:  # the inspector shows why; the worker keeps going
+            error = str(problem)
+        _finish(job.get("id"), error, _job["result"])
+        if not quiet or error:
+            _job["finished"] = job.get("id")
+            _report("failed" if error else "done", error=error, result=_job["result"])
+
+
 def bake_all(game, path, quest=None):
     """Everything a newcomer needs: reference voices from their own install for every voice used, then the lines."""
+    remember_game(game)
     with open(path, encoding="utf-8") as f:
         graphs = json.load(f)
     named = [name for name in needed_voices(graphs) if "_" in name]
@@ -457,15 +742,23 @@ def bake_all(game, path, quest=None):
 
 if __name__ == "__main__":
     command = sys.argv[1] if len(sys.argv) > 1 else "help"
-    if command in ("bake", "all") and not _inside_venv():
+    if command in ("bake", "all", "voice", "worker") and not _inside_venv():
         _run_in_venv(sys.argv[1:])
     if command == "setup":
         setup()
     elif command == "all" and len(sys.argv) >= 4:
         bake_all(sys.argv[2], sys.argv[3], sys.argv[4] if len(sys.argv) > 4 else None)
-    elif command in ("help", "all") or len(sys.argv) < 3 and command != "level":
+    elif command == "worker":
+        worker()
+    elif command == "voice" and len(sys.argv) == 6:
+        remember_game(sys.argv[2])
+        with open(sys.argv[5], encoding="utf-8") as f:
+            lost = rebuild_voice(sys.argv[2], sys.argv[3], int(sys.argv[4]), json.load(f))
+        sys.exit(1 if lost else 0)
+    elif command in ("help", "all", "voice") or len(sys.argv) < 3 and command != "level":
         print(__doc__)
     elif sys.argv[1] == "refs":
+        remember_game(sys.argv[2])
         extract_refs(sys.argv[2], sys.argv[3:])
     elif sys.argv[1] == "level":
         level_all()

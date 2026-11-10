@@ -41,6 +41,61 @@ graphs = {"a": {"voice": "05", "start": "x", "nodes": {"x": {"line": "Hallo.", "
           "n": {"voice": "10", "narration": ["Es war einmal."]}}
 assert b.needed_voices(graphs) == ["05_drohend", "10", "15"]  # the hero answers in voice 15
 
+# takes: re-sampling never overwrites; only choosing changes what the game plays
+with tempfile.TemporaryDirectory() as d:
+    saved = (b.voices.VOICE_DIR, b.voices.REF_DIR, b.JOBS)
+    b.voices.VOICE_DIR, b.voices.REF_DIR, b.JOBS = pathlib.Path(d), pathlib.Path(d) / "refs", pathlib.Path(d) / "jobs"
+    b.voices.REF_DIR.mkdir()
+    b._write_mono(b.voices.REF_DIR / "05.wav", array.array("h", [3000, -3000] * 200).tobytes())
+
+    class Model:  # writes a quiet tone, so every take is a valid recording
+        def __init__(self):
+            self.spoken = 0
+
+        def speak(self, text, reference, target):
+            self.spoken += 1
+            b._write_mono(target, array.array("h", [100 * self.spoken, -100 * self.spoken] * 100).tobytes())
+            return True
+
+    line = ("05", "Probe.", None)
+    current = b.voices.audio_path(*line)
+    current.parent.mkdir(parents=True)
+    b._write_mono(current, array.array("h", [7] * 50).tobytes())
+    original = current.read_bytes()
+    model = Model()
+    assert b.new_take(line, model) == 2                     # the recording in use became take 1
+    assert b.list_takes(*line) == [1, 2] and b.chosen_take(*line) == 1 and current.read_bytes() == original
+    b.spare_path(*line).parent.mkdir(parents=True)
+    b._write_mono(b.spare_path(*line), array.array("h", [1] * 10).tobytes())
+    assert b.new_take(line, model) == 3 and model.spoken == 1   # a ready spare is used, nothing is generated
+    assert not b.spare_path(*line).exists()
+    b.choose_take(line, 3)
+    assert current.read_bytes() == (b.takes_dir(*line) / "3.wav").read_bytes() and b.chosen_take(*line) == 3
+    try:
+        b.discard_take(line, 3)
+        raise AssertionError("removed the take in use")
+    except ValueError:
+        pass
+    b.discard_take(line, 2)
+    assert b.list_takes(*line) == [1, 3]
+    b.choose_take(line, 1)
+    assert current.read_bytes() == original                 # any earlier take can come back
+    job = b.queue({"kind": "spare", "lines": [list(line)]}, urgent=False)
+    urgent = b.queue({"kind": "resample", "lines": [list(line)]})
+    assert sorted(p.stem for p in b.JOBS.glob("*.json")) == [urgent, job]   # the user's request goes first
+    # a take appears only when it is complete; a failed one leaves nothing behind
+    failing = lambda text, reference, target: (target.write_bytes(b"half"), False)[1]
+    assert not b._publish(failing, "x", "05", b.takes_dir(*line) / "9.wav")
+    assert not list(b.takes_dir(*line).glob("*9*")) and b.list_takes(*line) == [1, 3]
+    # every finished request keeps its own result, so a caller waiting on an older one still finds it
+    b.JOBS_DONE = b.JOBS / "done"
+    b._finish(job, None, {"takes": [4]})
+    b._finish(urgent, "boom", None)
+    assert b.job_result(job) == {"state": "done", "error": None, "result": {"takes": [4]}}
+    assert b.job_result(urgent)["state"] == "failed" and b.job_result("../../etc") is None
+    b.voices.VOICE_DIR, b.voices.REF_DIR, b.JOBS = saved
+    b.JOBS_DONE = b.JOBS / "done"
+
 assert make_pack.slug("Der heilige Hering") == "der-heilige-hering" and make_pack.slug("Über Öl!") == "ueber-oel"
 
 with tempfile.TemporaryDirectory() as d:

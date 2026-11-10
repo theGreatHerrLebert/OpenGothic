@@ -35,7 +35,17 @@ ul.ch{list-style:none;margin:0;padding:0;display:grid;gap:7px}
 .acts{display:flex;gap:5px}button.v{font:600 12px var(--body);padding:3px 9px;border:1px solid var(--line);border-radius:3px;background:transparent;color:var(--ink);cursor:pointer}
 button.v.on.a{background:var(--ok);color:var(--paper);border-color:var(--ok)}button.v.on.r{background:var(--bad);color:var(--paper);border-color:var(--bad)}
 button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--ember);outline-offset:1px}
-.review{display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-end;margin-top:8px;gap:8px}.voice{display:flex;align-items:center;gap:6px}.review .label{margin-left:6px}button.v.play{background:var(--ember);color:var(--paper);border-color:var(--ember)}
+.review{display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-start;margin-top:8px;gap:8px}.voice{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+/* a line's review: first row play and text, second row the voice, then its takes */
+.voice{flex-basis:100%;gap:6px 8px}.voice:empty{display:none}
+.takes{flex-basis:100%;display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:2px 0 0;padding:6px 8px;border-left:2px solid var(--ember);background:rgba(90,60,20,.08)}
+.takes::before{content:attr(data-label);font:400 14px var(--small);color:var(--soft);margin-right:2px}
+.take{display:inline-flex;gap:4px;align-items:center;padding:2px 6px 2px 2px;border:1px dashed var(--line);border-radius:2px}.take.on{border-style:solid;border-color:var(--ok);background:rgba(53,82,26,.08)}
+.take .meta{font-size:12px}.take.fresh{outline:2px solid var(--gold);outline-offset:1px}@media(prefers-reduced-motion:no-preference){.take.fresh{animation:arrive .5s ease-out}}@keyframes arrive{from{transform:scale(.9);opacity:.3}}.takes .linkbtn{margin-left:auto}
+button.v.busy::before{content:"";display:inline-block;width:.8em;height:.8em;margin-right:6px;vertical-align:-1px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}@media(prefers-reduced-motion:reduce){button.v.busy::before{animation:none;border-right-color:currentColor;opacity:.6}}
+.vrow{border-top:1px dashed var(--line);padding:8px 0;display:grid;gap:4px}.vrow:first-of-type{border-top:0}.vrow .acts{flex-wrap:wrap}
+button.v:disabled{opacity:.5;cursor:default}.review .label{margin-left:6px}button.v.play{background:var(--ember);color:var(--paper);border-color:var(--ember)}
 textarea{width:100%;box-sizing:border-box;margin-top:8px;font:14px/1.4 var(--body);background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:3px;padding:7px}
 .reason{grid-column:1/-1}
 .panel{background:var(--paper);border:1px solid var(--line);border-radius:4px;padding:12px 14px}
@@ -67,6 +77,7 @@ textarea{width:100%;box-sizing:border-box;margin-top:8px;font:14px/1.4 var(--bod
 <aside class="rail">
 <div class="panel"><div class="label">Gespräche</div><div class="jump" id="jump" style="margin-top:8px"></div></div>
 <div class="panel"><div class="label">Was der Spieler weiß</div><div style="margin:6px 0"><button class="linkbtn" id="clear">Nichts bekannt (Kaltstart)</button></div><div id="facts"></div></div>
+<div class="panel"><div class="label">Stimmen</div><div id="voicepanel"></div></div>
 <div class="panel"><div class="label">Folgen</div><ul class="rules" id="rules" style="margin-top:8px"></ul></div>
 </aside></div>
 <p class="save" id="save" role="status"></p>
@@ -80,6 +91,8 @@ if(!window.svgPanZoom)document.write('<script src="https://cdn.jsdelivr.net/npm/
 const DATA=/*DATA*/null;
 const $=(s,e=document)=>e.querySelector(s), el=(t,c,x)=>{const n=document.createElement(t);if(c)n.className=c;if(x!=null)n.textContent=x;return n};
 const known=new Set(); let reviews={}, db=null, col=null;
+/* voice state, declared before the first render uses it */
+const busy=new Set(),takesOpen=new Map(),fresh=new Map();DATA.takes=DATA.takes||{};let refJob=null,refAsk=null,takePlayer=null;
 function visible(c){const r=c.requires;if(r&&r.length&&!r.some(f=>known.has(f)))return false;return !(c.unless&&known.has(c.unless))}
 function stats(){const v=Object.values(reviews);return{a:v.filter(r=>r.verdict==="approve").length,r:v.filter(r=>r.verdict==="reject").length}}
 function renderStatus(){const s=$("#status");s.textContent="";const add=(c,t)=>s.append(el("span","st "+c,t));
@@ -94,7 +107,10 @@ async function approveBoth(ids){const clear=ids.every(i=>reviews[i]&&reviews[i].
 function bothButton(id,hasAudio){const ids=hasAudio?[id,id+"__voice"]:[id];const on=ids.every(i=>reviews[i]&&reviews[i].verdict==="approve");const b=el("button","v a"+(on?" on":""),hasAudio?"Beides annehmen":"Annehmen");b.type="button";b.dataset.f=id+":both";b.setAttribute("aria-pressed",on);b.onclick=()=>approveBoth(ids);return b}
 let player=null;function play(url,b){if(player)player.pause();player=new Audio(url);b.textContent="Läuft";player.onended=player.onpause=()=>{b.textContent="Abspielen"};player.play().catch(()=>{b.textContent="Abspielen"})}
 function playButton(url){if(!url)return el("span","meta noaudio","keine Aufnahme");const p=el("button","v play","Abspielen");p.type="button";p.onclick=()=>play(url,p);return p}
-function voiceRow(url,id){const w=el("div","voice");if(!url)return w;w.append(el("span","label","Stimme"),reviewControls(id));return w}
+function voiceRow(url,id){const w=el("div","voice");if(!url)return w;w.append(el("span","label","Stimme"),reviewControls(id));
+ const busyNow=busy.has(id),again=el("button","v"+(busyNow?" busy":""),busyNow?"Spricht …":"Neu sprechen");again.type="button";again.disabled=busyNow;again.title="Eine neue Aufnahme neben der jetzigen. Ersetzt wird erst mit „Diese nehmen“.";again.onclick=()=>resample(id);w.append(again);
+ if(DATA.takes[id]&&!takesOpen.has(id)){const t=el("button","v",DATA.takes[id]+" Takes");t.type="button";t.onclick=()=>loadTakes(id,false);w.append(t)}
+ const strip=takesStrip(id);if(strip)w.append(strip);return w}
 function reviewControls(id){const w=el("div");const r=reviews[id]||{};const acts=el("div","acts");
  const a=el("button","v a"+(r.verdict==="approve"?" on":""),"Annehmen");const b=el("button","v r"+(r.verdict==="reject"?" on":""),"Ablehnen");
  a.type=b.type="button";a.dataset.f=id+":a";b.dataset.f=id+":r";a.setAttribute("aria-pressed",r.verdict==="approve");b.setAttribute("aria-pressed",r.verdict==="reject");a.onclick=()=>setVerdict(id,"approve");b.onclick=()=>setVerdict(id,"reject");acts.append(a,b);w.append(acts);return w}
@@ -163,5 +179,37 @@ function renderStage(){const me=LIB.find(x=>x.id===DATA.id);const bar=$("#stageb
 async function loadStage(){try{LIB=await (await fetch("/library/data")).json();renderStage()}catch(e){}}
 addEventListener("keydown",e=>{if(e.metaKey||e.ctrlKey||e.altKey||/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName))return;const n=window._neighbors||[];
  if(e.key==="["&&n[0])location.href="/story/"+encodeURIComponent(n[0].id);else if(e.key==="]"&&n[1])location.href="/story/"+encodeURIComponent(n[1].id);else if(e.key==="Escape"&&!document.querySelector("textarea:focus"))location.href="/"});
+/* Voices. Re-sampling makes a new take next to the one in use; only "Diese nehmen" changes what the game plays. */
+
+const post=(url,body)=>fetch(url,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)}).then(async r=>{const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.error||r.status);return j});
+function setAudio(id,url){const parts=id.slice(0,-"__voice".length).split("__"),c=DATA.convs.find(x=>x.id===parts[0]),n=c&&c.nodes[parts[1]],w=parts[2]||"";if(!n)return;
+ if(!w)n.audio=url;else if(w==="again")n.audioAgain=url;else if(w[0]==="v")n.variants[+w.slice(1)].audio=url;else if(w[0]==="c")n.choices[+w.slice(1)].audio=url}
+async function waitFor(job,progress){for(;;){await new Promise(r=>setTimeout(r,300));const s=await (await fetch("/voice/status?job="+encodeURIComponent(job))).json();
+ if(s.finished===true)return s;if(progress&&s.job===job&&s.total)progress(s);if(!s.worker&&s.state!=="loading")throw new Error(s.error||"Der Stimmen-Prozess läuft nicht.")}}
+async function resample(id){busy.add(id);renderAll();$("#save").textContent="";
+ try{const j=await post("/voice/resample",{story:DATA.id,id});const s=await waitFor(j.job);if(s.state==="failed")throw new Error(s.error);await loadTakes(id,true)}
+ catch(e){$("#save").textContent="Neu sprechen fehlgeschlagen: "+(e.message||e)}finally{busy.delete(id);renderAll()}}
+async function loadTakes(id,playNewest){const r=await fetch("/voice/takes?story="+encodeURIComponent(DATA.id)+"&id="+encodeURIComponent(id));if(!r.ok)return;const j=await r.json();
+ takesOpen.set(id,j.takes);DATA.takes[id]=j.takes.length;if(playNewest&&j.takes.length){fresh.set(id,j.takes[j.takes.length-1].n);setTimeout(()=>{fresh.delete(id);renderAll()},4000)}renderAll();if(playNewest&&j.takes.length)playTake(j.takes[j.takes.length-1].url,document.querySelector('[data-take="'+CSS.escape(id+":"+j.takes[j.takes.length-1].n)+'"]'))}
+function playTake(url,b){if(player)player.pause();if(takePlayer)takePlayer.pause();document.querySelectorAll("button.v.on.play").forEach(x=>x.classList.remove("on"));takePlayer=new Audio(url);if(b){b.classList.add("on");takePlayer.onended=takePlayer.onpause=()=>b.classList.remove("on")}takePlayer.play().catch(()=>{})}
+async function takeAction(id,n,choose){try{const j=await post(choose?"/voice/choose":"/voice/discard",{story:DATA.id,id,n});takesOpen.set(id,j.takes);DATA.takes[id]=j.takes.length;
+  if(choose){setAudio(id,j.current);reviews=await (await fetch("/reviews?story="+encodeURIComponent(DATA.id))).json();loadStage();$("#save").textContent="Take "+n+" ist jetzt im Spiel. Die Stimme ist wieder unbewertet."}renderAll()}
+ catch(e){$("#save").textContent=e.message||e}}
+function takesStrip(id){const list=takesOpen.get(id);if(!list)return null;const w=el("div","takes");w.dataset.label="Takes";
+ list.forEach(t=>{const c=el("span","take"+(t.chosen?" on":"")+(fresh.get(id)===t.n?" fresh":""));const p=el("button","v play","Take "+t.n);p.type="button";p.dataset.take=id+":"+t.n;p.onclick=()=>playTake(t.url,p);c.append(p);
+  if(t.chosen)c.append(el("span","meta","im Spiel"));else{const u=el("button","v","Nehmen");u.type="button";u.title="Diese Aufnahme ins Spiel nehmen";u.onclick=()=>takeAction(id,t.n,true);const x=el("button","v","×");x.type="button";x.title="Take entfernen";x.setAttribute("aria-label","Take "+t.n+" entfernen");x.onclick=()=>takeAction(id,t.n,false);c.append(u,x)}w.append(c)});
+ const hide=el("button","linkbtn","zuklappen");hide.type="button";hide.onclick=()=>{takesOpen.delete(id);renderAll()};w.append(hide);return w}
+async function setReference(voice,count){refAsk=null;refJob={voice,count,done:0,total:0};renderVoices();
+ try{const j=await post("/voice/reference",{story:DATA.id,voice,count});const s=await waitFor(j.job,x=>{refJob.done=x.done;refJob.total=x.total;renderVoices()});if(s.state==="failed")throw new Error(s.error);location.reload()}
+ catch(e){refJob=null;renderVoices();$("#save").textContent="Vorlage nicht geändert: "+(e.message||e)}}
+function renderVoices(){const host=$("#voicepanel");host.textContent="";(DATA.voices||[]).forEach(v=>{const row=el("div","vrow");
+  row.append(el("div","",(v.voice==="15"?"Held":"Stimme "+v.voice)+(v.speakers.length?" · "+v.speakers.join(", "):"")),el("div","meta",(v.seconds?"Vorlage "+v.seconds+" s":"keine Vorlage")+(v.count?" aus "+v.count+" Spielzeilen":"")+" · "+v.lines+" Zeilen hier"));
+  const acts=el("div","acts");acts.append(el("span","meta","Spielzeilen:"));
+  if(refJob&&refJob.voice===v.voice){const b=el("button","v busy",refJob.total?refJob.done+" / "+refJob.total:"Vorlage …");b.type="button";b.disabled=true;acts.append(b)}
+  else if(refAsk&&refAsk.voice===v.voice){acts.append(el("span","meta",v.lines+" Zeilen neu sprechen, aus "+refAsk.count+" Spielzeilen?"));const y=el("button","v a","Ja");y.type="button";y.onclick=()=>setReference(v.voice,refAsk.count);const n=el("button","v","Abbrechen");n.type="button";n.onclick=()=>{refAsk=null;renderVoices()};acts.append(y,n)}
+  else[1,2,3,4].forEach(k=>{const b=el("button","v"+(v.count===k?" on a":""),String(k));b.type="button";b.disabled=!!refJob||!v.lines;b.setAttribute("aria-pressed",String(v.count===k));b.onclick=()=>{refAsk={voice:v.voice,count:k};renderVoices()};acts.append(b)});
+  row.append(acts);host.append(row)});
+ if(!(DATA.voices||[]).length)host.append(el("p","meta","Diese Geschichte spricht nicht."))}
+renderVoices();
 drawGraph().catch(e=>{$("#save").textContent="Graph-Fehler: "+(e.message||e)});
 </script>
