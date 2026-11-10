@@ -59,6 +59,11 @@ now: `has_item`, `wears`, `guild`, `npc_state` (burning, asleep, frozen and so o
 the item, and the item really changes hands. A checked choice never counts as the way out of a node. Often the best use is a hint: one line mentions a rule
 that is already true, such as a sleep scroll working on a guard, and the player makes the plan.
 
+A line that judges the hero by what others can see needs a check behind it. When someone recognises the hero by
+clothing ("Ach, Kutte"), the first scene with that character checks `wears`. When someone addresses the hero by rank
+("Novize"), it checks `guild`. Excluding other guilds with `not_guilds` is not enough: a hero in plain clothes is then
+still greeted as a monk.
+
 ## A voice from off-screen
 
 `{"op": "narrate", "text": ..., "voice": "10"}` plays a line with a subtitle near the top of the screen, outside any

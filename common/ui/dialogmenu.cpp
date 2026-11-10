@@ -151,8 +151,23 @@ Size DialogMenu::processTextMultiline(Painter* p, int x, int y, int w, int h, st
   y     += fnt.pixelSize();
   ret.h += fnt.pixelSize();
   if(p!=nullptr) {
+    // a line longer than the box scrolls with the time it is shown, page by page
+    int firstLine = 0;
+    const int lineH = fnt.textSize("A").h;
+    if(lineH>0 && h>0 && current.msgTime>0) {
+      const int total   = fnt.textSize(w-2*pdd,txt).h/lineH;
+      const int visible = std::max(1, h/lineH);
+      const int maxLine = total-visible;
+      if(maxLine>0) {
+        const uint64_t da      = dlgAnimation ? ANIM_TIME : 0;
+        const uint64_t end     = current.msgTime+da;
+        const uint64_t elapsed = current.time<end ? end-current.time : 0;
+        const float    k       = std::min(1.f, float(elapsed)/float(current.msgTime));
+        firstLine = std::min(maxLine, int(k*float(maxLine+1)));
+        }
+      }
     fnt.drawText(*p,x+pdd, y,
-                 w-2*pdd, h, txt, Tempest::AlignHCenter);
+                 w-2*pdd, h, txt, Tempest::AlignHCenter, firstLine);
     }
   auto sz = fnt.textSize(w,txt);
   ret.w  = std::max(ret.w,sz.w);
