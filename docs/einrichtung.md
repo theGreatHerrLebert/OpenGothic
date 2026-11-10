@@ -109,7 +109,7 @@ NVIDIA-Grafikkarte schnell, ohne sehr langsam). Das lädt einige GB:
 python3 python/dm/bake_voices.py setup
 ```
 
-Dann alle Zeilen einer Geschichte erzeugen. Der Befehl holt zuerst für jeden Sprecher, der fehlt, vier Zeilen aus deiner
+Dann alle Zeilen einer Geschichte erzeugen. Der Befehl holt zuerst für jeden Sprecher, der fehlt, zwei Zeilen aus deiner
 Installation als Vorlage und erzeugt dann jede Zeile, etwa 7 bis 8 Sekunden pro Zeile auf einem Mac. Abgebrochene Läufe
 setzen fort, wo sie aufgehört haben. Der Fortschritt erscheint auch in der Anzeige im Spiel:
 

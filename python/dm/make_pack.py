@@ -40,7 +40,7 @@ Dann alle Zeilen dieser Geschichte, {lines} Stück. Der Pfad ist dein Gothic-Ord
 
     py python/dm/bake_voices.py all "C:/Spiele/Gothic II" python/dm_runtime/packs/{slug}/graphs.json
 
-Das holt zuerst je Sprecher vier Zeilen aus deiner Installation als Vorlage und erzeugt dann jede Zeile. Abgebrochene
+Das holt zuerst je Sprecher zwei Zeilen aus deiner Installation als Vorlage und erzeugt dann jede Zeile. Abgebrochene
 Läufe setzen dort fort, wo sie aufgehört haben.
 
 Eine Warnung, dass SoX fehlt, kannst du übergehen: Das Sprachmodell braucht es für diese Stimmen nicht.
