@@ -64,3 +64,12 @@ checker pass rate before and after repair.
 One reader, who wrote the change and hopes it works; blinding the arm is the only guard against that. Five stories per
 arm can show a large effect, such as deeds going from none to most, but not a small one in interest. Reading is not
 playing: a deed reads differently from doing it. Both arms come from one model family.
+
+## Note, 2026-11-11, before generation
+
+Cut to 4 stories, 2 per arm, at the user's request: snapshots 1 and 2 (drawn at random), one story per arm from each.
+With 2 per arm the deciding rules above cannot be met as written; read the result as a pilot that shows whether
+the effect looks large, not as a decision. The experiment 1 author prompt was not kept, so a new one was written
+from its setup; both arms get it word for word, differing only in which brief and design rules they are pointed to.
+Authors do not run the checker themselves: errors from it are passed back for the one repair, warnings are not,
+because the current checker warns about a story without a deed and would tell arm A about the rule.

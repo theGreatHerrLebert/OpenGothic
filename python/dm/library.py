@@ -41,7 +41,7 @@ def blind_id(stem):
 
 def story_paths():
     stories = EXPERIMENT / "stories"
-    return [p for p in sorted(stories.glob("s*_*.json")) + sorted(stories.glob("x*_*.json"))
+    return [p for p in sorted(stories.glob("s*_*.json")) + sorted(stories.glob("x*_*.json")) + sorted(stories.glob("e*_*.json"))
             if not p.name.endswith((".first.json", ".final.json"))]
 
 
