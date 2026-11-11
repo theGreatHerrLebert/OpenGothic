@@ -119,6 +119,8 @@ running game.
   are never committed. Anything distributed needs designed voices.
 - **Scoring stays blind.** The experiment page must not reveal which file, snapshot or author a story came from, and
   spoilers open only on request.
-- **The DM panel shows the process**: fixed stage names, counts and the quest title, nothing else from a story.
+- **The DM panel shows the process**: fixed stage names, counts and the quest title. The one exception is up to three
+  omens per story, cryptic lines the author writes that name no one and give nothing away; `status.check_omens` checks
+  them. Nothing else from a story.
 - **Story operations are validated when submitted**, and a story must be able to reach every ending it promises.
   `check_story.py` reports flags that are never set, unreachable nodes and stage directions in spoken text.

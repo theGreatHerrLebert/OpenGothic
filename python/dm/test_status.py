@@ -34,4 +34,62 @@ with tempfile.TemporaryDirectory() as d:
         raise SystemExit("a free-text stage must be refused")
     except ValueError:
         pass
+# Omens: checked when reported, and the second line takes turns between title and omens.
+with tempfile.TemporaryDirectory() as d:
+    status.PATH = pathlib.Path(d) / "s.json"
+    for bad in (["x" * (status.MAX_OMEN + 1)], ["a", "b", "c", "d"], [""], "a string"):
+        try:
+            status.check_omens(bad, names=set())
+            raise SystemExit(f"bad omens accepted: {bad!r}")
+        except ValueError:
+            pass
+    try:
+        status.check_omens(["Lobart weiß mehr, als er sagt"], names={"Lobart"})
+        raise SystemExit("an omen naming someone was accepted")
+    except ValueError:
+        pass
+    status.check_omens(["Ein Schaf zu wenig, ein Wort zu viel …"], names={"Lobart"})
+    for named, names in (("Tilos Schuld wird heute beglichen.", {"Tilo"}),          # possessive
+                         ("Andre weiß, wer das Silber nahm.", {"Lord Andre"}),       # title dropped
+                         ("Hans' Hut liegt im Graben.", {"Hans"}),
+                         ("lobart schläft schlecht", {"Lobart"})):
+        try:
+            status.check_omens([named], names=names)
+            raise SystemExit(f"named omen accepted: {named}")
+        except ValueError:
+            pass
+    try:
+        status.check_omens(["Jost hat zu viel gehört"], names=set(), extra=["Jost"])   # named by the story
+        raise SystemExit("an omen naming a story's own character was accepted")
+    except ValueError:
+        pass
+    status.check_omens(["Der Meister schweigt"], names={"Meister Harad"})   # a title alone names nobody
+    status.report("schreibt", omens=["Eins", "Zwei"])
+    entry = status.json.loads(status.PATH.read_text())
+    seen = {status.describe(entry, entry["at"] + i * status.OMEN_SECONDS)[0] for i in range(2)}
+    assert seen == {"DM: schreibt...\nEins", "DM: schreibt...\nZwei"}
+    status.report("Stimmen", 1, 2, "Titel", omens=["Eins"])
+    entry = status.json.loads(status.PATH.read_text())
+    seen = {status.describe(entry, entry["at"] + i * status.OMEN_SECONDS)[0] for i in range(2)}
+    assert seen == {"DM: Stimmen 1/2\nTitel", "DM: Stimmen 1/2\nEins"}
+
+# Writing: an estimated bar against the usual time, marked "~", never full.
+with tempfile.TemporaryDirectory() as d:
+    status.PATH = pathlib.Path(d) / "s.json"
+    status.report("schreibt", started=1000.0, expected=900)
+    raw = status.entry()
+    text, progress = status.describe({**raw, "at": 1360.0}, 1360.0)
+    assert text == "DM: schreibt ~ 6/15 min" and abs(progress - 0.4) < 1e-9
+    assert status.describe({**raw, "at": 9000.0}, 9000.0)[1] == status.ESTIMATE_CAP
+    status.report("Stimmen", 3, 30, anchor="BAU_953_BAUER")
+    assert status.entry()["anchor"] == "BAU_953_BAUER"
+    status.report("prüft", 1, 2, "Titel", omens=["Eins"], anchor=["A", "B"])
+    status.report("Stimmen", 1, 9, "Titel")                       # the baker knows only the title
+    assert status.entry()["omens"] == ["Eins"] and status.entry()["anchor"] == ["A", "B"]
+    status.report("Stimmen", 1, 9, "Anderer Titel")
+    assert status.entry()["omens"] == [] and status.entry()["anchor"] is None
+
+# Near: across the ground, height ignored.
+assert status.near((0, 0, 0), (2999, 5000, 0)) and not status.near((0, 0, 0), (2500, 0, 2500))
+
 print("status ok")
