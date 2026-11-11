@@ -38,9 +38,15 @@ class GlobalEffects {
       float          edges   = 1;          // how strongly edges glow
       float          tracers = 1;          // how strongly the previous frame persists
       float          bass = 0, mid = 0, treble = 0;   // music bands, smoothed
+      int            look = 0;             // 0 Mindcap (neon edges, tracers), 1 Emberheart (desert heat shimmer)
+      float          eye   = 0;            // Solaris's DragonflyEye over it: compound eye and rose window, 0..1
+      float          afterglow = 0;        // Solaris's Afterglow over it: long-exposure glow and light trails, 0..1
       };
     void        setTrip(const Trip& t) { trip = t; }
     const Trip& tripState() const { return trip; }
+    // Falling snow over the finished frame, 0 none .. 1 a blizzard; independent of a trip.
+    void        setSnow(float density) { snow = density; }
+    float       snowDensity() const { return snow; }
 
   private:
     struct Effect {
@@ -103,6 +109,7 @@ class GlobalEffects {
     std::vector<std::shared_ptr<Morph>>       morphEff;
     std::vector<std::shared_ptr<Quake>>       quakeEff;
     Trip                                      trip;
+    float                                     snow = 0;
     float                                     tripTimeRem = 0;
   friend class GlobalFx;
   };

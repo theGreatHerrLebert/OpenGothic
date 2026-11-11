@@ -243,6 +243,7 @@ void Renderer::setLightsHud(const Tempest::Texture2d* tex) {
 void Renderer::updateCamera(const WorldView& wview, const Camera& camera) {
   proj        = camera.projective();
   viewProj    = camera.viewProj();
+  cameraAngles = camera.viewAngles();
   viewProjLwc = camera.viewProjLwc();
 
   for(size_t i=0; i<Resources::ShadowLayers; ++i)
@@ -799,7 +800,10 @@ void Renderer::finishTrip(Attachment& result, Encoder<CommandBuffer>& cmd, bool 
 
 bool Renderer::tripActive() const {
   auto* world = Gothic::inst().world();
-  return world!=nullptr && world->globalFx()->tripState().post>0.001f;
+  if(world==nullptr)
+    return false;
+  auto* fx = world->globalFx();
+  return fx->tripState().post>0.001f || fx->snowDensity()>0.001f;   // the same pass draws snow
   }
 
 void Renderer::drawTrip(Tempest::Attachment& result, Tempest::Encoder<Tempest::CommandBuffer>& cmd) {
@@ -813,9 +817,15 @@ void Renderer::drawTrip(Tempest::Attachment& result, Tempest::Encoder<Tempest::C
       }
     }
 
+  constexpr float deg = float(M_PI)/180.f;
   struct Push {
-    float intensity, time, bass, mid, treble, edges, tracers, pad;
-    } p = {t.post, float(world->tickCount()-trip.started)/1000.f, t.bass, t.mid, t.treble, t.edges, t.tracers, 0.f};
+    float intensity, time, bass, mid, treble, edges, tracers, snow;
+    float yaw, pitch, clock, pulse;
+    float look, aspect, eye, afterglow;
+    } p = {t.post, float(world->tickCount()-trip.started)/1000.f, t.bass, t.mid, t.treble, t.edges, t.tracers,
+           world->globalFx()->snowDensity(), cameraAngles.y*deg, cameraAngles.x*deg,
+           float(world->tickCount()%3600000u)/1000.f, t.zoom,
+           float(t.look), float(result.w())/float(std::max(result.h(),1)), t.eye, t.afterglow};
 
   auto& prev = trip.history[trip.current];
   auto& next = trip.history[trip.current^1];

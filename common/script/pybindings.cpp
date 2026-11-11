@@ -719,8 +719,12 @@ PYBIND11_EMBEDDED_MODULE(gothic, m) {
                                               "the screen, the world slows and the camera trembles.");
   trip.def("set",
            [](float fov, float speed, std::tuple<float,float,float,float> tint, float time, float shake,
-              float post, float edges, float tracers, std::tuple<float,float,float> bands, float zoom) {
+              float post, float edges, float tracers, std::tuple<float,float,float> bands, float zoom, int look,
+              float eye, float afterglow) {
              GlobalEffects::Trip t;
+             t.eye     = std::clamp(eye,   0.f, 1.f);
+             t.afterglow = std::clamp(afterglow, 0.f, 1.f);
+             t.look    = std::clamp(look, 0, 1);
              t.zoom    = std::clamp(zoom, 0.f, 0.3f);
              t.post    = std::clamp(post, 0.f, 1.f);
              t.edges   = std::clamp(edges, 0.f, 1.f);
@@ -739,9 +743,14 @@ PYBIND11_EMBEDDED_MODULE(gothic, m) {
            py::arg("fov") = 0.f, py::arg("speed") = 1.f, py::arg("tint") = std::make_tuple(0.f,0.f,0.f,0.f),
            py::arg("time") = 1.f, py::arg("shake") = 0.f, py::arg("post") = 0.f, py::arg("edges") = 1.f,
            py::arg("tracers") = 1.f, py::arg("bands") = std::make_tuple(0.f,0.f,0.f), py::arg("zoom") = 0.f,
+           py::arg("look") = 0, py::arg("eye") = 0.f, py::arg("afterglow") = 0.f,
            "post (0..1) runs the trip shader over the finished frame: glowing edges, tracers, colour; "
            "bands are the music's bass, mid and treble, smoothed.");
   trip.def("clear", []() { requireWorld()->globalFx()->setTrip(GlobalEffects::Trip()); });
+
+  py::module_ weather = m.def_submodule("weather", "Weather the story lays over the world.");
+  weather.def("snow", [](float density) { requireWorld()->globalFx()->setSnow(std::clamp(density, 0.f, 1.f)); },
+              py::arg("density"), "Falling snow, 0 none .. 1 a blizzard.");
 
   py::module_ music = m.def_submodule("music", "A story's own track beside the game's music; mix() crossfades.");
   music.def("play_track", [](const std::string& path) { return GameMusic::inst().playTrack(path); },

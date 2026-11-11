@@ -159,6 +159,7 @@ class Renderer final {
 
     Frustrum                  frustrum[SceneGlobals::V_Count];
     Tempest::Matrix4x4        proj, viewProj, viewProjLwc;
+    Tempest::Vec3             cameraAngles;   // for the post-process: snow shifts as the view turns
     Tempest::Matrix4x4        shadowMatrix[Resources::ShadowLayers];
     Tempest::Matrix4x4        shadowMatrixVsm;
     Tempest::Vec3             clipInfo;

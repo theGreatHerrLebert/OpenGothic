@@ -105,6 +105,7 @@ class Camera final {
     Tempest::Matrix4x4 viewShadow(const Tempest::Vec3& ldir, size_t layer) const;
 
     Tempest::Matrix4x4 viewLwc() const;
+    Tempest::Vec3      viewAngles() const { return angles; }   // pitch, yaw, roll in degrees
     Tempest::Matrix4x4 viewProjLwc() const;
     Tempest::Matrix4x4 viewShadowLwc(const Tempest::Vec3& ldir, size_t layer) const;
 
