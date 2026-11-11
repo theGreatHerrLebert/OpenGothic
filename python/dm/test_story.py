@@ -176,6 +176,19 @@ def test_returns_to_menu():
     assert d.choices == ["Frage", "Tschüss"]
 
 
+def test_handed_over_but_nothing_to_play():
+    # The game handed a conversation over (a trip) and the special dialogue broke or no longer applies: it is closed,
+    # never left open and empty.
+    d = fake.dialog
+    d.reset()
+    def broken(npc):
+        raise TypeError("a bug")
+    player = graphs.Player(lambda: {}, lambda n: None, get_special=broken)
+    d.who, d.opened, d.open = Npc("VALENTINO"), True, True
+    player.on_tick()
+    assert not d.open and player.stage == "idle"
+
+
 def test_questions_are_asked_once():
     graph = {"start": "a", "nodes": {
         "a": {"line": "Menü.", "choices": [
@@ -636,7 +649,7 @@ def test_topics_extend_an_npc():
     assert fake.dialog.topics["PARLAN"] == [("legend", "Kennst du die Kriegsmischung?")]
 
 
-for test in (test_topics_extend_an_npc, test_trip_operation, test_rule_contents_are_checked_when_submitted, test_graph_validation, test_validation, test_apply_and_rollback, test_return_npc, test_conditional_choices, test_returns_to_menu, test_questions_are_asked_once, test_variant_line, test_again_line, test_scene_and_rule, test_rule_fires_on_perception, test_narration_waits_for_quiet, test_drawing_a_weapon_is_perceived,
+for test in (test_handed_over_but_nothing_to_play, test_topics_extend_an_npc, test_trip_operation, test_rule_contents_are_checked_when_submitted, test_graph_validation, test_validation, test_apply_and_rollback, test_return_npc, test_conditional_choices, test_returns_to_menu, test_questions_are_asked_once, test_variant_line, test_again_line, test_scene_and_rule, test_rule_fires_on_perception, test_narration_waits_for_quiet, test_drawing_a_weapon_is_perceived,
              test_queue_waits_for_safe_point, test_save_load_does_not_reapply_world,
              test_player):
     test()

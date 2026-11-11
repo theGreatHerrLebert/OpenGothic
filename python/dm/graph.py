@@ -166,9 +166,14 @@ class Player:
             self.topic = None   # a bound NPC's own conversation is never a topic
             partner = dialog.partner()
             self.partner = partner.instance if partner else ""
-            special = self.get_special(partner) if partner else None
+            try:
+                special = self.get_special(partner) if partner else None
+            except Exception:   # noqa: BLE001 - a broken special dialogue must not leave the hero in an empty one
+                special = None
             self.graph = special or (self.get_graphs().get(partner.instance) if partner else None)
             if self.graph is None:
+                # The game handed this conversation over and nothing here can play it: end it, never leave it empty.
+                dialog.close()
                 self.stage = "idle"
                 return
             self.path = []
