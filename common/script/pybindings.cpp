@@ -2,6 +2,7 @@
 #include <pybind11/stl.h>
 
 #include "gothic.h"
+#include <algorithm>
 #include "game/constants.h"
 #include "game/gamesession.h"
 #include "game/gametime.h"
@@ -672,11 +673,12 @@ PYBIND11_EMBEDDED_MODULE(gothic, m) {
 
   py::module_ overlay = m.def_submodule("overlay", "The small DM status panel in the corner of the screen.");
   overlay.def("set",
-              [](const std::string& text, float progress) {
-                Gothic::inst().dmStatus = {toEngine(text), progress};
+              [](const std::string& text, float progress, float strength) {
+                Gothic::inst().dmStatus = {toEngine(text), progress, std::clamp(strength, 0.f, 1.f)};
                 },
-              py::arg("text"), py::arg("progress") = -1.f,
-              "Show text, with progress from 0 to 1, or below zero if the length is unknown.");
+              py::arg("text"), py::arg("progress") = -1.f, py::arg("strength") = 1.f,
+              "Show text, with progress from 0 to 1, or below zero if the length is unknown. strength (0 to 1) "
+              "is how strongly the panel shows; it fades towards it.");
   overlay.def("clear", []() { Gothic::inst().dmStatus = {}; });
   overlay.def("menu",
               [](const std::string& text) { Gothic::inst().dmMenu = toEngine(text); },

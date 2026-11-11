@@ -89,7 +89,28 @@ with tempfile.TemporaryDirectory() as d:
     status.report("Stimmen", 1, 9, "Anderer Titel")
     assert status.entry()["omens"] == [] and status.entry()["anchor"] is None
 
+# A ready story with an anchor stays announced until met, then hides like any other.
+with tempfile.NamedTemporaryFile(suffix=".json") as f:
+    status.PATH = pathlib.Path(f.name)
+    status.report("bereit", quest="Titel", anchor=["A"])
+    raw = status.entry()
+    assert status.describe(raw, raw["at"] + 3600)[0] == "DM: bereit\nTitel"
+    status.mark_met()
+    raw = status.entry()
+    assert raw["met"] and status.describe(raw, raw["at"] + status.READY_SECONDS + 1) is None
+    status.report("bereit", quest="Titel")                     # a later report keeps "met"
+    raw = status.entry()
+    assert raw["met"] and status.describe(raw, raw["at"] + status.READY_SECONDS + 1) is None
+    status.report("bereit", quest="Anderer")                   # no anchor: the usual short notice
+    raw = status.entry()
+    assert status.describe(raw, raw["at"] + status.READY_SECONDS + 1) is None
+
 # Near: across the ground, height ignored.
-assert status.near((0, 0, 0), (2999, 5000, 0)) and not status.near((0, 0, 0), (2500, 0, 2500))
+assert status.near((0, 0, 0), (9999, 5000, 0)) and not status.near((0, 0, 0), (8000, 0, 8000))
+# Closeness: full within FULL, nothing at NEAR, evenly in between, height ignored.
+assert status.closeness((0, 0, 0), (status.FULL, 900, 0)) == 1.0
+assert status.closeness((0, 0, 0), (status.NEAR, 0, 0)) == 0.0
+middle = (status.NEAR + status.FULL) / 2
+assert abs(status.closeness((0, 0, 0), (0, 0, middle)) - 0.5) < 1e-9
 
 print("status ok")

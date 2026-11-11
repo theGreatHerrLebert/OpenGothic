@@ -18,29 +18,46 @@ def _tick(_dt):
         return
     _next_poll = now + POLL_SECONDS
     raw = status.entry()
+    if raw and raw.get("anchor") and not raw.get("met") and _talking_to(raw["anchor"]):
+        status.mark_met()
+        raw = status.entry()
     current = None if raw is None else status.describe(raw, time.time())
-    if current is not None and raw.get("anchor") and not _near(raw["anchor"]):
-        current = None
-    if current == _shown:
+    strength = 1.0
+    if current is not None and raw.get("anchor"):
+        # Steps of a twentieth, so walking does not resend the panel every tick.
+        strength = round(_closeness(raw["anchor"]) * 20) / 20
+        if strength <= 0:
+            current = None
+    shown = None if current is None else (current[0], current[1], strength)
+    if shown == _shown:
         return
-    _shown = current
-    if current is None:
+    _shown = shown
+    if shown is None:
         gothic.overlay.clear()
     else:
-        gothic.overlay.set(current[0], current[1])
+        gothic.overlay.set(*shown)
 
 
-def _near(anchor):
-    """Whether the hero is close to an NPC a story starts with. Unknown counts as far, so nothing leaks."""
+def _talking_to(anchor):
+    """Whether the hero is in a story conversation with one of the story's first people."""
+    from dm import story
+    player = story._player
+    names = [anchor] if isinstance(anchor, str) else anchor
+    return player.stage != "idle" and player.partner in names
+
+
+def _closeness(anchor):
+    """How close the hero is to the nearest NPC a story starts with, 0 to 1. Unknown counts as far, so nothing leaks."""
+    best = 0.0
     try:
         here = gothic.player.position
         for instance in ([anchor] if isinstance(anchor, str) else anchor):
             npc = gothic.world.find_npc(instance)
-            if npc is not None and status.near(here, npc.position):
-                return True
+            if npc is not None:
+                best = max(best, status.closeness(here, npc.position))
     except RuntimeError:
         pass
-    return False
+    return best
 
 
 def start():

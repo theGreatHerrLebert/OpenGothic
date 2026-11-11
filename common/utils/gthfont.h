@@ -16,6 +16,7 @@ class GthFont final {
 
     int  pixelSize() const;
     void setScale(float s);
+    void setAlpha(float a) { color = Tempest::Color(color.r(),color.g(),color.b(),a); }
 
     void drawText(Tempest::Painter& p, int x, int y, int w, int h, std::string_view txt, Tempest::AlignFlag align, int firstLine=0) const;
     void drawText(Tempest::Painter& p, int x, int y, std::string_view txt) const;

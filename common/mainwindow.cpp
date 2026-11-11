@@ -843,14 +843,29 @@ void MainWindow::toggleDmOverlay() {
   }
 
 void MainWindow::drawDmOverlay(Painter& p) {
-  const auto& st = Gothic::inst().dmStatus;
-  if(!dmOverlayVisible || st.text.empty()) {
+  // Fade in and out instead of popping up. While fading out, the last text stays on screen: Python clears it at once.
+  const auto& current = Gothic::inst().dmStatus;
+  const bool  wanted  = dmOverlayVisible && !current.text.empty();
+  if(wanted) {
+    dmShownText     = current.text;
+    dmShownProgress = current.progress;
+    }
+  // Fade towards the wanted strength: a quarter second to rise all the way, half a second to fall.
+  const float    target = wanted ? current.strength : 0.f;
+  const uint64_t now    = Application::tickCount();
+  const float    dt     = dmFadeTick==0 ? 0.f : std::min(float(now-dmFadeTick)/1000.f, 0.1f);
+  dmFadeTick = now;
+  dmFade     = dmFade<target ? std::min(target, dmFade+dt/0.25f) : std::max(target, dmFade-dt/0.5f);
+  if(dmFade<=0.f || dmShownText.empty()) {
     drawDmMenu(p, std::max(10,margins().top));
     return;
     }
+  const float alpha = dmFade*dmFade*(3.f-2.f*dmFade);   // smoothstep: eases at both ends
+  const struct { const std::string& text; float progress; } st{dmShownText, dmShownProgress};
 
   const float scale = Gothic::interfaceScale(this);
-  auto&       fnt   = Resources::font(scale);
+  GthFont     fnt   = Resources::font(scale);
+  fnt.setAlpha(alpha);
   const int   pad   = int(8.f*scale);
   const int   barH  = int(6.f*scale);
   const int   textH = int(fnt.pixelSize());
@@ -864,7 +879,7 @@ void MainWindow::drawDmOverlay(Painter& p) {
   const int   lines = quest.empty() ? 1 : 2;
   const int   width = std::max({int(220.f*scale), fnt.textSize(first).w+2*pad, fnt.textSize(quest).w+2*pad});
 
-  p.setBrush(Brush(Color(0.f,0.f,0.f,0.55f),Painter::Alpha));
+  p.setBrush(Brush(Color(0.f,0.f,0.f,0.55f*alpha),Painter::Alpha));
   p.drawRect(x,y,width,lines*textH+barH+3*pad);
 
   fnt.drawText(p,x+pad,y+pad+textH,first);
@@ -872,10 +887,10 @@ void MainWindow::drawDmOverlay(Painter& p) {
     fnt.drawText(p,x+pad,y+pad+2*textH,quest);
 
   const int barX = x+pad, barY = y+2*pad+lines*textH, barW = width-2*pad;
-  p.setBrush(Brush(Color(1.f,1.f,1.f,0.15f),Painter::Alpha));
+  p.setBrush(Brush(Color(1.f,1.f,1.f,0.15f*alpha),Painter::Alpha));
   p.drawRect(barX,barY,barW,barH);
 
-  p.setBrush(Brush(Color(0.85f,0.65f,0.25f,0.9f),Painter::Alpha));
+  p.setBrush(Brush(Color(0.85f,0.65f,0.25f,0.9f*alpha),Painter::Alpha));
   if(st.progress>=0.f) {
     p.drawRect(barX,barY,int(float(barW)*std::min(st.progress,1.f)),barH);
     } else {

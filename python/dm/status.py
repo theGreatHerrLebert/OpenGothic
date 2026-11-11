@@ -70,8 +70,11 @@ def check_omens(omens, names=None, extra=()):
 # estimate, marked with "~", that never claims to be done.
 EXPECTED_WRITING = 15 * 60
 ESTIMATE_CAP = 0.95
-# Once a story has a first person to meet, the panel shows only near them (game units are centimetres).
-NEAR = 3000
+# Once a story has a first person to meet, the panel shows only near them, and the closer, the stronger: faint at
+# NEAR, full only within FULL (a few steps), so walking towards a story feels warmer and full strength points at
+# one person rather than a crowd (game units are centimetres).
+NEAR = 10000
+FULL = 500
 
 
 def report(stage, done=None, total=None, quest=None, omens=None, started=None, expected=None, anchor=None,
@@ -82,16 +85,18 @@ def report(stage, done=None, total=None, quest=None, omens=None, started=None, e
     if stage not in STAGES:
         raise ValueError(f"unknown stage: {stage}")
     previous = entry()
+    met = False
     if quest and previous and previous.get("quest") == quest:
         # Tools that know only the title (the voice baker) keep what was set for this quest.
         omens = omens or previous.get("omens")
         anchor = anchor or previous.get("anchor")
+        met = bool(previous.get("met"))   # once met, a story is not announced again
     if omens:
         check_omens(omens, extra=names)
     PATH.parent.mkdir(parents=True, exist_ok=True)
     with tempfile.NamedTemporaryFile("w", encoding="utf-8", dir=PATH.parent, delete=False, suffix=".tmp") as f:
         json.dump({"stage": stage, "done": done, "total": total, "quest": quest, "omens": omens or [],
-                   "started": started, "expected": expected, "anchor": anchor, "at": time.time()}, f)
+                   "started": started, "expected": expected, "anchor": anchor, "met": met, "at": time.time()}, f)
     os.replace(f.name, PATH)  # the game may read at any moment, so it must never see half a file
 
 
@@ -102,7 +107,9 @@ def clear():
 def describe(entry, now):
     """The panel's (text, progress), with progress -1 when the length is unknown, or None to hide it."""
     age = now - entry["at"]
-    if age > (READY_SECONDS if entry["stage"] == "bereit" else STALE_SECONDS):
+    waiting = entry["stage"] == "bereit" and entry.get("anchor") and not entry.get("met")
+    # A ready story with a first person to meet stays announced (near them only) until the hero has met them.
+    if not waiting and age > (READY_SECONDS if entry["stage"] == "bereit" else STALE_SECONDS):
         return None
     # The second line: the quest title and the omens take turns.
     second = ([entry["quest"]] if entry.get("quest") else []) + list(entry.get("omens") or [])
@@ -118,6 +125,17 @@ def describe(entry, now):
         return (f"DM: {entry['stage']} ~ {int(elapsed // 60)}/{int(round(expected / 60))} min{quest}",
                 min(elapsed / expected, ESTIMATE_CAP))
     return f"DM: {entry['stage']}...{quest}", -1.0
+
+
+def mark_met():
+    """The hero has talked to a story's first person: its announcement is over."""
+    current = entry()
+    if current is None or current.get("met"):
+        return
+    current["met"] = True
+    with tempfile.NamedTemporaryFile("w", encoding="utf-8", dir=PATH.parent, delete=False, suffix=".tmp") as f:
+        json.dump(current, f)
+    os.replace(f.name, PATH)
 
 
 def entry():
@@ -136,6 +154,12 @@ def read(now=None):
 def near(here, there, limit=NEAR):
     """Whether two (x, y, z) positions are within limit, measured across the ground."""
     return (here[0] - there[0]) ** 2 + (here[2] - there[2]) ** 2 <= limit * limit
+
+
+def closeness(here, there):
+    """How strongly to show a story's panel: 1 within FULL, falling evenly to 0 at NEAR, across the ground."""
+    distance = ((here[0] - there[0]) ** 2 + (here[2] - there[2]) ** 2) ** 0.5
+    return max(0.0, min(1.0, (NEAR - distance) / (NEAR - FULL)))
 
 
 def _demo():

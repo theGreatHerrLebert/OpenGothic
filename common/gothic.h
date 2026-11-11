@@ -199,6 +199,7 @@ class Gothic final {
     struct DmStatus final {
       std::string text;
       float       progress = -1.f;
+      float       strength = 1.f;   // how strongly to show it, 0 to 1: a story far away shows faintly
       };
     DmStatus dmStatus;
     // A numbered menu Python shows in game, drawn even while the status panel is hidden. Empty when closed.

@@ -173,6 +173,10 @@ class MainWindow : public Tempest::Window {
     Tempest::Shortcut         displayPos;
     Tempest::Shortcut dmOverlayKey;
     bool              dmOverlayVisible = true;
+    std::string       dmShownText;
+    float             dmShownProgress = -1.f;
+    float             dmFade     = 0.f;
+    uint64_t          dmFadeTick = 0;
     // Alt+F opens the feedback menu, Alt+1 to Alt+5 pick from it. Python reads them through gothic.take_keys().
     Tempest::Shortcut dmFeedbackKey;
     Tempest::Shortcut dmChoiceKey[5];
