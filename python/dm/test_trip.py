@@ -339,6 +339,7 @@ assert g["voice"] == "05" and g["nodes"]["a"]["line"] in trip.SPECIAL_OPENERS
 answers = g["nodes"]["a"]["choices"]
 assert len(answers) == 3 and len({c["text"] for c in answers}) == 3
 assert all(c["delivery"] == trip.DELIVERY and c["text"] in trip.SPECIAL_ANSWERS for c in answers)
+assert all(c["repeat"] for c in answers)                        # the same person can be babbled at on every trip
 assert g["nodes"]["z"]["line"] in trip.SPECIAL_CLOSERS and g["nodes"]["z"]["choices"][0]["ends"]
 sys.modules.setdefault("gothic", types.ModuleType("gothic"))   # validating a graph never touches the game
 from dm import graph as _graph  # noqa: E402

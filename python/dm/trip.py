@@ -134,7 +134,8 @@ def special_graph(voice, rng, instance=""):
     own = SPECIAL_PEOPLE.get(instance.upper(), {})
     return {"voice": f"{int(voice):02d}", "start": "a", "nodes": {
         "a": {"line": rng.choice(own.get("openers", SPECIAL_OPENERS)),
-              "choices": [{"text": text, "goto": "z", "delivery": DELIVERY} for text in answers]},
+              "choices": [{"text": text, "goto": "z", "delivery": DELIVERY, "repeat": True}  # babble never runs out
+                          for text in answers]},
         "z": {"line": rng.choice(own.get("closers", SPECIAL_CLOSERS)),
               "choices": [{"text": SPECIAL_LAST, "ends": True, "delivery": DELIVERY}]}}}
 

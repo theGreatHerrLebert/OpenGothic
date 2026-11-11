@@ -130,7 +130,7 @@ class Player:
         flags = self.get_flags()
         shown = []
         for choice in self.node["choices"]:
-            if flags.get(self._asked_flag(choice)):
+            if not choice.get("repeat") and flags.get(self._asked_flag(choice)):
                 continue
             required = choice.get("requires")
             if required and not any(flags.get(f) for f in required):
