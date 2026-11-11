@@ -139,9 +139,13 @@ class WorldObjects final {
       std::string              kind, actor, target, item;
       int32_t                  spell = -1;
       std::vector<std::string> seenBy;
+      std::string              object;               // a used object's own name in the world, often empty
+      bool                     hasPosition = false;  // where a used object stands
+      Tempest::Vec3            position;
       };
     void           recordSpellCast(Npc& caster, Npc* target, int32_t spell);
     void           recordDocumentRead(Npc& reader, size_t item);
+    void           recordObjectUsed  (Npc& user, std::string_view scheme, std::string_view name, const Tempest::Vec3& at);
     auto           takePerceptions() -> std::vector<PerceptionRecord>;
 
     void           resetPositionToTA();

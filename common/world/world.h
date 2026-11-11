@@ -176,6 +176,9 @@ class World final {
     void                 sendImmediatePerc(Npc& self, Npc& other, Npc& victim, Item& item, int32_t perc);
     void                 recordSpellCast(Npc& caster, Npc* target, int32_t spell) { wobj.recordSpellCast(caster,target,spell); }
     void                 recordDocumentRead(Npc& reader, size_t item) { wobj.recordDocumentRead(reader,item); }
+    void                 recordObjectUsed(Npc& user, std::string_view scheme, std::string_view name, const Tempest::Vec3& at) {
+      wobj.recordObjectUsed(user,scheme,name,at);
+      }
     auto                 takePerceptions() { return wobj.takePerceptions(); }
 
     bool                 isInSfxRange(const Tempest::Vec3& pos) const;

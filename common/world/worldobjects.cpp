@@ -1006,6 +1006,22 @@ void WorldObjects::recordSpellCast(Npc& caster, Npc* target, int32_t spell) {
   pushPerception(std::move(record));
   }
 
+void WorldObjects::recordObjectUsed(Npc& user, std::string_view scheme, std::string_view name, const Tempest::Vec3& at) {
+  auto* pl = owner.player();
+  if(pl==nullptr || &user!=pl)
+    return;
+  // The hero got up from an object such as a water pipe, a bench or an anvil: its scheme names what kind it was,
+  // its name and position which one.
+  PerceptionRecord record;
+  record.kind        = "used_object";
+  record.actor       = perceptionName(user,*pl);
+  record.item        = std::string(scheme);
+  record.object      = std::string(name);
+  record.hasPosition = true;
+  record.position    = at;
+  pushPerception(std::move(record));
+  }
+
 void WorldObjects::recordDocumentRead(Npc& reader, size_t item) {
   auto* pl = owner.player();
   if(pl==nullptr || &reader!=pl)

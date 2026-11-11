@@ -204,6 +204,9 @@ class Gothic final {
     DmStatus dmStatus;
     // A numbered menu Python shows in game, drawn even while the status panel is hidden. Empty when closed.
     std::string dmMenu;
+    // While set (during a strong trip), the hero cannot start a conversation; each attempt is counted for Python.
+    bool        dmBlockTalk   = false;
+    uint32_t    dmTalkRefused = 0;
 
     // DM hotkeys pressed since Python last asked, oldest first. Filled on the UI thread, drained from a world tick.
     void                     pushDmKey(std::string key) { std::lock_guard<std::mutex> g(dmKeysSync); dmKeys.push_back(std::move(key)); }

@@ -647,6 +647,9 @@ PYBIND11_EMBEDDED_MODULE(gothic, m) {
                d["item"]    = r.item;
                d["spell"]   = r.spell;
                d["seen_by"] = r.seenBy;
+               d["object"]  = r.object;
+               d["position"] = r.hasPosition ? py::cast(std::make_tuple(r.position.x, r.position.y, r.position.z))
+                                             : py::none();
                out.append(d);
                }
              return out;
@@ -797,6 +800,11 @@ PYBIND11_EMBEDDED_MODULE(gothic, m) {
                },
              "NPC the player is talking to in any dialogue, or None.");
   dialog.def("close", []() { requireDialog().agentClose(); });
+  dialog.def("block", [](bool on) { Gothic::inst().dmBlockTalk = on; }, py::arg("on"),
+             "While on, the hero cannot start a conversation; attempts are counted.");
+  dialog.def("take_refused",
+             []() { return std::exchange(Gothic::inst().dmTalkRefused, 0u); },
+             "Conversations the hero tried to start while blocked, since the last call.");
 
   // Per-tick callback registry — consumed by PythonVM::tick() which is
   // invoked from World::tick().

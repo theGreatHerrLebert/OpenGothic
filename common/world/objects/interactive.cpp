@@ -359,10 +359,14 @@ void Interactive::implTick(Pos& p) {
     }
 
   if(p.started==Quit) {
+    const bool completed = p.used;   // the stand-up animation finished after the hero really used the object
     npc.quitInteraction();
     loopState = false;
     p.user    = nullptr;
+    p.used    = false;
     p.started = NotStarted;
+    if(completed)
+      world.recordObjectUsed(npc, schemeName(), tag(), position());
     return;
     }
 
@@ -370,6 +374,7 @@ void Interactive::implTick(Pos& p) {
     if(stateNum==state && attach) {
       invokeStateFunc(npc);
       loopState = true;
+      p.used    = true;
       }
     if(0==state && !p.attachMode) {
       invokeStateFunc(npc);
@@ -850,11 +855,15 @@ bool Interactive::detach(Npc &npc, bool quick) {
           if(sq==nullptr)
             return false;
           }
+        const bool completed = i.used && !quick;   // knocked off, weapon drawn or gone: not a use
         i.user       = nullptr;
+        i.used       = false;
         i.started    = (canQuitAtState(npc,state) || !quick) ? NotStarted : Quit;
         i.attachMode = false;
         loopState    = false;
         npc.quitInteraction();
+        if(completed)
+          world.recordObjectUsed(npc, schemeName(), tag(), position());
         return true;
         }
       else {

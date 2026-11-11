@@ -4227,6 +4227,11 @@ void Npc::setPerceptionDisable(PercType t) {
 void Npc::startDialog(Npc& pl) {
   if(pl.isDown() || pl.isInAir() || isPlayer())
     return;
+  if(pl.isPlayer() && Gothic::inst().dmBlockTalk) {
+    // A story has the hero in no state to talk: refuse, and let the story say why.
+    Gothic::inst().dmTalkRefused++;
+    return;
+    }
   if(perceptionProcess(pl,nullptr,0,PERC_ASSESSTALK))
     setOther(&pl);
   }

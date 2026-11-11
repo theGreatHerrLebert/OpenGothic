@@ -99,6 +99,7 @@ class Interactive : public Vob {
       Npc*                user       = nullptr;
       Phase               started    = NotStarted;
       bool                attachMode = false;
+      bool                used       = false;  // the user sat all the way down and the object's use began
       size_t              nodeId     = 0;
 
       Tempest::Matrix4x4  pos;
