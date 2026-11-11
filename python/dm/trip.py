@@ -177,7 +177,8 @@ BLACKOUTS = {
                    {"npc": "VLK_433_BROMOR", "voice": "07",
                     "line": "Eigentlich müsste ich dir die Nacht extra berechnen. Aber über das, was da oben passiert "
                             "ist, will ich so bald nicht reden. Lassen wir's gut sein."},
-                   {"npc": "VLK_434_BORKA", "voice": "11",
+                   # Only once he has given his own pitch at the door; until then he stops the hero with that.
+                   {"npc": "VLK_434_BORKA", "voice": "11", "heard": "DIA_BORKA_TROUBLE",
                     "line": "Mein Auftrag ist es, hier Kundschaft reinzubringen. Aber dich … dich sehe ich lieber "
                             "wieder gehen."}]},
 }
@@ -629,6 +630,9 @@ def tick_after(gothic, now):
             lines.remove(line)                  # gone (dead, or elsewhere in the world): nothing to say
             continue
         if sum((a - b) ** 2 for a, b in zip(here, npc.position)) > AFTER_NEAR ** 2:
+            continue
+        if line.get("heard") and not gothic.player.heard(line["heard"]):
+            lines.remove(line)                  # his own words come first, and they are enough
             continue
         from dm import voices
         wav, ms = voices.lookup(line["voice"], line["line"])

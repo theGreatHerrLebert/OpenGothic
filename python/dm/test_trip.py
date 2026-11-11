@@ -338,7 +338,8 @@ people = {"VLK_435_NADJA": types.SimpleNamespace(position=(0.0, 0.0, 0.0)),
           "VLK_434_BORKA": types.SimpleNamespace(position=(4000.0, 0.0, 0.0))}
 fake.world.find_npc = lambda name: people.get(name)
 dialog.partner = lambda: None
-fake.player = types.SimpleNamespace(position=(5000.0, 0.0, 0.0))
+pitched = {"DIA_BORKA_TROUBLE"}
+fake.player = types.SimpleNamespace(position=(5000.0, 0.0, 0.0), heard=lambda info: info in pitched)
 trip.remember_after(fake, trip.BLACKOUTS["skorpion_goa"]["after"], 0.0)
 def walk(at, now):
     fake.player.position = at
@@ -358,6 +359,10 @@ assert trip._after is None                                      # all said: forg
 trip.remember_after(fake, trip.BLACKOUTS["skorpion_goa"]["after"], 0.0)
 walk((100.0, 0.0, 0.0), trip.AFTER_FOR + 1)
 assert len(said) == 3 and trip._after is None                   # too late: forgotten
+pitched.clear()                                                 # never pitched to: Borka keeps his own words
+trip.remember_after(fake, trip.BLACKOUTS["skorpion_goa"]["after"], 0.0)
+walk((4000.0, 0.0, 0.0), 1.0)
+assert len(said) == 3 and [line["npc"] for line in trip._after[0]] == ["VLK_435_NADJA", "VLK_433_BROMOR"]
 del people["VLK_434_BORKA"]                                     # someone gone from the world is dropped
 trip.remember_after(fake, trip.BLACKOUTS["skorpion_goa"]["after"], 0.0)
 walk((9000.0, 0.0, 0.0), 1.0)
