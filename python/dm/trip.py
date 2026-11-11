@@ -641,8 +641,9 @@ def tick_after(gothic, now):
     if not lines or now > until or gothic.world.generation != generation:
         _forget_after(gothic, gothic.world.generation == generation)
         return
+    talking = gothic.dialog.partner() is not None
     for line in list(lines):
-        if line.get("taken"):
+        if line.get("taken") and not talking:  # unbinding the partner would close the conversation he is in
             _release(gothic, line)
             lines.remove(line)
             if line.get("instead_of"):

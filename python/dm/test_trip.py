@@ -376,6 +376,10 @@ sys.modules.setdefault("gothic", types.ModuleType("gothic"))
 from dm import graph as _graph  # noqa: E402
 assert _graph.validate(g) is None
 fake.player.mark_heard = lambda info: pitched.add(info)
+dialog.partner = lambda: people["VLK_434_BORKA"]                # still talking to him
+walk((4000.0, 0.0, 0.0), 1.8)
+assert binds[-1][0] == "bind" and not pitched                   # nothing released mid-conversation
+dialog.partner = lambda: None
 walk((4000.0, 0.0, 0.0), 2.0)
 assert binds[-1] == ("unbind", people["VLK_434_BORKA"])         # his own conversations back afterwards
 assert "DIA_BORKA_TROUBLE" in pitched                           # and no pitch to a guest like that any more
