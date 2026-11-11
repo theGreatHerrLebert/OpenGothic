@@ -173,10 +173,16 @@ trip.start("kriegsgesang", None)
 current, now = trip._current, 0.0
 while current.tick(fake, now):
     now += 0.05
-assert len(said) == len(trip.THOUGHT_POOLS) + 1, said                       # one line per stage, then a landing
-for line, (_, pool) in zip(said, trip.THOUGHT_POOLS):
-    assert line in pool                                                    # each from its own stage, in order
+assert 2 <= len(said) <= len(trip.THOUGHT_POOLS) + 1, said                  # stages it leaps past are skipped
+stage_of = {line: i for i, (_, pool) in enumerate(trip.THOUGHT_POOLS) for line in pool}
+ups = [stage_of[line] for line in said[:-1]]
+assert ups == sorted(ups) and len(set(ups)) == len(ups)                     # rising, each stage at most once
 assert said[-1] in trip.LANDINGS
+# The scorpion draws from the desert's pools, not the general ones.
+desert = trip.Trip(trip.PROFILES["skorpion"], None, style="ember_glow")
+assert all(line in pool for (_, line), (_, pool) in zip(desert.thoughts, trip.DESERT_POOLS))
+assert desert.landing in trip.DESERT_LANDINGS
+assert set(trip.thought_lines()) >= {l for _, p in trip.DESERT_POOLS for l in p} | set(trip.DESERT_LANDINGS)
 assert True in blocked and blocked[-1] is False
 trip._end(fake)
 assert blocked[-1] is False
@@ -217,6 +223,27 @@ for _ in range(12):
     refusals += [s for s in said if s in trip.REFUSALS]
 assert len(refusals) >= 10 and all(a != b for a, b in zip(refusals, refusals[1:])) and len(set(refusals)) > 2
 trip._end(fake)
+
+# The heatstroke: a leap through three stages at once says only the highest, never three lines back to back.
+said.clear()
+leap = trip.Trip([(5.0, 0.1, 0.05, 0, 0), (5.0, 0.9, 0.5, 0, 0), (60.0, 0.9, 0.05, 0, 0)], None,
+                 thoughts=[(0.25, "eins"), (0.5, "zwei"), (0.75, "drei"), (0.95, "vier")])
+now = 0.0
+while now < 20:
+    leap.tick(fake, now)
+    now += 0.05
+assert said in (["drei"], ["eins", "drei"]), said    # at most the first crossing and then the highest, never the middle
+# Between two thoughts there is always a breath of quiet.
+said.clear()
+times = []
+paced = trip.Trip([(60.0, 1.0, 0.002, 0, 0)], None, thoughts=[(0.2, "a"), (0.4, "b"), (0.6, "c"), (0.8, "d")])
+dialog.narrate = lambda text, ms, wav: said.append(text) or times.append(now) or True
+now = 0.0
+while now < 60:
+    paced.tick(fake, now)
+    now += 0.05
+assert all(b - a >= trip.THOUGHT_GAP for a, b in zip(times, times[1:])), times
+dialog.narrate = lambda text, ms, wav: said.append(text) or True
 
 # A story's own thoughts replace the defaults.
 said.clear()
@@ -290,4 +317,25 @@ trip._end(fake)
 assert trip.length("wasserpfeife") == 225
 assert trip.length("nordmar") == 215          # the 185 s track plus its landing
 assert trip.length("kriegsgesang") == 200     # the 170 s track plus its landing
+assert trip.length("skorpion") == 215 and trip.length("skorpion_goa") == 265
+
+# The scorpion blend looks like heat, not neon: Emberheart's look, desert colours, edges and tracers low.
+ember, neon = trip.look(1.0, 3.0, style="ember"), trip.look(1.0, 3.0)
+assert ember["look"] == 1 and neon["look"] == 0 and ember["edges"] < neon["edges"] and ember["tracers"] < neon["tracers"]
+for h in (0.0, 0.25, 0.5, 0.75):
+    r, g, b = trip._hue(h, trip.DESERT)
+    assert r >= g >= b                                       # warm: never blue, never pink
+assert trip.PROFILE_LOOK["skorpion"] == "ember_glow" and trip.PROFILE_LOOK["skorpion_goa"] == "ember_eye"
+assert "kriegsgesang" not in trip.PROFILE_LOOK
+# The second stage opens only once the heat has hit, and only the one the track asks for.
+assert trip.look(0.5, 1.0, style="ember_eye")["eye"] == 0.0
+assert trip.look(1.0, 1.0, style="ember_eye")["eye"] == 1.0 and trip.look(1.0, 1.0, style="ember_eye")["afterglow"] == 0.0
+assert trip.look(1.0, 1.0, style="ember_glow")["afterglow"] == 1.0 and trip.look(1.0, 1.0)["eye"] == 0.0
+assert trip.look(1.0, 1.0, style="ember_glow")["tracers"] == 0.0     # its glow lives where the tracers would
+assert 0 < trip.look(0.7, 1.0, style="ember_eye")["eye"] < 1
+# It hits like heatstroke at the first big rise of its track.
+env = trip.Envelope(trip.PROFILES["skorpion"])
+for _ in range(int(25 * 60)):
+    env.step()
+assert env.intensity > 0.75
 print("trip ok")

@@ -40,7 +40,30 @@ PROFILES = {
     # 140 s and a softer last stretch, then the landing after the music.
     "kriegsgesang": [(20.0, 0.10, 0.010, 0.0, 0.0), (30.0, 0.35, 0.006, 0.02, 0.02), (30.0, 0.60, 0.007, 0.04, 0.02),
                      (50.0, 0.85, 0.006, 0.06, 0.02), (30.0, 1.00, 0.015, 0.0, 0.0), (40.0, 0.00, 0.004, 0.0, 0.0)],
+    # The scorpion blend from the south, in Emberheart's spirit: it creeps, then hits like heatstroke at the track's
+    # first big rise and blazes in waves. Cut to "Khe-Ru-Dhem (1)" (192 s, acoustic): the jump at 20 s, an even drive,
+    # the peak near the end, an abrupt stop.
+    "skorpion": [(20.0, 0.10, 0.010, 0.0, 0.0), (4.0, 0.90, 0.040, 0.0, 0.0), (46.0, 0.70, 0.008, 0.10, 0.05),
+                 (95.0, 0.85, 0.006, 0.10, 0.04), (25.0, 1.00, 0.015, 0.05, 0.05), (25.0, 0.00, 0.008, 0.0, 0.0)],
+    # Cut to "Khe-Ru-Dhem" (244 s, the Goa take): a long quiet opening, the first big rise at 60 s, climbing to its
+    # loudest near 230 s.
+    "skorpion_goa": [(25.0, 0.08, 0.010, 0.0, 0.0), (35.0, 0.35, 0.006, 0.02, 0.02), (5.0, 0.95, 0.050, 0.0, 0.0),
+                     (55.0, 0.80, 0.008, 0.12, 0.05), (50.0, 0.90, 0.006, 0.10, 0.04), (65.0, 1.00, 0.010, 0.06, 0.05),
+                     (30.0, 0.00, 0.006, 0.0, 0.0)],
 }
+
+# How each trip looks. Mindcap: neon edges and long tracers in pink, violet and green. Ember (Solaris's Emberheart):
+# heat shimmer in rings from the middle, a warm wash and the desert's sand, gold, ochre and amber; edges and tracers
+# kept low, so heat carries it rather than neon.
+# A second stage can open over the ember once the heat has hit (between OPEN_FROM and OPEN_TO intensity): Solaris's
+# DragonflyEye (a compound eye under a turning rose window) or its Afterglow (long exposure: bright things burn in and
+# smear). Afterglow keeps its glow in the history images, so its look has no tracers.
+LOOKS = {"mindcap": {"look": 0, "edges": 1.0, "tracers": 1.0, "pools": "mindcap"},
+         "ember": {"look": 1, "edges": 0.35, "tracers": 0.35, "pools": "ember"},
+         "ember_eye": {"look": 1, "edges": 0.35, "tracers": 0.35, "pools": "ember", "eye": True},
+         "ember_glow": {"look": 1, "edges": 0.35, "tracers": 0.0, "pools": "ember", "afterglow": True}}
+PROFILE_LOOK = {"skorpion": "ember_glow", "skorpion_goa": "ember_eye"}
+OPEN_FROM, OPEN_TO = 0.55, 0.9
 
 # The hero's thoughts from off, distorted (delivery "rausch", see trip_voices.py). Each trip draws one line per stage
 # at random, so two trips never sound quite alike, and says it once when the trip first reaches that intensity; one
@@ -57,12 +80,28 @@ THOUGHT_POOLS = [
 ]
 LANDINGS = ["Langsam … langsam kommt alles zurück.", "Uff. Was war das denn?", "Nie wieder. Oder … morgen wieder.",
             "Mein Kopf … wie nach drei Flaschen Wein."]
+# The desert's thoughts, for the ember trips (the scorpion blends): heat, sand, scorpions, a whisper from the south.
+DESERT_POOLS = [
+    (0.25, ["Warum ist mir so heiß?", "Riecht hier was … verbrannt?", "Der Boden flimmert.",
+            "Hm. Mein Mund ist voller Sand."]),
+    (0.5, ["Der Sand … der singt.", "Wer hat die Sonne angezündet?", "Alles schmilzt in der Hitze.",
+           "Da krabbelt was. Viele Beine."]),
+    (0.75, ["Die Hitze … die flüstert mir was zu.", "Ich seh Dünen. Hier gibt's keine Dünen!",
+            "Mein Schatten … der hat einen Stachel.", "Trommeln … aus dem Süden."]),
+    (0.95, ["Ich bin … der Skorpion.", "Beliar … bist du das in der Hitze?", "Alles brennt. Und es ist schön.",
+            "Die Sonne … die frisst mich auf."]),
+]
+DESERT_LANDINGS = ["Wasser. Ich brauch Wasser.", "Uff. Die Hitze lässt nach.", "Nie wieder Skorpion. Ehrlich.",
+                   "Mein Kopf glüht noch …"]
+POOLS = {"mindcap": (THOUGHT_POOLS, LANDINGS), "ember": (DESERT_POOLS, DESERT_LANDINGS)}
+
 # Said instead when the hero tries to talk to someone while the trip is too strong for it; never twice in a row.
 REFUSALS = ["Nicht jetzt … sein Gesicht zerfließt.", "Mit dem red ich jetzt besser nicht.", "Der hat … drei Augen.",
             "Nee. Der guckt so komisch.", "Später. Wenn er wieder normal aussieht."]
 BLOCK_ABOVE = 0.35        # no conversations above this intensity
 DUCK = 0.4                # the trip's music while a thought is spoken, so the hero carries over the drums
 REFUSAL_PAUSE = 8.0       # seconds between two refusal thoughts
+THOUGHT_GAP = 4.0         # seconds of quiet after a thought before the next one
 DELIVERY = "rausch"
 HERO_VOICE = "15"
 SETTINGS = __import__("pathlib").Path(__file__).resolve().parent.parent / "dm_runtime" / "settings.json"
@@ -77,19 +116,22 @@ def visuals_on():
 
 
 def thought_lines(thoughts=None):
-    """Every line a trip may say, for voicing: the given thoughts or all the pools, the landings and the refusals."""
-    ups = [text for _, text in thoughts] if thoughts else [line for _, pool in THOUGHT_POOLS for line in pool]
-    return ups + LANDINGS + REFUSALS
+    """Every line a trip may say, for voicing: the given thoughts or every pool, all landings and the refusals."""
+    if thoughts:
+        ups = [text for _, text in thoughts]
+    else:
+        ups = [line for pools, _ in POOLS.values() for _, pool in pools for line in pool]
+    return ups + [line for _, landings in POOLS.values() for line in landings] + REFUSALS
 
 
-def draw_thoughts(rng):
-    """One line per stage, picked at random: this trip's thoughts on the way up."""
-    return [(at, rng.choice(pool)) for at, pool in THOUGHT_POOLS]
+def draw_thoughts(rng, style="mindcap"):
+    """One line per stage, picked at random from the look's pools: this trip's thoughts on the way up."""
+    return [(at, rng.choice(pool)) for at, pool in POOLS[style][0]]
 
 
 # A profile's own track, in python/dm_runtime/music (private: never committed).
 TRACKS = {"mindcap": "mindcap.wav", "wasserpfeife": "wasserpfeife.wav", "nordmar": "nordmar.wav",
-          "kriegsgesang": "kriegsgesang.wav"}
+          "kriegsgesang": "kriegsgesang.wav", "skorpion": "skorpion.wav", "skorpion_goa": "skorpion_goa.wav"}
 MUSIC_DIR = __import__("pathlib").Path(__file__).resolve().parent.parent / "dm_runtime" / "music"
 
 
@@ -132,19 +174,24 @@ def stretched(profile, seconds):
     return [(d * factor, target, ease / factor, amp, speed / factor) for d, target, ease, amp, speed in PROFILES[profile]]
 
 
-def look(intensity, seconds, pulse=0.0, drums=0.0):
+def look(intensity, seconds, pulse=0.0, drums=0.0, style="mindcap"):
     """What the game shows at this intensity, `seconds` into the trip. pulse (0..1) is where the beat's contraction
     stands, drums (0..1) how much drum is playing. The view does not wobble; it draws in gently on the beat. Nothing
     flashes. Everything scales with intensity, so a sober hero sees nothing. Pure, to tune and test."""
     hue = (seconds / 20.0) % 1.0   # a slow turn of colour: a full circle every twenty seconds
-    r, g, b = _hue(hue)
+    r, g, b = _hue(hue, DESERT if LOOKS[style]["look"] == 1 else PALETTE)
+    x = min(1.0, max(0.0, (intensity - OPEN_FROM) / (OPEN_TO - OPEN_FROM)))
+    opened = x * x * (3 - 2 * x)   # the second stage opens smoothly once the heat has hit
     return {"fov": 0.0, "speed": 1.0,
             "zoom": 0.04 * intensity * drums * pulse,
             "tint": (r, g, b, 0.18 * intensity),
             "time": 1.0 - 0.3 * intensity,
             "shake": 0.0,   # the engine's shake jumps every frame, which reads as flicker, not as a tremble
             # The post-process over the finished frame: glowing edges, tracers, Mindcap's colours.
-            "post": intensity, "edges": 1.0, "tracers": 1.0}
+            "post": intensity, "edges": LOOKS[style]["edges"], "tracers": LOOKS[style]["tracers"],
+            "look": LOOKS[style]["look"],
+            "eye": opened if LOOKS[style].get("eye") else 0.0,
+            "afterglow": opened if LOOKS[style].get("afterglow") else 0.0}
 
 
 # The beat's contraction: drawn in over the first CONTRACT of a beat, then released over RELAX seconds with a damped
@@ -189,6 +236,8 @@ def smooth(value, target, dt):
 # pink, violet, green, violet, pink so it never crosses straight from green to pink, which goes through grey.
 PINK, VIOLET, GREEN = (1.00, 0.27, 1.00), (0.55, 0.25, 1.00), (0.30, 1.00, 0.45)
 PALETTE = (PINK, VIOLET, GREEN, VIOLET)
+# Emberheart's desert, as in shader/trip/trip.frag: pale sand, gold, deep ochre, amber.
+DESERT = ((1.00, 0.91, 0.63), (1.00, 0.80, 0.33), (0.87, 0.60, 0.20), (1.00, 0.67, 0.27))
 
 
 def _vivid_mix(a, b, f):
@@ -202,13 +251,13 @@ def _vivid_mix(a, b, f):
     return tuple(min(1.0, max(0.0, x)) for x in c)
 
 
-def _hue(h):
-    """A colour on the palette's circle for a position between 0 and 1."""
-    h = (h % 1.0) * len(PALETTE)
+def _hue(h, palette=PALETTE):
+    """A colour on a palette's circle for a position between 0 and 1."""
+    h = (h % 1.0) * len(palette)
     i = int(h)
     f = h - i
     f = f * f * (3 - 2 * f)   # smoothstep, as in the shader
-    return _vivid_mix(PALETTE[i], PALETTE[(i + 1) % len(PALETTE)], f)
+    return _vivid_mix(palette[i], palette[(i + 1) % len(palette)], f)
 
 
 def crossfade(progress):
@@ -218,18 +267,22 @@ def crossfade(progress):
 
 
 def say(gothic, text):
-    """A thought from off: the distorted take if there is one, the plain one, or a silent subtitle. False while busy."""
+    """A thought from off: the distorted take if there is one, the plain one, or a silent subtitle. Its length in
+    seconds once it plays, or None while something else is being said."""
     from dm import voices
     wav, ms = voices.lookup(HERO_VOICE, text, DELIVERY)
     if not wav:
         wav, ms = voices.lookup(HERO_VOICE, text)
-    return gothic.dialog.narrate(text, ms, wav)
+    if not gothic.dialog.narrate(text, ms, wav):
+        return None
+    return (ms or max(2000, len(text) * 70)) / 1000.0   # the engine's own length for a line without audio
 
 
 class Trip:
-    def __init__(self, phases, track, thoughts=None, rng=None):
+    def __init__(self, phases, track, thoughts=None, rng=None, style="mindcap"):
         from dm import music_bands
         self.envelope = Envelope(phases)
+        self.style = style
         self.track = track
         self.bands = music_bands.load(track) if track else None
         self.beat = music_bands.beat(track) if track else None
@@ -242,14 +295,16 @@ class Trip:
         self.started = None
         self.carry = 0.0
         self.rng = rng or random.Random()
-        self.thoughts = sorted(thoughts) if thoughts else draw_thoughts(self.rng)
-        self.landing = self.rng.choice(LANDINGS)
+        pools = LOOKS[style]["pools"]
+        self.thoughts = sorted(thoughts) if thoughts else draw_thoughts(self.rng, pools)
+        self.landing = self.rng.choice(POOLS[pools][1])
         self.last_refusal = None
         self.said = set()
         self.peaked = False
         self.landed = False
         self.queue = []          # thoughts waiting until nothing else is being said
         self.refused_at = None
+        self.quiet_until = 0.0
         self.visuals = visuals_on()
         self.visuals_read = None
         self.duck = 1.0
@@ -274,10 +329,13 @@ class Trip:
     def _think(self, gothic, now):
         """Thoughts on the way up and on landing, conversations blocked while strong, a refusal when one is tried."""
         level = self.envelope.intensity
-        for at, text in self.thoughts:
-            if level >= at and text not in self.said:
-                self.said.add(text)
-                self.queue.append(text)
+        reached = [text for at, text in self.thoughts if level >= at and text not in self.said]
+        if reached:
+            # A trip that leaps through several stages at once says only the highest; the ones it rushed past are
+            # skipped, and so is any earlier stage still waiting to be said.
+            self.said.update(reached)
+            stages = {text for _, text in self.thoughts}
+            self.queue = [t for t in self.queue if t not in stages] + [reached[-1]]
         self.peaked = self.peaked or level >= 0.9
         if self.peaked and not self.landed and level < 0.3:
             self.landed = True
@@ -287,8 +345,12 @@ class Trip:
             self.refused_at = now
             self.last_refusal = self.rng.choice([r for r in REFUSALS if r != self.last_refusal])
             self.queue.insert(0, self.last_refusal)
-        if self.queue and say(gothic, self.queue[0]):
-            self.queue.pop(0)
+        refusing = self.queue and self.queue[0] in REFUSALS
+        if self.queue and (refusing or now >= self.quiet_until):
+            length = say(gothic, self.queue[0])
+            if length is not None:
+                self.queue.pop(0)
+                self.quiet_until = now + length + THOUGHT_GAP
 
     def tick(self, gothic, now):
         if self.started is None:
@@ -333,11 +395,12 @@ class Trip:
         if self.visuals_read is None or now - self.visuals_read >= 1.0:
             self.visuals = visuals_on()          # the off switch works at once, also during a running trip
             self.visuals_read = now
-        fx = look(self.envelope.intensity, elapsed, beat, drums)
+        fx = look(self.envelope.intensity, elapsed, beat, drums, self.style)
         if not self.visuals:
-            fx = look(0.0, elapsed)          # music and thoughts only: nothing on screen changes
+            fx = look(0.0, elapsed, style=self.style)   # music and thoughts only: nothing on screen changes
         gothic.trip.set(fx["fov"], fx["speed"], fx["tint"], fx["time"], fx["shake"], fx["post"], fx["edges"],
-                        fx["tracers"], (self.bass, self.mid, self.treble), fx["zoom"])
+                        fx["tracers"], (self.bass, self.mid, self.treble), fx["zoom"], fx["look"], fx["eye"],
+                        fx["afterglow"])
         self._think(gothic, now)
         music_back = not self.track or (self.music_end is not None and now - self.music_end >= FADE_OUT)
         return not (self.envelope.over and music_back)
@@ -358,7 +421,8 @@ def start(profile="mindcap", track=None, seconds=None, thoughts=None):
     if track is None and (MUSIC_DIR / TRACKS.get(profile, "")).is_file():
         track = str(MUSIC_DIR / TRACKS[profile])
     phases = stretched(profile, seconds) if seconds else PROFILES[profile]
-    _current = Trip(phases, track, [tuple(t) for t in thoughts] if thoughts else None)
+    _current = Trip(phases, track, [tuple(t) for t in thoughts] if thoughts else None,
+                    style=PROFILE_LOOK.get(profile, "mindcap"))
     return True
 
 
