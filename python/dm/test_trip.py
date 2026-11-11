@@ -97,7 +97,8 @@ def take_refused():
 
 speaking = {"on": False}
 dialog = types.SimpleNamespace(narrate=lambda text, ms, wav: said.append(text) or True,
-                               block=lambda on: blocked.append(on), take_refused=take_refused,
+                               block=lambda on: None, trip_talk=lambda on: blocked.append(on),
+                               take_refused=take_refused,
                                narrating=lambda: speaking["on"])
 fake = types.SimpleNamespace(music=music, world=types.SimpleNamespace(generation=1), dialog=dialog,
                              trip=types.SimpleNamespace(set=lambda *a: calls.append(("set", a)),
@@ -329,6 +330,28 @@ assert max(s[2][3] for s in sets) == 1.0 and sets[-1][2][3] == 0.0  # fully blac
 dark = [s for s in sets if s[2] == (0.0, 0.0, 0.0, 1.0)]
 assert dark and all(s[5] == 0.0 for s in dark)                  # sober while black
 fake.player = None
+
+# The special trip dialogue: anyone but a guard who talks to the hero while the trip is strong gets it, in their own
+# voice; the hero's answers are distorted, three of them, different each time.
+import random as _random  # noqa: E402
+g = trip.special_graph(5, _random.Random(3))
+assert g["voice"] == "05" and g["nodes"]["a"]["line"] in trip.SPECIAL_OPENERS
+answers = g["nodes"]["a"]["choices"]
+assert len(answers) == 3 and len({c["text"] for c in answers}) == 3
+assert all(c["delivery"] == trip.DELIVERY and c["text"] in trip.SPECIAL_ANSWERS for c in answers)
+assert g["nodes"]["z"]["line"] in trip.SPECIAL_CLOSERS and g["nodes"]["z"]["choices"][0]["ends"]
+sys.modules.setdefault("gothic", types.ModuleType("gothic"))   # validating a graph never touches the game
+from dm import graph as _graph  # noqa: E402
+assert _graph.validate(g) is None
+assert set(trip.SPECIAL_ANSWERS) <= set(trip.thought_lines())       # voiced and distorted with the thoughts
+npc = types.SimpleNamespace(voice=7)
+assert trip.special_for(npc) is None                                  # no trip, no special dialogue
+trip.start("kriegsgesang", None)
+trip._current.envelope.intensity = 0.8
+assert trip.special_for(npc)["voice"] == "07"
+trip._current.envelope.intensity = 0.2
+assert trip.special_for(npc) is None                                  # not while the trip is still mild
+trip._end(fake)
 
 # A loaded save ends the trip at once.
 trip.start("mindcap", None, seconds=20)

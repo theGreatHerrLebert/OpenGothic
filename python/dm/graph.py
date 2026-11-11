@@ -82,8 +82,9 @@ def validate(graph):
 
 
 class Player:
-    def __init__(self, get_graphs, on_flag, get_flags=dict, get_topic=lambda key: None):
+    def __init__(self, get_graphs, on_flag, get_flags=dict, get_topic=lambda key: None, get_special=lambda npc: None):
         self.get_graphs = get_graphs
+        self.get_special = get_special   # a graph that takes over any conversation while it applies (the trip dialogue)
         self.on_flag = on_flag
         self.get_flags = get_flags
         self.get_topic = get_topic
@@ -165,7 +166,8 @@ class Player:
             self.topic = None   # a bound NPC's own conversation is never a topic
             partner = dialog.partner()
             self.partner = partner.instance if partner else ""
-            self.graph = self.get_graphs().get(partner.instance) if partner else None
+            special = self.get_special(partner) if partner else None
+            self.graph = special or (self.get_graphs().get(partner.instance) if partner else None)
             if self.graph is None:
                 self.stage = "idle"
                 return
@@ -209,7 +211,7 @@ class Player:
             else:
                 self.stage = "hero"
         elif self.stage == "hero":
-            if self._say(self.choice["text"], voices.HERO_VOICE, True):
+            if self._say(self.choice["text"], voices.HERO_VOICE, True, self.choice.get("delivery")):
                 self.stage = "hero_wait"
         elif self.stage == "hero_wait":
             if not dialog.busy():

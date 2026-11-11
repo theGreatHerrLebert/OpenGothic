@@ -1,4 +1,5 @@
-"""Voices the hero's trip thoughts, then distorts them: the plain take is baked as usual, and a copy is made with the
+"""Voices the hero's trip thoughts and the NPC lines of the special trip dialogue (in every NPC voice), then distorts
+the hero's: the plain take is baked as usual, and a copy is made with the
 pitch dropped, a slow vibrato, a flanger and a long cellar echo, stored as delivery "rausch". Private use only, like
 every voice: the takes never leave this machine.
 
@@ -61,12 +62,18 @@ def redistort(stories):
     print(f"{sum(distort(line) for line in lines)} of {len(lines)} thoughts distorted again")
 
 
+# Every NPC voice that is not a guard's, for the special trip dialogue: its lines are spoken in all of them.
+SPECIAL_VOICES = ["01", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "16", "17"]
+
+
 def main(stories):
     lines = trip.thought_lines() + [line for path in stories for line in story_thoughts(path)]
     lines = list(dict.fromkeys(lines))
     graphs = voices.RUNTIME_DIR / "trip_thoughts.json"
-    graphs.write_text(json.dumps({"trip__thoughts": {"voice": trip.HERO_VOICE, "narration": lines}},
-                                 ensure_ascii=False, indent=1), encoding="utf-8")
+    npc_lines = trip.SPECIAL_OPENERS + trip.SPECIAL_CLOSERS
+    all_graphs = {"trip__thoughts": {"voice": trip.HERO_VOICE, "narration": lines}}
+    all_graphs.update({f"trip__special_{v}": {"voice": v, "narration": npc_lines} for v in SPECIAL_VOICES})
+    graphs.write_text(json.dumps(all_graphs, ensure_ascii=False, indent=1), encoding="utf-8")
     game = json.loads((voices.RUNTIME_DIR / "settings.json").read_text(encoding="utf-8"))["game"]
     subprocess.run([sys.executable, str(HERE / "bake_voices.py"), "all", game, str(graphs)], check=True)
     made = sum(distort(line) for line in lines)

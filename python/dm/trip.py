@@ -99,13 +99,43 @@ POOLS = {"mindcap": (THOUGHT_POOLS, LANDINGS), "ember": (DESERT_POOLS, DESERT_LA
 # Said instead when the hero tries to talk to someone while the trip is too strong for it; never twice in a row.
 REFUSALS = ["Nicht jetzt … sein Gesicht zerfließt.", "Mit dem red ich jetzt besser nicht.", "Der hat … drei Augen.",
             "Nee. Der guckt so komisch.", "Später. Wenn er wieder normal aussieht."]
-BLOCK_ABOVE = 0.35        # no conversations above this intensity
+BLOCK_ABOVE = 0.35        # above this intensity, conversations become the special trip dialogue
 DUCK = 0.4                # the trip's music while a thought is spoken, so the hero carries over the drums
 REFUSAL_PAUSE = 8.0       # seconds between two refusal thoughts
 THOUGHT_GAP = 4.0         # seconds of quiet after a thought before the next one
 DELIVERY = "rausch"
 HERO_VOICE = "15"
 SETTINGS = __import__("pathlib").Path(__file__).resolve().parent.parent / "dm_runtime" / "settings.json"
+
+
+# The special trip dialogue: anyone but a guard who talks to the hero while the trip is strong, or whom he talks to,
+# notices the state he is in. Their lines are voiced in every NPC voice (trip_voices.py), the hero's are distorted.
+SPECIAL_OPENERS = ["Was ist denn mit dir los? Deine Augen sind ganz komisch.",
+                   "Du schwankst ja wie ein Kahn im Sturm. Hast du was geraucht?",
+                   "Bleib mir vom Leib. Du riechst nach Rauch und Ärger.",
+                   "Hallo? Hörst du mich überhaupt?"]
+SPECIAL_ANSWERS = ["Dein Gesicht … das schmilzt.", "Hörst du auch die Trommeln?", "Ich bin ein Skorpion. Glaub ich.",
+                   "Psst. Die Wände hören mit.", "Du hast so schöne … Farben."]
+SPECIAL_CLOSERS = ["Geh nach Hause und schlaf deinen Rausch aus.", "Mit dir red ich, wenn du wieder klar bist.",
+                   "Verschwinde, bevor dich die Miliz so sieht."]
+SPECIAL_LAST = "Na gut …"
+
+
+def special_graph(voice, rng):
+    """A short dialogue for an NPC of this voice number: it notices, the hero babbles, it sends him off."""
+    answers = rng.sample(SPECIAL_ANSWERS, 3)
+    return {"voice": f"{int(voice):02d}", "start": "a", "nodes": {
+        "a": {"line": rng.choice(SPECIAL_OPENERS),
+              "choices": [{"text": text, "goto": "z", "delivery": DELIVERY} for text in answers]},
+        "z": {"line": rng.choice(SPECIAL_CLOSERS),
+              "choices": [{"text": SPECIAL_LAST, "ends": True, "delivery": DELIVERY}]}}}
+
+
+def special_for(npc):
+    """The trip dialogue for this NPC while a trip is strong, else None."""
+    if _current is None or _current.black is not None or _current.envelope.intensity <= BLOCK_ABOVE:
+        return None
+    return special_graph(npc.voice, _current.rng)
 
 
 # A trip that ends in a blackout: instead of landing, the screen goes black, the hero comes to somewhere else, hours
@@ -148,7 +178,8 @@ def thought_lines(thoughts=None):
     else:
         ups = [line for pools, _ in POOLS.values() for _, pool in pools for line in pool]
     wakes = [line for blackout in BLACKOUTS.values() for line in blackout["wake"]]
-    return ups + [line for _, landings in POOLS.values() for line in landings] + REFUSALS + wakes
+    return (ups + [line for _, landings in POOLS.values() for line in landings] + REFUSALS + wakes
+            + SPECIAL_ANSWERS + [SPECIAL_LAST])
 
 
 def draw_thoughts(rng, style="mindcap"):
@@ -373,7 +404,7 @@ class Trip:
         if self.peaked and not self.landed and level < 0.3:
             self.landed = True
             self.queue.append(self.landing)
-        gothic.dialog.block(level > BLOCK_ABOVE and not self.envelope.over)
+        gothic.dialog.trip_talk(level > BLOCK_ABOVE and not self.envelope.over)
         if gothic.dialog.take_refused() and (self.refused_at is None or now - self.refused_at >= REFUSAL_PAUSE):
             self.refused_at = now
             self.last_refusal = self.rng.choice([r for r in REFUSALS if r != self.last_refusal])
@@ -462,7 +493,7 @@ class Trip:
             alpha = min(1.0, since / FADE_BLACK)
             if alpha >= 1.0:
                 b.update(stage="dark", at=now)
-                gothic.dialog.block(False)
+                gothic.dialog.trip_talk(False)
                 gothic.player.set_position(*cfg["bed"])
                 gothic.world.set_time(cfg["hour"], 0)      # the next morning; NPCs go back to their routines
                 return dict(look(0.0, elapsed, style=self.style), tint=(0.0, 0.0, 0.0, 1.0))
@@ -526,7 +557,8 @@ def _end(gothic):
         gothic.trip.clear()         # needs a world; without one there is nothing on screen to clear
     except RuntimeError:
         pass
-    gothic.dialog.block(False)      # the hero may always talk again
+    gothic.dialog.block(False)      # the hero may always talk again, as himself
+    gothic.dialog.trip_talk(False)
 
 
 def _tick(_dt):

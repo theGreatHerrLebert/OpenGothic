@@ -800,7 +800,8 @@ _story = Story()
 _player = graphs.Player(lambda: _story.graphs_now(),
                         lambda name: _story.player_flag(name),
                         lambda: _story.state["flags"],
-                        lambda key: _story.topic(key))
+                        lambda key: _story.topic(key),
+                        lambda npc: __import__("dm.trip").trip.special_for(npc))
 
 
 def _tick(dt):
