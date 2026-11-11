@@ -2,6 +2,8 @@
 #include <pybind11/stl.h>
 
 #include "gothic.h"
+#include "gamemusic.h"
+#include "game/globaleffects.h"
 #include <algorithm>
 #include "game/constants.h"
 #include "game/gamesession.h"
@@ -699,6 +701,43 @@ PYBIND11_EMBEDDED_MODULE(gothic, m) {
   m.def("take_keys",
         []() { return Gothic::inst().takeDmKeys(); },
         "DM hotkeys pressed since the last call, oldest first: 'feedback' for Alt+F, '1' to '5' for Alt+1 to Alt+5.");
+
+  py::module_ trip = m.def_submodule("trip", "A trip set live every tick: the view breathes, colour washes over "
+                                              "the screen, the world slows and the camera trembles.");
+  trip.def("set",
+           [](float fov, float speed, std::tuple<float,float,float,float> tint, float time, float shake,
+              float post, float edges, float tracers, std::tuple<float,float,float> bands, float zoom) {
+             GlobalEffects::Trip t;
+             t.zoom    = std::clamp(zoom, 0.f, 0.3f);
+             t.post    = std::clamp(post, 0.f, 1.f);
+             t.edges   = std::clamp(edges, 0.f, 1.f);
+             t.tracers = std::clamp(tracers, 0.f, 1.f);
+             t.bass    = std::max(std::get<0>(bands), 0.f);
+             t.mid     = std::max(std::get<1>(bands), 0.f);
+             t.treble  = std::max(std::get<2>(bands), 0.f);
+             t.fov   = std::max(fov, 0.f);
+             t.speed = std::max(speed, 0.05f);
+             t.tint  = Tempest::Color(std::get<0>(tint), std::get<1>(tint), std::get<2>(tint),
+                                      std::clamp(std::get<3>(tint), 0.f, 1.f));
+             t.time  = std::clamp(time, 0.05f, 1.f);
+             t.shake = std::max(shake, 0.f);
+             requireWorld()->globalFx()->setTrip(t);
+             },
+           py::arg("fov") = 0.f, py::arg("speed") = 1.f, py::arg("tint") = std::make_tuple(0.f,0.f,0.f,0.f),
+           py::arg("time") = 1.f, py::arg("shake") = 0.f, py::arg("post") = 0.f, py::arg("edges") = 1.f,
+           py::arg("tracers") = 1.f, py::arg("bands") = std::make_tuple(0.f,0.f,0.f), py::arg("zoom") = 0.f,
+           "post (0..1) runs the trip shader over the finished frame: glowing edges, tracers, colour; "
+           "bands are the music's bass, mid and treble, smoothed.");
+  trip.def("clear", []() { requireWorld()->globalFx()->setTrip(GlobalEffects::Trip()); });
+
+  py::module_ music = m.def_submodule("music", "A story's own track beside the game's music; mix() crossfades.");
+  music.def("play_track", [](const std::string& path) { return GameMusic::inst().playTrack(path); },
+            py::arg("path"), "Start a WAV or OGG track at volume 0. Returns False if it cannot be loaded.");
+  music.def("stop_track", []() { GameMusic::inst().stopTrack(); });
+  music.def("mix", [](float track, float theme) { GameMusic::inst().mix(track, theme); },
+            py::arg("track"), py::arg("theme"),
+            "Track volume and the game's music volume, each 0 to 1, relative to the music volume setting.");
+  music.def("track_playing", []() { return GameMusic::inst().isTrackPlaying(); });
 
   py::module_ dialog = m.def_submodule(
       "dialog", "Drive the native dialogue UI for one bound NPC from Python.");

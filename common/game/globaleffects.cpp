@@ -44,6 +44,11 @@ void GlobalEffects::scaleTime(uint64_t& dt) {
     i.timeWrldRem = dt%i.div;
     dt /=i.div;
     }
+  if(trip.time<1.f) {
+    const float scaled = float(dt)*std::max(trip.time, 0.05f) + tripTimeRem;
+    dt          = uint64_t(scaled);
+    tripTimeRem = scaled-float(dt);
+    }
   }
 
 static float generator(uint64_t dt, uint64_t period) {
@@ -71,6 +76,17 @@ void GlobalEffects::morph(Tempest::Matrix4x4& proj) {
     proj.scale(1.f+a0*x,1.f-a0*y,1.f);
     proj.scale(1.f+a1*x,1.f+a1*y,1.f);
     }
+  if(trip.zoom>0.f)
+    proj.scale(1.f+trip.zoom,1.f+trip.zoom,1.f);
+  if(trip.fov>0.f) {
+    const float    x     = trip.fov*0.075f;
+    const float    speed = std::max(trip.speed, 0.05f);
+    const uint64_t time  = owner.tickCount();
+    const float    a0    = std::sin(generator(time, uint64_t(5000.f/speed))*float(M_PI));
+    const float    a1    = std::sin(generator(time, uint64_t(9000.f/speed))*float(M_PI));
+    proj.scale(1.f+a0*x,1.f-a0*x,1.f);
+    proj.scale(1.f+a1*x,1.f+a1*x,1.f);
+    }
   }
 
 void GlobalEffects::shake(Vec3& origin) {
@@ -95,9 +111,20 @@ void GlobalEffects::shake(Vec3& origin) {
     i.last = i.off*(off*2.f - 1.f)*a;
     origin = i.last;
     }
+  if(trip.shake>0.f) {
+    Vec3 off;
+    off.x = float(std::rand()%1000)/1000.f*2.f-1.f;
+    off.y = float(std::rand()%1000)/1000.f*2.f-1.f;
+    off.z = float(std::rand()%1000)/1000.f*2.f-1.f;
+    origin += off*trip.shake;
+    }
   }
 
 void GlobalEffects::scrBlend(Tempest::Painter& p, const Tempest::Rect& rect) {
+  if(trip.tint.a()>0.f) {
+    p.setBrush(Tempest::Brush(trip.tint,Tempest::Painter::Alpha));
+    p.drawRect(rect.x,rect.y,rect.w,rect.h);
+    }
   for(auto& pi:scrEff) {
     auto&    i  = *pi;
     auto     cl = i.cl;

@@ -1,4 +1,5 @@
 #include "mainwindow.h"
+#include "gamemusic.h"
 
 #include "script/pythonvm.h"
 
@@ -1097,6 +1098,7 @@ uint64_t MainWindow::tick() {
   if(dt<5)
     return 0;
   lastTick  = time;
+  GameMusic::inst().tickTrack(time);   // before any pause or loading return: the music must always come back
 
   auto st = Gothic::inst().checkLoading();
   if(st==Gothic::LoadState::Finalize || st==Gothic::LoadState::FailedLoad || st==Gothic::LoadState::FailedSave) {

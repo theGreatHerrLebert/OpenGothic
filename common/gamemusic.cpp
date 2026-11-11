@@ -1,4 +1,6 @@
 #include "gamemusic.h"
+
+#include <algorithm>
 #include "gothic.h"
 
 #include <Tempest/Sound>
@@ -409,5 +411,52 @@ void GameMusic::setupSettings() {
     }
 
   setEnabled(musicEnabled != 0);
-  sound.setVolume(musicVolume);
+  sound.setVolume(musicVolume*themeScale);
+  if(!track.isEmpty())
+    track.setVolume(musicEnabled!=0 ? musicVolume*trackVolume : 0.f);   // a story track obeys "music off" too
+  }
+
+bool GameMusic::playTrack(const std::string& path) {
+  try {
+    Tempest::Sound snd(path);
+    track = device.load(snd);
+    track.setVolume(0.f);
+    track.play();
+    return true;
+    }
+  catch(const std::exception& e) {
+    Log::e("music track \"", path, "\": ", e.what());
+    track = Tempest::SoundEffect();
+    return false;
+    }
+  }
+
+void GameMusic::stopTrack() {
+  track = Tempest::SoundEffect();
+  mix(0.f, 1.f);
+  }
+
+void GameMusic::mix(float trackVol, float scale) {
+  const float musicVolume = Gothic::settingsGetF("SOUND", "musicVolume");
+  themeScale  = std::clamp(scale,    0.f, 1.f);
+  trackVolume = std::clamp(trackVol, 0.f, 1.f);
+  sound.setVolume(musicVolume*themeScale);
+  if(!track.isEmpty())
+    track.setVolume(isEnabled() ? musicVolume*trackVolume : 0.f);   // a story track obeys "music off" too
+  }
+
+void GameMusic::tickTrack(uint64_t now) {
+  const uint64_t last = lastTrackTick;
+  lastTrackTick = now;
+  if(themeScale>=1.f || (!track.isEmpty() && !track.isFinished()))
+    return;
+  const float dt = last==0 ? 0.f : float(now-last)/1000.f;
+  themeScale = std::min(1.f, themeScale + dt/6.f);
+  sound.setVolume(Gothic::settingsGetF("SOUND", "musicVolume")*themeScale);
+  if(themeScale>=1.f)
+    track = Tempest::SoundEffect();
+  }
+
+bool GameMusic::isTrackPlaying() const {
+  return !track.isEmpty() && !track.isFinished();
   }

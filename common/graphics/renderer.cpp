@@ -10,6 +10,8 @@
 #include "ui/videowidget.h"
 #include "camera.h"
 #include "gothic.h"
+#include "game/globaleffects.h"
+#include "resources.h"
 #include "utils/string_frm.h"
 
 using namespace Tempest;
@@ -649,8 +651,10 @@ void Renderer::draw(Tempest::Attachment& result, Encoder<CommandBuffer>& cmd, ui
 
   if(settings.pathTraceEnabled) {
     drawPathtrace(cmd, wview, fId);
+    const bool tripping = tripActive();
     cmd.setDebugMarker("Tonemapping");
-    drawTonemapping(result, cmd, wview);
+    drawTonemapping(tripTarget(result, tripping), cmd, wview);
+    finishTrip(result, cmd, tripping);
     wview.postFrameupdate();
     return;
     }
@@ -720,13 +724,19 @@ void Renderer::draw(Tempest::Attachment& result, Encoder<CommandBuffer>& cmd, ui
     drawFog(cmd, wview);
     }
 
+  // During a trip the tonemapped frame goes to an image of its own, which the trip pass then draws over `result`.
+  const bool  tripping   = tripActive();
+  Attachment& toneTarget = tripTarget(result, tripping);
+
   if(settings.aaEnabled) {
     cmd.setDebugMarker("CMAA2 & Tonemapping");
-    drawCMAA2(result, cmd, wview);
+    drawCMAA2(toneTarget, cmd, wview);
     } else {
     cmd.setDebugMarker("Tonemapping");
-    drawTonemapping(result, cmd, wview);
+    drawTonemapping(toneTarget, cmd, wview);
     }
+
+  finishTrip(result, cmd, tripping);
 
   //drawRayQueryDbg(cmd, wview);
   //drawHashDbg(result, cmd, wview);
@@ -762,6 +772,60 @@ void Renderer::drawTonemapping(Attachment& result, Encoder<CommandBuffer>& cmd, 
   cmd.setPushData(p);
   cmd.setPipeline(pso);
   cmd.draw(nullptr, 0, 3);
+  }
+
+Attachment& Renderer::tripTarget(Attachment& result, bool tripping) {
+  if(!tripping)
+    return result;
+  if(trip.scene.size()!=result.size()) {
+    auto&          device = Resources::device();
+    const uint32_t w      = uint32_t(result.w());
+    const uint32_t h      = uint32_t(result.h());
+    trip.scene      = device.attachment(TextureFormat::RGBA8, w, h);
+    trip.history[0] = device.attachment(TextureFormat::RGBA8, w, h);
+    trip.history[1] = device.attachment(TextureFormat::RGBA8, w, h);
+    trip.wasActive  = false;   // new images: the history must be wiped before its first use
+    }
+  return trip.scene;
+  }
+
+void Renderer::finishTrip(Attachment& result, Encoder<CommandBuffer>& cmd, bool tripping) {
+  if(tripping) {
+    cmd.setDebugMarker("Trip");
+    drawTrip(result, cmd);
+    }
+  trip.wasActive = tripping;
+  }
+
+bool Renderer::tripActive() const {
+  auto* world = Gothic::inst().world();
+  return world!=nullptr && world->globalFx()->tripState().post>0.001f;
+  }
+
+void Renderer::drawTrip(Tempest::Attachment& result, Tempest::Encoder<Tempest::CommandBuffer>& cmd) {
+  auto*       world = Gothic::inst().world();
+  const auto& t     = world->globalFx()->tripState();
+  if(!trip.wasActive) {
+    // A new trip: wipe the history, or the first tracers would be whatever the image held before.
+    trip.started = world->tickCount();
+    for(auto& h:trip.history) {
+      cmd.setFramebuffer({{h, Tempest::Vec4(0,0,0,1), Tempest::Preserve}});
+      }
+    }
+
+  struct Push {
+    float intensity, time, bass, mid, treble, edges, tracers, pad;
+    } p = {t.post, float(world->tickCount()-trip.started)/1000.f, t.bass, t.mid, t.treble, t.edges, t.tracers, 0.f};
+
+  auto& prev = trip.history[trip.current];
+  auto& next = trip.history[trip.current^1];
+  cmd.setFramebuffer({{result, Tempest::Discard, Tempest::Preserve}, {next, Tempest::Discard, Tempest::Preserve}});
+  cmd.setBinding(0, trip.scene, Sampler::bilinear(ClampMode::ClampToEdge));
+  cmd.setBinding(1, prev,       Sampler::bilinear(ClampMode::ClampToEdge));
+  cmd.setPushData(p);
+  cmd.setPipeline(shaders.trip);
+  cmd.draw(nullptr, 0, 3);
+  trip.current ^= 1;
   }
 
 void Renderer::drawCMAA2(Tempest::Attachment& result, Tempest::Encoder<Tempest::CommandBuffer>& cmd, const WorldView& wview) {

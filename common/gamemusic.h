@@ -34,6 +34,16 @@ class GameMusic final {
     void      setMusic(const zenkit::IMusicTheme &theme, Tags t);
     void      stopMusic();
 
+    // A second track (WAV or OGG) beside the game's music, for a story's own music. Both start and stay where the
+    // caller puts them: mix() sets the track's volume and scales the game's music, so a crossfade is the caller's.
+    bool      playTrack(const std::string& path);
+    void      stopTrack();
+    void      mix(float trackVolume, float themeScale);
+    bool      isTrackPlaying() const;
+    // Called every frame, also while paused or in a menu: once the track has ended or is gone, the game's music
+    // comes back on its own, so it can never stay muted however the story's side stopped.
+    void      tickTrack(uint64_t now);
+
   private:
     struct MusicProvider;
     struct OpenGothicMusicProvider;
@@ -52,4 +62,8 @@ class GameMusic final {
     Tempest::SoundDevice device;
     Tempest::SoundEffect sound;
     MusicProvider*       impl = nullptr;
+    Tempest::SoundEffect track;
+    float                trackVolume = 0.f;
+    float                themeScale  = 1.f;
+    uint64_t             lastTrackTick = 0;
   };

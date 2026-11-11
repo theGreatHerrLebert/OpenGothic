@@ -25,6 +25,23 @@ class GlobalEffects {
     void     shake(Tempest::Vec3& origin);
     void     scrBlend(Tempest::Painter& p, const Tempest::Rect& rect);
 
+    // A trip whose strength a story sets every tick, so nothing here has a duration. Zero everywhere is sober.
+    struct Trip {
+      float          fov   = 0;            // breathing of the view: 1 is as strong as the game's own fov morph
+      float          speed = 1;            // how fast it breathes
+      Tempest::Color tint  = {0,0,0,0};    // colour washed over the screen, alpha is its strength
+      float          time  = 1;            // world speed: below 1 the world slows down
+      float          shake = 0;            // camera shake, in centimetres
+      float          zoom  = 0;            // the view drawn in by this fraction: a beat's contraction
+      // The post-process over the finished frame (shader/trip/trip.frag): zero intensity skips it entirely.
+      float          post    = 0;          // its intensity, 0 sober .. 1 peak
+      float          edges   = 1;          // how strongly edges glow
+      float          tracers = 1;          // how strongly the previous frame persists
+      float          bass = 0, mid = 0, treble = 0;   // music bands, smoothed
+      };
+    void        setTrip(const Trip& t) { trip = t; }
+    const Trip& tripState() const { return trip; }
+
   private:
     struct Effect {
       virtual ~Effect(){}
@@ -85,6 +102,8 @@ class GlobalEffects {
     std::vector<std::shared_ptr<ScreenBlend>> scrEff;
     std::vector<std::shared_ptr<Morph>>       morphEff;
     std::vector<std::shared_ptr<Quake>>       quakeEff;
+    Trip                                      trip;
+    float                                     tripTimeRem = 0;
   friend class GlobalFx;
   };
 

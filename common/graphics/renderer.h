@@ -94,6 +94,10 @@ class Renderer final {
     void drawAmbient      (Tempest::Encoder<Tempest::CommandBuffer>& cmd, const WorldView& view);
     void drawTonemapping  (Tempest::Attachment& result, Tempest::Encoder<Tempest::CommandBuffer>& cmd, const WorldView& wview);
     void drawCMAA2        (Tempest::Attachment& result, Tempest::Encoder<Tempest::CommandBuffer>& cmd, const WorldView& wview);
+    bool tripActive       () const;
+    Tempest::Attachment& tripTarget(Tempest::Attachment& result, bool tripping);
+    void finishTrip       (Tempest::Attachment& result, Tempest::Encoder<Tempest::CommandBuffer>& cmd, bool tripping);
+    void drawTrip         (Tempest::Attachment& result, Tempest::Encoder<Tempest::CommandBuffer>& cmd);
     void drawReflections  (Tempest::Encoder<Tempest::CommandBuffer>& cmd, const WorldView& wview);
     void drawUnderwater   (Tempest::Encoder<Tempest::CommandBuffer>& cmd, const WorldView& wview);
     void drawFog          (Tempest::Encoder<Tempest::CommandBuffer>& cmd, const WorldView& wview);
@@ -160,6 +164,15 @@ class Renderer final {
     Tempest::Vec3             clipInfo;
 
     Tempest::Attachment       sceneLinear;
+
+    // A trip's post-process: the tonemapped frame goes here first, and its own output persists for the tracers.
+    struct {
+      Tempest::Attachment     scene;
+      Tempest::Attachment     history[2];
+      uint8_t                 current = 0;
+      bool                    wasActive = false;
+      uint64_t                started = 0;
+      } trip;
     Tempest::ZBuffer          zbuffer, shadowMap[Resources::ShadowLayers];
     Tempest::ZBuffer          zbufferUi;
 
