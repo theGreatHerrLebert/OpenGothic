@@ -647,6 +647,8 @@ PYBIND11_EMBEDDED_MODULE(gothic, m) {
       .def_property_readonly("hp_max",    &PyNpc::hpMax)
       .def_property_readonly("alive",     &PyNpc::alive)
       .def_property_readonly("dead",      &PyNpc::dead)
+      .def_property_readonly("voice", [](const PyNpc& self) { return self.fetch()->handle().voice; },
+                             "The NPC's voice number, as its SVMs and dialogue keys use it (5 for _05_).")
       .def("in_state", &PyNpc::inState, py::arg("state"),
            "True while the NPC runs this ZS_ state, for example ZS_MAGICBURN.")
       .def("set_position",
@@ -892,6 +894,8 @@ PYBIND11_EMBEDDED_MODULE(gothic, m) {
              "The key of a story topic the player just chose in an NPC's own menu, once; or None.");
   dialog.def("end_topic", []() { return requireDialog().agentEndTopic(); },
              "Hand the conversation back to the NPC's own menu after a story topic.");
+  dialog.def("trip_talk", [](bool on) { Gothic::inst().dmTripTalk = on; }, py::arg("on"),
+             "While on, every conversation except a guard's opens as a story-driven one, for the trip dialogue.");
   dialog.def("block", [](bool on) { Gothic::inst().dmBlockTalk = on; }, py::arg("on"),
              "While on, the hero cannot start a conversation; attempts are counted.");
   dialog.def("take_refused",

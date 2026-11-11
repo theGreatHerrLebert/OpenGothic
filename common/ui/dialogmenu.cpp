@@ -1,4 +1,5 @@
 #include "dialogmenu.h"
+#include "game/constants.h"
 #include "safearea.h"
 
 #include <Tempest/Application>
@@ -493,7 +494,10 @@ bool DialogMenu::hasContent() const {
   }
 
 bool DialogMenu::onStart(Npc &p, Npc &ot) {
-  if(std::find(agentNpcs.begin(),agentNpcs.end(),&ot)!=agentNpcs.end()) {
+  const bool guard    = ot.guild()==GIL_MIL || ot.guild()==GIL_PAL;   // guards keep their own words, trip or not
+  // Only a conversation that is just starting: the menu's depth is not reliable here, a script's farewell leaves it set.
+  const bool tripTalk = Gothic::inst().dmTripTalk && !guard && state==State::PreStart;
+  if(tripTalk || std::find(agentNpcs.begin(),agentNpcs.end(),&ot)!=agentNpcs.end()) {
     agentMode      = true;
     agentOpened    = true;
     agentFirstLine = true;

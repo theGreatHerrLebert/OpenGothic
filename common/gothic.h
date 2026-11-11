@@ -210,6 +210,9 @@ class Gothic final {
     // While set, the hero uses an object without its script routine (a bed without the sleep menu); cleared when he
     // leaves the object, so the next ordinary use is as always.
     bool        dmQuietUse    = false;
+    // While set (during a strong trip), every conversation except a guard's opens as a story-driven one, so the story
+    // can play the special trip dialogue; the NPC's scripted topics wait until it is over.
+    bool        dmTripTalk    = false;
 
     // DM hotkeys pressed since Python last asked, oldest first. Filled on the UI thread, drained from a world tick.
     void                     pushDmKey(std::string key) { std::lock_guard<std::mutex> g(dmKeysSync); dmKeys.push_back(std::move(key)); }
