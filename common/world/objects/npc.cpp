@@ -2812,6 +2812,18 @@ void Npc::nextAiAction(AiQueue& queue, uint64_t dt) {
         break;
         }
 
+      // Guards do not care whether the hero is fit to talk: militia and paladins still stop him at gates and checks.
+      const bool guard = guild()==GIL_MIL || guild()==GIL_PAL;
+      if(this!=act.target && act.target->isPlayer() && Gothic::inst().dmBlockTalk && !guard) {
+        // A story has the hero in no state to talk: the NPC's attempt is dropped the same way as when he is busy with
+        // an object, and counted, so the story can have him say why. The talk script queued its turns on the hero
+        // before asking to talk; they would wait for a conversation that never comes and hold him still, so they go.
+        Gothic::inst().dmTalkRefused++;
+        act.target->clearAiQueue();
+        act.target->stopWalking();
+        break;
+        }
+
       if(act.target->qDistTo(*this)>PERC_DIST_DIALOG*PERC_DIST_DIALOG) {
         break;
         }
