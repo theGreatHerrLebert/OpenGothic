@@ -80,6 +80,24 @@ assert not perc.matches({"event": "took_item", "unseen": True}, take) and not pe
 assert perc.matches({"event": "took_item", "unseen": True}, {**take, "seen_by": []})
 done_to_hero = dict(kind="hit", actor="BURNER", target="PLAYER", item="", spell=-1, seen_by=[])
 assert not perc.matches({"event": "hit"}, done_to_hero) and perc.matches({"event": "hit", "target": "PLAYER"}, done_to_hero)
+# Getting up from an object: matched by its scheme, case blind, and part of a longer scheme name counts.
+pipe = {"kind": "used_object", "actor": "PLAYER", "target": "", "item": "SMOKE_WATERPIPE", "spell": -1, "seen_by": []}
+assert perc.matches({"event": "used_object"}, pipe) and perc.matches({"event": "used_object", "object": "waterpipe"}, pipe)
+assert not perc.matches({"event": "used_object", "object": "BENCH"}, pipe)
+assert perc.validate({"event": "used_object", "object": "WATERPIPE"}) is None
+assert "object" in perc.validate({"event": "used_object", "object": ""})
+assert "object" in perc.validate({"event": "hit", "object": "WATERPIPE"})
+# One particular pipe: by its own name, or by where it stands.
+pipe = {**pipe, "object": "NW_CITY_PIPE_02", "position": (9000.0, 300.0, 6000.0)}
+assert perc.matches({"event": "used_object", "name": "nw_city_pipe_02"}, pipe)
+assert not perc.matches({"event": "used_object", "name": "NW_CITY_PIPE_01"}, pipe)
+assert perc.matches({"event": "used_object", "near": [9100, 6000, 2]}, pipe)            # 1 m away
+assert not perc.matches({"event": "used_object", "near": [9500, 6000, 2]}, pipe)        # 5 m away
+assert not perc.matches({"event": "used_object", "near": [9000, 6000, 2]}, {**pipe, "position": None})
+assert perc.validate({"event": "used_object", "near": [9000, 6000, 2]}) is None
+for bad in ([9000, 6000], [9000, 6000, 0], [9000, 6000, 99], ["9000", 6000, 2], [True, 6000, 2]):
+    assert "near" in perc.validate({"event": "used_object", "near": bad}), bad
+assert "name" in perc.validate({"event": "took_item", "name": "X"})
 for bad, word in [({"event": "nope"}, "unknown"), ({"event": "took_item", "item": "BURNER"}, "not an item"), ({"event": "hit", "target": "ITX"}, "not an NPC"),
                   ({"event": "cast_spell", "spell": "FIRE"}, "not a spell"), ({"event": "hit", "seen_by": "BURNER", "unseen": True}, "exclude")]:
     assert word in perc.validate(bad), bad

@@ -297,6 +297,8 @@ def _check_give(args, state):
 WITNESS_RANGE = 1500  # world units; about the range at which the game's own NPCs react
 NARRATOR_GAP_S = 20  # quiet time after each narrator line, so the voice stays a treat
 _narration = collections.deque(maxlen=8)
+# The last events the story layer perceived, for finding out what the game calls something (an object's scheme).
+recent = collections.deque(maxlen=20)
 
 
 def _check_narrate(args, state):
@@ -653,6 +655,7 @@ class Story:
     def _take_perceptions(self):
         """A rule hears only what happens while its own conditions hold, and hears it once."""
         for event in gothic.world.take_perceptions() + self._weapon_events():
+            recent.append(event)
             for rule_id, rule in self.state.get("rules", {}).items():
                 if (rule.get("on") and not rule["fired"] and not rule.get("perceived") and self._conditions(rule)
                         and perceptions.matches(rule["on"], event)):

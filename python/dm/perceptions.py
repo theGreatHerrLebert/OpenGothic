@@ -3,6 +3,9 @@
     {"event": "took_item", "item": "ITMI_GOLD", "seen_by": "VLK_469_HALVOR"}
     {"event": "cast_spell", "target": "VLK_4006_BOTE", "spell": "SPL_FIREBOLT"}
     {"event": "hit", "target": "VLK_432_MOE", "unseen": true}
+    {"event": "used_object", "object": "SMOKE_WATERPIPE"}     the hero got up from an object of this scheme
+    {"event": "used_object", "near": [9061, 5911, 2]}        ... from the one standing within 2 m of x, z
+    {"event": "used_object", "name": "NW_CITY_PIPE_01"}      ... from the one with this name in the world
 
 Events: took_item (picked up from the ground), hit, knocked_down, killed, cast_spell, entered_room, read_item (a letter
 opened from the inventory), drew_weapon (fists, blade, bow or spell readied). The player is the
@@ -12,7 +15,8 @@ needs nobody to have seen it. `target` may be "PLAYER", for what is done to the 
 
 import gothic
 
-EVENTS = {"took_item", "hit", "knocked_down", "killed", "cast_spell", "entered_room", "read_item", "drew_weapon"}
+EVENTS = {"took_item", "hit", "knocked_down", "killed", "cast_spell", "entered_room", "read_item", "drew_weapon",
+          "used_object"}
 PLAYER = "PLAYER"
 
 
@@ -32,6 +36,15 @@ def validate(on):
         return f"not a spell: {on['spell']}"
     if on.get("seen_by") and on.get("unseen"):
         return "seen_by and unseen exclude each other"
+    if "object" in on and (on["event"] != "used_object" or not isinstance(on["object"], str) or not on["object"].strip()):
+        return "object names the scheme of a used object, such as a water pipe"
+    if "name" in on and (on["event"] != "used_object" or not isinstance(on["name"], str) or not on["name"].strip()):
+        return "name is a used object's own name in the world"
+    if "near" in on:
+        near = on["near"]
+        if (on["event"] != "used_object" or not isinstance(near, list) or len(near) != 3
+                or any(isinstance(v, bool) or not isinstance(v, (int, float)) for v in near) or not 0 < near[2] <= 50):
+            return "near is [x, z, metres up to 50] where a used object stands"
     return None
 
 
@@ -45,6 +58,15 @@ def matches(on, event):
         return False
     if on.get("item") and event["item"].upper() != on["item"].upper():
         return False
+    if on.get("object") and on["object"].upper() not in event["item"].upper():
+        return False                     # the scheme of a used object travels in the record's item field
+    if on.get("name") and on["name"].upper() != (event.get("object") or "").upper():
+        return False
+    if on.get("near"):
+        x, z, metres = on["near"]
+        at = event.get("position")
+        if at is None or (at[0] - x) ** 2 + (at[2] - z) ** 2 > (metres * 100) ** 2:   # game units are centimetres
+            return False
     if on.get("spell") and event["spell"] != gothic.daedalus.get(on["spell"], -2):
         return False
     witnesses = {w.upper() for w in event["seen_by"]}
