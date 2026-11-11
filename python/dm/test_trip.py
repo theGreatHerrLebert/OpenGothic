@@ -359,10 +359,34 @@ assert trip._after is None                                      # all said: forg
 trip.remember_after(fake, trip.BLACKOUTS["skorpion_goa"]["after"], 0.0)
 walk((100.0, 0.0, 0.0), trip.AFTER_FOR + 1)
 assert len(said) == 3 and trip._after is None                   # too late: forgotten
-pitched.clear()                                                 # never pitched to: Borka keeps his own words
+pitched.clear()                                                 # never pitched to: his farewell takes his pitch's place
+binds = []
+dialog.bind = lambda npc: binds.append(("bind", npc))
+dialog.unbind = lambda npc=None: binds.append(("unbind", npc))
 trip.remember_after(fake, trip.BLACKOUTS["skorpion_goa"]["after"], 0.0)
 walk((4000.0, 0.0, 0.0), 1.0)
-assert len(said) == 3 and [line["npc"] for line in trip._after[0]] == ["VLK_435_NADJA", "VLK_433_BROMOR"]
+assert len(said) == 3 and binds == [("bind", people["VLK_434_BORKA"])]  # his conversation is ours, not narrated
+walk((4000.0, 0.0, 0.0), 1.5)
+assert len(binds) == 1                                          # bound once
+assert trip.special_for(types.SimpleNamespace(instance="VLK_433_BROMOR")) is None
+g = trip.special_for(types.SimpleNamespace(instance="VLK_434_BORKA", voice=11))
+assert g["voice"] == "11" and g["nodes"]["a"]["line"].startswith("Mein Auftrag")
+assert g["nodes"]["a"]["choices"] == [{"text": "Schon gut, ich geh ja schon.", "ends": True}]
+sys.modules.setdefault("gothic", types.ModuleType("gothic"))
+from dm import graph as _graph  # noqa: E402
+assert _graph.validate(g) is None
+fake.player.mark_heard = lambda info: pitched.add(info)
+walk((4000.0, 0.0, 0.0), 2.0)
+assert binds[-1] == ("unbind", people["VLK_434_BORKA"])         # his own conversations back afterwards
+assert "DIA_BORKA_TROUBLE" in pitched                           # and no pitch to a guest like that any more
+pitched.clear()
+assert trip.special_for(types.SimpleNamespace(instance="VLK_434_BORKA", voice=11)) is None   # once
+trip.remember_after(fake, trip.BLACKOUTS["skorpion_goa"]["after"], 0.0)
+walk((4000.0, 0.0, 0.0), 1.0)
+walk((4000.0, 0.0, 0.0), trip.AFTER_FOR + 1)
+assert binds[-1] == ("unbind", people["VLK_434_BORKA"]) and trip._after is None   # too late: released too
+assert ("15", "Schon gut, ich geh ja schon.") in trip.after_lines()
+assert trip.BLACKOUTS["skorpion_goa"]["after"][2].get("bound") is None   # the shared config is never touched
 del people["VLK_434_BORKA"]                                     # someone gone from the world is dropped
 trip.remember_after(fake, trip.BLACKOUTS["skorpion_goa"]["after"], 0.0)
 walk((9000.0, 0.0, 0.0), 1.0)

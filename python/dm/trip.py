@@ -148,8 +148,10 @@ def special_graph(voice, rng, instance="", guard=False):
 
 
 def special_for(npc):
-    """The trip dialogue for this NPC while a trip is strong, else None."""
-    if _current is None or _current.black is not None or _current.envelope.intensity <= BLOCK_ABOVE:
+    """The trip dialogue for this NPC while a trip is strong, a waiting line after a blackout, else None."""
+    if _current is None:
+        return after_graph(npc)
+    if _current.black is not None or _current.envelope.intensity <= BLOCK_ABOVE:
         return None
     return special_graph(npc.voice, _current.rng, getattr(npc, "instance", "") or "", is_guard(npc))
 
@@ -177,8 +179,10 @@ BLACKOUTS = {
                    {"npc": "VLK_433_BROMOR", "voice": "07",
                     "line": "Eigentlich müsste ich dir die Nacht extra berechnen. Aber über das, was da oben passiert "
                             "ist, will ich so bald nicht reden. Lassen wir's gut sein."},
-                   # Only once he has given his own pitch at the door; until then he stops the hero with that.
-                   {"npc": "VLK_434_BORKA", "voice": "11", "heard": "DIA_BORKA_TROUBLE",
+                   # Borka would stop him with his pitch to come in; to a guest on his way out he says this instead,
+                   # and the hero answers. After that the pitch counts as heard: no stranger any more.
+                   {"npc": "VLK_434_BORKA", "voice": "11", "instead_of": "DIA_BORKA_TROUBLE",
+                    "reply": "Schon gut, ich geh ja schon.",
                     "line": "Mein Auftrag ist es, hier Kundschaft reinzubringen. Aber dich … dich sehe ich lieber "
                             "wieder gehen."}]},
 }
@@ -608,31 +612,61 @@ _after = None
 
 def remember_after(gothic, lines, now):
     global _after
-    _after = [list(lines), now + AFTER_FOR, gothic.world.generation] if lines else None
+    _after = [[dict(line) for line in lines], now + AFTER_FOR, gothic.world.generation] if lines else None
+
+
+def _forget_after(gothic, same_world):
+    global _after
+    if _after is not None and same_world:
+        for line in _after[0]:
+            _release(gothic, line)
+    _after = None
+
+
+def _release(gothic, line):
+    """Gives a speaker his own conversations back."""
+    if line.pop("bound", False):
+        npc = gothic.world.find_npc(line["npc"])
+        if npc is not None:
+            gothic.dialog.unbind(npc)
 
 
 def tick_after(gothic, now):
-    """Speaks a waiting line once the hero is near its speaker, in whatever order he passes them; forgets them when too late or in another
-    world or save."""
-    global _after
+    """Speaks a waiting line once the hero is near its speaker, in whatever order he passes them; forgets them when
+    too late or in another world or save. A speaker who would stop the hero with his own words takes over that
+    conversation instead (see after_graph)."""
     if _after is None:
         return
     lines, until, generation = _after
     if not lines or now > until or gothic.world.generation != generation:
-        _after = None
+        _forget_after(gothic, gothic.world.generation == generation)
         return
+    for line in list(lines):
+        if line.get("taken"):
+            _release(gothic, line)
+            lines.remove(line)
+            if line.get("instead_of"):
+                try:
+                    gothic.player.mark_heard(line["instead_of"])   # after that night he is no stranger to pitch to
+                except (AttributeError, ValueError, RuntimeError):
+                    pass                        # an older game build: he pitches once more, nothing worse
+    for line in list(lines):
+        if line.get("instead_of") and not line.get("bound") and not gothic.player.heard(line["instead_of"]):
+            npc = gothic.world.find_npc(line["npc"])
+            if npc is not None:
+                gothic.dialog.bind(npc)         # his conversation becomes this line, whoever starts it
+                line["bound"] = True
     if gothic.dialog.partner() is not None or gothic.dialog.narrating():
         return
     here = gothic.player.position
     for line in list(lines):
+        if line.get("bound"):
+            continue                            # said in the conversation he starts himself
         npc = gothic.world.find_npc(line["npc"])
         if npc is None:
             lines.remove(line)                  # gone (dead, or elsewhere in the world): nothing to say
             continue
         if sum((a - b) ** 2 for a, b in zip(here, npc.position)) > AFTER_NEAR ** 2:
-            continue
-        if line.get("heard") and not gothic.player.heard(line["heard"]):
-            lines.remove(line)                  # his own words come first, and they are enough
             continue
         from dm import voices
         wav, ms = voices.lookup(line["voice"], line["line"])
@@ -641,9 +675,24 @@ def tick_after(gothic, now):
         return                                  # one at a time
 
 
+def after_graph(npc):
+    """The conversation a speaker of a waiting line has instead of his own, or None. Taken once."""
+    if _after is None:
+        return None
+    for line in _after[0]:
+        if line.get("bound") and not line.get("taken") and line["npc"] == getattr(npc, "instance", ""):
+            line["taken"] = True                # released on the next tick (tick_after), with the game at hand
+            return {"voice": line["voice"], "start": "a", "nodes": {"a": {
+                "line": line["line"],
+                "choices": [{"text": line.get("reply", "…"), "ends": True}]}}}
+    return None
+
+
 def after_lines():
-    """Every line said after a blackout, by voice, for voicing."""
-    return [(line["voice"], line["line"]) for b in BLACKOUTS.values() for line in b.get("after", [])]
+    """Every line said after a blackout, by voice, for voicing: the speakers' and the hero's replies."""
+    said = [line for b in BLACKOUTS.values() for line in b.get("after", [])]
+    return ([(line["voice"], line["line"]) for line in said]
+            + [(HERO_VOICE, line["reply"]) for line in said if line.get("reply")])
 
 
 def _tick(_dt):
