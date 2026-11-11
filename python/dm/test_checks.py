@@ -86,6 +86,23 @@ for bad, word in [({"event": "nope"}, "unknown"), ({"event": "took_item", "item"
 assert perc.validate(None) is None and perc.validate({"event": "hit", "target": "PLAYER"}) is None
 print("perceptions ok")
 
+# The game's own quest state, and "any".
+values.update({"LOG_RUNNING": 1, "LOG_SUCCESS": 2, "LOG_FAILED": 3, "LOG_OBSOLETE": 4,
+               "MIS_LOBART_RUEBEN": 2, "MIS_VINO_WEIN": 1, "MIS_LOBARTKILLBUGS": 0})
+assert holds(type="quest", quest="MIS_LOBART_RUEBEN", state="success")
+assert holds(type="quest", quest="mis_vino_wein", state="running") and not holds(type="quest", quest="MIS_VINO_WEIN", state="success")
+assert holds(type="quest", quest="MIS_LOBARTKILLBUGS", state="open")
+helped = {"type": "any", "checks": [{"type": "quest", "quest": q, "state": "success"} for q in ("MIS_VINO_WEIN", "MIS_LOBART_RUEBEN")]}
+assert checks.all_hold([helped])
+values["MIS_LOBART_RUEBEN"] = 1
+assert not checks.all_hold([helped])
+assert checks.validate(helped) is None
+assert "no such quest" in checks.validate({"type": "quest", "quest": "MIS_NOPE", "state": "success"})
+assert "not a quest" in checks.validate({"type": "quest", "quest": "LOBART", "state": "success"})
+assert "unknown quest state" in checks.validate({"type": "quest", "quest": "MIS_VINO_WEIN", "state": "done"})
+assert "list of checks" in checks.validate({"type": "any", "checks": []})
+assert "unknown check" in checks.validate({"type": "any", "checks": [{"type": "nope"}]})
+
 # Handing things over.
 removed, given = [], []
 fake.player.remove_item = lambda i, c=1: removed.append((i, c))

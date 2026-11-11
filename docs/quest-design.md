@@ -61,6 +61,9 @@ A line that could belong to anyone is filler.
   player has learned, so specific lines are gated and a vague alternative is offered.
 - Every line answers what was actually just said. Nobody responds to a question not asked.
 - Name a person before calling them "er", on every path.
+- Follow the original game's timeline. How someone treats the hero depends on what he has really done for them in
+  the original game, read with a `quest` check: a farmer believes a stranger who has worked his fields, and turns
+  away one who has not. A refusal must leave a way back once the hero has earned it.
 - Keep the speaker's situation in mind: who they are talking to, where they are, what has
   already happened. A debt that was paid is no longer owed; a man hiding in an alley is no
   regular at the bar; a fellow novice is no stranger and will recognise you.

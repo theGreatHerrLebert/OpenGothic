@@ -91,8 +91,9 @@ way out, and a story may still end a conversation deliberately. Every line must 
 ## Conditions on the live game
 
 Flags record what the story remembers. A `checks` list on a scene, a rule or a dialogue choice tests what is true right
-now: `has_item`, `wears`, `guild`, `npc_state` (burning, asleep, frozen and so on), `npc_dead`, `obsessed`, `hour`, and
-`not`. A choice can also carry `takes` and `gives` (`{"item": ..., "count": ...}`): it only appears while the hero has
+now: `has_item`, `wears`, `guild`, `npc_state` (burning, asleep, frozen and so on), `npc_dead`, `obsessed`, `hour`,
+`quest` (the game's own quest state, such as `{"type": "quest", "quest": "MIS_LOBART_RUEBEN", "state": "success"}`),
+`not`, and `any` (at least one of several holds). A choice can also carry `takes` and `gives` (`{"item": ..., "count": ...}`): it only appears while the hero has
 the item, and the item really changes hands. A checked choice never counts as the way out of a node. Often the best use is a hint: one line mentions a rule
 that is already true, such as a sleep scroll working on a guard, and the player makes the plan.
 

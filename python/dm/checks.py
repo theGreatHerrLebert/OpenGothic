@@ -7,7 +7,12 @@
     {"type": "npc_dead", "npc": "X"}
     {"type": "obsessed"}                                       the game's own obsession flag on the hero
     {"type": "hour", "from": 21, "to": 5}                      wraps past midnight
+    {"type": "quest", "quest": "MIS_LOBART_RUEBEN", "state": "success"}   the game's own quest state
     {"type": "not", "check": {...}}
+    {"type": "any", "checks": [{...}, ...]}                    at least one holds
+
+A quest state is "open" (never given), "running", "success", "failed" or "obsolete", read from the game's MIS_
+variable, so a story can follow what the hero has really done in the original game.
 
 Flags say what the story remembers. Checks say what is true in the game right now. All of them must hold.
 """
@@ -18,8 +23,11 @@ import gothic
 STATES = {"ZS_MAGICBURN", "ZS_MAGICBURNSHORT", "ZS_MAGICSLEEP", "ZS_MAGICFREEZE", "ZS_MAGICSHRINK", "ZS_MAGICSHRUNK",
           "ZS_MAGICFLEE", "ZS_WHIRLWIND", "ZS_SUCKENERGY", "ZS_UNCONSCIOUS", "ZS_DEAD", "ZS_FLEE", "ZS_DANCE", "ZS_SLEEP",
           "ZS_PRAY_INNOS", "ZS_STAND_DEMENTOR"}
+QUEST_STATES = {"open": None, "running": "LOG_RUNNING", "success": "LOG_SUCCESS", "failed": "LOG_FAILED",
+                "obsolete": "LOG_OBSOLETE"}
 _REQUIRED = {"has_item": ("item",), "wears": ("item",), "guild": ("guild",), "npc_state": ("npc", "state"), "npc_dead": ("npc",),
-             "obsessed": (), "hour": ("from", "to"), "not": ("check",)}
+             "obsessed": (), "hour": ("from", "to"), "not": ("check",),
+             "quest": ("quest", "state"), "any": ("checks",)}
 
 
 def validate(check):
@@ -40,9 +48,32 @@ def validate(check):
         return f"state cannot be checked: {check['state']}"
     if kind == "hour" and not (0 <= check["from"] <= 23 and 0 <= check["to"] <= 23):
         return "hour out of range"
+    if kind == "quest":
+        if not str(check["quest"]).upper().startswith("MIS_"):
+            return f"not a quest variable: {check['quest']}"
+        if check["state"] not in QUEST_STATES:
+            return f"unknown quest state: {check['state']}"
+        if _known_quest(check["quest"]) is False:
+            return f"no such quest in this game: {check['quest']}"
     if kind == "not":
         return validate(check["check"])
+    if kind == "any":
+        if not isinstance(check["checks"], list) or not check["checks"]:
+            return "any needs a list of checks"
+        return validate_all(check["checks"])
     return None
+
+
+def _known_quest(name):
+    """True or False in a running game; None offline, where the game's variables cannot be read."""
+    daedalus = getattr(gothic, "daedalus", None)
+    if daedalus is None:
+        return None
+    try:
+        daedalus.get(name.upper())
+        return True
+    except (RuntimeError, KeyError):
+        return False
 
 
 def validate_all(checks):
@@ -112,6 +143,12 @@ def _holds(check):
         hour, _ = gothic.world.time
         start, end = check["from"], check["to"]
         return start <= hour < end if start <= end else hour >= start or hour < end
+    if kind == "quest":
+        value = gothic.daedalus.get(check["quest"].upper(), 0)
+        constant = QUEST_STATES[check["state"]]
+        return value == (0 if constant is None else gothic.daedalus.get(constant, 0))
+    if kind == "any":
+        return any(_holds(c) for c in check["checks"])
     return not _holds(check["check"])
 
 
