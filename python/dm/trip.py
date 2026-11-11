@@ -503,6 +503,8 @@ class Trip:
             if alpha >= 1.0:
                 b.update(stage="dark", at=now)
                 gothic.dialog.trip_talk(False)
+                if gothic.dialog.is_open():
+                    gothic.dialog.close()                  # nobody talks through a blackout: the partner stays behind
                 gothic.player.set_position(*cfg["bed"])
                 gothic.world.set_time(cfg["hour"], 0)      # the next morning; NPCs go back to their routines
                 return dict(look(0.0, elapsed, style=self.style), tint=(0.0, 0.0, 0.0, 1.0))

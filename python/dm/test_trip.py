@@ -315,6 +315,9 @@ fake.player = types.SimpleNamespace(set_position=lambda *p: moves.append(p),
                                     or len(uses) >= 2)
 fake.world.set_time = lambda h, m: times.append((h, m))
 said.clear()
+talking = {"open": True}                                        # mid-conversation when it goes black
+dialog.is_open = lambda: talking["open"]
+dialog.close = lambda: talking.update(open=False)
 blackout = {"bed": (1.0, 2.0, 3.0), "scheme": "BEDHIGH", "hour": 9, "wake": ["Wo bin ich?"]}
 out = trip.Trip([(5.0, 1.0, 0.2, 0, 0), (5.0, 0.0, 0.01, 0, 0)], None, thoughts=[(0.5, "heiß")], blackout=blackout)
 tints, now = [], 0.0
@@ -326,6 +329,7 @@ sets = [c[1] for c in calls if c[0] == "set"]
 assert moves == [(1.0, 2.0, 3.0)] and times == [(9, 0)]
 assert uses[-1] == ("BEDHIGH", 1, True)                         # quietly: no sleep menu
 assert said[-1] == "Wo bin ich?" and "heiß" in said
+assert not talking["open"]                                      # the conversation ended with the blackout
 assert max(s[2][3] for s in sets) == 1.0 and sets[-1][2][3] == 0.0  # fully black, then clear again
 dark = [s for s in sets if s[2] == (0.0, 0.0, 0.0, 1.0)]
 assert dark and all(s[5] == 0.0 for s in dark)                  # sober while black
