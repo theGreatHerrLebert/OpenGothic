@@ -349,6 +349,9 @@ assert trip.special_for(npc) is None                                  # no trip,
 trip.start("kriegsgesang", None)
 trip._current.envelope.intensity = 0.8
 assert trip.special_for(npc)["voice"] == "07"
+abuyin = types.SimpleNamespace(voice=13, instance="VLK_456_ABUYIN")   # the pipe master knew this would happen
+g = trip.special_for(abuyin)
+assert g["voice"] == "13" and g["nodes"]["a"]["line"] in trip.SPECIAL_PEOPLE["VLK_456_ABUYIN"]["openers"]
 trip._current.envelope.intensity = 0.2
 assert trip.special_for(npc) is None                                  # not while the trip is still mild
 trip._end(fake)

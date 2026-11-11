@@ -66,6 +66,10 @@ def redistort(stories):
 SPECIAL_VOICES = ["01", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "16", "17"]
 
 
+# The voice number of each person in trip.SPECIAL_PEOPLE.
+SPECIAL_PEOPLE_VOICES = {"VLK_456_ABUYIN": "13"}
+
+
 def main(stories):
     lines = trip.thought_lines() + [line for path in stories for line in story_thoughts(path)]
     lines = list(dict.fromkeys(lines))
@@ -73,6 +77,9 @@ def main(stories):
     npc_lines = trip.SPECIAL_OPENERS + trip.SPECIAL_CLOSERS
     all_graphs = {"trip__thoughts": {"voice": trip.HERO_VOICE, "narration": lines}}
     all_graphs.update({f"trip__special_{v}": {"voice": v, "narration": npc_lines} for v in SPECIAL_VOICES})
+    all_graphs.update({f"trip__special_{name.lower()}": {"voice": SPECIAL_PEOPLE_VOICES[name],
+                                                         "narration": own["openers"] + own["closers"]}
+                       for name, own in trip.SPECIAL_PEOPLE.items()})
     graphs.write_text(json.dumps(all_graphs, ensure_ascii=False, indent=1), encoding="utf-8")
     game = json.loads((voices.RUNTIME_DIR / "settings.json").read_text(encoding="utf-8"))["game"]
     subprocess.run([sys.executable, str(HERE / "bake_voices.py"), "all", game, str(graphs)], check=True)

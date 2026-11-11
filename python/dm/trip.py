@@ -119,15 +119,23 @@ SPECIAL_ANSWERS = ["Dein Gesicht … das schmilzt.", "Hörst du auch die Trommel
 SPECIAL_CLOSERS = ["Geh nach Hause und schlaf deinen Rausch aus.", "Mit dir red ich, wenn du wieder klar bist.",
                    "Verschwinde, bevor dich die Miliz so sieht."]
 SPECIAL_LAST = "Na gut …"
+# People with their own reason to notice: whoever filled the pipe knows exactly what is going on.
+SPECIAL_PEOPLE = {
+    "VLK_456_ABUYIN": {"openers": ["Ich hab's dir ja gesagt. Ich hab's dir doch gesagt!",
+                                   "Ich hab's dir ja gesagt, mein Freund. Langsam ziehen, hab ich gesagt."],
+                       "closers": ["Setz dich, trink Wasser und lass den Rauch weiterziehen.",
+                                   "Komm wieder, wenn du deinen Namen wieder weißt."]},
+}
 
 
-def special_graph(voice, rng):
+def special_graph(voice, rng, instance=""):
     """A short dialogue for an NPC of this voice number: it notices, the hero babbles, it sends him off."""
     answers = rng.sample(SPECIAL_ANSWERS, 3)
+    own = SPECIAL_PEOPLE.get(instance.upper(), {})
     return {"voice": f"{int(voice):02d}", "start": "a", "nodes": {
-        "a": {"line": rng.choice(SPECIAL_OPENERS),
+        "a": {"line": rng.choice(own.get("openers", SPECIAL_OPENERS)),
               "choices": [{"text": text, "goto": "z", "delivery": DELIVERY} for text in answers]},
-        "z": {"line": rng.choice(SPECIAL_CLOSERS),
+        "z": {"line": rng.choice(own.get("closers", SPECIAL_CLOSERS)),
               "choices": [{"text": SPECIAL_LAST, "ends": True, "delivery": DELIVERY}]}}}
 
 
@@ -135,7 +143,7 @@ def special_for(npc):
     """The trip dialogue for this NPC while a trip is strong, else None."""
     if _current is None or _current.black is not None or _current.envelope.intensity <= BLOCK_ABOVE:
         return None
-    return special_graph(npc.voice, _current.rng)
+    return special_graph(npc.voice, _current.rng, getattr(npc, "instance", "") or "")
 
 
 # A trip that ends in a blackout: instead of landing, the screen goes black, the hero comes to somewhere else, hours
