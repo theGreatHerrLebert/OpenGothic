@@ -16,9 +16,9 @@ with tempfile.TemporaryDirectory() as d:
     status.report("schreibt")
     assert status.read() == ("DM: schreibt...", -1.0)
     status.report("Stimmen", 1, 2, "Der Bestienvogt")
-    assert status.read() == ("DM: Stimmen 1/2\nDer Bestienvogt", 0.5)
+    assert status.read() == ("DM: Stimmen 1/2 · Der Bestienvogt", 0.5)
     status.report("bereit", quest="Der Bestienvogt")
-    assert status.read()[0] == "DM: bereit\nDer Bestienvogt"
+    assert status.read()[0] == "DM: bereit · Der Bestienvogt"
     at = status.time.time()
     assert status.read(at + status.STALE_SECONDS + 1) is None   # a dead tool does not stay on screen
     status.report("bereit")
@@ -71,7 +71,7 @@ with tempfile.TemporaryDirectory() as d:
     status.report("Stimmen", 1, 2, "Titel", omens=["Eins"])
     entry = status.json.loads(status.PATH.read_text())
     seen = {status.describe(entry, entry["at"] + i * status.OMEN_SECONDS)[0] for i in range(2)}
-    assert seen == {"DM: Stimmen 1/2\nTitel", "DM: Stimmen 1/2\nEins"}
+    assert seen == {"DM: Stimmen 1/2 · Titel\nEins"}                     # the title stays put, one omen below
 
 # Writing: an estimated bar against the usual time, marked "~", never full.
 with tempfile.TemporaryDirectory() as d:
@@ -79,7 +79,7 @@ with tempfile.TemporaryDirectory() as d:
     status.report("schreibt", started=1000.0, expected=900)
     raw = status.entry()
     text, progress = status.describe({**raw, "at": 1360.0}, 1360.0)
-    assert text == "DM: schreibt ~ 6/15 min" and abs(progress - 0.4) < 1e-9
+    assert text == "DM: schreibt" and abs(progress - 0.4) < 1e-9
     assert status.describe({**raw, "at": 9000.0}, 9000.0)[1] == status.ESTIMATE_CAP
     status.report("Stimmen", 3, 30, anchor="BAU_953_BAUER")
     assert status.entry()["anchor"] == "BAU_953_BAUER"
@@ -94,7 +94,7 @@ with tempfile.NamedTemporaryFile(suffix=".json") as f:
     status.PATH = pathlib.Path(f.name)
     status.report("bereit", quest="Titel", anchor=["A"])
     raw = status.entry()
-    assert status.describe(raw, raw["at"] + 3600)[0] == "DM: bereit\nTitel"
+    assert status.describe(raw, raw["at"] + 3600)[0] == "DM: bereit · Titel"
     status.mark_met()
     raw = status.entry()
     assert raw["met"] and status.describe(raw, raw["at"] + status.READY_SECONDS + 1) is None

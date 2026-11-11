@@ -26,7 +26,7 @@ READY_SECONDS = 20
 # They are the one place a story reaches the panel, so they are checked: short, and naming nobody with a sheet.
 MAX_OMENS = 3
 MAX_OMEN = 55
-OMEN_SECONDS = 12
+OMEN_SECONDS = 60
 GENERIC_NAMES = {"Bauer", "Bürger", "Bürgerin", "Arbeiter", "Magd"}
 CHARACTERS = pathlib.Path(__file__).resolve().parent / "characters"
 
@@ -67,7 +67,7 @@ def check_omens(omens, names=None, extra=()):
 
 
 # Writing has no countable steps, so its bar fills against the usual writing time and stops short of full: an
-# estimate, marked with "~", that never claims to be done.
+# estimate that never claims to be done. The text shows no time.
 EXPECTED_WRITING = 15 * 60
 ESTIMATE_CAP = 0.95
 # Once a story has a first person to meet, the panel shows only near them, and the closer, the stronger: faint at
@@ -111,20 +111,21 @@ def describe(entry, now):
     # A ready story with a first person to meet stays announced (near them only) until the hero has met them.
     if not waiting and age > (READY_SECONDS if entry["stage"] == "bereit" else STALE_SECONDS):
         return None
-    # The second line: the quest title and the omens take turns.
-    second = ([entry["quest"]] if entry.get("quest") else []) + list(entry.get("omens") or [])
-    quest = f"\n{second[int(now // OMEN_SECONDS) % len(second)]}" if second else ""
+    # The title stays on the first line; the second holds one omen, changing only slowly, so nothing jumps.
+    title = f" · {entry['quest']}" if entry.get("quest") else ""
+    omens = list(entry.get("omens") or [])
+    quest = f"\n{omens[int(now // OMEN_SECONDS) % len(omens)]}" if omens else ""
     if entry["stage"] == "bereit":
-        return "DM: bereit" + quest, 1.0
+        return f"DM: bereit{title}{quest}", 1.0
     done, total = entry.get("done"), entry.get("total")
     if done is not None and total:
-        return f"DM: {entry['stage']} {done}/{total}{quest}", min(done / total, 1.0)
+        return f"DM: {entry['stage']} {done}/{total}{title}{quest}", min(done / total, 1.0)
     if entry.get("started"):
         expected = entry.get("expected") or EXPECTED_WRITING
         elapsed = max(0.0, now - entry["started"])
-        return (f"DM: {entry['stage']} ~ {int(elapsed // 60)}/{int(round(expected / 60))} min{quest}",
-                min(elapsed / expected, ESTIMATE_CAP))
-    return f"DM: {entry['stage']}...{quest}", -1.0
+        # No minutes on screen: how long writing takes depends on too much that is unknown beforehand.
+        return f"DM: {entry['stage']}{title}{quest}", min(elapsed / expected, ESTIMATE_CAP)
+    return f"DM: {entry['stage']}...{title}{quest}", -1.0
 
 
 def mark_met():
