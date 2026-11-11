@@ -8,6 +8,7 @@
     {"type": "obsessed"}                                       the game's own obsession flag on the hero
     {"type": "hour", "from": 21, "to": 5}                      wraps past midnight
     {"type": "quest", "quest": "MIS_LOBART_RUEBEN", "state": "success"}   the game's own quest state
+    {"type": "heard", "info": "DIA_ABUYIN_DU"}                 the hero has heard this topic of the game's own
     {"type": "not", "check": {...}}
     {"type": "any", "checks": [{...}, ...]}                    at least one holds
 
@@ -27,7 +28,7 @@ QUEST_STATES = {"open": None, "running": "LOG_RUNNING", "success": "LOG_SUCCESS"
                 "obsolete": "LOG_OBSOLETE"}
 _REQUIRED = {"has_item": ("item",), "wears": ("item",), "guild": ("guild",), "npc_state": ("npc", "state"), "npc_dead": ("npc",),
              "obsessed": (), "hour": ("from", "to"), "not": ("check",),
-             "quest": ("quest", "state"), "any": ("checks",)}
+             "quest": ("quest", "state"), "any": ("checks",), "heard": ("info",)}
 
 
 def validate(check):
@@ -55,6 +56,11 @@ def validate(check):
             return f"unknown quest state: {check['state']}"
         if _known_quest(check["quest"]) is False:
             return f"no such quest in this game: {check['quest']}"
+    if kind == "heard":
+        if not isinstance(check["info"], str) or not check["info"].upper().startswith("DIA_"):
+            return f"not a dialogue topic: {check['info']}"
+        if _known_topic(check["info"]) is False:
+            return f"no such dialogue topic in this game: {check['info']}"
     if kind == "not":
         return validate(check["check"])
     if kind == "any":
@@ -62,6 +68,18 @@ def validate(check):
             return "any needs a list of checks"
         return validate_all(check["checks"])
     return None
+
+
+def _known_topic(name):
+    """True or False in a running game; None offline, where the game's topics cannot be looked up."""
+    heard = getattr(getattr(gothic, "player", None), "heard", None)
+    if heard is None:
+        return None
+    try:
+        heard(name.upper())
+        return True
+    except (ValueError, RuntimeError):
+        return False
 
 
 def _known_quest(name):
@@ -149,6 +167,8 @@ def _holds(check):
         return value == (0 if constant is None else gothic.daedalus.get(constant, 0))
     if kind == "any":
         return any(_holds(c) for c in check["checks"])
+    if kind == "heard":
+        return bool(gothic.player.heard(check["info"].upper()))
     return not _holds(check["check"])
 
 

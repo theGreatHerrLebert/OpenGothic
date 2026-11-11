@@ -93,6 +93,7 @@ way out, and a story may still end a conversation deliberately. Every line must 
 Flags record what the story remembers. A `checks` list on a scene, a rule or a dialogue choice tests what is true right
 now: `has_item`, `wears`, `guild`, `npc_state` (burning, asleep, frozen and so on), `npc_dead`, `obsessed`, `hour`,
 `quest` (the game's own quest state, such as `{"type": "quest", "quest": "MIS_LOBART_RUEBEN", "state": "success"}`),
+`heard` (the hero has heard one of the game's own topics, such as `{"type": "heard", "info": "DIA_ABUYIN_DU"}`),
 `not`, and `any` (at least one of several holds). A choice can also carry `takes` and `gives` (`{"item": ..., "count": ...}`): it only appears while the hero has
 the item, and the item really changes hands. A checked choice never counts as the way out of a node. Often the best use is a hint: one line mentions a rule
 that is already true, such as a sleep scroll working on a guard, and the player makes the plan.
@@ -108,6 +109,15 @@ still greeted as a monk.
 conversation. It waits until no conversation or other narrator line runs, and leaves a quiet gap after each line, so
 use it rarely: a comment on what the player just did, from a rule with `on`, lands best. Voice it by adding
 `{"voice": "10", "narration": [...]}` to the graphs file that `bake_voices.py` reads.
+
+## Extending an NPC
+
+An NPC with a scripted role keeps all of his own topics, and a story can add one beside them:
+`{"op": "add_topic", "id": "...", "npc": "VLK_456_ABUYIN", "title": "...", "graph": {...}}`. The hero says the title,
+then the graph plays, and its ending returns to the NPC's own menu instead of closing the conversation. `requires`,
+`unless` and `checks` decide when the topic shows; hide it once it has done its work with a flag its graph sets. Let it
+follow the conversation the game already has: `{"type": "heard", "info": "DIA_ABUYIN_DU"}` waits until the hero has
+asked the NPC who he is. Prefer this to a one-off scene whenever an NPC with a role should talk about the story.
 
 ## A trip
 

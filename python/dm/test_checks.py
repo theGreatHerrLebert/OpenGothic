@@ -121,6 +121,24 @@ assert "unknown quest state" in checks.validate({"type": "quest", "quest": "MIS_
 assert "list of checks" in checks.validate({"type": "any", "checks": []})
 assert "unknown check" in checks.validate({"type": "any", "checks": [{"type": "nope"}]})
 
+# Whether the hero has heard one of the game's own topics: a story topic can wait for "who are you?".
+heard_topics = {"DIA_ABUYIN_DU"}
+
+
+def heard(name):
+    if not name.startswith("DIA_ABUYIN"):
+        raise ValueError(f"not a dialogue topic: {name}")
+    return name in heard_topics
+
+
+fake.player.heard = heard
+assert holds(type="heard", info="dia_abuyin_du") and not holds(type="heard", info="DIA_ABUYIN_ANDEREN")
+assert checks.validate({"type": "heard", "info": "DIA_ABUYIN_DU"}) is None
+assert "not a dialogue topic" in checks.validate({"type": "heard", "info": "ABUYIN"})
+assert "no such dialogue topic" in checks.validate({"type": "heard", "info": "DIA_NOPE"})
+del fake.player.heard
+assert checks.validate({"type": "heard", "info": "DIA_NOPE"}) is None     # offline the name cannot be looked up
+
 # Handing things over.
 removed, given = [], []
 fake.player.remove_item = lambda i, c=1: removed.append((i, c))

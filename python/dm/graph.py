@@ -82,10 +82,12 @@ def validate(graph):
 
 
 class Player:
-    def __init__(self, get_graphs, on_flag, get_flags=dict):
+    def __init__(self, get_graphs, on_flag, get_flags=dict, get_topic=lambda key: None):
         self.get_graphs = get_graphs
         self.on_flag = on_flag
         self.get_flags = get_flags
+        self.get_topic = get_topic
+        self.topic = None   # the story topic being played inside an NPC's own conversation
         self.visible = []
         self.partner = ""
         self.graph = None
@@ -145,7 +147,22 @@ class Player:
 
     def on_tick(self):
         dialog = gothic.dialog
-        if dialog.just_opened():
+        key = dialog.take_topic()
+        if key is not None:
+            # A story topic chosen in an NPC's own menu: play its graph, then give the NPC his menu back.
+            topic = self.get_topic(key)
+            partner = dialog.partner()
+            if topic is None or partner is None:
+                dialog.end_topic()
+                return
+            self.partner, self.graph, self.topic = partner.instance, topic["graph"], key
+            self.path = []
+            self.flagged = set()
+            # As with the game's own topics, the hero says the title first; then the NPC answers.
+            self.choice = {"text": topic["title"], "goto": self.graph["start"]}
+            self.stage = "hero"
+        elif dialog.just_opened():
+            self.topic = None   # a bound NPC's own conversation is never a topic
             partner = dialog.partner()
             self.partner = partner.instance if partner else ""
             self.graph = self.get_graphs().get(partner.instance) if partner else None
@@ -160,6 +177,7 @@ class Player:
             return
         if not dialog.is_open():
             self.stage = "idle"
+            self.topic = None   # a topic interrupted by closing the conversation is over
             return
 
         if self.stage == "say":
@@ -196,7 +214,11 @@ class Player:
         elif self.stage == "hero_wait":
             if not dialog.busy():
                 if self.choice.get("ends"):
-                    dialog.close()
+                    if self.topic is not None:
+                        dialog.end_topic()   # back to the NPC's own menu, not out of the conversation
+                        self.topic = None
+                    else:
+                        dialog.close()
                     self.stage = "idle"
                 else:
                     self._enter(self.choice["goto"])

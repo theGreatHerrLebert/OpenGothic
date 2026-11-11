@@ -10,9 +10,12 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 
 class Npc:
     dead = False
+    count = 0
 
     def __init__(self, instance):
         self.instance = instance
+        Npc.count += 1
+        self.id = Npc.count   # each NPC object its own, as the game's world index tells them apart
 
 
 class Handle:
@@ -72,6 +75,17 @@ class Dialog:
     def reset(self):
         self.who, self.opened, self.open, self.lines = None, False, False, []
         self.choices, self.selection, self.is_busy = [], None, False
+        self.topics, self.chosen_topic, self.ended_topics = {}, None, 0
+
+    def set_topics(self, npc, topics): self.topics[npc.instance] = list(topics)
+
+    def take_topic(self):
+        value, self.chosen_topic = self.chosen_topic, None
+        return value
+
+    def end_topic(self):
+        self.ended_topics += 1
+        return True
 
     def bind(self, npc): self.bound.append(npc.instance)
     def unbind(self, npc=None): self.bound.remove(npc.instance)
@@ -558,7 +572,71 @@ def test_trip_operation():
     rejected(s, [{"op": "add_rule", "id": "r", "when": ["x"], "ops": [{"op": "trip", "profile": "nope"}]}], "unknown trip")
 
 
-for test in (test_trip_operation, test_rule_contents_are_checked_when_submitted, test_graph_validation, test_validation, test_apply_and_rollback, test_return_npc, test_conditional_choices, test_returns_to_menu, test_questions_are_asked_once, test_variant_line, test_again_line, test_scene_and_rule, test_rule_fires_on_perception, test_narration_waits_for_quiet, test_drawing_a_weapon_is_perceived,
+def test_topics_extend_an_npc():
+    fake.world.__init__()
+    fake.dialog.__init__()
+    s = st.Story()
+    graph = {"start": "a", "nodes": {"a": {"line": "Aus dem Norden? Ja, davon hab ich gehört.",
+                                           "choices": [{"text": "Danke.", "ends": True}], "sets": ["legend_heard"]}}}
+    topic = {"op": "add_topic", "id": "legend", "npc": "PARLAN", "title": "Kennst du die Kriegsmischung?",
+             "graph": graph, "unless": ["legend_heard"]}
+    rejected(s, [{**topic, "npc": "NOBODY"}], "NOBODY")
+    rejected(s, [{**topic, "title": " "}], "title")
+    rejected(s, [{**topic, "graph": {"start": "x", "nodes": {}}}], "graph")
+    s.submit("Legende", [topic])
+    s.on_tick()   # applies the plan
+    s.on_tick()   # shows its topic
+    # The engine shows the topic in the NPC's own menu, beside his scripted ones.
+    assert fake.dialog.topics["PARLAN"] == [("legend", "Kennst du die Kriegsmischung?")]
+    rejected(s, [topic], "already added")
+    # Chosen: the story plays it, and at its end hands the conversation back instead of closing it.
+    player = graphs.Player(lambda: s.graphs_now(), s.player_flag, lambda: s.state["flags"],
+                           lambda key: s.state["topics"].get(key))
+    fake.dialog.who = fake.world.npcs["PARLAN"]
+    fake.dialog.open = True
+    fake.dialog.chosen_topic = "legend"
+    for _ in range(12):
+        player.on_tick()
+        if player.stage == "choose":
+            fake.dialog.selection = 0
+    assert fake.dialog.ended_topics == 1 and fake.dialog.open and player.topic is None
+    assert "Aus dem Norden? Ja, davon hab ich gehört." in fake.dialog.lines
+    # The hero says the topic's title first, as with the game's own topics.
+    lines = fake.dialog.lines
+    assert lines.index("Kennst du die Kriegsmischung?") < lines.index("Aus dem Norden? Ja, davon hab ich gehört.")
+    # Its own flag hides it: the menu loses the topic once it has been heard.
+    s.on_tick()
+    assert fake.dialog.topics["PARLAN"] == []
+    # A topic whose conditions no longer hold cannot be played, even if an old menu still offered it.
+    assert s.topic("legend") is None
+    # A conversation closed in the middle of a topic leaves no topic mode behind.
+    s.state["flags"]["legend_heard"] = False
+    fake.dialog.open, fake.dialog.chosen_topic = True, "legend"
+    player.on_tick()
+    assert player.topic == "legend"
+    fake.dialog.open = False
+    player.on_tick()
+    assert player.topic is None and player.stage == "idle"
+    # An NPC removed and spawned again as the same instance gets the topics anew.
+    s.on_tick()
+    old_parlan = fake.world.npcs["PARLAN"]
+    fake.world.npcs["PARLAN"] = Npc("PARLAN")
+    fake.dialog.topics.clear()
+    s.on_tick()
+    assert fake.world.npcs["PARLAN"] is not old_parlan and "PARLAN" in fake.dialog.topics   # sent to the new one
+    # Invalid conditions on a topic are refused when it is submitted.
+    rejected(st.Story(), [{**topic, "id": "x", "checks": [{"type": "nope"}]}], "unknown check")
+    s.state["flags"]["legend_heard"] = True
+    s.on_tick()
+    # After a world change the engine has forgotten the topics, and the story sets them again.
+    s.state["flags"]["legend_heard"] = False
+    fake.dialog.topics.clear()
+    fake.world.generation += 1
+    s.on_tick()
+    assert fake.dialog.topics["PARLAN"] == [("legend", "Kennst du die Kriegsmischung?")]
+
+
+for test in (test_topics_extend_an_npc, test_trip_operation, test_rule_contents_are_checked_when_submitted, test_graph_validation, test_validation, test_apply_and_rollback, test_return_npc, test_conditional_choices, test_returns_to_menu, test_questions_are_asked_once, test_variant_line, test_again_line, test_scene_and_rule, test_rule_fires_on_perception, test_narration_waits_for_quiet, test_drawing_a_weapon_is_perceived,
              test_queue_waits_for_safe_point, test_save_load_does_not_reapply_world,
              test_player):
     test()

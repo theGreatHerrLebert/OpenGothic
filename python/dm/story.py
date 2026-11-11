@@ -80,7 +80,8 @@ def _castable(name):
 
 
 NPC_FIELDS = {"remove_npc": "instance", "relocate_npc": "instance", "spawn_npc": "instance", "rename_npc": "instance",
-              "send_npc": "instance", "attach_dialogue_graph": "npc", "detach_dialogue_graph": "npc", "add_scene": "npc"}
+              "send_npc": "instance", "attach_dialogue_graph": "npc", "detach_dialogue_graph": "npc", "add_scene": "npc",
+              "add_topic": "npc"}
 ITEM_OPS = {"place_item", "give_item"}
 
 
@@ -317,6 +318,26 @@ def _world_narrate(args):
     return None
 
 
+def _check_topic(args, state):
+    """A story topic in an NPC's own menu: his scripted topics stay, so even NPCs with a role can be used."""
+    _require(args, "id", "npc", "title", "graph")
+    if args["id"] in state.setdefault("topics", {}):
+        raise PlanError(f"topic already added: {args['id']}")
+    _npc_instance(args["npc"])
+    if not isinstance(args["title"], str) or not args["title"].strip():
+        raise PlanError("a topic needs a title the hero says")
+    problem = _graph_problem(args["graph"])
+    if problem:
+        raise PlanError(f"bad dialogue graph: {problem}")
+    _require_checks(args)
+
+
+def _fold_topic(args, state):
+    state.setdefault("topics", {})[args["id"]] = {
+        "npc": args["npc"].upper(), "title": args["title"], "graph": args["graph"],
+        "requires": args.get("requires", []), "unless": args.get("unless", []), "checks": args.get("checks", [])}
+
+
 def _check_trip(args, state):
     from dm import trip
     _require(args, "profile")
@@ -481,6 +502,7 @@ OPS = {
     "narrate": (_check_narrate, _noop, _world_narrate),
     "relocate_npc": (_check_relocate, _noop, _world_relocate),
     "trip": (_check_trip, _noop, _world_trip),
+    "add_topic": (_check_topic, _fold_topic, None),
 }
 
 # Removal cannot be undone, so it runs after everything that can.
@@ -498,6 +520,8 @@ class Story:
         self.scene_opened = False
         self.scene_wait = 0
         self.failed_rules = set()
+        self.topics_generation = None
+        self.topics_shown = {}
 
     def validate(self, ops):
         """Raise PlanError unless the whole plan is acceptable."""
@@ -679,6 +703,30 @@ class Story:
             return [{"kind": "drew_weapon", "actor": perceptions.PLAYER, "target": "", "item": "", "spell": -1, "seen_by": seen}]
         return []
 
+    def _tick_topics(self):
+        """Tells the engine which story topics each NPC's menu shows now; only what changed, and all again after a
+        world change, when the engine has forgotten them."""
+        if self.topics_generation != gothic.world.generation:
+            self.topics_generation, self.topics_shown = gothic.world.generation, {}
+        visible = {}
+        for topic_id, topic in self.state.get("topics", {}).items():
+            visible.setdefault(topic["npc"], [])
+            if self._conditions(topic):
+                visible[topic["npc"]].append((topic_id, topic["title"]))
+        for instance, topics in visible.items():
+            npc = gothic.world.find_npc(instance)
+            if npc is None:
+                continue
+            shown = (npc.id, topics)   # which NPC as well: one removed and spawned again needs them anew
+            if self.topics_shown.get(instance) != shown:
+                gothic.dialog.set_topics(npc, topics)
+                self.topics_shown[instance] = shown
+
+    def topic(self, key):
+        """A topic's data if it may be played right now, or None: its conditions are checked again on choosing."""
+        topic = self.state.get("topics", {}).get(key)
+        return topic if topic is not None and self._conditions(topic) else None
+
     def _take_perceptions(self):
         """A rule hears only what happens while its own conditions hold, and hears it once."""
         for event in gothic.world.take_perceptions() + self._weapon_events():
@@ -731,6 +779,7 @@ class Story:
 
         self._track_hero()
         self._take_perceptions()
+        self._tick_topics()
         self._tick_narration()
 
         self._tick_scenes()
@@ -750,7 +799,8 @@ class Story:
 _story = Story()
 _player = graphs.Player(lambda: _story.graphs_now(),
                         lambda name: _story.player_flag(name),
-                        lambda: _story.state["flags"])
+                        lambda: _story.state["flags"],
+                        lambda key: _story.topic(key))
 
 
 def _tick(dt):
