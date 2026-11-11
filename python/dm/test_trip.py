@@ -334,7 +334,8 @@ assert not talking["open"]                                      # the conversati
 # After waking, the house speaks up as he passes: each line once, in order, only near its speaker.
 said.clear()
 people = {"VLK_435_NADJA": types.SimpleNamespace(position=(0.0, 0.0, 0.0)),
-          "VLK_433_BROMOR": types.SimpleNamespace(position=(2000.0, 0.0, 0.0))}
+          "VLK_433_BROMOR": types.SimpleNamespace(position=(2000.0, 0.0, 0.0)),
+          "VLK_434_BORKA": types.SimpleNamespace(position=(4000.0, 0.0, 0.0))}
 fake.world.find_npc = lambda name: people.get(name)
 dialog.partner = lambda: None
 fake.player = types.SimpleNamespace(position=(5000.0, 0.0, 0.0))
@@ -345,18 +346,22 @@ def walk(at, now):
 walk((5000.0, 0.0, 0.0), 1.0)
 assert said == []                                               # far from everyone: nothing
 walk((1990.0, 0.0, 0.0), 2.0)
-assert said == []                                               # Bromor waits for Nadja
+assert len(said) == 1 and said[0].startswith("Eigentlich")      # Bromor first, if he is passed first
+walk((1990.0, 0.0, 0.0), 2.5)
+assert len(said) == 1                                           # each once
 walk((100.0, 0.0, 0.0), 3.0)
-assert len(said) == 1 and said[0].startswith("Komm vorbei")
-walk((100.0, 0.0, 0.0), 4.0)
-assert len(said) == 1                                           # Bromor only when passed
-walk((1900.0, 0.0, 0.0), 4.5)
-assert len(said) == 2 and said[1].startswith("Eigentlich")
-walk((100.0, 0.0, 0.0), 5.0)
-assert len(said) == 2 and trip._after is None                   # each once
+assert len(said) == 2 and said[1].startswith("Komm vorbei")
+walk((4000.0, 0.0, 0.0), 4.0)
+assert len(said) == 3 and said[2].startswith("Mein Auftrag")    # Borka at the door
+walk((4000.0, 0.0, 0.0), 5.0)
+assert trip._after is None                                      # all said: forgotten
 trip.remember_after(fake, trip.BLACKOUTS["skorpion_goa"]["after"], 0.0)
 walk((100.0, 0.0, 0.0), trip.AFTER_FOR + 1)
-assert len(said) == 2 and trip._after is None                   # too late: forgotten
+assert len(said) == 3 and trip._after is None                   # too late: forgotten
+del people["VLK_434_BORKA"]                                     # someone gone from the world is dropped
+trip.remember_after(fake, trip.BLACKOUTS["skorpion_goa"]["after"], 0.0)
+walk((9000.0, 0.0, 0.0), 1.0)
+assert [line["npc"] for line in trip._after[0]] == ["VLK_435_NADJA", "VLK_433_BROMOR"]
 assert ("16", trip.BLACKOUTS["skorpion_goa"]["after"][0]["line"]) in trip.after_lines()
 assert max(s[2][3] for s in sets) == 1.0 and sets[-1][2][3] == 0.0  # fully black, then clear again
 dark = [s for s in sets if s[2] == (0.0, 0.0, 0.0, 1.0)]
@@ -385,6 +390,13 @@ assert trip.special_for(npc)["voice"] == "07"
 abuyin = types.SimpleNamespace(voice=13, instance="VLK_456_ABUYIN")   # the pipe master knew this would happen
 g = trip.special_for(abuyin)
 assert g["voice"] == "13" and g["nodes"]["a"]["line"] in trip.SPECIAL_PEOPLE["VLK_456_ABUYIN"]["openers"]
+g = trip.special_graph(4, _random.Random(1), "MIL_319_PABLO", guard=True)  # a guard in his own tone
+assert g["nodes"]["a"]["line"] in trip.SPECIAL_GUARDS["openers"] and g["nodes"]["z"]["line"] in trip.SPECIAL_GUARDS["closers"]
+_gothic = sys.modules["gothic"]
+_gothic.daedalus = types.SimpleNamespace(get=lambda name, index=0: {"GIL_PAL": 1, "GIL_MIL": 2}[name])  # as the game's
+pablo = types.SimpleNamespace(voice=4, instance="MIL_319_PABLO", guild=2)
+assert trip.special_for(pablo)["nodes"]["a"]["line"] in trip.SPECIAL_GUARDS["openers"]
+assert not trip.is_guard(types.SimpleNamespace(voice=4, guild=3))
 trip._current.envelope.intensity = 0.2
 assert trip.special_for(npc) is None                                  # not while the trip is still mild
 trip._end(fake)

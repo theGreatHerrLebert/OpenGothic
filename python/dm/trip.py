@@ -119,6 +119,13 @@ SPECIAL_ANSWERS = ["Dein Gesicht … das schmilzt.", "Hörst du auch die Trommel
 SPECIAL_CLOSERS = ["Geh nach Hause und schlaf deinen Rausch aus.", "Mit dir red ich, wenn du wieder klar bist.",
                    "Verschwinde, bevor dich die Miliz so sieht."]
 SPECIAL_LAST = "Na gut …"
+# Guards notice in their own tone, when the hero talks to them (one who stops him keeps his own words).
+SPECIAL_GUARDS = {"openers": ["Du bist ja völlig zugedröhnt.", "Was hast du geraucht? Nein, sag's mir lieber nicht.",
+                              "Steh gerade, wenn du mit der Stadtwache redest!"],
+                  "closers": ["Geh mir aus den Augen, bevor ich dich einsperre.",
+                              "Noch ein falscher Schritt, und du schläfst in der Kaserne.",
+                              "Schlaf deinen Rausch aus. Woanders."]}
+GUARD_GUILDS = ("GIL_PAL", "GIL_MIL")
 # People with their own reason to notice: whoever filled the pipe knows exactly what is going on.
 SPECIAL_PEOPLE = {
     "VLK_456_ABUYIN": {"openers": ["Ich hab's dir ja gesagt. Ich hab's dir doch gesagt!",
@@ -128,10 +135,10 @@ SPECIAL_PEOPLE = {
 }
 
 
-def special_graph(voice, rng, instance=""):
+def special_graph(voice, rng, instance="", guard=False):
     """A short dialogue for an NPC of this voice number: it notices, the hero babbles, it sends him off."""
     answers = rng.sample(SPECIAL_ANSWERS, 3)
-    own = SPECIAL_PEOPLE.get(instance.upper(), {})
+    own = SPECIAL_PEOPLE.get(instance.upper(), SPECIAL_GUARDS if guard else {})
     return {"voice": f"{int(voice):02d}", "start": "a", "nodes": {
         "a": {"line": rng.choice(own.get("openers", SPECIAL_OPENERS)),
               "choices": [{"text": text, "goto": "z", "delivery": DELIVERY, "repeat": True}  # babble never runs out
@@ -144,7 +151,17 @@ def special_for(npc):
     """The trip dialogue for this NPC while a trip is strong, else None."""
     if _current is None or _current.black is not None or _current.envelope.intensity <= BLOCK_ABOVE:
         return None
-    return special_graph(npc.voice, _current.rng, getattr(npc, "instance", "") or "")
+    return special_graph(npc.voice, _current.rng, getattr(npc, "instance", "") or "", is_guard(npc))
+
+
+def is_guard(npc):
+    """Whether this NPC is militia or a paladin, by the script's own guild numbers."""
+    try:
+        import gothic
+        guilds = {gothic.daedalus.get(name) for name in GUARD_GUILDS}
+    except (ImportError, AttributeError, RuntimeError, TypeError, KeyError):
+        return False
+    return getattr(npc, "guild", None) in guilds
 
 
 # A trip that ends in a blackout: instead of landing, the screen goes black, the hero comes to somewhere else, hours
@@ -154,12 +171,15 @@ BLACKOUTS = {
     "skorpion_goa": {"bed": (2233.0, 97.0, -2556.0), "scheme": "BEDHIGH", "hour": 9,
                      "wake": ["Wo … bin ich?", "Was ist das für ein Bett?", "Riecht nach billigem Parfüm …",
                               "Mein Kopf … was ist passiert?"],
-         # On the way out, the house has a word for him: each once, as he passes, in this order.
+         # On the way out, the house has a word for him: each once, as he passes them.
          "after": [{"npc": "VLK_435_NADJA", "voice": "16",
                     "line": "Komm vorbei, wann immer dir danach ist. Du warst … unterhaltsam."},
                    {"npc": "VLK_433_BROMOR", "voice": "07",
                     "line": "Eigentlich müsste ich dir die Nacht extra berechnen. Aber über das, was da oben passiert "
-                            "ist, will ich so bald nicht reden. Lassen wir's gut sein."}]},
+                            "ist, will ich so bald nicht reden. Lassen wir's gut sein."},
+                   {"npc": "VLK_434_BORKA", "voice": "11",
+                    "line": "Mein Auftrag ist es, hier Kundschaft reinzubringen. Aber dich … dich sehe ich lieber "
+                            "wieder gehen."}]},
 }
 AFTER_NEAR = 500.0    # how close (cm) the hero passes someone before they speak up
 AFTER_FOR = 900.0     # seconds after waking that the house still remembers him
@@ -591,7 +611,7 @@ def remember_after(gothic, lines, now):
 
 
 def tick_after(gothic, now):
-    """Speaks the next waiting line once the hero is near its speaker; forgets them when too late or in another
+    """Speaks a waiting line once the hero is near its speaker, in whatever order he passes them; forgets them when too late or in another
     world or save."""
     global _after
     if _after is None:
@@ -602,18 +622,19 @@ def tick_after(gothic, now):
         return
     if gothic.dialog.partner() is not None or gothic.dialog.narrating():
         return
-    line = lines[0]
-    npc = gothic.world.find_npc(line["npc"])
-    if npc is None:
-        lines.pop(0)
-        return
-    here, there = gothic.player.position, npc.position
-    if sum((a - b) ** 2 for a, b in zip(here, there)) > AFTER_NEAR ** 2:
-        return
-    from dm import voices
-    wav, ms = voices.lookup(line["voice"], line["line"])
-    if gothic.dialog.narrate(line["line"], ms, wav):
-        lines.pop(0)
+    here = gothic.player.position
+    for line in list(lines):
+        npc = gothic.world.find_npc(line["npc"])
+        if npc is None:
+            lines.remove(line)                  # gone (dead, or elsewhere in the world): nothing to say
+            continue
+        if sum((a - b) ** 2 for a, b in zip(here, npc.position)) > AFTER_NEAR ** 2:
+            continue
+        from dm import voices
+        wav, ms = voices.lookup(line["voice"], line["line"])
+        if gothic.dialog.narrate(line["line"], ms, wav):
+            lines.remove(line)
+        return                                  # one at a time
 
 
 def after_lines():

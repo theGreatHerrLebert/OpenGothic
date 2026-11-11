@@ -66,6 +66,9 @@ def redistort(stories):
 SPECIAL_VOICES = ["01", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "16", "17"]
 
 
+# Every voice a militiaman or paladin speaks with, for the guards' own trip lines.
+GUARD_VOICES = ["01", "03", "04", "05", "06", "07", "08", "09", "11", "12", "13"]
+
 # The voice number of each person in trip.SPECIAL_PEOPLE.
 SPECIAL_PEOPLE_VOICES = {"VLK_456_ABUYIN": "13"}
 
@@ -80,6 +83,8 @@ def main(stories):
     all_graphs.update({f"trip__special_{name.lower()}": {"voice": SPECIAL_PEOPLE_VOICES[name],
                                                          "narration": own["openers"] + own["closers"]}
                        for name, own in trip.SPECIAL_PEOPLE.items()})
+    guard_lines = trip.SPECIAL_GUARDS["openers"] + trip.SPECIAL_GUARDS["closers"]
+    all_graphs.update({f"trip__guard_{v}": {"voice": v, "narration": guard_lines} for v in GUARD_VOICES})
     for voice, line in trip.after_lines():
         all_graphs.setdefault(f"trip__after_{voice}", {"voice": voice, "narration": []})["narration"].append(line)
     graphs.write_text(json.dumps(all_graphs, ensure_ascii=False, indent=1), encoding="utf-8")
