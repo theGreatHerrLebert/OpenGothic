@@ -14,6 +14,7 @@ music always comes back, also when the world changes.
 """
 
 import math
+import random
 import sys
 import time
 
@@ -40,6 +41,51 @@ PROFILES = {
     "kriegsgesang": [(20.0, 0.10, 0.010, 0.0, 0.0), (30.0, 0.35, 0.006, 0.02, 0.02), (30.0, 0.60, 0.007, 0.04, 0.02),
                      (50.0, 0.85, 0.006, 0.06, 0.02), (30.0, 1.00, 0.015, 0.0, 0.0), (40.0, 0.00, 0.004, 0.0, 0.0)],
 }
+
+# The hero's thoughts from off, distorted (delivery "rausch", see trip_voices.py). Each trip draws one line per stage
+# at random, so two trips never sound quite alike, and says it once when the trip first reaches that intensity; one
+# landing line when it comes down again. A story may give its own thoughts instead, which are then said as written.
+THOUGHT_POOLS = [
+    (0.25, ["Was ist hier los?", "Irgendwas stimmt hier nicht …", "Hm. Der Boden … der wackelt.",
+            "Warum ist alles so … bunt?"]),
+    (0.5, ["Die Wände … die atmen.", "Hörst du das? Das Licht summt.", "Meine Hände … die sind so weit weg.",
+           "Die Luft schmeckt nach Farben."]),
+    (0.75, ["Die Trommeln … die sind in meinem Kopf.", "Alles dreht sich … und ich mit.",
+            "Ich glaub, ich kann die Sterne hören.", "Wer hat die Welt so laut gemacht?"]),
+    (0.95, ["Die Wände schmelzen …", "Ich bin … riesig. Oder winzig?", "Jetzt seh ich alles. Alles!",
+            "Beliar, bist du das?"]),
+]
+LANDINGS = ["Langsam … langsam kommt alles zurück.", "Uff. Was war das denn?", "Nie wieder. Oder … morgen wieder.",
+            "Mein Kopf … wie nach drei Flaschen Wein."]
+# Said instead when the hero tries to talk to someone while the trip is too strong for it; never twice in a row.
+REFUSALS = ["Nicht jetzt … sein Gesicht zerfließt.", "Mit dem red ich jetzt besser nicht.", "Der hat … drei Augen.",
+            "Nee. Der guckt so komisch.", "Später. Wenn er wieder normal aussieht."]
+BLOCK_ABOVE = 0.35        # no conversations above this intensity
+DUCK = 0.4                # the trip's music while a thought is spoken, so the hero carries over the drums
+REFUSAL_PAUSE = 8.0       # seconds between two refusal thoughts
+DELIVERY = "rausch"
+HERO_VOICE = "15"
+SETTINGS = __import__("pathlib").Path(__file__).resolve().parent.parent / "dm_runtime" / "settings.json"
+
+
+def visuals_on():
+    """Whether trips may change the picture. Off keeps the music and the thoughts (photosensitivity)."""
+    try:
+        return bool(__import__("json").loads(SETTINGS.read_text(encoding="utf-8")).get("trip_visuals", True))
+    except (OSError, ValueError):
+        return True
+
+
+def thought_lines(thoughts=None):
+    """Every line a trip may say, for voicing: the given thoughts or all the pools, the landings and the refusals."""
+    ups = [text for _, text in thoughts] if thoughts else [line for _, pool in THOUGHT_POOLS for line in pool]
+    return ups + LANDINGS + REFUSALS
+
+
+def draw_thoughts(rng):
+    """One line per stage, picked at random: this trip's thoughts on the way up."""
+    return [(at, rng.choice(pool)) for at, pool in THOUGHT_POOLS]
+
 
 # A profile's own track, in python/dm_runtime/music (private: never committed).
 TRACKS = {"mindcap": "mindcap.wav", "wasserpfeife": "wasserpfeife.wav", "nordmar": "nordmar.wav",
@@ -171,8 +217,17 @@ def crossfade(progress):
     return math.sin(progress * math.pi / 2), math.cos(progress * math.pi / 2)
 
 
+def say(gothic, text):
+    """A thought from off: the distorted take if there is one, the plain one, or a silent subtitle. False while busy."""
+    from dm import voices
+    wav, ms = voices.lookup(HERO_VOICE, text, DELIVERY)
+    if not wav:
+        wav, ms = voices.lookup(HERO_VOICE, text)
+    return gothic.dialog.narrate(text, ms, wav)
+
+
 class Trip:
-    def __init__(self, phases, track):
+    def __init__(self, phases, track, thoughts=None, rng=None):
         from dm import music_bands
         self.envelope = Envelope(phases)
         self.track = track
@@ -186,6 +241,19 @@ class Trip:
         self.last_look = None
         self.started = None
         self.carry = 0.0
+        self.rng = rng or random.Random()
+        self.thoughts = sorted(thoughts) if thoughts else draw_thoughts(self.rng)
+        self.landing = self.rng.choice(LANDINGS)
+        self.last_refusal = None
+        self.said = set()
+        self.peaked = False
+        self.landed = False
+        self.queue = []          # thoughts waiting until nothing else is being said
+        self.refused_at = None
+        self.visuals = visuals_on()
+        self.visuals_read = None
+        self.duck = 1.0
+        self.duck_at = None
         self.music_end = None   # when the crossfade back to the game's music began
         self.fade_from = 1.0    # how far faded in the track was at that moment
         self.generation = None
@@ -202,6 +270,25 @@ class Trip:
         self.envelope.phases = [(STOP_SECONDS, 0.0, 0.02, 0.0, 0.0)]
         self.envelope.index, self.envelope.timer = 0, STOP_SECONDS
         self._give_music_back(now)
+
+    def _think(self, gothic, now):
+        """Thoughts on the way up and on landing, conversations blocked while strong, a refusal when one is tried."""
+        level = self.envelope.intensity
+        for at, text in self.thoughts:
+            if level >= at and text not in self.said:
+                self.said.add(text)
+                self.queue.append(text)
+        self.peaked = self.peaked or level >= 0.9
+        if self.peaked and not self.landed and level < 0.3:
+            self.landed = True
+            self.queue.append(self.landing)
+        gothic.dialog.block(level > BLOCK_ABOVE and not self.envelope.over)
+        if gothic.dialog.take_refused() and (self.refused_at is None or now - self.refused_at >= REFUSAL_PAUSE):
+            self.refused_at = now
+            self.last_refusal = self.rng.choice([r for r in REFUSALS if r != self.last_refusal])
+            self.queue.insert(0, self.last_refusal)
+        if self.queue and say(gothic, self.queue[0]):
+            self.queue.pop(0)
 
     def tick(self, gothic, now):
         if self.started is None:
@@ -222,10 +309,16 @@ class Trip:
         if self.track:
             if self.music_end is None and (self.envelope.over or not gothic.music.track_playing()):
                 self._give_music_back(now)
+            # Duck under a spoken thought: down quickly, back up slowly, like dialogue over film music.
+            target = DUCK if gothic.dialog.narrating() else 1.0
+            step = (now - self.duck_at) if self.duck_at is not None else 0.0
+            self.duck_at = now
+            self.duck += (target - self.duck) * min(1.0, step / (0.15 if target < self.duck else 0.6))
             if self.music_end is None:
-                gothic.music.mix(*crossfade(elapsed / FADE_IN))
+                track, theme = crossfade(elapsed / FADE_IN)
             else:
-                gothic.music.mix(*crossfade(self.fade_from * (1 - (now - self.music_end) / FADE_OUT)))
+                track, theme = crossfade(self.fade_from * (1 - (now - self.music_end) / FADE_OUT))
+            gothic.music.mix(track * self.duck, theme)
         from dm import music_bands
         bass, mid, treble, kick = (music_bands.at(self.bands, now - self.track_started) if self.music_end is None
                                    else (0, 0, 0, 0))
@@ -237,9 +330,15 @@ class Trip:
         self.treble = smooth(self.treble, treble, dt)
         beat = pulse(now - self.track_started, *self.beat) if self.beat and self.music_end is None else 0.0
         drums = min(1.0, max(0.0, (self.swell - 0.15) / 0.35))   # no drum, no pulse: the quiet intro stays calm
+        if self.visuals_read is None or now - self.visuals_read >= 1.0:
+            self.visuals = visuals_on()          # the off switch works at once, also during a running trip
+            self.visuals_read = now
         fx = look(self.envelope.intensity, elapsed, beat, drums)
+        if not self.visuals:
+            fx = look(0.0, elapsed)          # music and thoughts only: nothing on screen changes
         gothic.trip.set(fx["fov"], fx["speed"], fx["tint"], fx["time"], fx["shake"], fx["post"], fx["edges"],
                         fx["tracers"], (self.bass, self.mid, self.treble), fx["zoom"])
+        self._think(gothic, now)
         music_back = not self.track or (self.music_end is not None and now - self.music_end >= FADE_OUT)
         return not (self.envelope.over and music_back)
 
@@ -247,9 +346,10 @@ class Trip:
 _current = None
 
 
-def start(profile="mindcap", track=None, seconds=None):
+def start(profile="mindcap", track=None, seconds=None, thoughts=None):
     """Begin a trip with the profile's own track unless another is given. seconds stretches the profile (shorter for
-    a preview). False if one already runs: never two tracks at once."""
+    a preview); thoughts replaces the hero's default ones, as (intensity, text). False if one already runs: never two
+    tracks at once."""
     global _current
     if _current is not None:
         return False
@@ -258,7 +358,7 @@ def start(profile="mindcap", track=None, seconds=None):
     if track is None and (MUSIC_DIR / TRACKS.get(profile, "")).is_file():
         track = str(MUSIC_DIR / TRACKS[profile])
     phases = stretched(profile, seconds) if seconds else PROFILES[profile]
-    _current = Trip(phases, track)
+    _current = Trip(phases, track, [tuple(t) for t in thoughts] if thoughts else None)
     return True
 
 
@@ -283,6 +383,7 @@ def _end(gothic):
         gothic.trip.clear()         # needs a world; without one there is nothing on screen to clear
     except RuntimeError:
         pass
+    gothic.dialog.block(False)      # the hero may always talk again
 
 
 def _tick(_dt):

@@ -87,7 +87,19 @@ music = types.SimpleNamespace(play_track=lambda p: calls.append(("play", p)) or 
                               track_playing=lambda: playing["on"],
                               mix=lambda t, m: calls.append(("mix", round(t, 3), round(m, 3))),
                               stop_track=lambda: calls.append(("stop",)))
-fake = types.SimpleNamespace(music=music, world=types.SimpleNamespace(generation=1),
+said, blocked, refused = [], [], {"n": 0}
+
+
+def take_refused():
+    count, refused["n"] = refused["n"], 0
+    return count
+
+
+speaking = {"on": False}
+dialog = types.SimpleNamespace(narrate=lambda text, ms, wav: said.append(text) or True,
+                               block=lambda on: blocked.append(on), take_refused=take_refused,
+                               narrating=lambda: speaking["on"])
+fake = types.SimpleNamespace(music=music, world=types.SimpleNamespace(generation=1), dialog=dialog,
                              trip=types.SimpleNamespace(set=lambda *a: calls.append(("set", a)),
                                                         clear=lambda: calls.append(("clear",))))
 assert trip.start("mindcap", "t.wav", seconds=20) and not trip.start("mindcap")   # never two at once
@@ -154,6 +166,118 @@ fake.trip.clear = no_world
 trip._end(fake)
 assert ("stop",) in calls
 fake.trip.clear = lambda: calls.append(("clear",))
+
+# Thoughts: each said once on the way up, one on landing, in order; conversations blocked while strong, then free.
+said.clear(); blocked.clear()
+trip.start("kriegsgesang", None)
+current, now = trip._current, 0.0
+while current.tick(fake, now):
+    now += 0.05
+assert len(said) == len(trip.THOUGHT_POOLS) + 1, said                       # one line per stage, then a landing
+for line, (_, pool) in zip(said, trip.THOUGHT_POOLS):
+    assert line in pool                                                    # each from its own stage, in order
+assert said[-1] in trip.LANDINGS
+assert True in blocked and blocked[-1] is False
+trip._end(fake)
+assert blocked[-1] is False
+
+# Trying to talk while strong: refused by the engine, and the hero says why, not more often than every few seconds.
+said.clear()
+trip.start("kriegsgesang", None)
+current, now = trip._current, 0.0
+while current.envelope.intensity < 0.6:
+    current.tick(fake, now)
+    now += 0.05
+said.clear()
+for _ in range(3):
+    refused["n"] = 1
+    current.tick(fake, now)
+    now += 0.05
+assert len([s for s in said if s in trip.REFUSALS]) == 1
+trip._end(fake)
+
+# Two trips draw differently: over twenty trips, more than one line turns up for every stage.
+import random  # noqa: E402
+rng = random.Random(7)
+drawn = [trip.draw_thoughts(rng) for _ in range(20)]
+for stage in range(len(trip.THOUGHT_POOLS)):
+    assert len({d[stage][1] for d in drawn}) > 1
+# Refusals are random but never the same twice in a row.
+refusals = []
+trip.start("kriegsgesang", None)
+current, now = trip._current, 0.0
+while current.envelope.intensity < 0.6:
+    current.tick(fake, now)
+    now += 0.05
+for _ in range(12):
+    said.clear()
+    refused["n"] = 1
+    now += trip.REFUSAL_PAUSE
+    current.tick(fake, now)
+    refusals += [s for s in said if s in trip.REFUSALS]
+assert len(refusals) >= 10 and all(a != b for a, b in zip(refusals, refusals[1:])) and len(set(refusals)) > 2
+trip._end(fake)
+
+# A story's own thoughts replace the defaults.
+said.clear()
+trip.start("kriegsgesang", None, thoughts=[(0.2, "Bodo?"), (0.6, "Bodo hat Flügel.")])
+current, now = trip._current, 0.0
+while current.tick(fake, now):
+    now += 0.05
+assert said[:2] == ["Bodo?", "Bodo hat Flügel."] and not set(said) & {l for _, p in trip.THOUGHT_POOLS for l in p}
+trip._end(fake)
+
+# Visuals off: the music and the thoughts stay, the screen does not change.
+calls.clear(); said.clear()
+real_visuals_on = trip.visuals_on
+trip.visuals_on = lambda: False                  # the switch is read while the trip runs, not only at its start
+trip.start("kriegsgesang", "k.wav")
+current, now = trip._current, 0.0
+while now < 150:
+    current.tick(fake, now)
+    now += 0.05
+sets = [c[1] for c in calls if c[0] == "set"]
+assert all(s[5] == 0.0 and s[2][3] == 0.0 and s[9] == 0.0 for s in sets)        # no shader, no tint, no zoom
+assert ("play", "k.wav") in calls and said
+trip._end(fake)
+# Switched off in the middle of a trip: the picture is sober within a second.
+trip.visuals_on = lambda: True
+calls.clear()
+trip.start("kriegsgesang", "k.wav")
+current, now = trip._current, 0.0
+while now < 120:
+    current.tick(fake, now)
+    now += 0.05
+assert [c[1] for c in calls if c[0] == "set"][-1][5] > 0.5     # strong
+trip.visuals_on = lambda: False
+end = now + 1.1
+while now < end:
+    current.tick(fake, now)
+    now += 0.05
+assert [c[1] for c in calls if c[0] == "set"][-1][5] == 0.0    # sober
+trip._end(fake)
+trip.visuals_on = real_visuals_on
+
+# While a thought is spoken, the trip's music ducks, then comes back.
+calls.clear()
+trip.start("kriegsgesang", "k.wav")
+current, now = trip._current, 0.0
+while now < 10:
+    current.tick(fake, now)
+    now += 0.05
+loud = [c for c in calls if c[0] == "mix"][-1][1]
+speaking["on"] = True
+for _ in range(20):
+    current.tick(fake, now)
+    now += 0.05
+ducked = [c for c in calls if c[0] == "mix"][-1][1]
+speaking["on"] = False
+for _ in range(60):
+    current.tick(fake, now)
+    now += 0.05
+back = [c for c in calls if c[0] == "mix"][-1][1]
+assert abs(ducked - loud * trip.DUCK) < 0.05 and back > 0.95 * loud, (loud, ducked, back)
+trip._end(fake)
 
 # A loaded save ends the trip at once.
 trip.start("mindcap", None, seconds=20)
