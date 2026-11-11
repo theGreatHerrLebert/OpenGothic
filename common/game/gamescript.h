@@ -115,6 +115,7 @@ class GameScript final {
     size_t                      findSymbolIndex(std::string_view s);
     // Whether an NPC has heard the dialogue topic (C_INFO instance) of this name: false for an unknown name.
     bool                        knowsInfo(const zenkit::INpc& npc, std::string_view infoName) const;
+    bool                        markInfoKnown(const zenkit::INpc& npc, std::string_view infoName);
     size_t                      symbolsCount() const;
 
     const AiState&              aiState  (ScriptFn id);

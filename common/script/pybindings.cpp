@@ -554,6 +554,16 @@ PYBIND11_EMBEDDED_MODULE(gothic, m) {
            "Use the nearest free object of this scheme at once, placed on its spot (state 1 to use, -1 to leave). "
            "quiet skips the object's script routine, such as a bed's sleep menu, until the hero leaves it. True only "
            "if he is really using it.")
+      .def("mark_heard",
+           [](const PyPlayer&, const std::string& info) {
+             auto* w = requireWorld();
+             size_t id = 0;
+             if(instanceClass(*w, upper(info), id)!="C_INFO")
+               throw std::invalid_argument("not a dialogue topic: " + info);
+             return w->script().markInfoKnown(requirePlayer()->handle(), upper(info));
+             },
+           py::arg("info"),
+           "Count a topic of the game's own as heard, as if it had been told: its NPC will not open with it again.")
       .def("heard",
            [](const PyPlayer&, const std::string& info) {
              auto* w = requireWorld();
