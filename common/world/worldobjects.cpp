@@ -893,6 +893,15 @@ Interactive *WorldObjects::availableMob(const Npc &pl, std::string_view dest) {
   return ret;
   }
 
+std::vector<Interactive*> WorldObjects::interactivesNear(const Tempest::Vec3& at, float dist) {
+  std::vector<Interactive*> ret;
+  interactiveObj.find(at,dist,[&](Interactive& i){
+    ret.push_back(&i);
+    return false;
+    });
+  return ret;
+  }
+
 void WorldObjects::setMobRoutine(gtime time, std::string_view scheme, int32_t state) {
   MobRoutine r;
   r.time  = time;

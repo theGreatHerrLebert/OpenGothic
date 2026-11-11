@@ -207,6 +207,9 @@ class Gothic final {
     // While set (during a strong trip), the hero cannot start a conversation; each attempt is counted for Python.
     bool        dmBlockTalk   = false;
     uint32_t    dmTalkRefused = 0;
+    // While set, the hero uses an object without its script routine (a bed without the sleep menu); cleared when he
+    // leaves the object, so the next ordinary use is as always.
+    bool        dmQuietUse    = false;
 
     // DM hotkeys pressed since Python last asked, oldest first. Filled on the UI thread, drained from a world tick.
     void                     pushDmKey(std::string key) { std::lock_guard<std::mutex> g(dmKeysSync); dmKeys.push_back(std::move(key)); }

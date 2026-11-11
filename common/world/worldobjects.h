@@ -130,6 +130,7 @@ class WorldObjects final {
     void           drawVobBoxNpcNear(DbgPainter& p) const;
 
     Interactive*   availableMob(const Npc& pl, std::string_view name);
+    std::vector<Interactive*> interactivesNear(const Tempest::Vec3& at, float dist);
     void           setMobRoutine(gtime time, std::string_view scheme, int32_t state);
 
     void           sendPassivePerc  (Npc& self, Npc& other, Npc* victim, Item* itm, int32_t perc);

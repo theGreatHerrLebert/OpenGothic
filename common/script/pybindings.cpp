@@ -2,6 +2,8 @@
 #include <pybind11/stl.h>
 
 #include "gothic.h"
+#include "world/aiqueue.h"
+#include "world/objects/interactive.h"
 #include "gamemusic.h"
 #include "game/globaleffects.h"
 #include <algorithm>
@@ -525,6 +527,33 @@ PYBIND11_EMBEDDED_MODULE(gothic, m) {
       .def_property_readonly("items",    &PyPlayer::items,
                              "List of dicts {name, count, equipped} for "
                              "every item in the player's inventory.")
+      .def("use_object",
+           [](const PyPlayer&, const std::string& scheme, int state, bool quiet) {
+             auto* pl = requirePlayer();
+             if(state<0) {
+               pl->aiPush(AiQueue::aiUseMob(upper(scheme), state));
+               return true;
+               }
+             auto* inter = requireWorld()->availableMob(*pl, upper(scheme));
+             if(inter==nullptr)
+               return false;
+             // The hero does not walk to it on his own, as an NPC's AI_UseMob would: put him on its spot and attach
+             // him there, which is what AI_UseMob does once it has arrived.
+             Gothic::inst().dmQuietUse = quiet;
+             auto at = inter->nearestPoint(*pl);
+             pl->setPosition(at.x, at.y, at.z);
+             pl->updateTransform();
+             pl->setInteraction(inter);
+             if(pl->interactive()!=inter) {
+               Gothic::inst().dmQuietUse = false;
+               return false;
+               }
+             return true;
+             },
+           py::arg("scheme"), py::arg("state") = 1, py::arg("quiet") = false,
+           "Use the nearest free object of this scheme at once, placed on its spot (state 1 to use, -1 to leave). "
+           "quiet skips the object's script routine, such as a bed's sleep menu, until the hero leaves it. True only "
+           "if he is really using it.")
       .def("heard",
            [](const PyPlayer&, const std::string& info) {
              auto* w = requireWorld();
@@ -676,6 +705,33 @@ PYBIND11_EMBEDDED_MODULE(gothic, m) {
       .def("instance_kind", &PyWorld::instanceKind, py::arg("instance"),
            "'npc', 'item', or None for a Daedalus instance name.")
       .def("has_waypoint", &PyWorld::hasWaypoint, py::arg("name"))
+      .def("waypoint_position",
+           [](const PyWorld&, const std::string& name) -> py::object {
+             auto* wp = requireWorld()->findPoint(name,false);
+             if(wp==nullptr)
+               return py::none();
+             auto p = wp->position();
+             return py::cast(std::make_tuple(p.x, p.y, p.z));
+             },
+           py::arg("name"), "Where a waypoint is, as (x, y, z), or None.")
+      .def("objects_near",
+           [](const PyWorld&, float radius) {
+             auto* w  = requireWorld();
+             auto* pl = requirePlayer();
+             py::list out;
+             for(auto* i:w->interactivesNear(pl->position(), radius)) {
+               py::dict d;
+               auto p = i->position();
+               d["scheme"]    = std::string(i->schemeName());
+               d["name"]      = std::string(i->tag());
+               d["focus"]     = std::string(i->focusName());
+               d["position"]  = std::make_tuple(p.x, p.y, p.z);
+               d["available"] = i->isAvailable();
+               out.append(d);
+               }
+             return out;
+             },
+           py::arg("radius"), "Usable objects (beds, benches, pipes, anvils ...) within radius of the hero.")
       .def("place_item", &PyWorld::placeItem, py::arg("instance"), py::arg("waypoint") = "",
            py::arg("count") = 1, py::arg("position") = py::none())
       .def("remove_npc", &PyWorld::removeNpc, py::arg("npc"))

@@ -262,7 +262,7 @@ vec3 dragonflyEye(vec3 c, vec2 uv, float E, float t) {
   float twist  = (petal8 - 0.5)*(1.8 + peak*1.2);
   float focus  = clamp(0.82 + core*0.48 + lens*0.22 + peak*0.24, 0.65, 1.55);
   // Each facet shows a large, near-true piece of the world, so the game stays readable through the eye.
-  vec2  src    = (best + cellD*0.6*focus)/size + dir*pull*E*0.006 + tang*twist*E*0.004;
+  vec2  src    = (best + cellD*0.45*focus)/size + dir*pull*E*0.008 + tang*twist*E*0.006;
   src = clamp(src, vec2(0.0), vec2(1.0));
 
   vec3 sampled = texture(sceneImage, src).rgb;
@@ -275,7 +275,7 @@ vec3 dragonflyEye(vec3 c, vec2 uv, float E, float t) {
   vec3 hive = texture(sceneImage, clamp(best/size, vec2(0.0), vec2(1.0))).rgb;
 
   // The world keeps its own colours: only a light pull towards the facet's centre colour.
-  vec3 o = mix(sampled, hive, E*(0.08 + core*0.12));
+  vec3 o = mix(sampled, hive, E*(0.12 + core*0.18));
 
   // The colour lives in the structure: facet rims and the rose window's seams glow in gold, amber and silver,
   // framing the world instead of tinting it over.
@@ -284,9 +284,9 @@ vec3 dragonflyEye(vec3 c, vec2 uv, float E, float t) {
   float tracery = clamp(nave*pow(eyeSeam(ang, 6.0, inner), 18.0) + choir*pow(eyeSeam(ang, 8.0, -outer), 18.0)
                         + crown*pow(eyeSeam(ang, 12.0, outer*1.7), 16.0) + rings*0.85, 0.0, 1.0);
   vec3 frame = eyeColor(t*0.054 + 1.5 + cellPhase*0.75);
-  o = mix(o, frame, rim*E*0.45);
-  o = mix(o, eyeColor(t*0.054 + r*0.55 + ang/6.2832)*1.1, tracery*E*0.6);
-  return mix(c, o, E*0.7);   // never all of it: the eye lies over the game, it does not replace it
+  o = mix(o, frame, rim*E*0.55);
+  o = mix(o, eyeColor(t*0.054 + r*0.55 + ang/6.2832)*1.1, tracery*E*0.7);
+  return mix(c, o, E*0.85);   // never all of it: the eye lies over the game, it does not replace it
   }
 
 void main() {

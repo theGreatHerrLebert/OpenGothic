@@ -138,6 +138,7 @@ class World final {
     void                 disableCollizionZone(CollisionZone& z);
 
     Interactive*         availableMob(const Npc &pl, std::string_view name);
+    std::vector<Interactive*> interactivesNear(const Tempest::Vec3& at, float dist) { return wobj.interactivesNear(at,dist); }
     Interactive*         findInteractive(const Npc& pl);
     void                 setMobRoutine(gtime time, std::string_view scheme, int32_t state);
 

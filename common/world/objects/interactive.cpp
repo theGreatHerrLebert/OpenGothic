@@ -360,6 +360,8 @@ void Interactive::implTick(Pos& p) {
 
   if(p.started==Quit) {
     const bool completed = p.used;   // the stand-up animation finished after the hero really used the object
+    if(npc.isPlayer())
+      Gothic::inst().dmQuietUse = false;
     npc.quitInteraction();
     loopState = false;
     p.user    = nullptr;
@@ -501,6 +503,8 @@ bool Interactive::setMobState(std::string_view scheme, int32_t st) {
   }
 
 void Interactive::invokeStateFunc(Npc& npc) {
+  if(npc.isPlayer() && Gothic::inst().dmQuietUse)
+    return;   // a story has the hero use it quietly: no script routine, no sleep menu
   if(onStateFunc.empty() || state<0)
     return;
   if(loopState)
@@ -856,6 +860,8 @@ bool Interactive::detach(Npc &npc, bool quick) {
             return false;
           }
         const bool completed = i.used && !quick;   // knocked off, weapon drawn or gone: not a use
+        if(npc.isPlayer())
+          Gothic::inst().dmQuietUse = false;
         i.user       = nullptr;
         i.used       = false;
         i.started    = (canQuitAtState(npc,state) || !quick) ? NotStarted : Quit;
