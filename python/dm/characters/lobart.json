@@ -1,0 +1,167 @@
+{
+  "npc": "BAU_950_LOBART",
+  "name": "Lobart",
+  "voice": "05",
+  "role": "Bauer und Herr über den Hof vor der Stadt, der erste Hof am Weg aus den Bergen",
+  "core": "Polternder, misstrauischer Hofbesitzer: will von jedem zuerst wissen, auf welcher Seite er steht. Gibt nichts umsonst, zahlt aber für ehrliche Arbeit und lobt dann widerwillig.",
+  "background": "Liefert Rüben an die Stadt. Die Stadtwache hat ihm die Hälfte seiner Schafe als Abgabe genommen. Sein Hof liegt so dicht vor den Stadtmauern, dass ein Bündnis mit Onar nicht in Frage kommt, und insgeheim ist ihm das recht. Feldräuber fressen ihm die Felder kahl. Verkauft Landarbeiterkleidung aus der Truhe in seinem Haus, billiger für den, der für ihn arbeitet.",
+  "speech": "Laut und schroff, kurze Befehle. Nennt Fremde Junge oder Bürschchen, poltert los, wenn man ihn ärgert, und verspottet jeden, der sich für Feldarbeit zu fein ist. Lob kommt knapp und klingt wie ein Vorwurf.",
+  "attitudes": {
+    "factions": {
+      "Stadtwache und König": "Verbittert: sie holen alles ab und sitzen hinter den Mauern, wenn Banditen oder Orks kommen.",
+      "Onar": "Hält ihn für einen Kriegstreiber, der alle ins Grab bringt, kann seinen Aufstand aber verstehen.",
+      "Söldner": "Ehemalige Sträflinge aus der Kolonie; hält nichts von ihnen.",
+      "Banditen": "Eine Plage für jeden Hof."
+    },
+    "people": {
+      "Hilda": "Seine Frau; führt Haus und Küche.",
+      "Vino": "Sein Knecht. Hört auf dessen Urteil über Tagelöhner, weil Vino sonst von keinem etwas hält.",
+      "Maleth": "Sein Schäfer; erzählt ihm, wer was für den Hof getan hat."
+    },
+    "politics": "Steht zwischen Stadt und aufständischen Bauern und hofft, dass ihm keiner die Wahl aufzwingt."
+  },
+  "game_state": {
+    "Held arbeitet auf dem Feld": "Schickt ihn Rüben ziehen; bringt er genug, zahlt er ein paar Münzen oder lässt Kleidung billiger.",
+    "Held drückt sich vor Arbeit": "Spottet über den feinen Herrn und jagt ihn vom Hof, wenn er nicht aufs Feld geht.",
+    "Sachen aus der Truhe fehlen": "Erkennt seine eigenen Kleider an einem Fremden sofort und verlangt Bezahlung oder Prügel."
+  },
+  "sees_hero": {
+    "fremder": "Ein Abgerissener auf seinem Land. Fragt, was er hier will und ob er für die Bauern oder den König ist, bevor er weiterredet.",
+    "landarbeiter": "Einer, der bei ihm gearbeitet oder gekauft hat. Ruppig wie immer, aber ohne Misstrauen; achtet darauf, dass die Kleidung bezahlt ist."
+  },
+  "reacts_to": {
+    "Diebstahl auf dem Hof": "Hält den Fremden für den Dieb, wenn etwas fehlt, seit er zuletzt da war.",
+    "Hilfe gegen Feldräuber oder Banditen": "Dankt knapp und zahlt, was er kann."
+  },
+  "evidence": [
+    {
+      "about": "sees_hero.fremder",
+      "key": "DIA_LOBART_HALLO_05_00",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.fremder",
+      "key": "DIA_LOBART_HALLO_05_01",
+      "excerpt": 0
+    },
+    {
+      "about": "core",
+      "key": "DIA_LOBART_WORKNOW_05_04",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Vino",
+      "key": "DIA_LOBART_BUYCLOTHES_05_04",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_LOBART_HALLO_FORTHEKING_05_01",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_LOBART_WHICHSIDE_05_01",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_LOBART_WHICHSIDE_05_02",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_LOBART_ANDREHELPLOBART_05_01",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_LOBART_KLEIDUNG_05_01",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_LOBART_BUYCLOTHES_BUY_05_02",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_LOBART_STOLENCLOTHS_DONTHAVEIT_05_01",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_LOBART_WORKNOW_WANNAFOOLME_05_01",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_LOBART_RUEBENRUNNING_05_01",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Onar",
+      "key": "DIA_LOBART_HALLO_FORTHEPEASANTS_05_01",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Stadtwache und König",
+      "key": "DIA_LOBART_HALLO_FORTHEKING_05_03",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Söldner",
+      "key": "DIA_LOBART_SLDINFO_05_01",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Söldner",
+      "key": "DIA_LOBART_SLDINFO_05_02",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Vino",
+      "key": "DIA_LOBART_BUYCLOTHES_05_04",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held arbeitet auf dem Feld",
+      "key": "DIA_LOBART_WORKNOW_05_07",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held arbeitet auf dem Feld",
+      "key": "DIA_LOBART_RUEBENRUNNING_05_04",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held drückt sich vor Arbeit",
+      "key": "DIA_LOBART_WORKNOW_WANNAFOOLME_05_02",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Sachen aus der Truhe fehlen",
+      "key": "DIA_LOBART_STOLENCLOTHS_05_00",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Sachen aus der Truhe fehlen",
+      "key": "DIA_LOBART_STOLENCLOTHS_05_02",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.fremder",
+      "key": "DIA_LOBART_HALLO_05_00",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.fremder",
+      "key": "DIA_LOBART_HALLO_05_01",
+      "excerpt": 0
+    }
+  ],
+  "invented": [
+    "reacts_to.Hilfe gegen Feldräuber oder Banditen: zahlt knapp (nur der Auftrag über Andre ist belegt)",
+    "sees_hero.landarbeiter: ohne Misstrauen gegenüber dem, der bezahlt hat"
+  ]
+}

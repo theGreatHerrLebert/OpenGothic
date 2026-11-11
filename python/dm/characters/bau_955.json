@@ -1,0 +1,23 @@
+{
+  "npc": "BAU_955_BAUER",
+  "name": "Bauer",
+  "voice": "01",
+  "role": "Landarbeiter auf Lobarts Hof, zu finden an dem Lagerfeuer an Lobarts Mühle (NW_FARM1_MILL_05). Hat keine eigene Rolle im Spiel und kann eine Geschichte tragen.",
+  "core": "Noch nicht festgelegt. Die erste Geschichte, die diese Figur nutzt, legt es fest und schreibt es hier ein.",
+  "background": "Sitzt den Tag über am Feuer bei der Mühle. Alles Weitere: Noch nicht festgelegt. Die erste Geschichte, die diese Figur nutzt, legt es fest und schreibt es hier ein.",
+  "speech": "Noch nicht festgelegt. Die erste Geschichte, die diese Figur nutzt, legt es fest und schreibt es hier ein.",
+  "attitudes": {
+    "factions": {},
+    "people": {
+      "Lobart": "Sein Herr."
+    },
+    "politics": ""
+  },
+  "game_state": {},
+  "sees_hero": {},
+  "reacts_to": {},
+  "evidence": [],
+  "invented": [
+    "Alles außer Rolle und Ort: die Figur hat keine eigenen Zeilen."
+  ]
+}

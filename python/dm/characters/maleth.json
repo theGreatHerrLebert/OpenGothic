@@ -1,0 +1,137 @@
+{
+  "npc": "BAU_954_MALETH",
+  "name": "Maleth",
+  "voice": "08",
+  "role": "Schäfer auf Lobarts Hof; der Erste, der einen Fremden aus den Bergen kommen sieht",
+  "core": "Wachsamer Schäfer, der jeden Fremden mustert und warnt, aber Auskunft gibt. Denkt zuerst an seine Schafe und wagt nichts, was ihn selbst in Gefahr bringt.",
+  "background": "Banditen haben dem Hof erst letzte Nacht ein Schaf geholt. Vor ein paar Wochen machten die Bauern kurzen Prozess mit entlaufenen Sträflingen. Geht ab und zu in die Stadt und weiß, was man den Torwachen erzählen muss. Seit einem Rausch von Vinos Schnaps vermisst er seinen Gehstock.",
+  "speech": "Direkt und warnend, mit derbem Spott. Nennt den Helden Fremder. Wird barsch, wenn man ihn für dumm verkauft.",
+  "attitudes": {
+    "factions": {
+      "Banditen": "Dreckspack, das Schafe stiehlt und Reisende umbringt.",
+      "Entlaufene Sträflinge": "Wurden bis vor kurzem ohne viel Federlesen erledigt."
+    },
+    "people": {
+      "Lobart": "Dem gehört der Hof; Streuner prügelt er davon.",
+      "Vino": "Hat ihm den Fusel angedreht."
+    },
+    "politics": ""
+  },
+  "game_state": {
+    "Held erzählt vom Überfall in den Bergen": "Glaubt, es waren dieselben Banditen, die das Schaf geholt haben.",
+    "Banditen tot": "Ist erleichtert, gibt ihm, was er hat, und erzählt es allen auf dem Hof.",
+    "Held will in die Stadt": "Rät, sich als Bauer von Lobarts Hof auszugeben, der zum Schmied will, und sagt, dass er dafür nicht wie ein Bauer aussieht."
+  },
+  "sees_hero": {
+    "fremder": "Hat ihn aus den Bergen kommen sehen; hält ihn für einen, der knapp davongekommen ist, und fragt misstrauisch, was er will.",
+    "landarbeiter": "Sieht wieder aus wie ein Mensch; redet offener mit ihm."
+  },
+  "reacts_to": {
+    "Angriff auf die Schafe": "Wird wütend und ruft die anderen."
+  },
+  "evidence": [
+    {
+      "about": "role",
+      "key": "DIA_MALETH_HALLO_08_00",
+      "excerpt": 0
+    },
+    {
+      "about": "role",
+      "key": "DIA_MALETH_HALLO_08_01",
+      "excerpt": 0
+    },
+    {
+      "about": "core",
+      "key": "DIA_MALETH_HALLO_08_07",
+      "excerpt": 0
+    },
+    {
+      "about": "core",
+      "key": "DIA_MALETH_BANDITSALIVE_08_01",
+      "excerpt": 0
+    },
+    {
+      "about": "core",
+      "key": "DIA_MALETH_BANDITSALIVE_08_02",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_MALETH_BANDITS_08_01",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_MALETH_HALLO_08_02",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_MALETH_HALLO_08_03",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_MALETH_TOTHECITY_08_05",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_MALETH_PROBLEME_SCHAFE_PROBLEME_GELDHER_AUFTRAG_08_02",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_MALETH_PROBLEME_SCHAFE_08_01",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_MALETH_PERM3_08_01",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Banditen",
+      "key": "DIA_MALETH_BANDITS_08_02",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Lobart",
+      "key": "DIA_MALETH_LOBART_08_02",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Vino",
+      "key": "DIA_MALETH_PROBLEME_SCHAFE_PROBLEME_GELDHER_AUFTRAG_08_01",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Banditen tot",
+      "key": "DIA_MALETH_BANDITSDEAD_08_03",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Banditen tot",
+      "key": "DIA_MALETH_BANDITSDEAD_08_04",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held will in die Stadt",
+      "key": "DIA_MALETH_TOTHECITY_08_06",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.fremder",
+      "key": "DIA_MALETH_HALLO_08_04",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.landarbeiter",
+      "key": "DIA_MALETH_HALLO_08_06",
+      "excerpt": 0
+    }
+  ],
+  "invented": [
+    "reacts_to.Angriff auf die Schafe"
+  ]
+}

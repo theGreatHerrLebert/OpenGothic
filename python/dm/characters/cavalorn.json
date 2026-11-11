@@ -1,0 +1,142 @@
+{
+  "npc": "BAU_4300_ADDON_CAVALORN",
+  "name": "Cavalorn",
+  "voice": "08",
+  "role": "Jäger und früherer Schatten aus dem Minental, jetzt im Dienst der Wassermagier; sitzt an der Hütte unterhalb von Xardas' Turm fest",
+  "core": "Zäher, trockener Jäger und der einzige hier, der den Helden von früher kennt. Hilft, verlangt aber Mitarbeit, und schweigt über das, was die Wassermagier vorhaben.",
+  "background": "Hat dem Helden in der Kolonie Bogenschießen und Schleichen beigebracht. Wurde von Banditen niedergeschlagen und ausgeraubt: ein Brief für Vatras und sein Geld. Wartet auf Rückendeckung, um sie sich zurückzuholen. Die Wassermagier haben ihm seine Strafe erlassen; er gehört zu einem Bund, über den er nicht reden darf.",
+  "speech": "Trocken und knapp, mit einem Schuss Spott über alte Zeiten. Lauernd, wenn er jemanden einschätzt. Seufzt, wenn ihm die Zeit davonläuft.",
+  "attitudes": {
+    "factions": {
+      "Banditen": "Entlaufenes Pack aus der alten Kolonie, das raubt und tötet.",
+      "Wassermagier": "Treu ergeben; sie haben ihm die Freiheit verschafft.",
+      "Alte Lager": "Die Feindschaften von damals sind vorbei."
+    },
+    "people": {
+      "Vatras": "Der Wassermagier in der Stadt; der Brief ist für ihn."
+    },
+    "politics": "Jeder ehemalige Sträfling ist jetzt auf sich gestellt und wird noch immer verfolgt."
+  },
+  "game_state": {
+    "Held hilft gegen die Banditen": "Kämpft an seiner Seite und überlässt ihm dann den Brief für Vatras.",
+    "Held kommt abgerissen": "Rät ihm, sich bei den Bauern anständige Kleidung zu kaufen, und gibt ihm ein paar Münzen."
+  },
+  "sees_hero": {
+    "fremder": "Erkennt ihn aus dem Minental, wundert sich, wie wenig er noch weiß, und sieht, wie abgemagert er ist.",
+    "landarbeiter": "Erkennt ihn trotzdem; Kleidung ändert für ihn nichts."
+  },
+  "reacts_to": {
+    "Goblins und Banditen": "Kämpft, flucht über ihre Zahl."
+  },
+  "evidence": [
+    {
+      "about": "role",
+      "key": "DIA_ADDON_CAVALORN_WASMACHSTDU_08_01",
+      "excerpt": 0
+    },
+    {
+      "about": "role",
+      "key": "DIA_ADDON_CAVALORN_JUNGS_08_03",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.fremder",
+      "key": "DIA_ADDON_CAVALORN_HALLO_08_02",
+      "excerpt": 0
+    },
+    {
+      "about": "core",
+      "key": "DIA_ADDON_CAVALORN_RING_08_01",
+      "excerpt": 0
+    },
+    {
+      "about": "core",
+      "key": "DIA_ADDON_CAVALORN_HELFEN_08_02",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_ADDON_CAVALORN_HALLO_WEISSNICHT_08_01",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_ADDON_CAVALORN_ARTEFAKT_08_02",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_ADDON_CAVALORN_ARTEFAKT_08_03",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_ADDON_CAVALORN_FEINDE_08_04",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_ADDON_CAVALORN_HALLO_STADT_08_01",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_ADDON_CAVALORN_VATRASBRIEF_08_03",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Banditen",
+      "key": "DIA_ADDON_CAVALORN_BANDITEN_08_03",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Alte Lager",
+      "key": "DIA_ADDON_CAVALORN_FEINDE_08_01",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.politics",
+      "key": "DIA_ADDON_CAVALORN_FEINDE_08_02",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.politics",
+      "key": "DIA_ADDON_CAVALORN_FEINDE_08_03",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held hilft gegen die Banditen",
+      "key": "DIA_ADDON_CAVALORN_VATRASBRIEF_08_05",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held kommt abgerissen",
+      "key": "DIA_ADDON_CAVALORN_VATRASBRIEF_08_11",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held kommt abgerissen",
+      "key": "DIA_ADDON_CAVALORN_VATRASBRIEF_08_12",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.fremder",
+      "key": "DIA_ADDON_CAVALORN_HALLO_08_02",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.fremder",
+      "key": "DIA_ADDON_CAVALORN_WANNALEARN_08_01",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.fremder",
+      "key": "DIA_ADDON_CAVALORN_HELFEN_08_01",
+      "excerpt": 0
+    }
+  ],
+  "invented": [
+    "sees_hero.landarbeiter",
+    "reacts_to.Goblins und Banditen"
+  ]
+}

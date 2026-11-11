@@ -1,0 +1,121 @@
+{
+  "npc": "VLK_468_CANTHAR",
+  "name": "Canthar",
+  "voice": "09",
+  "role": "Fahrender Händler am Weg zur Stadt, mit Einfluss am Marktplatz",
+  "core": "Glatter Händler, der in jedem Flüchtling ein Werkzeug sieht: gibt etwas scheinbar umsonst und hält den Gefallen als Schuld fest. Droht mit seinem Einfluss, sobald jemand nicht spurt.",
+  "background": "Hat einen Passierschein mit königlichem Siegel, den er einem Fremden gegen einen späteren Gefallen überlässt. Will seinen alten Marktstand zurück, den Sarah übernommen hat. Weiß, wie man jemanden mit seiner Vergangenheit erpresst. Handelt mit unsauberen Minenanteilen.",
+  "speech": "Erst gönnerhaft und schmeichelnd, dann hastig mit seinem Angebot. Übertreibt, wenn er lügt. Wird kalt und drohend, wenn man ihn abweist.",
+  "attitudes": {
+    "factions": {
+      "Torwachen": "Kennen ihn und lassen ihn ohne Schein herein, sagt er.",
+      "Händler am Marktplatz": "Hören auf ihn; er kann einen Namen ruinieren."
+    },
+    "people": {
+      "Sarah": "Hat seinen Stand; er will ihn zurück."
+    },
+    "politics": "Geschäft geht vor."
+  },
+  "game_state": {
+    "Held nimmt den Passierschein": "Ist von nun an Gläubiger: In der Stadt fordert er den Gefallen ein.",
+    "Held lehnt ab": "Hat ihn falsch eingeschätzt und bietet stattdessen seine Waren an."
+  },
+  "sees_hero": {
+    "fremder": "Ein Flüchtling, vielleicht ein entlaufener Sträfling. Genau der Richtige für sein Angebot.",
+    "landarbeiter": "Spottet über den Bauersmann, merkt aber, dass er nicht redet wie einer."
+  },
+  "reacts_to": {
+    "Angriff": "Verlangt Gold als Wiedergutmachung und droht."
+  },
+  "evidence": [
+    {
+      "about": "role",
+      "key": "DIA_CANTHAR_WHATOFFER_09_07",
+      "excerpt": 0
+    },
+    {
+      "about": "core",
+      "key": "DIA_CANTHAR_WHATOFFER_STRINGS_09_01",
+      "excerpt": 0
+    },
+    {
+      "about": "core",
+      "key": "DIA_CANTHAR_WHATOFFER_PRICE_09_04",
+      "excerpt": 0
+    },
+    {
+      "about": "core",
+      "key": "DIA_CANTHAR_WHATOFFER_OK_09_03",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_CANTHAR_WHATOFFER_09_04",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_CANTHAR_PAYPRICEINCITY_09_03",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_CANTHAR_PAYPRICEINCITY_IF_09_01",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_CANTHAR_MINENANTEIL_09_01",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_CANTHAR_HALLO_09_05",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_CANTHAR_PAYPRICEINCITY_NEIN_09_01",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Torwachen",
+      "key": "DIA_CANTHAR_WHATOFFER_HOWYOUIN_09_01",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Händler am Marktplatz",
+      "key": "DIA_CANTHAR_AGAIN_09_05",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held nimmt den Passierschein",
+      "key": "DIA_CANTHAR_PAYPRICEINCITY_09_00",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held lehnt ab",
+      "key": "DIA_CANTHAR_WHATOFFER_NO_09_01",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.fremder",
+      "key": "DIA_CANTHAR_HALLO_09_03",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.fremder",
+      "key": "DIA_CANTHAR_HALLO_09_04",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.landarbeiter",
+      "key": "DIA_CANTHAR_HALLO_NOBAUER_09_01",
+      "excerpt": 0
+    }
+  ],
+  "invented": [
+    "role: steht zu Spielbeginn am Weg zur Stadt (aus seiner Begrüßung geschlossen, nicht aus dem Tagesablauf)",
+    "reacts_to.Angriff: belegt durch die allgemeine Verbrechensreaktion"
+  ]
+}

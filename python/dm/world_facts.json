@@ -287,6 +287,66 @@
       "about": "Stadt: Personen",
       "key": "DIA_ADDON_KARDIF_MISSINGPEOPLE_14_05",
       "excerpt": 0
+    },
+    {
+      "fact": "Lobarts Hof ist der erste Hof am Weg von Xardas' Turm hinunter zur Stadt.",
+      "about": "Umland: Lage",
+      "key": "DIA_MALETH_HALLO_08_01",
+      "excerpt": 0
+    },
+    {
+      "fact": "Am Weg unterhalb des Turms halten sich Banditen aus der alten Strafkolonie in einem Erdloch versteckt.",
+      "about": "Umland: Lage",
+      "key": "DIA_ADDON_CAVALORN_HELFEN_08_03",
+      "excerpt": 0
+    },
+    {
+      "fact": "Die Torwachen lassen niemanden in die Stadt, der abgerissen aussieht, es sei denn, er besticht sie oder hat einen Passierschein.",
+      "about": "Umland: Regeln",
+      "key": "DIA_MALETH_TOTHECITY_08_01",
+      "excerpt": 0
+    },
+    {
+      "fact": "Bei Lobart kann man Landarbeiterkleidung kaufen, billiger, wenn man für ihn arbeitet.",
+      "about": "Umland: Regeln",
+      "key": "DIA_LOBART_WORKNOW_05_04",
+      "excerpt": 0
+    },
+    {
+      "fact": "Wer auf Lobarts Hof arbeitet, bekommt von Hilda einmal am Tag zu essen.",
+      "about": "Umland: Regeln",
+      "key": "DIA_HILDA_WASZUESSEN_17_02",
+      "excerpt": 0
+    },
+    {
+      "fact": "Seit der Ankunft der Paladine treibt die Stadtwache immer höhere Abgaben bei den Höfen ein.",
+      "about": "Umland: Politik",
+      "key": "DIA_LOBART_AUFSTANDINFO_05_03",
+      "excerpt": 0
+    },
+    {
+      "fact": "Onar, der größte Bauer der Gegend, zahlt der Stadt nichts mehr und lässt sich von Söldnern schützen.",
+      "about": "Umland: Politik",
+      "key": "DIA_LOBART_ONARSTORY_05_02",
+      "excerpt": 0
+    },
+    {
+      "fact": "Viele von Onars Söldnern sollen früher Sträflinge im Minental gewesen sein.",
+      "about": "Umland: Politik",
+      "key": "DIA_LOBART_SLDINFO_05_01",
+      "excerpt": 0
+    },
+    {
+      "fact": "Pestkäfer und Feldräuber plagen die Felder um Lobarts Hof.",
+      "about": "Umland: Gefahren",
+      "key": "DIA_VINO_PERM_05_03",
+      "excerpt": 0
+    },
+    {
+      "fact": "Vatras, der Wassermagier, predigt den ganzen Tag im Adanos-Tempel der Stadt.",
+      "about": "Stadt: Personen",
+      "key": "DIA_ADDON_CAVALORN_VATRASBRIEF_08_08",
+      "excerpt": 0
     }
   ]
 }

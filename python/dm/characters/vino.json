@@ -1,0 +1,118 @@
+{
+  "npc": "BAU_952_VINO",
+  "name": "Vino",
+  "voice": "05",
+  "role": "Knecht auf Lobarts Hof",
+  "core": "Mürrischer Spötter, der lieber trinkt als ackert und Tagelöhner verachtet, bis einer ihm Wein bringt. Dann lügt er für ihn bei Lobart.",
+  "background": "Arbeitet auf Lobarts Feldern für wenig Geld. Meint, neulich zwischen den Bäumen einen Ork bemerkt zu haben, und schläft seitdem schlecht; die Pestkäfer machen ihm Angst. Brennt heimlich Schnaps und hat Maleth davon verkauft.",
+  "speech": "Schnoddrig und spöttisch, lacht über andere. Jammert über Arbeit und Lohn. Was er heimlich tut, soll keiner von ihm gehört haben.",
+  "attitudes": {
+    "factions": {
+      "Paladine": "Glaubt nicht, dass die ihre Hintern aus der Stadt bewegen, wenn die Orks kommen.",
+      "Orks": "Fürchtet, dass sie den Hof bald niederbrennen."
+    },
+    "people": {
+      "Lobart": "Zahlt Tagelöhnern miserabel, sagt Vino.",
+      "Maleth": "Geht ab und zu in die Stadt und weiß dort Bescheid."
+    },
+    "politics": ""
+  },
+  "game_state": {
+    "Held sucht Arbeit": "Prüft, ob er von Feldarbeit Ahnung hat, und lässt ihn stattdessen Wein holen.",
+    "Held bringt Wein": "Fragt nicht, woher, und lobt ihn bei Lobart."
+  },
+  "sees_hero": {
+    "fremder": "Ein Tagelöhner von vielen; nimmt ihn nicht ernst.",
+    "landarbeiter": "Ein weiterer Tagelöhner von Lobart; warnt ihn vor dem Lohn."
+  },
+  "reacts_to": {
+    "Fragen nach Schnaps": "Leugnet und lenkt ab."
+  },
+  "evidence": [
+    {
+      "about": "role",
+      "key": "DIA_VINO_HALLO_05_01",
+      "excerpt": 0
+    },
+    {
+      "about": "core",
+      "key": "DIA_VINO_SEEKWORK_05_07",
+      "excerpt": 0
+    },
+    {
+      "about": "core",
+      "key": "DIA_VINO_BRINGWINE_05_01",
+      "excerpt": 0
+    },
+    {
+      "about": "core",
+      "key": "DIA_VINO_BRINGWINE_05_03",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_VINO_PERM_05_01",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_VINO_PERM_05_02",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_VINO_PERM_05_03",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_VINO_DMTAMSTART_05_01",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_VINO_SEEKWORK_05_08",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_VINO_SEEKWORK_05_03",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Paladine",
+      "key": "DIA_VINO_HALLO_05_02",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Lobart",
+      "key": "DIA_VINO_SEEKWORK_05_04",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Maleth",
+      "key": "DIA_VINO_TOTHECITY_05_03",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held sucht Arbeit",
+      "key": "DIA_VINO_SEEKWORK_05_01",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held sucht Arbeit",
+      "key": "DIA_VINO_SEEKWORK_05_06",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Lobart",
+      "key": "DIA_VINO_SEEKWORK_05_04",
+      "excerpt": 0
+    }
+  ],
+  "invented": [
+    "Vino hat Maleth den Schnaps verkauft: belegt durch Maleth, nicht durch Vino",
+    "reacts_to.Fragen nach Schnaps",
+    "sees_hero.landarbeiter"
+  ]
+}

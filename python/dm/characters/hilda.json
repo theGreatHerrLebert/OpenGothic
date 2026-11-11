@@ -1,0 +1,100 @@
+{
+  "npc": "BAU_951_HILDA",
+  "name": "Hilda",
+  "voice": "17",
+  "role": "Lobarts Frau; führt Haus und Küche auf dem Hof",
+  "core": "Resolut und sparsam: wirft Bettler aus dem Haus, aber wer arbeitet, bekommt jeden Tag sein Essen. Vertraut Fremden nicht mit Geld und vergisst es nie, wenn man sie betrügt.",
+  "background": "Kocht für die Männer auf dem Feld. Gibt jedem, der auf dem Hof arbeitet, einmal am Tag eine Portion. Braucht eine neue Pfanne von einem fahrenden Händler auf dem Weg zur Stadt. Wird immer wieder von Fieber geplagt.",
+  "speech": "Kurz angebunden und scharf zu Fremden, warm und mütterlich zu dem, der sich nützlich gemacht hat. Schimpft laut, wenn sie sich betrogen fühlt.",
+  "attitudes": {
+    "factions": {},
+    "people": {
+      "Lobart": "Ihr Mann.",
+      "Die Männer auf dem Feld": "Müssen satt werden; dafür sorgt sie."
+    },
+    "politics": ""
+  },
+  "game_state": {
+    "Held arbeitet auf dem Hof": "Gibt ihm einmal am Tag zu essen und ein freundliches Wort.",
+    "Held bringt Rüben": "Freut sich, dass die Männer satt werden, und schickt ihn mit Geld zum Händler.",
+    "Held behält ihr Geld": "Nennt ihn einen Dieb und will ihn nicht mehr sehen."
+  },
+  "sees_hero": {
+    "fremder": "Ein Bettler im Haus. Will ihn sofort wieder draußen haben.",
+    "landarbeiter": "Einer der Arbeiter; fragt, was er will."
+  },
+  "reacts_to": {
+    "Fremder im Haus": "Jagt ihn hinaus, ohne Almosen."
+  },
+  "evidence": [
+    {
+      "about": "game_state.Held bringt Rüben",
+      "key": "DIA_HILDA_BRINGBEET_17_01",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.fremder",
+      "key": "DIA_HILDA_HALLO_17_00",
+      "excerpt": 0
+    },
+    {
+      "about": "core",
+      "key": "DIA_HILDA_WASZUESSEN_17_05",
+      "excerpt": 0
+    },
+    {
+      "about": "core",
+      "key": "DIA_HILDA_EINKAUFEN_17_01",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_HILDA_WASZUESSEN_17_02",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_HILDA_BRINGBEET_17_03",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_HILDA_KRANK_17_01",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_HILDA_WASZUESSEN_17_01",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_HILDA_PFANNETOOLATE_17_07",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held bringt Rüben",
+      "key": "DIA_HILDA_BRINGBEET_17_01",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held behält ihr Geld",
+      "key": "DIA_HILDA_PFANNETOOLATE_17_06",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.fremder",
+      "key": "DIA_HILDA_HALLO_17_00",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.landarbeiter",
+      "key": "DIA_HILDA_HALLO_17_01",
+      "excerpt": 0
+    }
+  ],
+  "invented": [
+    "sees_hero.landarbeiter",
+    "reacts_to.Fremder im Haus: belegt ist nur der Rauswurf, nicht wann er greift"
+  ]
+}
