@@ -109,6 +109,15 @@ conversation. It waits until no conversation or other narrator line runs, and le
 use it rarely: a comment on what the player just did, from a rule with `on`, lands best. Voice it by adding
 `{"voice": "10", "narration": [...]}` to the graphs file that `bake_voices.py` reads.
 
+## A trip
+
+`{"op": "trip", "profile": "kriegsgesang"}` sends the hero on a trip of a few minutes with its own music: the picture
+breathes on the drum, edges glow, the world slows, and the hero's thoughts come from off, distorted. Profiles:
+`kriegsgesang`, `nordmar`, `wasserpfeife`, `mindcap`. Give it your own thoughts with `"thoughts": [[0.3, "..."], ...]`
+(intensity 0 to 1, at most eight). While it is strong, the hero cannot start a conversation and says why instead, so
+put any talk that matters before or after it. Fire it from a rule on a deed or a choice, such as taking a pull from a
+pipe, never by surprise. One trip at a time. A player may switch the picture off; the music and thoughts remain.
+
 ## What you cannot do yet
 
 Stories cannot invent new people: `spawn_npc` brings an existing character into the world and `rename_npc` gives it

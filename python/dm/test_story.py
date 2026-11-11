@@ -546,7 +546,19 @@ def test_rule_fires_on_perception():
         rejected(s, [{"op": "add_rule", "id": "x", "when": [], "on": bad, "ops": []}], "bad check")
 
 
-for test in (test_rule_contents_are_checked_when_submitted, test_graph_validation, test_validation, test_apply_and_rollback, test_return_npc, test_conditional_choices, test_returns_to_menu, test_questions_are_asked_once, test_variant_line, test_again_line, test_scene_and_rule, test_rule_fires_on_perception, test_narration_waits_for_quiet, test_drawing_a_weapon_is_perceived,
+def test_trip_operation():
+    s = st.Story()
+    s.validate([{"op": "trip", "profile": "kriegsgesang"}])
+    s.validate([{"op": "trip", "profile": "kriegsgesang", "thoughts": [[0.3, "Bodo?"], [0.8, "Bodo hat Flügel."]]}])
+    rejected(s, [{"op": "trip", "profile": "nope"}], "unknown trip")
+    rejected(s, [{"op": "trip"}], "profile")
+    for bad in ([[1.5, "zu viel"]], [[0.5, ""]], [["0.5", "x"]], [[True, "x"]], [[0.5]], [[0.1, "x"]] * 9, "text"):
+        rejected(s, [{"op": "trip", "profile": "kriegsgesang", "thoughts": bad}], "thought")
+    # A trip can wait in a rule, and its contents are checked when the rule is submitted.
+    rejected(s, [{"op": "add_rule", "id": "r", "when": ["x"], "ops": [{"op": "trip", "profile": "nope"}]}], "unknown trip")
+
+
+for test in (test_trip_operation, test_rule_contents_are_checked_when_submitted, test_graph_validation, test_validation, test_apply_and_rollback, test_return_npc, test_conditional_choices, test_returns_to_menu, test_questions_are_asked_once, test_variant_line, test_again_line, test_scene_and_rule, test_rule_fires_on_perception, test_narration_waits_for_quiet, test_drawing_a_weapon_is_perceived,
              test_queue_waits_for_safe_point, test_save_load_does_not_reapply_world,
              test_player):
     test()

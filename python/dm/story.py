@@ -117,6 +117,8 @@ def check_contents(op):
         problem = _graph_problem(op["graph"])
         if problem:
             raise PlanError(f"bad dialogue graph: {problem}")
+    if name == "trip":
+        _check_trip(op, None)   # needs no story state, so it can be checked inside a rule too
     _require_checks(op)
     for inner in op.get("ops", []):
         check_contents(inner)
@@ -315,6 +317,30 @@ def _world_narrate(args):
     return None
 
 
+def _check_trip(args, state):
+    from dm import trip
+    _require(args, "profile")
+    if args["profile"] not in trip.PROFILES:
+        raise PlanError(f"unknown trip: {args['profile']}; known: {', '.join(sorted(trip.PROFILES))}")
+    thoughts = args.get("thoughts")
+    if thoughts is not None:
+        if not isinstance(thoughts, list) or not 0 < len(thoughts) <= 8:
+            raise PlanError("thoughts must be a list of up to eight [intensity, text]")
+        for thought in thoughts:
+            if (not isinstance(thought, (list, tuple)) or len(thought) != 2 or isinstance(thought[0], bool)
+                    or not isinstance(thought[0], (int, float)) or not 0 < thought[0] <= 1
+                    or not isinstance(thought[1], str) or not thought[1].strip()):
+                raise PlanError(f"a thought is [intensity between 0 and 1, text]: {thought!r}")
+
+
+def _world_trip(args):
+    """A trip, with its own music and thoughts. One at a time: a second one while another runs is refused."""
+    from dm import trip
+    if not trip.start(args["profile"], thoughts=args.get("thoughts")):
+        raise RuntimeError("a trip is already running")
+    return None
+
+
 def _world_give(args):
     from dm import handover
     handover.give(args["instance"], args.get("count", 1))
@@ -454,6 +480,7 @@ OPS = {
     "give_item": (_check_give, _noop, _world_give),
     "narrate": (_check_narrate, _noop, _world_narrate),
     "relocate_npc": (_check_relocate, _noop, _world_relocate),
+    "trip": (_check_trip, _noop, _world_trip),
 }
 
 # Removal cannot be undone, so it runs after everything that can.
