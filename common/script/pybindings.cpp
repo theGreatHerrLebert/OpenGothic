@@ -525,6 +525,16 @@ PYBIND11_EMBEDDED_MODULE(gothic, m) {
       .def_property_readonly("items",    &PyPlayer::items,
                              "List of dicts {name, count, equipped} for "
                              "every item in the player's inventory.")
+      .def("heard",
+           [](const PyPlayer&, const std::string& info) {
+             auto* w = requireWorld();
+             size_t id = 0;
+             if(instanceClass(*w, upper(info), id)!="C_INFO")
+               throw std::invalid_argument("not a dialogue topic: " + info);
+             return w->script().knowsInfo(requirePlayer()->handle(), upper(info));
+             },
+           py::arg("info"),
+           "Whether the hero has heard this dialogue topic (a C_INFO instance such as DIA_ABUYIN_DU).")
       .def("give_item",
            [](const PyPlayer&, const std::string& instance, int count) {
              auto*  w  = requireWorld();
@@ -800,6 +810,23 @@ PYBIND11_EMBEDDED_MODULE(gothic, m) {
                },
              "NPC the player is talking to in any dialogue, or None.");
   dialog.def("close", []() { requireDialog().agentClose(); });
+  dialog.def("set_topics",
+             [](const PyNpc& npc, const std::vector<std::pair<std::string,std::string>>& topics) {
+               std::vector<std::pair<std::string,std::string>> t;
+               for(auto& [key,title]:topics)
+                 t.emplace_back(key, toEngine(title));
+               requireDialog().agentSetTopics(npc.fetch(), std::move(t));
+               },
+             py::arg("npc"), py::arg("topics"),
+             "A story's topics in this NPC's own menu, as (key, title); an empty list removes them.");
+  dialog.def("take_topic",
+             []() -> py::object {
+               auto key = requireDialog().agentTakeTopic();
+               return key.empty() ? py::none() : py::cast(key);
+               },
+             "The key of a story topic the player just chose in an NPC's own menu, once; or None.");
+  dialog.def("end_topic", []() { return requireDialog().agentEndTopic(); },
+             "Hand the conversation back to the NPC's own menu after a story topic.");
   dialog.def("block", [](bool on) { Gothic::inst().dmBlockTalk = on; }, py::arg("on"),
              "While on, the hero cannot start a conversation; attempts are counted.");
   dialog.def("take_refused",

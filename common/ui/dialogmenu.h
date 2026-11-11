@@ -41,6 +41,12 @@ class DialogMenu : public Tempest::Widget {
     bool agentActive() const { return agentMode; }
     Npc* partner() const { return (state!=State::Idle && other!=pl) ? other : nullptr; }
     bool agentTakeOpened();
+
+    // Extending an NPC: a story's topics appear in the NPC's own menu beside its scripted ones. Choosing one hands
+    // this conversation to Python (agent mode) until agentEndTopic(), which returns to the NPC's own menu.
+    void        agentSetTopics(Npc* npc, std::vector<std::pair<std::string,std::string>> keyAndTitle);
+    std::string agentTakeTopic();
+    bool        agentEndTopic();
     bool agentSay(std::string_view text, bool isPlayer, uint64_t timeMs, std::string_view wav);
     void agentSetChoices(const std::vector<std::string>& titles);
     int  agentTakeSelection();
@@ -163,6 +169,15 @@ class DialogMenu : public Tempest::Widget {
     uint64_t                            remPrint=0;
 
     std::vector<Npc*>                   agentNpcs;
+    struct StoryTopic {
+      Npc*        npc = nullptr;
+      std::string key, title;
+      };
+    std::vector<StoryTopic>             storyTopics;
+    std::string                         agentTopic;      // the story topic being played, empty if none
+    bool                                agentTopicTaken = true;
+
+    std::vector<GameScript::DlgChoice> withStoryTopics(std::vector<GameScript::DlgChoice> choices, Npc& npc) const;
     bool                                agentMode     = false;
     bool                                agentOpened   = false;
     int                                 agentSelected = -1;

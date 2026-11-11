@@ -186,6 +186,63 @@ void DialogMenu::onWorldChanged() {
   close();
   clear();
   agentNpcs.clear();
+  storyTopics.clear();   // the story sets them again for the new world
+  }
+
+void DialogMenu::agentSetTopics(Npc* npc, std::vector<std::pair<std::string,std::string>> keyAndTitle) {
+  storyTopics.erase(std::remove_if(storyTopics.begin(),storyTopics.end(),[npc](const StoryTopic& t){ return t.npc==npc; }),
+                    storyTopics.end());
+  for(auto& [key,title]:keyAndTitle)
+    storyTopics.push_back({npc, std::move(key), std::move(title)});
+
+  // The NPC's own menu may be on screen right now: show the topics as they are now, not as they were.
+  if(npc!=nullptr && other==npc && state==State::Active && !agentMode && depth==0) {
+    choice.erase(std::remove_if(choice.begin(),choice.end(),[](const GameScript::DlgChoice& c){ return !c.storyTopic.empty(); }),
+                 choice.end());
+    choice = withStoryTopics(std::move(choice),*npc);
+    if(dlgSel>=choice.size())
+      dlgSel = choice.empty() ? 0 : choice.size()-1;
+    update();
+    }
+  }
+
+std::string DialogMenu::agentTakeTopic() {
+  if(agentTopicTaken)
+    return "";
+  agentTopicTaken = true;
+  return agentTopic;
+  }
+
+bool DialogMenu::agentEndTopic() {
+  if(!agentMode || agentTopic.empty() || pl==nullptr || other==nullptr)
+    return false;
+  // Back to the NPC's own menu, with his scripted topics as before and the story's that still apply.
+  agentMode = false;
+  agentTopic.clear();
+  onStart(*pl,*other);
+  return true;
+  }
+
+std::vector<GameScript::DlgChoice> DialogMenu::withStoryTopics(std::vector<GameScript::DlgChoice> choices, Npc& npc) const {
+  // Before the farewell (the highest sort, 999 in the game's scripts), so "ENDE" stays last.
+  auto at = choices.end();
+  if(!choices.empty()) {
+    auto last = std::max_element(choices.begin(),choices.end(),[](auto& a, auto& b){ return a.sort<b.sort; });
+    if(last->sort>=999)
+      at = last;
+    }
+  std::vector<GameScript::DlgChoice> topics;
+  for(auto& t:storyTopics) {
+    if(t.npc!=&npc)
+      continue;
+    GameScript::DlgChoice c;
+    c.title      = t.title;
+    c.sort       = 998;
+    c.storyTopic = t.key;
+    topics.push_back(std::move(c));
+    }
+  choices.insert(at, topics.begin(), topics.end());
+  return choices;
   }
 
 void DialogMenu::agentBind(Npc* npc) {
@@ -452,6 +509,8 @@ bool DialogMenu::onStart(Npc &p, Npc &ot) {
     }
 
   choice         = ot.dialogChoices(p,except,state==State::PreStart);
+  if(choice.empty() || choice[0].title.size()>0)
+    choice = withStoryTopics(std::move(choice),ot);   // not while an important line opens the talk
   state          = State::Active;
   depth          = 0;
   curentIsPl     = true;
@@ -540,6 +599,8 @@ void DialogMenu::close() {
   depth=0;
   dlgTrade=false;
   agentMode=false;
+  agentTopic.clear();
+  agentTopicTaken=true;
   agentOpened=false;
   agentSelected=-1;
   current.time=0;
@@ -595,6 +656,17 @@ void DialogMenu::skipPhrase() {
   }
 
 void DialogMenu::onEntry(const GameScript::DlgChoice &e) {
+  if(pl && other && !e.storyTopic.empty()) {
+    // A story's topic: this conversation is Python's until it calls agentEndTopic().
+    agentMode       = true;
+    agentTopic      = e.storyTopic;
+    agentTopicTaken = false;
+    agentSelected   = -1;
+    agentFirstLine  = true;
+    choice.clear();
+    update();
+    return;
+    }
   if(pl && other) {
     selected = e;
     depth    = 1;

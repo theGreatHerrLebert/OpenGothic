@@ -3426,6 +3426,11 @@ void GameScript::setNpcInfoKnown(const zenkit::INpc& npc, const zenkit::IInfo& i
   dlgKnownInfos.insert(id);
   }
 
+bool GameScript::knowsInfo(const zenkit::INpc& npc, std::string_view infoName) const {
+  auto* sym = vm.find_symbol_by_name(infoName);
+  return sym!=nullptr && doesNpcKnowInfo(npc, sym->index());
+  }
+
 bool GameScript::doesNpcKnowInfo(const zenkit::INpc& npc, size_t infoInstance) const {
   auto id = std::make_pair(vm.find_symbol_by_instance(npc)->index(),infoInstance);
   return dlgKnownInfos.find(id)!=dlgKnownInfos.end();

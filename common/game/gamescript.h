@@ -53,6 +53,7 @@ class GameScript final {
       uint32_t         scriptFn = 0;
       bool             isTrade  = false;
       zenkit::IInfo*   handle   = nullptr;
+      std::string      storyTopic;          // set: a story's topic in this NPC's own menu, played from Python
       };
 
     struct PerDist {
@@ -112,6 +113,8 @@ class GameScript final {
     zenkit::DaedalusSymbol*     findSymbol(std::string_view s);
     zenkit::DaedalusSymbol*     findSymbol(const size_t s);
     size_t                      findSymbolIndex(std::string_view s);
+    // Whether an NPC has heard the dialogue topic (C_INFO instance) of this name: false for an unknown name.
+    bool                        knowsInfo(const zenkit::INpc& npc, std::string_view infoName) const;
     size_t                      symbolsCount() const;
 
     const AiState&              aiState  (ScriptFn id);
