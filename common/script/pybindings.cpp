@@ -678,6 +678,15 @@ PYBIND11_EMBEDDED_MODULE(gothic, m) {
               py::arg("text"), py::arg("progress") = -1.f,
               "Show text, with progress from 0 to 1, or below zero if the length is unknown.");
   overlay.def("clear", []() { Gothic::inst().dmStatus = {}; });
+  overlay.def("menu",
+              [](const std::string& text) { Gothic::inst().dmMenu = toEngine(text); },
+              py::arg("text"),
+              "Show a menu panel below the status, one line per row, even while the status is hidden. "
+              "An empty text closes it.");
+
+  m.def("take_keys",
+        []() { return Gothic::inst().takeDmKeys(); },
+        "DM hotkeys pressed since the last call, oldest first: 'feedback' for Alt+F, '1' to '5' for Alt+1 to Alt+5.");
 
   py::module_ dialog = m.def_submodule(
       "dialog", "Drive the native dialogue UI for one bound NPC from Python.");

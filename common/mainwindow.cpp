@@ -118,6 +118,19 @@ MainWindow::MainWindow(Device& device)
   dmOverlayKey = Shortcut(*this,Event::M_Alt,Event::K_O);
   dmOverlayKey.onActivated.bind(this,&MainWindow::toggleDmOverlay);
   displayPos.onActivated.bind(this, &MainWindow::onMarvinKey<Event::K_P>);
+
+  dmFeedbackKey = Shortcut(*this,Event::M_Alt,Event::K_F);
+  dmFeedbackKey.onActivated.bind(this, &MainWindow::onDmFeedbackKey);
+  dmChoiceKey[0] = Shortcut(*this,Event::M_Alt,Event::K_1);
+  dmChoiceKey[0].onActivated.bind(this, &MainWindow::onDmChoiceKey<1>);
+  dmChoiceKey[1] = Shortcut(*this,Event::M_Alt,Event::K_2);
+  dmChoiceKey[1].onActivated.bind(this, &MainWindow::onDmChoiceKey<2>);
+  dmChoiceKey[2] = Shortcut(*this,Event::M_Alt,Event::K_3);
+  dmChoiceKey[2].onActivated.bind(this, &MainWindow::onDmChoiceKey<3>);
+  dmChoiceKey[3] = Shortcut(*this,Event::M_Alt,Event::K_4);
+  dmChoiceKey[3].onActivated.bind(this, &MainWindow::onDmChoiceKey<4>);
+  dmChoiceKey[4] = Shortcut(*this,Event::M_Alt,Event::K_5);
+  dmChoiceKey[4].onActivated.bind(this, &MainWindow::onDmChoiceKey<5>);
   }
 
 MainWindow::~MainWindow() {
@@ -816,14 +829,25 @@ void MainWindow::drawMsg(Tempest::Painter& p) {
   dialogs.drawMsg(p, y);
   }
 
+void MainWindow::onDmFeedbackKey() {
+  Gothic::inst().pushDmKey("feedback");
+  }
+
+template<int n>
+void MainWindow::onDmChoiceKey() {
+  Gothic::inst().pushDmKey(std::to_string(n));
+  }
+
 void MainWindow::toggleDmOverlay() {
   dmOverlayVisible = !dmOverlayVisible;
   }
 
 void MainWindow::drawDmOverlay(Painter& p) {
   const auto& st = Gothic::inst().dmStatus;
-  if(!dmOverlayVisible || st.text.empty())
+  if(!dmOverlayVisible || st.text.empty()) {
+    drawDmMenu(p, std::max(10,margins().top));
     return;
+    }
 
   const float scale = Gothic::interfaceScale(this);
   auto&       fnt   = Resources::font(scale);
@@ -861,6 +885,36 @@ void MainWindow::drawDmOverlay(Painter& p) {
     const int t     = int(Application::tickCount()/4u)%(2*range);
     p.drawRect(barX+(t<range ? t : 2*range-t),barY,block,barH);
     }
+
+  drawDmMenu(p, y+lines*textH+barH+4*pad);
+  }
+
+void MainWindow::drawDmMenu(Painter& p, int y) {
+  const auto& menu = Gothic::inst().dmMenu;
+  if(menu.empty())
+    return;
+
+  std::vector<std::string> lines;
+  for(size_t at=0; at<=menu.size();) {
+    const size_t end = std::min(menu.find('\n',at), menu.size());
+    lines.push_back(menu.substr(at,end-at));
+    at = end+1;
+    }
+
+  const float scale = Gothic::interfaceScale(this);
+  auto&       fnt   = Resources::font(scale);
+  const int   pad   = int(8.f*scale);
+  const int   textH = int(fnt.pixelSize());
+  const int   x     = std::max(10,margins().left);
+
+  int width = int(220.f*scale);
+  for(auto& l:lines)
+    width = std::max(width, fnt.textSize(l).w+2*pad);
+
+  p.setBrush(Brush(Color(0.f,0.f,0.f,0.7f),Painter::Alpha));
+  p.drawRect(x,y,width,int(lines.size())*textH+2*pad);
+  for(size_t i=0; i<lines.size(); ++i)
+    fnt.drawText(p,x+pad,y+pad+int(i+1)*textH,lines[i]);
   }
 
 void MainWindow::drawProgress(Painter &p, int x, int y, int w, int h, float v) {

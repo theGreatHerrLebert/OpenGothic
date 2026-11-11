@@ -3,6 +3,8 @@
 #include <string>
 #include <memory>
 #include <thread>
+#include <mutex>
+#include <vector>
 
 #include <Tempest/Signal>
 #include <Tempest/Dir>
@@ -199,6 +201,12 @@ class Gothic final {
       float       progress = -1.f;
       };
     DmStatus dmStatus;
+    // A numbered menu Python shows in game, drawn even while the status panel is hidden. Empty when closed.
+    std::string dmMenu;
+
+    // DM hotkeys pressed since Python last asked, oldest first. Filled on the UI thread, drained from a world tick.
+    void                     pushDmKey(std::string key) { std::lock_guard<std::mutex> g(dmKeysSync); dmKeys.push_back(std::move(key)); }
+    std::vector<std::string> takeDmKeys() { std::lock_guard<std::mutex> g(dmKeysSync); return std::exchange(dmKeys,{}); }
 
     Tempest::Signal<void()>                                             onWorldLoaded;
     Tempest::Signal<void()>                                             onStartLoading;
@@ -328,4 +336,7 @@ class Gothic final {
     void                                    printdebugch      (int ch, std::string_view msg);
     void                                    printdebuginst    (std::string_view msg);
     void                                    printdebuginstch  (int ch, std::string_view msg);
+
+    std::mutex                              dmKeysSync;
+    std::vector<std::string>                dmKeys;
   };

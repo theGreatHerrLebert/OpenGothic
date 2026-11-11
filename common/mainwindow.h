@@ -75,7 +75,11 @@ class MainWindow : public Tempest::Window {
     void drawProgress(Tempest::Painter& p, int x, int y, int w, int h, float v);
     void drawLoading (Tempest::Painter& p,int x,int y,int w,int h);
     void drawDmOverlay(Tempest::Painter& p);
+    void drawDmMenu(Tempest::Painter& p, int y);
     void toggleDmOverlay();
+    void onDmFeedbackKey();
+    template<int n>
+    void onDmChoiceKey();
     void drawSaving  (Tempest::Painter& p);
     void drawSaving  (Tempest::Painter& p, const Tempest::Texture2d& back, int w, int h, float scale);
 
@@ -169,6 +173,9 @@ class MainWindow : public Tempest::Window {
     Tempest::Shortcut         displayPos;
     Tempest::Shortcut dmOverlayKey;
     bool              dmOverlayVisible = true;
+    // Alt+F opens the feedback menu, Alt+1 to Alt+5 pick from it. Python reads them through gothic.take_keys().
+    Tempest::Shortcut dmFeedbackKey;
+    Tempest::Shortcut dmChoiceKey[5];
 
     struct BenchmarkData {
       std::vector<uint64_t> low1procent;
