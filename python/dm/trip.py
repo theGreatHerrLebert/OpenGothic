@@ -182,6 +182,7 @@ BLACKOUTS = {
                    # Borka would stop him with his pitch to come in; to a guest on his way out he says this instead,
                    # and the hero answers. After that the pitch counts as heard: no stranger any more.
                    {"npc": "VLK_434_BORKA", "voice": "11", "instead_of": "DIA_BORKA_TROUBLE",
+                    "also_heard": ["DIA_BORKA_SECOND_CHANCE"],   # his follow-up pitch, which the first unlocks
                     "reply": "Schon gut, ich geh ja schon.",
                     "line": "Mein Auftrag ist es, hier Kundschaft reinzubringen. Aber dich … dich sehe ich lieber "
                             "wieder gehen."}]},
@@ -648,7 +649,8 @@ def tick_after(gothic, now):
             lines.remove(line)
             if line.get("instead_of"):
                 try:
-                    gothic.player.mark_heard(line["instead_of"])   # after that night he is no stranger to pitch to
+                    for info in [line["instead_of"]] + line.get("also_heard", []):
+                        gothic.player.mark_heard(info)  # after that night he is no stranger to pitch to
                 except (AttributeError, ValueError, RuntimeError):
                     pass                        # an older game build: he pitches once more, nothing worse
     for line in list(lines):

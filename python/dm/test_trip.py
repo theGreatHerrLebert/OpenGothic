@@ -382,7 +382,7 @@ assert binds[-1][0] == "bind" and not pitched                   # nothing releas
 dialog.partner = lambda: None
 walk((4000.0, 0.0, 0.0), 2.0)
 assert binds[-1] == ("unbind", people["VLK_434_BORKA"])         # his own conversations back afterwards
-assert "DIA_BORKA_TROUBLE" in pitched                           # and no pitch to a guest like that any more
+assert {"DIA_BORKA_TROUBLE", "DIA_BORKA_SECOND_CHANCE"} <= pitched   # and no pitch to a guest like that any more
 pitched.clear()
 assert trip.special_for(types.SimpleNamespace(instance="VLK_434_BORKA", voice=11)) is None   # once
 trip.remember_after(fake, trip.BLACKOUTS["skorpion_goa"]["after"], 0.0)
