@@ -330,6 +330,34 @@ assert moves == [(1.0, 2.0, 3.0)] and times == [(9, 0)]
 assert uses[-1] == ("BEDHIGH", 1, True)                         # quietly: no sleep menu
 assert said[-1] == "Wo bin ich?" and "heiß" in said
 assert not talking["open"]                                      # the conversation ended with the blackout
+
+# After waking, the house speaks up as he passes: each line once, in order, only near its speaker.
+said.clear()
+people = {"VLK_435_NADJA": types.SimpleNamespace(position=(0.0, 0.0, 0.0)),
+          "VLK_433_BROMOR": types.SimpleNamespace(position=(2000.0, 0.0, 0.0))}
+fake.world.find_npc = lambda name: people.get(name)
+dialog.partner = lambda: None
+fake.player = types.SimpleNamespace(position=(5000.0, 0.0, 0.0))
+trip.remember_after(fake, trip.BLACKOUTS["skorpion_goa"]["after"], 0.0)
+def walk(at, now):
+    fake.player.position = at
+    trip.tick_after(fake, now)
+walk((5000.0, 0.0, 0.0), 1.0)
+assert said == []                                               # far from everyone: nothing
+walk((1990.0, 0.0, 0.0), 2.0)
+assert said == []                                               # Bromor waits for Nadja
+walk((100.0, 0.0, 0.0), 3.0)
+assert len(said) == 1 and said[0].startswith("Komm vorbei")
+walk((100.0, 0.0, 0.0), 4.0)
+assert len(said) == 1                                           # Bromor only when passed
+walk((1900.0, 0.0, 0.0), 4.5)
+assert len(said) == 2 and said[1].startswith("Eigentlich")
+walk((100.0, 0.0, 0.0), 5.0)
+assert len(said) == 2 and trip._after is None                   # each once
+trip.remember_after(fake, trip.BLACKOUTS["skorpion_goa"]["after"], 0.0)
+walk((100.0, 0.0, 0.0), trip.AFTER_FOR + 1)
+assert len(said) == 2 and trip._after is None                   # too late: forgotten
+assert ("16", trip.BLACKOUTS["skorpion_goa"]["after"][0]["line"]) in trip.after_lines()
 assert max(s[2][3] for s in sets) == 1.0 and sets[-1][2][3] == 0.0  # fully black, then clear again
 dark = [s for s in sets if s[2] == (0.0, 0.0, 0.0, 1.0)]
 assert dark and all(s[5] == 0.0 for s in dark)                  # sober while black

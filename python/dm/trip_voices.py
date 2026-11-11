@@ -80,6 +80,8 @@ def main(stories):
     all_graphs.update({f"trip__special_{name.lower()}": {"voice": SPECIAL_PEOPLE_VOICES[name],
                                                          "narration": own["openers"] + own["closers"]}
                        for name, own in trip.SPECIAL_PEOPLE.items()})
+    for voice, line in trip.after_lines():
+        all_graphs.setdefault(f"trip__after_{voice}", {"voice": voice, "narration": []})["narration"].append(line)
     graphs.write_text(json.dumps(all_graphs, ensure_ascii=False, indent=1), encoding="utf-8")
     game = json.loads((voices.RUNTIME_DIR / "settings.json").read_text(encoding="utf-8"))["game"]
     subprocess.run([sys.executable, str(HERE / "bake_voices.py"), "all", game, str(graphs)], check=True)

@@ -153,8 +153,16 @@ BLACKOUTS = {
     # An open bed upstairs in the Red Lantern: the one beside it is behind a door the hero cannot open alone.
     "skorpion_goa": {"bed": (2233.0, 97.0, -2556.0), "scheme": "BEDHIGH", "hour": 9,
                      "wake": ["Wo … bin ich?", "Was ist das für ein Bett?", "Riecht nach billigem Parfüm …",
-                              "Mein Kopf … was ist passiert?"]},
+                              "Mein Kopf … was ist passiert?"],
+         # On the way out, the house has a word for him: each once, as he passes, in this order.
+         "after": [{"npc": "VLK_435_NADJA", "voice": "16",
+                    "line": "Komm vorbei, wann immer dir danach ist. Du warst … unterhaltsam."},
+                   {"npc": "VLK_433_BROMOR", "voice": "07",
+                    "line": "Eigentlich müsste ich dir die Nacht extra berechnen. Aber über das, was da oben passiert "
+                            "ist, will ich so bald nicht reden. Lassen wir's gut sein."}]},
 }
+AFTER_NEAR = 500.0    # how close (cm) the hero passes someone before they speak up
+AFTER_FOR = 900.0     # seconds after waking that the house still remembers him
 FADE_BLACK = 3.5    # seconds to black
 FADE_WAKE = 5.0     # seconds back from black
 SETTLE = 1.5        # seconds in the dark before looking for the bed: the world needs a moment after a move
@@ -523,6 +531,7 @@ class Trip:
             alpha = max(0.0, 1.0 - since / FADE_WAKE)
             if alpha <= 0.0 and say_plain(gothic, self.rng.choice(cfg["wake"])) is not None:
                 b["stage"] = "done"
+                remember_after(gothic, cfg.get("after", []), now)
             return dict(sober, tint=(0.0, 0.0, 0.0, alpha))
         return sober
 
@@ -572,9 +581,53 @@ def _end(gothic):
     gothic.dialog.trip_talk(False)
 
 
+# Lines people say to the hero after a blackout, once each as he passes them: [lines, until, world generation].
+_after = None
+
+
+def remember_after(gothic, lines, now):
+    global _after
+    _after = [list(lines), now + AFTER_FOR, gothic.world.generation] if lines else None
+
+
+def tick_after(gothic, now):
+    """Speaks the next waiting line once the hero is near its speaker; forgets them when too late or in another
+    world or save."""
+    global _after
+    if _after is None:
+        return
+    lines, until, generation = _after
+    if not lines or now > until or gothic.world.generation != generation:
+        _after = None
+        return
+    if gothic.dialog.partner() is not None or gothic.dialog.narrating():
+        return
+    line = lines[0]
+    npc = gothic.world.find_npc(line["npc"])
+    if npc is None:
+        lines.pop(0)
+        return
+    here, there = gothic.player.position, npc.position
+    if sum((a - b) ** 2 for a, b in zip(here, there)) > AFTER_NEAR ** 2:
+        return
+    from dm import voices
+    wav, ms = voices.lookup(line["voice"], line["line"])
+    if gothic.dialog.narrate(line["line"], ms, wav):
+        lines.pop(0)
+
+
+def after_lines():
+    """Every line said after a blackout, by voice, for voicing."""
+    return [(line["voice"], line["line"]) for b in BLACKOUTS.values() for line in b.get("after", [])]
+
+
 def _tick(_dt):
     import gothic
     if _current is None:
+        try:
+            tick_after(gothic, time.monotonic())
+        except RuntimeError:
+            pass                    # no world while loading
         return
     try:
         if not _current.tick(gothic, time.monotonic()):
