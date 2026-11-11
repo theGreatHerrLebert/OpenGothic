@@ -686,6 +686,16 @@ PYBIND11_EMBEDDED_MODULE(gothic, m) {
               "Show a menu panel below the status, one line per row, even while the status is hidden. "
               "An empty text closes it.");
 
+  m.def("print_screen",
+        [](const std::string& text, int x, int y, const std::string& font, int seconds) {
+          // What Gothic::printscreen (the PrintScreen extern) does, which is private.
+          Gothic::inst().onPrintScreen(toEngine(text), x, y, seconds,
+                                       Resources::font(font, Resources::FontType::Normal, 1));
+          },
+        py::arg("text"), py::arg("x") = -1, py::arg("y") = -1, py::arg("font") = "FONT_OLD_10_WHITE.TGA",
+        py::arg("seconds") = 2,
+        "Show a line on screen like the PrintScreen extern: x and y in percent of the screen, -1 centres.");
+
   m.def("take_keys",
         []() { return Gothic::inst().takeDmKeys(); },
         "DM hotkeys pressed since the last call, oldest first: 'feedback' for Alt+F, '1' to '5' for Alt+1 to Alt+5.");

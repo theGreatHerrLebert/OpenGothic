@@ -97,8 +97,20 @@ assert graph.validate(node) is None and checks.validate_graph(node) is None
 assert "only conditional" in graph.validate({"start": "a", "nodes": {"a": {"line": "x", "choices": [hand]}}})
 player.node = node["nodes"]["a"]
 assert len(player._visible_choices()) == 2
+printed = []
+values.update({"YPOS_ITEMGIVEN": 37, "YPOS_ITEMTAKEN": 40, "FONT_SCREENSMALL": "FONT_OLD_10_WHITE.TGA"})
+fake.print_screen = lambda *args: printed.append(("PRINTSCREEN", *args))
+fake.player.items = [{"instance": "ITWR_LETTER", "count": 1, "name": "Brief"}]
 checks.transfer(hand)
 assert removed == [("ITWR_LETTER", 1)] and given == [("ITMI_GOLD", 5)]
+# Each hand-over is announced like the game does it, in its position and font.
+assert printed == [("PRINTSCREEN", "Brief gegeben", -1, 37, "FONT_OLD_10_WHITE.TGA", 2),
+                   ("PRINTSCREEN", "5 Gold erhalten", -1, 40, "FONT_OLD_10_WHITE.TGA", 2)], printed
+from dm import handover  # noqa: E402
+assert handover.message("ITFO_APPLE", 3, False, "Apfel") == "3 Gegenstände erhalten (Apfel)"
+fake.print_screen = lambda *a: (_ for _ in ()).throw(RuntimeError("no world"))
+handover.give("ITMI_GOLD", 1)                      # a failing message does not stop the hand-over
+assert given[-1] == ("ITMI_GOLD", 1)
 fake.player.items = []
 assert [c["text"] for c in player._visible_choices()] == ["Nein."]
 assert "not an item" in checks.validate_graph({"nodes": {"a": {"choices": [{"text": "y", "takes": {"item": "BURNER"}}]}}})

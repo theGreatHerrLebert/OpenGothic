@@ -83,11 +83,12 @@ def can_pay(choice):
 
 
 def transfer(choice):
+    from dm import handover
     takes, gives = choice.get("takes"), choice.get("gives")
     if takes:
-        gothic.player.remove_item(takes["item"], takes.get("count", 1))
+        handover.take(takes["item"], takes.get("count", 1))
     if gives:
-        gothic.player.give_item(gives["item"], gives.get("count", 1))
+        handover.give(gives["item"], gives.get("count", 1))
 
 
 def _holds(check):

@@ -314,7 +314,8 @@ def _world_narrate(args):
 
 
 def _world_give(args):
-    gothic.player.give_item(args["instance"], args.get("count", 1))
+    from dm import handover
+    handover.give(args["instance"], args.get("count", 1))
     return None
 
 
