@@ -494,9 +494,13 @@ bool DialogMenu::hasContent() const {
   }
 
 bool DialogMenu::onStart(Npc &p, Npc &ot) {
-  const bool guard    = ot.guild()==GIL_MIL || ot.guild()==GIL_PAL;   // guards keep their own words, trip or not
   // Only a conversation that is just starting: the menu's depth is not reliable here, a script's farewell leaves it set.
-  const bool tripTalk = Gothic::inst().dmTripTalk && !guard && state==State::PreStart;
+  bool tripTalk = Gothic::inst().dmTripTalk && state==State::PreStart;
+  if(tripTalk && (ot.guild()==GIL_MIL || ot.guild()==GIL_PAL)) {
+    // A guard with an important line (stopping the hero at a gate) keeps it, trip or not; otherwise he notices too.
+    auto pre = ot.dialogChoices(p,except,true);
+    tripTalk = pre.empty() || pre[0].title.size()>0;
+    }
   if(tripTalk || std::find(agentNpcs.begin(),agentNpcs.end(),&ot)!=agentNpcs.end()) {
     agentMode      = true;
     agentOpened    = true;

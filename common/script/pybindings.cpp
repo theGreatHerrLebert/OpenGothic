@@ -647,6 +647,8 @@ PYBIND11_EMBEDDED_MODULE(gothic, m) {
       .def_property_readonly("hp_max",    &PyNpc::hpMax)
       .def_property_readonly("alive",     &PyNpc::alive)
       .def_property_readonly("dead",      &PyNpc::dead)
+      .def_property_readonly("guild", [](const PyNpc& self) { return int32_t(self.fetch()->guild()); },
+                             "The NPC's guild number, as the script's GIL_ constants count it.")
       .def_property_readonly("voice", [](const PyNpc& self) { return self.fetch()->handle().voice; },
                              "The NPC's voice number, as its SVMs and dialogue keys use it (5 for _05_).")
       .def("in_state", &PyNpc::inState, py::arg("state"),
