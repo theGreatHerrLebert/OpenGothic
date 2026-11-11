@@ -60,10 +60,11 @@ PROFILES = {
 # smear). Afterglow keeps its glow in the history images, so its look has no tracers.
 LOOKS = {"mindcap": {"look": 0, "edges": 1.0, "tracers": 1.0, "pools": "mindcap"},
          "ember": {"look": 1, "edges": 0.35, "tracers": 0.35, "pools": "ember"},
-         "ember_eye": {"look": 1, "edges": 0.35, "tracers": 0.35, "pools": "ember", "eye": True},
+         "ember_eye": {"look": 1, "edges": 0.35, "tracers": 0.35, "pools": "ember", "eye": True, "at_peak": True},
          "ember_glow": {"look": 1, "edges": 0.35, "tracers": 0.0, "pools": "ember", "afterglow": True}}
 PROFILE_LOOK = {"skorpion": "ember_glow", "skorpion_goa": "ember_eye"}
 OPEN_FROM, OPEN_TO = 0.55, 0.9
+PEAK_OPEN = 6.0   # seconds over which a stage that waits for the peak fades in once the peak phase begins
 
 # The hero's thoughts from off, distorted (delivery "rausch", see trip_voices.py). Each trip draws one line per stage
 # at random, so two trips never sound quite alike, and says it once when the trip first reaches that intensity; one
@@ -107,6 +108,30 @@ HERO_VOICE = "15"
 SETTINGS = __import__("pathlib").Path(__file__).resolve().parent.parent / "dm_runtime" / "settings.json"
 
 
+# A trip that ends in a blackout: instead of landing, the screen goes black, the hero comes to somewhere else, hours
+# later, in a bed (used quietly, without the sleep menu), and wakes sober. The bed is found by its scheme near the spot.
+BLACKOUTS = {
+    # An open bed upstairs in the Red Lantern: the one beside it is behind a door the hero cannot open alone.
+    "skorpion_goa": {"bed": (2233.0, 97.0, -2556.0), "scheme": "BEDHIGH", "hour": 9,
+                     "wake": ["Wo … bin ich?", "Was ist das für ein Bett?", "Riecht nach billigem Parfüm …",
+                              "Mein Kopf … was ist passiert?"]},
+}
+FADE_BLACK = 3.5    # seconds to black
+FADE_WAKE = 5.0     # seconds back from black
+SETTLE = 1.5        # seconds in the dark before looking for the bed: the world needs a moment after a move
+LIE_DOWN_FOR = 6.0  # seconds to keep trying to lie down before waking anyway
+DARK_AFTER = 2.5    # seconds of black once he lies there
+
+
+def say_plain(gothic, text):
+    """A line in the hero's ordinary voice, as he comes to: no distortion. Its length in seconds, or None if busy."""
+    from dm import voices
+    wav, ms = voices.lookup(HERO_VOICE, text)
+    if not gothic.dialog.narrate(text, ms, wav):
+        return None
+    return (ms or max(2000, len(text) * 70)) / 1000.0
+
+
 def visuals_on():
     """Whether trips may change the picture. Off keeps the music and the thoughts (photosensitivity)."""
     try:
@@ -116,12 +141,14 @@ def visuals_on():
 
 
 def thought_lines(thoughts=None):
-    """Every line a trip may say, for voicing: the given thoughts or every pool, all landings and the refusals."""
+    """Every line a trip may say, for voicing: the given thoughts or every pool, all landings, the refusals and the
+    lines spoken on waking from a blackout."""
     if thoughts:
         ups = [text for _, text in thoughts]
     else:
         ups = [line for pools, _ in POOLS.values() for _, pool in pools for line in pool]
-    return ups + [line for _, landings in POOLS.values() for line in landings] + REFUSALS
+    wakes = [line for blackout in BLACKOUTS.values() for line in blackout["wake"]]
+    return ups + [line for _, landings in POOLS.values() for line in landings] + REFUSALS + wakes
 
 
 def draw_thoughts(rng, style="mindcap"):
@@ -174,14 +201,15 @@ def stretched(profile, seconds):
     return [(d * factor, target, ease / factor, amp, speed / factor) for d, target, ease, amp, speed in PROFILES[profile]]
 
 
-def look(intensity, seconds, pulse=0.0, drums=0.0, style="mindcap"):
+def look(intensity, seconds, pulse=0.0, drums=0.0, style="mindcap", opened=None):
     """What the game shows at this intensity, `seconds` into the trip. pulse (0..1) is where the beat's contraction
     stands, drums (0..1) how much drum is playing. The view does not wobble; it draws in gently on the beat. Nothing
     flashes. Everything scales with intensity, so a sober hero sees nothing. Pure, to tune and test."""
     hue = (seconds / 20.0) % 1.0   # a slow turn of colour: a full circle every twenty seconds
     r, g, b = _hue(hue, DESERT if LOOKS[style]["look"] == 1 else PALETTE)
-    x = min(1.0, max(0.0, (intensity - OPEN_FROM) / (OPEN_TO - OPEN_FROM)))
-    opened = x * x * (3 - 2 * x)   # the second stage opens smoothly once the heat has hit
+    if opened is None:
+        x = min(1.0, max(0.0, (intensity - OPEN_FROM) / (OPEN_TO - OPEN_FROM)))
+        opened = x * x * (3 - 2 * x)   # the second stage opens smoothly once the heat has hit
     return {"fov": 0.0, "speed": 1.0,
             "zoom": 0.04 * intensity * drums * pulse,
             "tint": (r, g, b, 0.18 * intensity),
@@ -279,10 +307,15 @@ def say(gothic, text):
 
 
 class Trip:
-    def __init__(self, phases, track, thoughts=None, rng=None, style="mindcap"):
+    def __init__(self, phases, track, thoughts=None, rng=None, style="mindcap", blackout=None):
         from dm import music_bands
         self.envelope = Envelope(phases)
         self.style = style
+        self.blackout = dict(blackout) if blackout else None
+        targets = [phase[1] for phase in phases]
+        self.peak_phase = targets.index(max(targets))   # the first phase that climbs to the trip's highest point
+        self.peak_at = None
+        self.black = None      # the blackout under way: {"stage", "at", ...}
         self.track = track
         self.bands = music_bands.load(track) if track else None
         self.beat = music_bands.beat(track) if track else None
@@ -395,15 +428,61 @@ class Trip:
         if self.visuals_read is None or now - self.visuals_read >= 1.0:
             self.visuals = visuals_on()          # the off switch works at once, also during a running trip
             self.visuals_read = now
-        fx = look(self.envelope.intensity, elapsed, beat, drums, self.style)
+        opened = None
+        if LOOKS[self.style].get("at_peak"):
+            # This look's second stage waits for the peak phase, then fades in over PEAK_OPEN seconds.
+            if self.peak_at is None and self.envelope.index >= self.peak_phase:
+                self.peak_at = now
+            x = 0.0 if self.peak_at is None else min(1.0, (now - self.peak_at) / PEAK_OPEN)
+            opened = x * x * (3 - 2 * x)
+        fx = look(self.envelope.intensity, elapsed, beat, drums, self.style, opened)
         if not self.visuals:
             fx = look(0.0, elapsed, style=self.style)   # music and thoughts only: nothing on screen changes
+        if self.blackout and self.black is None and self.envelope.index >= len(self.envelope.phases) - 1:
+            self.black = {"stage": "fading", "at": now}   # the landing becomes a blackout
+            self.queue = []
+            self._give_music_back(now)
+        if self.black is not None:
+            fx = self._blackout(gothic, now, fx, elapsed)
         gothic.trip.set(fx["fov"], fx["speed"], fx["tint"], fx["time"], fx["shake"], fx["post"], fx["edges"],
                         fx["tracers"], (self.bass, self.mid, self.treble), fx["zoom"], fx["look"], fx["eye"],
                         fx["afterglow"])
-        self._think(gothic, now)
+        if self.black is None:
+            self._think(gothic, now)
         music_back = not self.track or (self.music_end is not None and now - self.music_end >= FADE_OUT)
+        if self.black is not None:
+            return self.black["stage"] != "done"
         return not (self.envelope.over and music_back)
+
+    def _blackout(self, gothic, now, fx, elapsed):
+        """The blackout's picture and its steps: to black, the move and the bed in the dark, back from black."""
+        b, cfg = self.black, self.blackout
+        since = now - b["at"]
+        if b["stage"] == "fading":
+            alpha = min(1.0, since / FADE_BLACK)
+            if alpha >= 1.0:
+                b.update(stage="dark", at=now)
+                gothic.dialog.block(False)
+                gothic.player.set_position(*cfg["bed"])
+                gothic.world.set_time(cfg["hour"], 0)      # the next morning; NPCs go back to their routines
+                return dict(look(0.0, elapsed, style=self.style), tint=(0.0, 0.0, 0.0, 1.0))
+            return dict(fx, tint=(0.0, 0.0, 0.0, alpha))
+        sober = look(0.0, elapsed, style=self.style)
+        if b["stage"] == "dark":
+            if not b.get("lying") and since >= SETTLE:
+                b["lying"] = gothic.player.use_object(cfg["scheme"], 1, quiet=True)
+                if b["lying"]:
+                    b["lay_at"] = now
+            ready = (b.get("lying") and now - b["lay_at"] >= DARK_AFTER) or since >= SETTLE + LIE_DOWN_FOR
+            if ready:
+                b.update(stage="waking", at=now)
+            return dict(sober, tint=(0.0, 0.0, 0.0, 1.0))
+        if b["stage"] == "waking":
+            alpha = max(0.0, 1.0 - since / FADE_WAKE)
+            if alpha <= 0.0 and say_plain(gothic, self.rng.choice(cfg["wake"])) is not None:
+                b["stage"] = "done"
+            return dict(sober, tint=(0.0, 0.0, 0.0, alpha))
+        return sober
 
 
 _current = None
@@ -422,7 +501,7 @@ def start(profile="mindcap", track=None, seconds=None, thoughts=None):
         track = str(MUSIC_DIR / TRACKS[profile])
     phases = stretched(profile, seconds) if seconds else PROFILES[profile]
     _current = Trip(phases, track, [tuple(t) for t in thoughts] if thoughts else None,
-                    style=PROFILE_LOOK.get(profile, "mindcap"))
+                    style=PROFILE_LOOK.get(profile, "mindcap"), blackout=BLACKOUTS.get(profile))
     return True
 
 

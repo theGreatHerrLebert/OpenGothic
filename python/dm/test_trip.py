@@ -306,6 +306,30 @@ back = [c for c in calls if c[0] == "mix"][-1][1]
 assert abs(ducked - loud * trip.DUCK) < 0.05 and back > 0.95 * loud, (loud, ducked, back)
 trip._end(fake)
 
+# A blackout: to black at the landing, moved and laid in a bed (quietly) in the dark, the next morning, back from
+# black, and a sober line on waking.
+moves, times, uses = [], [], []
+fake.player = types.SimpleNamespace(set_position=lambda *p: moves.append(p),
+                                    use_object=lambda scheme, state, quiet=False: uses.append((scheme, state, quiet))
+                                    or len(uses) >= 2)
+fake.world.set_time = lambda h, m: times.append((h, m))
+said.clear()
+blackout = {"bed": (1.0, 2.0, 3.0), "scheme": "BEDHIGH", "hour": 9, "wake": ["Wo bin ich?"]}
+out = trip.Trip([(5.0, 1.0, 0.2, 0, 0), (5.0, 0.0, 0.01, 0, 0)], None, thoughts=[(0.5, "heiß")], blackout=blackout)
+tints, now = [], 0.0
+while out.tick(fake, now):
+    tints.append([c for c in calls if c[0] == "set"][-1][1][2][3] if any(c[0] == "set" for c in calls) else 0)
+    now += 0.05
+    assert now < 60, "the blackout never ended"
+sets = [c[1] for c in calls if c[0] == "set"]
+assert moves == [(1.0, 2.0, 3.0)] and times == [(9, 0)]
+assert uses[-1] == ("BEDHIGH", 1, True)                         # quietly: no sleep menu
+assert said[-1] == "Wo bin ich?" and "heiß" in said
+assert max(s[2][3] for s in sets) == 1.0 and sets[-1][2][3] == 0.0  # fully black, then clear again
+dark = [s for s in sets if s[2] == (0.0, 0.0, 0.0, 1.0)]
+assert dark and all(s[5] == 0.0 for s in dark)                  # sober while black
+fake.player = None
+
 # A loaded save ends the trip at once.
 trip.start("mindcap", None, seconds=20)
 trip._current.tick(fake, 0.0)
@@ -333,6 +357,17 @@ assert trip.look(1.0, 1.0, style="ember_eye")["eye"] == 1.0 and trip.look(1.0, 1
 assert trip.look(1.0, 1.0, style="ember_glow")["afterglow"] == 1.0 and trip.look(1.0, 1.0)["eye"] == 0.0
 assert trip.look(1.0, 1.0, style="ember_glow")["tracers"] == 0.0     # its glow lives where the tracers would
 assert 0 < trip.look(0.7, 1.0, style="ember_eye")["eye"] < 1
+# The Goa scorpion's eye waits for the peak phase: closed through the heatstroke, open once the peak climbs.
+goa = trip.Trip(trip.PROFILES["skorpion_goa"], None, style="ember_eye")
+eyes, now = [], 0.0
+calls.clear()
+while now < 200:
+    goa.tick(fake, now)
+    eyes.append((now, [c for c in calls if c[0] == "set"][-1][1][11]))
+    now += 0.25
+peak_start = sum(d for d, *_ in trip.PROFILES["skorpion_goa"][:goa.peak_phase])
+assert all(e == 0.0 for t_, e in eyes if t_ < peak_start - 0.5)       # nothing through the heatstroke at 60 s
+assert all(e > 0.99 for t_, e in eyes if t_ > peak_start + trip.PEAK_OPEN + 0.5)
 # It hits like heatstroke at the first big rise of its track.
 env = trip.Envelope(trip.PROFILES["skorpion"])
 for _ in range(int(25 * 60)):
