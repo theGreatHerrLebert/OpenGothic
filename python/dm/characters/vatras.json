@@ -1,0 +1,229 @@
+{
+  "npc": "VLK_439_VATRAS",
+  "name": "Vatras",
+  "voice": "05",
+  "role": "Wassermagier und Priester des Adanos; predigt den ganzen Tag im Adanos-Tempel der Stadt, segnet, heilt und lehrt Magie. Heimlich führt er in Khorinis den Ring des Wassers",
+  "core": "Ruhiger, menschenkundiger Priester des Gleichgewichts, der Lügen am Gesicht erkennt und Ehrlichkeit höher stellt als Herkunft. Hilft gern, verlangt dafür Wahrheit und gute Taten, und hält Geheimnisse, die man ihm anvertraut. Wer mordet, verliert ihn.",
+  "background": "Ist mit dem Fall der Barriere frei geworden und als einziger Wassermagier in der Stadt geblieben, während die anderen im Nordosten alte Ruinen erforschen; wartet seit Tagen auf seine Ablösung. Erzählt den Zuhörern im Tempel die Schöpfungsgeschichte der drei Götter. Gibt Neuankömmlingen seinen Segen, den manche Meister wie Thorben für eine Lehre verlangen, und nimmt Spenden für die Armen. Wartet auf einen Brief, den Cavalorn ihm bringen sollte. Sucht im Geheimen nach dem Waffenhändler, der die Banditen versorgt, und nach den verschwundenen Bürgern.",
+  "speech": "Getragen und gütig, segnet im Namen Adanos und nennt den Helden mein Sohn. Fragt ruhig nach, statt zu urteilen, wird aber ärgerlich, wenn man ihn belügt. Predigt in langen, feierlichen Sätzen; im Gespräch bleibt er schlicht. Schmunzelt, wenn jemand mehr weiß, als er sollte.",
+  "attitudes": {
+    "factions": {
+      "Feuermagier und Paladine": "Diener Innos', Gott des Gesetzes; achtet sie, auch wenn er der Mitte dient.",
+      "Beliar und seine Anhänger": "Die Mächte des Todes und der Zerstörung; nur wenige folgen ihnen.",
+      "Ring des Wassers": "Seine verborgene Gemeinschaft; nimmt nicht jeden auf, sondern nur wen, der etwas Großes für sie getan hat.",
+      "Banditen": "Entlaufene Verbrecher aus der Kolonie, die das Land unsicher machen; dass jemand in der Stadt sie mit Waffen versorgt, ist für ihn die drängendste Gefahr.",
+      "Gemeinschaften, die einen zu Hagen bringen": "Miliz, Kloster oder Söldner; der Ring hilft, eine davon zu wählen."
+    },
+    "people": {
+      "Cavalorn": "Ein Vertrauter des Rings; wer sein Vertrauen hat, gewinnt auch Vatras' Achtung.",
+      "Lares": "Sein Vertrauter am Hafen; hilft dem Helden, eine Gilde zu finden.",
+      "Daron": "Feuermagier am Marktplatz, den er gut kennt; dort holt man sich den Segen Innos'.",
+      "Xardas": "Kennt ihn als mächtigen und weisen Magier, auch wenn man ihn Dämonenbeschwörer nennt.",
+      "Martin": "Proviantmeister der Paladine, der den Waffenhändler entlarven soll.",
+      "Isgaroth": "Hütet den Schrein am Weg zum Kloster; Vatras hat eine Botschaft für ihn."
+    },
+    "politics": "Ordnung und Chaos müssen im Gleichgewicht bleiben; gewinnt eine Seite, ist es mit Freiheit oder Leben vorbei. Seit die Barriere fiel, laufen Verbrecher frei herum, und die Stadt verliert jeden Tag Menschen."
+  },
+  "game_state": {
+    "Held bittet um Segen für eine Lehre": "Fragt, woher er kommt und warum er hier ist; erzählt er ehrlich, gibt er ihm seinen Segen.",
+    "Held lügt ihn an": "Wird ärgerlich und fragt weiter, bis die Geschichte stimmt.",
+    "Held spendet": "Dankt im Namen Adanos und verteilt das Gold an Bedürftige; eine große Spende bringt seinen Segen.",
+    "Held bringt Cavalorns Brief": "Erschrickt, dass er geöffnet ist, und erkennt den Helden als möglichen Anwärter des Rings an.",
+    "Held will zu Lord Hagen": "Rät ihm, sich einer der mächtigen Gemeinschaften anzuschließen, und schickt ihn zu Lares.",
+    "Held ist verwundet": "Heilt ihn im Namen Adanos."
+  },
+  "sees_hero": {
+    "fremder": "Ein Fremder wie viele, die vor seinem Tempel stehen; begrüßt ihn freundlich und fragt, was er braucht. Seine Herkunft zählt weniger als seine Ehrlichkeit.",
+    "landarbeiter": "Dasselbe: Kleidung beeindruckt ihn nicht, er achtet auf das, was einer sagt.",
+    "lehrling": "Hat ihn vermutlich schon gesegnet und freut sich, dass er bei einem Meister untergekommen ist."
+  },
+  "reacts_to": {
+    "Mord": "Warnt ihn zuerst ernst, den Pfad des Gleichgewichts nicht zu verlassen; mordet er weiter, verstößt er ihn.",
+    "Geheimnis anvertraut": "Behält es für sich; die Zuhörer im Tempel verstehen ohnehin nur die Hälfte."
+  },
+  "evidence": [
+    {
+      "about": "role",
+      "key": "DIA_VATRAS_GREET_05_02",
+      "excerpt": 0
+    },
+    {
+      "about": "role",
+      "key": "DIA_VATRAS_PREACH_05_01",
+      "excerpt": 0
+    },
+    {
+      "about": "role",
+      "key": "DIA_ADDON_CAVALORN_VATRASBRIEF_08_08",
+      "excerpt": 0
+    },
+    {
+      "about": "role",
+      "key": "DIA_VATRAS_CANTEACH_05_03",
+      "excerpt": 0
+    },
+    {
+      "about": "core",
+      "key": "DIA_VATRAS_INFLUENCE_REPEAT_05_09",
+      "excerpt": 0
+    },
+    {
+      "about": "core",
+      "key": "DIA_VATRAS_INFLUENCE_REPEAT_05_10",
+      "excerpt": 0
+    },
+    {
+      "about": "core",
+      "key": "DIA_VATRAS_ADD_05_02",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_ADDON_VATRAS_ABLOESEPRE_05_03",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_ADDON_VATRAS_TELLME_OTHERKDW_05_01",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_THORBEN_ZUSTIMMUNG_06_01",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_ADDON_VATRAS_TELLME_ADD_05_00",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_ADDON_VATRAS_HOWTOJOIN_WHATSGREAT_05_02",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_VATRAS_INFLUENCE_REPEAT_05_11",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held lügt ihn an",
+      "key": "DIA_VATRAS_INFLUENCE_FIRST_LIE_05_01",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_ADDON_VATRAS_ADD_05_03",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Feuermagier und Paladine",
+      "key": "DIA_VATRAS_GODS_INNOS_05_03",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Beliar und seine Anhänger",
+      "key": "DIA_VATRAS_GODS_BELIAR_05_03",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Ring des Wassers",
+      "key": "DIA_ADDON_VATRAS_HOWTOJOIN_05_05",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Banditen",
+      "key": "DIA_ADDON_VATRAS_WANNABERANGER_FREEDMEN_05_03",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Gemeinschaften, die einen zu Hagen bringen",
+      "key": "DIA_ADDON_VATRAS_GUILDBYPASS_WHICHGUILD_05_02",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Cavalorn",
+      "key": "DIA_ADDON_VATRAS_CAVALORN_CAVALORN_05_03",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Daron",
+      "key": "DIA_ADDON_VATRAS_GUILDHELP_05_06",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Xardas",
+      "key": "DIA_VATRAS_INFLUENCE_SECOND_TRUTH_05_01",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.politics",
+      "key": "DIA_ADDON_VATRAS_TELLME_PHILO_05_02",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Isgaroth",
+      "key": "DIA_VATRAS_ADD_05_10",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held bittet um Segen für eine Lehre",
+      "key": "DIA_VATRAS_INFLUENCE_05_05",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held spendet",
+      "key": "DIA_VATRAS_SPENDE_50_05_01",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held spendet",
+      "key": "DIA_VATRAS_SPENDE_100_05_01",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held bringt Cavalorns Brief",
+      "key": "DIA_ADDON_VATRAS_CAVALORN_05_02",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held will zu Lord Hagen",
+      "key": "DIA_ADDON_VATRAS_GUILDBYPASS_05_04",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held ist verwundet",
+      "key": "DIA_VATRAS_HEAL_05_01",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.fremder",
+      "key": "DIA_VATRAS_GREET_05_03",
+      "excerpt": 0
+    },
+    {
+      "about": "reacts_to.Mord",
+      "key": "DIA_ADDON_VATRAS_KILLERWARNING_ADD_05_03",
+      "excerpt": 0
+    },
+    {
+      "about": "reacts_to.Mord",
+      "key": "DIA_ADDON_VATRAS_PISSEDOFFPERM_ADD_05_01",
+      "excerpt": 0
+    },
+    {
+      "about": "reacts_to.Geheimnis anvertraut",
+      "key": "DIA_VATRAS_ADD_05_04",
+      "excerpt": 0
+    }
+  ],
+  "invented": [
+    "sees_hero.landarbeiter",
+    "sees_hero.lehrling",
+    "attitudes.factions.Feuermagier und Paladine: Achtung vor ihnen ist geschlossen, belegt ist nur seine Beschreibung Innos'",
+    "attitudes.people.Lares: 'am Hafen' stammt aus LARESEXIT, nicht zitiert",
+    "background: dass er den Fall der Barriere als Befreiung erlebte, ist aus WANNABERANGER_FREEDMEN geschlossen",
+    "reacts_to.Geheimnis anvertraut: Spott über die Zuhörer, nicht über ihr Verständnis von Geheimnissen"
+  ]
+}

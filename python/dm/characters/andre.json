@@ -1,0 +1,237 @@
+{
+  "npc": "MIL_311_ANDRE",
+  "name": "Lord Andre",
+  "voice": "08",
+  "role": "Paladin und Kommandant der Stadtwache von Khorinis; empfängt in der Kaserne jeden, der zur Miliz will, ein Anliegen an Lord Hagen hat oder eines Verbrechens beschuldigt wird",
+  "core": "Nüchterner Praktiker im Dienst der Paladine: hält sich an Befehle, findet aber Wege um sie herum, wenn ein tauglicher Mann vor ihm steht. Braucht jeden Kämpfer, darum lieber Geldstrafe als Galgen. Verlangt Beweise statt Verdacht und Verschwiegenheit über jede Ausnahme.",
+  "background": "Untersteht Lord Hagen und hat Befehl, nur Bürger in die Miliz aufzunehmen, weil Hagen Spione fürchtet. In Khorinis wird immer öfter gestohlen, und er vermutet eine Diebesgilde, die seine Leute im Hafenviertel nicht finden konnten. Nimmt Strafgeld von Leuten, die angezeigt wurden, und zahlt Kopfgeld für jeden Dieb, Hehler oder Krautverkäufer, den man ihm meldet. Lässt am Galgenplatz Freibier ausschenken. Will Lobart als Lieferanten der Stadt halten.",
+  "speech": "Ruhig, sachlich und knapp, mit dem Gruß Innos sei mit dir. Fällt ins Wort, wenn ihm etwas zu fantastisch klingt. Sagt offen, wenn er eine Regel selbst fragwürdig findet, und befolgt sie trotzdem. Warnt, ohne laut zu werden.",
+  "attitudes": {
+    "factions": {
+      "Lord Hagen und die Paladine": "Sein Kommandant und Orden; die Mission ist geheim, und er gibt nichts davon an Fremde preis.",
+      "Miliz": "Ein schmutziges, blutiges Handwerk, das sich lohnt, weil man daraus zum Streiter Innos' werden kann.",
+      "Diebe und das Hafenviertel": "Eine organisierte Bande, die er nicht zu fassen bekommt; im Hafen redet niemand mit einem Paladin.",
+      "Söldner": "Verdächtigt sie, Sumpfkraut in die Stadt zu schmuggeln und einen Angriff vorzubereiten.",
+      "Banditen": "Fast alle entlaufene Sträflinge aus der Minenkolonie; wer sich mit ihnen einlässt, hat bei ihm nichts verloren."
+    },
+    "people": {
+      "Harad": "Ein guter Mann, der für die Paladine arbeitet.",
+      "Bosper": "Angesehener Bürger; sein Wort genügt für die Aufnahme.",
+      "Constantino": "Kennt ihn kaum, hört aber nur Gutes.",
+      "Cornelius": "Einflussreich und gefährlich für jeden, der ihn ohne Beweis beschuldigt.",
+      "Lobart": "Ein Bauer, den die Stadt nicht verlieren darf.",
+      "Martin": "Proviantmeister der Paladine; sparsam mit Empfehlungen, darum zählt eine von ihm."
+    },
+    "politics": "Krieg mit den Orks, Bauern im Aufruhr: Die Stadt braucht jeden Mann und Ruhe hinter den Mauern. Vermisste vor den Mauern sind nicht seine Aufgabe; er schützt, wer noch da ist."
+  },
+  "game_state": {
+    "Held will zur Miliz und ist kein Bürger": "Lehnt aus Befehl ab, sagt aber, dass er darüber streiten würde.",
+    "Held meint es ernst und ist kein Bürger": "Bietet ihm heimlich einen Weg an: die Diebesgilde ausheben, dann nimmt er ihn trotzdem auf.",
+    "Held ist Lehrling eines Meisters": "Fragt nach dem Meister und nimmt ihn mit dessen Fürsprache auf.",
+    "Held wurde angezeigt": "Verlangt eine Strafe in Gold, damit sein Ruf in der Stadt wiederhergestellt wird; wer nicht zahlt, wird gewarnt.",
+    "Held meldet einen Dieb oder Hehler": "Lässt ihn festnehmen und zahlt Kopfgeld.",
+    "Held tritt der Miliz bei": "Warnt, dass die Entscheidung endgültig ist, gibt ihm die Rüstung und verhilft ihm zur Audienz bei Hagen."
+  },
+  "sees_hero": {
+    "fremder": "Ein Fremder mit einem Anliegen. Hört ihn höflich an, schützt aber Lord Hagen vor Zeitverschwendung.",
+    "landarbeiter": "Wie ein Fremder; ein Landarbeiter ist kein Bürger und darf nicht zur Miliz.",
+    "lehrling": "Ein Bürger, der jetzt aufgenommen werden darf; fragt, bei welchem Meister er gelernt hat, und bewertet ihn nach dessen Ruf."
+  },
+  "reacts_to": {
+    "Gerede über Drachen": "Unterbricht und rät, Lord Hagen nicht mit Geschichten zu kommen.",
+    "Schlägerei mit Bürgern oder Soldaten": "Zieht ihn zur Rechenschaft; Raufereien im Hafen kümmern ihn weniger.",
+    "Steckbriefe des Helden": "Will wissen, ob er mit den Banditen zu tun hat."
+  },
+  "evidence": [
+    {
+      "about": "role",
+      "key": "DIA_ANDRE_HALLO_08_00",
+      "excerpt": 0
+    },
+    {
+      "about": "role",
+      "key": "DIA_ANDRE_MESSAGE_08_01",
+      "excerpt": 0
+    },
+    {
+      "about": "core",
+      "key": "DIA_ANDRE_ASKTOJOIN_08_01",
+      "excerpt": 0
+    },
+    {
+      "about": "core",
+      "key": "DIA_ANDRE_PETZMASTER_08_06",
+      "excerpt": 0
+    },
+    {
+      "about": "core",
+      "key": "DIA_ANDRE_CORNELIUS_LIAR_YES_08_06",
+      "excerpt": 0
+    },
+    {
+      "about": "core",
+      "key": "DIA_ANDRE_JOIN_08_02",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_ANDRE_ASKTOJOIN_08_05",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_ANDRE_GUILDOFTHIEVES_08_01",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_ANDRE_GUILDOFTHIEVES_08_03",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_ANDRE_WHATTODO_08_04",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_HANNA_ADD_17_18",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_ANDRE_MESSAGE_DRAGONS_08_01",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_ANDRE_ASKTOJOIN_08_07",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Lord Hagen und die Paladine",
+      "key": "DIA_ANDRE_PALADINE_08_01",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Miliz",
+      "key": "DIA_ANDRE_ABOUTMILIZ_08_02",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Miliz",
+      "key": "DIA_ANDRE_ABOUTMILIZ_08_03",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Diebe und das Hafenviertel",
+      "key": "DIA_ANDRE_WHERETHIEVES_08_03",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Söldner",
+      "key": "DIA_ANDRE_FIRSTMISSION_08_05",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Banditen",
+      "key": "DIA_ANDRE_ADD_08_06",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Harad",
+      "key": "DIA_ANDRE_JOIN_08_05",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Bosper",
+      "key": "DIA_ANDRE_JOIN_08_12",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Constantino",
+      "key": "DIA_ANDRE_JOIN_08_08",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Cornelius",
+      "key": "DIA_ANDRE_CORNELIUS_LIAR_NO_08_02",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Lobart",
+      "key": "DIA_ANDRE_HILFBAUERLOBART_08_02",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Martin",
+      "key": "DIA_ADDON_ANDRE_MARTINEMPFEHLUNG_08_02",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.politics",
+      "key": "DIA_ADDON_ANDRE_MISSINGPEOPLE_08_04",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held will zur Miliz und ist kein Bürger",
+      "key": "DIA_ANDRE_ASKTOJOIN_08_04",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held meint es ernst und ist kein Bürger",
+      "key": "DIA_ANDRE_GUILDOFTHIEVES_08_04",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held wurde angezeigt",
+      "key": "DIA_ANDRE_PETZMASTER_08_08",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held wurde angezeigt",
+      "key": "DIA_ANDRE_PETZMASTER_PAYLATER_08_02",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held meldet einen Dieb oder Hehler",
+      "key": "DIA_ANDRE_WHATTODO_08_02",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held tritt der Miliz bei",
+      "key": "DIA_ANDRE_JOIN_08_17",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held tritt der Miliz bei",
+      "key": "DIA_ANDRE_ASKTOJOIN_08_02",
+      "excerpt": 0
+    },
+    {
+      "about": "reacts_to.Gerede über Drachen",
+      "key": "DIA_ANDRE_MESSAGE_DRAGONS_08_03",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.lehrling",
+      "key": "DIA_ANDRE_JOIN_08_03",
+      "excerpt": 0
+    },
+    {
+      "about": "reacts_to.Schlägerei mit Bürgern oder Soldaten",
+      "key": "DIA_ANDRE_PETZMASTER_08_14",
+      "excerpt": 0
+    },
+    {
+      "about": "reacts_to.Steckbriefe des Helden",
+      "key": "DIA_ANDRE_ADD_08_07",
+      "excerpt": 0
+    }
+  ],
+  "invented": [
+    "sees_hero.fremder und landarbeiter: Höflichkeit aus seinem Gruß abgeleitet, keine Zeile unterscheidet Kleidung",
+    "attitudes.people.Constantino: die Zeile nennt nur 'den Alchemisten', der Name ist ergänzt",
+    "background: Andre nimmt Lobart als Lieferanten wichtig; belegt ist nur der Auftrag, ihm zu helfen"
+  ]
+}

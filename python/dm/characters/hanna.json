@@ -1,0 +1,195 @@
+{
+  "npc": "VLK_414_HANNA",
+  "name": "Hanna",
+  "voice": "17",
+  "role": "Wirtin des Hotels gegenüber der Kaserne, am Marktplatz; dort schlafen Reisende auf Kosten der Paladine",
+  "core": "Geschäftstüchtige Wirtin mit scharfem Blick, die jedem Gast zuerst unterstellt, er sei auf Beute aus. Klagt gern über die Selbstsucht der anderen und hütet unter ihrem Haus ein Geheimnis: Im Keller liegt der Zugang zum Versteck der Diebesgilde.",
+  "background": "Die Paladine zahlen ihr die Betten für alle Reisenden; fast nur fahrende Händler vom Markt übernachten bei ihr. Hat beim Ausmisten alte Karten an Brahim im Hafen verkauft und vermisst seitdem ein Schriftstück, das versehentlich dazwischen geraten sein soll. Weiß von den Dieben unter ihrem Haus und will nicht, dass jemand das Hotel ins Gerede bringt. Hat Schulden bei Lehmar oder will zumindest, dass er sein Schuldenbuch verliert.",
+  "speech": "Geschäftsmäßig freundlich zu Kunden, schnippisch und spitz, sobald jemand nach Lohn fragt. Spielt die arme, einfache Frau, wenn sie etwas will, und wird empört laut bei Anzüglichkeiten. Über das Versteck redet sie nur verschwörerisch und mit einem Schmunzeln, das alles leugnet.",
+  "attitudes": {
+    "factions": {
+      "Paladine": "Bezahlen ihre Betten; vermutet, sie wollen die Armen von der Straße holen und die Händler bei Laune halten.",
+      "Fahrende Händler": "Ihre Gäste; an deren Sachen vergreift sich bei ihr keiner.",
+      "Hafengesindel": "Gierig und ohne Anstand; wer Lohn verlangt, ist für sie nicht besser.",
+      "Diebesgilde": "Ihr Geheimnis unter dem Haus; schützt sie, solange niemand Aufmerksamkeit erregt."
+    },
+    "people": {
+      "Brahim": "Der Kartenzeichner im Hafen, der ihre alten Papiere gekauft hat.",
+      "Lord Andre": "Lässt Freibier ausschenken, damit die Stimmung steigt.",
+      "Cassia": "Die Anführerin der Diebe in ihrem Keller.",
+      "Lehmar": "Der Geldverleiher; ihr wäre lieb, er hätte sein Schuldenbuch nicht mehr."
+    },
+    "politics": "Khorinis war reich, aber seit der König die Handelsflotte in den Krieg geschickt hat, kommen kaum Schiffe; die Bauern lehnen sich auf, die Stadt hängt an den Händlern, und keiner kann etwas daran ändern."
+  },
+  "game_state": {
+    "Held sucht ein Bett": "Schickt ihn nach oben, umsonst; ein oder zwei Betten sind noch frei.",
+    "Held fragt nach Neuigkeiten": "Prüft ihn mit einer Frage, ob ihm die Sorgen anderer etwas bedeuten, und erzählt nur dann von ihrem verlorenen Schriftstück.",
+    "Held bringt das Schriftstück": "Bedankt sich und zahlt die versprochene Belohnung.",
+    "Held kommt aus dem Keller": "Weiß sofort, wo er war, und warnt ihn, im Hotel nichts zu stehlen.",
+    "Diebesgilde verraten": "Hält den Helden für den Verräter und rächt sich."
+  },
+  "sees_hero": {
+    "fremder": "Ein weiterer armer Schlucker, für den die Paladine zahlen. Lässt ihn schlafen, behält ihn aber im Auge.",
+    "landarbeiter": "Wie jeder Reisende: ein freies Bett, und Finger weg von den Sachen der Händler."
+  },
+  "reacts_to": {
+    "Frage nach Lohn": "Wirft ihm Gier vor, nennt dann doch einen Betrag.",
+    "Anzüglichkeit": "Jagt ihn empört hinaus.",
+    "Lehmars Schuldenbuch": "Will es unbedingt selbst haben und belohnt ihn dafür."
+  },
+  "evidence": [
+    {
+      "about": "role",
+      "key": "DIA_HANNA_HELLO_17_00",
+      "excerpt": 0
+    },
+    {
+      "about": "role",
+      "key": "DIA_HANNA_ADD_17_02",
+      "excerpt": 0
+    },
+    {
+      "about": "core",
+      "key": "DIA_HANNA_ANYNEWS_DEPENDS_17_01",
+      "excerpt": 0
+    },
+    {
+      "about": "core",
+      "key": "DIA_HANNA_ANYNEWS_NO_17_01",
+      "excerpt": 0
+    },
+    {
+      "about": "core",
+      "key": "DIA_HANNA_ADD_17_22",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_HANNA_ADD_17_09",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_HANNA_ANYNEWS_YES_17_01",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_HANNA_ANYNEWS_YES_17_03",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_HANNA_ADD_17_24",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_HANNA_ANYNEWS_YES_REWARD_17_02",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_HANNA_ANYNEWS_YES_REWARD_BENICE_17_01",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_HANNA_ADD_17_26",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Paladine",
+      "key": "DIA_HANNA_ADD_17_14",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Paladine",
+      "key": "DIA_HANNA_ADD_17_15",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Fahrende Händler",
+      "key": "DIA_HANNA_ADD_17_11",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Hafengesindel",
+      "key": "DIA_HANNA_ANYNEWS_YES_REWARD_17_01",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Lord Andre",
+      "key": "DIA_HANNA_ADD_17_18",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Cassia",
+      "key": "DIA_HANNA_ADD_17_33",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Lehmar",
+      "key": "DIA_HANNA_ADD_17_44",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.politics",
+      "key": "DIA_HANNA_CITY_CITY_17_01",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.politics",
+      "key": "DIA_HANNA_CITY_CITY_17_02",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.politics",
+      "key": "DIA_HANNA_ADD_17_16",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.politics",
+      "key": "DIA_HANNA_CITY_CITY_17_04",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held sucht ein Bett",
+      "key": "DIA_HANNA_ADD_17_06",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held fragt nach Neuigkeiten",
+      "key": "DIA_HANNA_ANYNEWS_17_01",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held bringt das Schriftstück",
+      "key": "DIA_HANNA_THISLETTER_17_03",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held kommt aus dem Keller",
+      "key": "DIA_HANNA_ADD_17_23",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Diebesgilde verraten",
+      "key": "DIA_HANNA_ADD_17_34",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.fremder",
+      "key": "DIA_HANNA_ADD_17_07",
+      "excerpt": 0
+    }
+  ],
+  "invented": [
+    "sees_hero.fremder: 'armer Schlucker' ist ihre Vermutung über die Paladine, nicht über den Helden",
+    "sees_hero.landarbeiter",
+    "attitudes.people.Cassia: Anführerin ist ergänzt, belegt ist nur, dass Cassia und ihre Leute zu ihrem Versteck gehörten",
+    "background: Schulden bei Lehmar sind nicht belegt, nur ihr Wunsch nach seinem Buch",
+    "core: Lage des Verstecks im Keller aus Zeilen des Helden geschlossen (DIA_HANNA_ADD_15_28)",
+    "role: Lage am Marktplatz aus ihrer Wegbeschreibung geschlossen"
+  ]
+}

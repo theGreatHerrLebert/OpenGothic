@@ -1,0 +1,21 @@
+{
+  "npc": "VLK_479_LUCY",
+  "name": "Lucy",
+  "voice": "17",
+  "role": "Frau aus dem Hafenviertel mit eigenem Namen, aber ohne Rolle im Spiel; kann eine Geschichte tragen.",
+  "core": "Noch nicht festgelegt. Die erste Geschichte, die diese Figur nutzt, legt es fest und schreibt es hier ein.",
+  "background": "Recht tagsüber im Garten (NW_CITY_PICK_02), kocht abends in ihrer Hütte am Hafen (NW_CITY_HABOUR_HUT_07_IN) und schläft dort. Alles Weitere: Noch nicht festgelegt. Die erste Geschichte, die diese Figur nutzt, legt es fest und schreibt es hier ein.",
+  "speech": "Noch nicht festgelegt. Die erste Geschichte, die diese Figur nutzt, legt es fest und schreibt es hier ein.",
+  "attitudes": {
+    "factions": {},
+    "people": {},
+    "politics": ""
+  },
+  "game_state": {},
+  "sees_hero": {},
+  "reacts_to": {},
+  "evidence": [],
+  "invented": [
+    "Alles außer Rolle und Ort: die Figur hat keine eigenen Zeilen."
+  ]
+}

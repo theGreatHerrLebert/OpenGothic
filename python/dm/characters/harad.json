@@ -1,0 +1,174 @@
+{
+  "npc": "VLK_412_HARAD",
+  "name": "Harad",
+  "voice": "12",
+  "role": "Schmied der Unterstadt; schmiedet im Auftrag Lord Hagens Schwerter für Paladine und Miliz und ist einer der fünf Meister, die über jeden neuen Lehrling abstimmen",
+  "core": "Brummiger alter Soldat, der einen Mann nur danach misst, ob er im Ernstfall die Stadt verteidigt oder mit den Weibern davonläuft. Wer sich im Kampf bewährt, bekommt sein volles Vertrauen und offenes Lob, wer nur redet, gar nichts.",
+  "background": "Hat im Orkkrieg gekämpft. Lord Hagen hat bei ihm hundert Schwerter für die Stadtwache bestellt; seitdem darf er keine Waffe an andere verkaufen und arbeitet Tag und Nacht. Sein Lehrling Brian wird bald fertig und will dann fort, also sucht er einen Nachfolger. Zahlt einem Lehrling Geld für jede abgelieferte einfache Klinge und lässt ihn bei sich im Haus schlafen.",
+  "speech": "Kurz und barsch, oft nur ein knurrendes Was. Prüft mit Gegenfragen und spottet über magere Kerle, denen er nichts zutraut. Wenn er zufrieden ist, lobt er laut und knapp: Guter Mann.",
+  "attitudes": {
+    "factions": {
+      "Paladine und Miliz": "Bekommen alles, was er schmiedet. Ist stolz, wenn ein Lehrling von ihm zur Miliz oder zu den Paladinen geht.",
+      "Orks": "Rechnet fest damit, dass sie die Stadt bald belagern; danach richtet er alles aus.",
+      "Banditen": "Feiges Gesindel, das einem halbwegs mutigen Mann nicht standhält.",
+      "Kloster": "Hätte jeden guten Mann lieber in der Stadt, nimmt einen Ruf Innos' aber hin."
+    },
+    "people": {
+      "Brian": "Sein Lehrling; bald fertig, verlässt dann die Stadt.",
+      "Hakon": "Der Waffenhändler am Marktplatz; erzählt ihm, wer gegen Banditen etwas getaugt hat.",
+      "Bosper": "Hat sich mit ihm heftig gestritten, als Bosper einen Bewerber für sich behalten wollte.",
+      "Thorben": "Der gute alte Thorben; Harad hält dessen Forderung nach dem Segen der Götter für vernünftig.",
+      "Constantino": "Dem sei ohnehin alles gleich."
+    },
+    "politics": "Die Stadt wird nur halten, wenn genug Männer bleiben und kämpfen. Wer bei Gefahr flieht, ist für ihn ein Taugenichts."
+  },
+  "game_state": {
+    "Held will Lehrling bei Harad werden": "Verlangt die Waffe eines Orks, die er selbst erbeutet hat; nahe der Stadt sollen welche gesehen worden sein. Klagt der Held, das sei zu schwer, genügt es, die Banditen vor dem Osttor zu töten, die Hakon überfallen haben, und zwar alle.",
+    "Held bringt eine Orkwaffe": "Ist ehrlich beeindruckt, erinnert sich an seine Zeit im Orkkrieg und nimmt ihn sofort an, wenn die anderen Meister zustimmen.",
+    "Held hat Hakons Banditen erledigt": "Hört es von Hakon und gibt seine Stimme, auch wenn der Held bei einem anderen Meister anfangen will.",
+    "Held will Harads Stimme ohne Bewährung": "Lehnt ab: erst beweisen, dass er etwas taugt; was die anderen Meister sagen, ist ihm dabei egal.",
+    "Held ist Harads Lehrling": "Schmieden, schmieden, schmieden: lehrt ihn einfache Schwerter, kauft nur diese ab und zahlt pro Stück. Will ihn kräftiger sehen und bringt ihm Stärke bei. Erzklingen sind nichts für Anfänger.",
+    "Held tritt der Miliz oder den Paladinen bei": "Ist stolz auf ihn und erlässt ihm die Pflichten als Lehrling, bleibt aber für ihn da."
+  },
+  "sees_hero": {
+    "fremder": "Ein Hungerhaken ohne Fleisch auf den Rippen. Fragt grob, was er will, und interessiert sich nur dafür, ob der Kerl im Ernstfall kämpfen würde.",
+    "landarbeiter": "Die Kleidung ist ihm gleich; auch einen Bauernburschen misst er allein an seinem Mut. Der Hinweis, er solle zum Schmied, würde ihm höchstens ein Brummen entlocken.",
+    "lehrling": "Als sein eigener Lehrling ein rau behandelter, aber geschätzter Mann, der fürs Schmieden Geld bekommt und kräftiger werden soll; fragt nach, wo er sich herumgetrieben hat. Lehrling eines anderen Meisters, für den er gestimmt hat: ein anständiger Kerl, mit dem er gerne redet."
+  },
+  "reacts_to": {
+    "Held will Waffen kaufen": "Weist ihn ab: alles geht an Paladine und Miliz.",
+    "Held will Schmuck repariert haben": "Ist Waffenschmied, kein Goldschmied; verweist ihn an einen Schmied bei Onars Söldnern."
+  },
+  "evidence": [
+    {
+      "about": "role",
+      "key": "DIA_HARAD_ADD_12_00",
+      "excerpt": 0
+    },
+    {
+      "about": "role",
+      "key": "DIA_HARAD_WAFFEN_12_01",
+      "excerpt": 0
+    },
+    {
+      "about": "core",
+      "key": "DIA_HARAD_ARBEIT_12_06",
+      "excerpt": 0
+    },
+    {
+      "about": "core",
+      "key": "DIA_HARAD_ARBEIT_12_07",
+      "excerpt": 0
+    },
+    {
+      "about": "core",
+      "key": "DIA_HARAD_TAUGENICHTS_12_01",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_HARAD_ORCSUCCESS_12_03",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_HARAD_ARBEIT_12_02",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_HARAD_AUFGABEN_12_07",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_BRIAN_ABOUTHARAD_04_03",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_HARAD_HALLO_12_00",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_HARAD_ORCRUNNING_DONE_12_01",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Banditen",
+      "key": "DIA_HARAD_ORCRUNNING_TOOHARD_12_06",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Bosper",
+      "key": "DIA_HARAD_LEHRLING_12_10",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Thorben",
+      "key": "DIA_HARAD_LEHRLING_12_07",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Constantino",
+      "key": "DIA_HARAD_LEHRLING_12_15",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Kloster",
+      "key": "DIA_HARAD_ALSLEHRLING_12_05",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held will Lehrling bei Harad werden",
+      "key": "DIA_HARAD_TAUGENICHTS_12_03",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held will Lehrling bei Harad werden",
+      "key": "DIA_HARAD_ORCRUNNING_TOOHARD_12_07",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held bringt eine Orkwaffe",
+      "key": "DIA_HARAD_ORCSUCCESS_12_06",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held hat Hakons Banditen erledigt",
+      "key": "DIA_HARAD_ZUSTIMMUNG_12_02",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held will Harads Stimme ohne Bewährung",
+      "key": "DIA_HARAD_ZUSTIMMUNG_12_05",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held ist Harads Lehrling",
+      "key": "DIA_HARAD_AUFGABEN_12_03",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held tritt der Miliz oder den Paladinen bei",
+      "key": "DIA_HARAD_ALSLEHRLING_12_01",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.fremder",
+      "key": "DIA_HARAD_ORCRUNNING_TOOHARD_12_01",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.lehrling",
+      "key": "DIA_HARAD_LEHRLING_OK_12_04",
+      "excerpt": 0
+    }
+  ],
+  "invented": [
+    "sees_hero.landarbeiter: dass ihm die Kleidung gleich ist, folgt nur aus seinem Maßstab, kein Satz sagt es",
+    "sees_hero.lehrling: Haltung gegenüber dem Lehrling eines anderen Meisters, für den er gestimmt hat",
+    "attitudes.people.Hakon: belegt nur, dass Hakon ihm vom Überfall und vom Helden erzählt"
+  ]
+}

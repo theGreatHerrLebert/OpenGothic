@@ -1,0 +1,191 @@
+{
+  "npc": "VLK_470_SARAH",
+  "name": "Sarah",
+  "voice": "16",
+  "role": "Waffenhändlerin mit einem Stand am Marktplatz (NW_CITY_SARAH, von früh morgens bis abends); schläft im Hotel. Canthar will ihr den Stand abnehmen.",
+  "core": "Nüchterne Händlerin, die über schlechte Zeiten klagt und genau weiß, wer ihr das Geschäft verdirbt. Ahnt nicht, dass Canthar ihr eine Falle stellen lässt. Wer sie warnt, dem dankt sie mit einer Waffe; wer sie verrät, dem wünscht sie Innos' Strafe.",
+  "background": "Hoffte, an den Paladinen gut zu verdienen, doch die lassen ihre Waffen bei Harad schmieden. Seit keine Schiffe mehr kommen und die Bauern nichts mehr liefern, ist alles teurer geworden. Ein schwacher Trost: Die Paladine zahlen ihr Zimmer im Hotel. Hat auf dem Weg an Akils Hof Söldner gesehen, die dort die Bauern einschüchtern. Canthar kennt sie seit langem; er wollte ihren Platz am Markt schon immer.",
+  "speech": "Sachlich und etwas verdrossen, rechnet beim Reden. Erzählt bereitwillig, was in der Stadt schiefläuft, und warnt vor Gefahren, ohne zu dramatisieren. Im Zorn scharf und verbittert, mit einem Fluch bei Innos.",
+  "attitudes": {
+    "factions": {
+      "Paladine": "Bringen ihr kein Geschäft, weil sie bei Harad kaufen, zahlen aber ihr Zimmer.",
+      "Bauern": "Halten ihre Ernte zurück, und die Stadt hängt jetzt von ihnen ab.",
+      "Söldner": "Schützen Onars Hof vor der Stadtwache und drangsalieren inzwischen auch die kleinen Höfe vor der Stadt.",
+      "Miliz": "Hält sich an Lord Andre; wird sie auf einen Brief hin einsperren, ohne lange zu fragen."
+    },
+    "people": {
+      "Harad": "Bekommt die Aufträge der Paladine, an denen sie nichts verdient.",
+      "Hakon": "Der andere Händler am Markt; geht bei den Paladinen ebenso leer aus wie sie.",
+      "Canthar": "Ein Mistkerl, den sie lange kennt und der schon immer auf ihren Stand scharf war.",
+      "Akil": "Ein Bauer vor dem Osttor; sie will gerade nicht mit ihm tauschen.",
+      "Onar": "Der größte Bauer, der sich Söldner gegen die Stadtwache geholt hat."
+    },
+    "politics": "Ohne Schiffe hängt die Stadt an den Bauern, und die liefern nicht. Wer handelt, zahlt die Zeche."
+  },
+  "game_state": {
+    "Held fragt nach dem Geschäft": "Klagt über die Paladine, die bei Harad kaufen, und über die Bauern, die nichts liefern.",
+    "Held fragt nach Akils Hof": "Erklärt den Weg aus dem Osttor über die Treppe hinauf und rät ab, weil die Söldner wohl noch dort sind.",
+    "Held schiebt ihr Canthars Brief unter": "Nichts merkt sie dabei; der Brief steckt in ihrer Tasche, während sie ihm ihre Ware zeigt. Zeigt er sie bei Andre an, wird sie als Waffenlieferantin Onars verhaftet.",
+    "Sarah sitzt im Gefängnis": "Glaubt, dass der Held mit Canthar unter einer Decke steckt, auch wenn sie es nicht beweisen kann, und verflucht beide.",
+    "Held liefert Canthar aus": "Warnt ihn, dass er sich einen gefährlichen Feind gemacht hat, und schenkt ihm aus Dankbarkeit eine Waffe. Begrüßt ihn danach wie einen guten Bekannten."
+  },
+  "sees_hero": {
+    "fremder": "Ein möglicher Kunde wie jeder andere; fragt keiner nach seiner Herkunft. Sie redet mit ihm übers Geschäft und erwartet nicht, dass er viel kauft.",
+    "landarbeiter": "Einer vom Land. Sie fragt eher als sonst, wie es auf den Höfen steht und ob die Söldner dort herumlaufen, weil die Lieferungen der Bauern ihr Geschäft betreffen.",
+    "lehrling": "Ein Lehrling aus der Unterstadt ist ihr willkommen. Ist er bei Harad, sieht sie in ihm den Mann der Schmiede, die ihr die Paladine weggenommen hat, und bleibt kühl."
+  },
+  "reacts_to": {
+    "Fremder zeigt Interesse an ihrem Stand": "Zeigt bereitwillig ihre Waffen; aus diesem Grund kann man ihr unbemerkt etwas zustecken."
+  },
+  "evidence": [
+    {
+      "about": "role",
+      "key": "DIA_ANDRE_AUSLIEFERUNG_CANTHAR_08_01",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Paladine",
+      "key": "DIA_SARAH_ADD_16_00",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held fragt nach dem Geschäft",
+      "key": "DIA_SARAH_HALLO_16_01",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held liefert Canthar aus",
+      "key": "DIA_SARAH_SUCCESS_16_02",
+      "excerpt": 0
+    },
+    {
+      "about": "core",
+      "key": "DIA_SARAH_IMKNAST_16_01",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Harad",
+      "key": "DIA_SARAH_HALLO_16_02",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_SARAH_HALLO_16_03",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_SARAH_BAUERN_16_02",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_SARAH_ADD_16_03",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Canthar",
+      "key": "DIA_SARAH_SUCCESS_16_01",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_SARAH_HALLO_16_03",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held fragt nach Akils Hof",
+      "key": "DIA_SARAH_ADD_16_06",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_SARAH_IMKNAST_16_01",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Harad",
+      "key": "DIA_SARAH_HALLO_16_02",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Paladine",
+      "key": "DIA_SARAH_ADD_16_00",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Bauern",
+      "key": "DIA_SARAH_BAUERN_16_01",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Söldner",
+      "key": "DIA_SARAH_BAUERN_16_03",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Söldner",
+      "key": "DIA_SARAH_ADD_16_02",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Canthar",
+      "key": "DIA_SARAH_SUCCESS_16_01",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held fragt nach dem Geschäft",
+      "key": "DIA_SARAH_HALLO_16_01",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held fragt nach Akils Hof",
+      "key": "DIA_SARAH_ADD_16_04",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held fragt nach Akils Hof",
+      "key": "DIA_SARAH_ADD_16_06",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held schiebt ihr Canthars Brief unter",
+      "key": "DIA_CANTHAR_PAYPRICEINCITY_OK_09_03",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held schiebt ihr Canthars Brief unter",
+      "key": "DIA_ANDRE_AUSLIEFERUNG_SARAH_08_03",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Sarah sitzt im Gefängnis",
+      "key": "DIA_SARAH_IMKNAST_16_00",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held liefert Canthar aus",
+      "key": "DIA_SARAH_SUCCESS_16_02",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held liefert Canthar aus",
+      "key": "DIA_SARAH_ADD_16_07",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held schiebt ihr Canthars Brief unter",
+      "key": "DIA_CANTHAR_PAYPRICEINCITY_OK_09_03",
+      "excerpt": 0
+    }
+  ],
+  "invented": [
+    "sees_hero.fremder",
+    "sees_hero.landarbeiter: Fragen nach den Höfen aus ihrer Klage über die Bauern geschlossen",
+    "sees_hero.lehrling: Kühle gegenüber Harads Lehrling aus ihrer Klage über Harad geschlossen",
+    "attitudes.factions.Miliz: aus Andres Reaktion geschlossen, nicht aus Sarahs Zeilen",
+    "attitudes.people.Hakon: nur, dass er ebenso leer ausgeht, ist belegt",
+    "reacts_to.Fremder zeigt Interesse an ihrem Stand: belegt durch Canthars Anweisung, nicht durch Sarah",
+    "game_state.Held liefert Canthar aus: dass sie ihn danach wie einen Bekannten begrüßt, aus ihrem späteren Gruß"
+  ]
+}

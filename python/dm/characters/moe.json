@@ -17,10 +17,18 @@
   },
   "game_state": {
     "Paladinmord (spätes Kapitel)": "Beteuert, das Hafenviertel habe mit dem Mord an dem Paladin nichts zu tun. Lord Andre stecke seine Nase in Dinge, die ihn nichts angehen, und die feinen Pinkel verstünden nicht, wie es hier unten läuft.",
-    "Paladine (spätes Kapitel)": "Freut sich, als die aufgeblasenen Paladine den Hafen verlassen."
+    "Paladine (spätes Kapitel)": "Freut sich, als die aufgeblasenen Paladine den Hafen verlassen.",
+    "Held zahlt den Eintritt": "Wird gierig und will gleich den ganzen Rest aus dem Beutel. Wer alles hergibt, darf gehen.",
+    "Held weigert sich oder droht mit der Miliz": "Lacht ihn aus, weil sich keine Miliz ins Hafenviertel traut, und will es auf eine Prügelei ankommen lassen.",
+    "Held hat Schulden bei Lehmar": "Zwei Tage nach einem Darlehen taucht er mit Grüßen von Lehmar auf, um einzutreiben, es sei denn, Lares hat die Schuld beglichen.",
+    "Held fragt herum": "Mag keine Fragen von Fremden, spielt den Tugendhaften und gibt nur Harmloses preis, etwa dass zuletzt nur das Schiff der Paladine angelegt hat.",
+    "Lares ist in der Nähe": "Greift Moe den Helden an, geht Lares dazwischen."
   },
   "sees_hero": {
-    "novize": "Keine Zeile spricht einen Novizen an. Behandelt ihn wie jeden Neuen: 50 Goldstücke, sonst Prügel."
+    "novize": "Lässt einen Novizen in Ruhe: seine Abzocke am Kneipeneingang gilt nicht für Novizen, Feuermagier, Miliz und Paladine.",
+    "fremder": "Kennt ihn nicht, also verlangt er fünfzig Gold Eintritt für die Kneipe, auch wenn der Held gar nicht hinein will. Hat der Held kaum zehn Münzen, seufzt er über den schlechten Fang und lässt ihn ziehen.",
+    "landarbeiter": "Bauernkleidung schützt nicht: Er lässt nur Miliz, Paladine, Feuermagier und Novizen in Ruhe. Ein Landarbeiter zahlt wie jeder Neue oder bekommt Prügel.",
+    "lehrling": "Auch ein Lehrling hat keine Gilde und wird angehalten. Eine Werkstatt in der Unterstadt beeindruckt ihn nicht."
   },
   "reacts_to": {},
   "evidence": [
@@ -85,10 +93,68 @@
       "excerpt": 0
     },
     {
-      "about": "sees_hero.novize",
+      "about": "sees_hero.fremder",
+      "key": "DIA_MOE_HALLO_01_00",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.fremder",
       "key": "DIA_MOE_HALLO_GEHEN_01_02",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.fremder",
+      "key": "DIA_MOE_HALLO_ZAHLEN_01_05",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.fremder",
+      "key": "DIA_MOE_HALLO_ZAHLEN_01_06",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held zahlt den Eintritt",
+      "key": "DIA_MOE_HALLO_ZAHLEN_01_01",
+      "excerpt": 1
+    },
+    {
+      "about": "game_state.Held zahlt den Eintritt",
+      "key": "DIA_MOE_HALLO_ALLES_01_01",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held weigert sich oder droht mit der Miliz",
+      "key": "DIA_MOE_HALLO_MILIZ_01_02",
+      "excerpt": 1
+    },
+    {
+      "about": "game_state.Held weigert sich oder droht mit der Miliz",
+      "key": "DIA_MOE_HALLO_VERGISSES_01_01",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held hat Schulden bei Lehmar",
+      "key": "DIA_MOE_LEHMARGELDEINTREIBEN_01_00",
+      "excerpt": 1
+    },
+    {
+      "about": "game_state.Held fragt herum",
+      "key": "DIA_MOE_HARBOR_RUMORS_01_01",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held fragt herum",
+      "key": "DIA_MOE_HARBOR_SHIP_01_01",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Lares ist in der Nähe",
+      "key": "DIA_ADDON_LARES_MOE_09_01",
       "excerpt": 0
     }
   ],
-  "invented": []
+  "invented": [
+    "game_state.Held hat Schulden bei Lehmar: die Frist von zwei Tagen und die Ausnahme für Lares stehen in der Bedingung, nicht in einer Zeile",
+    "sees_hero.novize: folgt aus der Bedingung seines Begrüßungsdialogs (nicht für Novizen, Feuermagier, Miliz, Paladine), nicht aus einer Zeile"
+  ]
 }

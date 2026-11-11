@@ -1,0 +1,21 @@
+{
+  "npc": "VLK_453_BUERGER",
+  "name": "Arbeiter",
+  "voice": "06",
+  "role": "Arbeiter im Armenviertel am Hafen, ohne Rolle im Spiel; kann eine Geschichte tragen.",
+  "core": "Noch nicht festgelegt. Die erste Geschichte, die diese Figur nutzt, legt es fest und schreibt es hier ein.",
+  "background": "Sägt und schleift den Tag über abwechselnd an der Säge (NW_CITY_POOR_SAW) und am Schleifstein (NW_CITY_POOR_SMITH_SHARP). Alles Weitere: Noch nicht festgelegt. Die erste Geschichte, die diese Figur nutzt, legt es fest und schreibt es hier ein.",
+  "speech": "Noch nicht festgelegt. Die erste Geschichte, die diese Figur nutzt, legt es fest und schreibt es hier ein.",
+  "attitudes": {
+    "factions": {},
+    "people": {},
+    "politics": ""
+  },
+  "game_state": {},
+  "sees_hero": {},
+  "reacts_to": {},
+  "evidence": [],
+  "invented": [
+    "Alles außer Rolle und Ort: die Figur hat keine eigenen Zeilen."
+  ]
+}

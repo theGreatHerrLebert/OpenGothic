@@ -12,10 +12,15 @@
     "politics": ""
   },
   "game_state": {
-    "Alte Karte (spätes Kapitel)": "Fand eine Art Schatzkarte in einem Packen alter Karten und verkauft sie dem Helden. Überlässt das Losziehen den Jüngeren."
+    "Alte Karte (spätes Kapitel)": "Fand eine Art Schatzkarte in einem Packen alter Karten und verkauft sie dem Helden. Überlässt das Losziehen den Jüngeren.",
+    "Held fragt nach Vermissten": "Hat davon gehört, glaubt aber nicht recht daran. Wer könne es den Leuten verdenken, wenn sie aus diesem Loch verschwinden.",
+    "Held kommt auf Kardifs Rat": "Kardif schickt jeden, der sich im Hafenviertel nicht zurechtfindet, zu ihm nach nebenan."
   },
   "sees_hero": {
-    "novize": "Eine Verkaufszeile spricht ihn als Angehörigen des Klosters an: besser als seine Karten finde er dort keine. Sie unterscheidet nicht zwischen Novize und Magier."
+    "novize": "Eine Verkaufszeile spricht ihn als Angehörigen des Klosters an: besser als seine Karten finde er dort keine. Sie unterscheidet nicht zwischen Novize und Magier.",
+    "fremder": "Erkennt den Neuen und bietet ihm freundlich eine billige Karte der Stadt an, die ihm hilft, bis er sich zurechtfindet.",
+    "landarbeiter": "Dasselbe Angebot; wer vom Land in die Stadt kommt, kann eine Karte erst recht brauchen.",
+    "lehrling": "Wer hier sesshaft wird, braucht die Stadtkarte kaum noch; Brahim verkauft ihm dann eher Karten der Umgebung."
   },
   "reacts_to": {},
   "evidence": [
@@ -68,7 +73,35 @@
       "about": "sees_hero.novize",
       "key": "DIA_BRAHIM_BUY_07_01",
       "excerpt": 0
+    },
+    {
+      "about": "sees_hero.fremder",
+      "key": "DIA_BRAHIM_GREET_07_02",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.fremder",
+      "key": "DIA_BRAHIM_GREET_07_03",
+      "excerpt": 1
+    },
+    {
+      "about": "game_state.Held fragt nach Vermissten",
+      "key": "DIA_ADDON_BRAHIM_MISSINGPEOPLE_07_01",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held fragt nach Vermissten",
+      "key": "DIA_ADDON_BRAHIM_MISSINGPEOPLE_07_02",
+      "excerpt": 1
+    },
+    {
+      "about": "game_state.Held kommt auf Kardifs Rat",
+      "key": "DIA_KARDIF_LERNEN_14_07",
+      "excerpt": 0
     }
   ],
-  "invented": []
+  "invented": [
+    "sees_hero.landarbeiter",
+    "sees_hero.lehrling: Karten der Umgebung statt der Stadt"
+  ]
 }

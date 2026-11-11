@@ -1,0 +1,169 @@
+{
+  "npc": "VLK_420_CORAGON",
+  "name": "Coragon",
+  "voice": "09",
+  "role": "Wirt der Kneipe in der Unterstadt, nahe der Kaserne",
+  "core": "Abgebrannter, gutmütiger Wirt, der jedes Goldstück braucht und deshalb auch Gäste bedient, die er nicht ausstehen kann. Redet offen über Ärger und Kundschaft und vergilt es dem, der ihm hilft, mit Dankbarkeit und seinem letzten guten Bier.",
+  "background": "Seit Lord Andre am Galgenplatz Freibier ausschenken lässt, bleibt die einfache Kundschaft weg und es kommen fast nur noch Reiche aus dem oberen Viertel. Vor einiger Zeit wurde ihm an einem vollen Abend sein Silber samt Erspartem gestohlen; die Miliz fand nichts. Steht bei Lehmar in der Kreide. Der reiche Valentino trinkt jede Nacht bei ihm bis zum Morgen und konnte zuletzt seine Zeche nicht zahlen, weil er bestohlen worden sein will; Coragon hat ihn dafür verprügelt. Hat noch ein letztes Fass eines besonderen Biers.",
+  "speech": "Gesprächig und direkt, lacht über die feinen Herren und schimpft über die Miliz. Klagt ohne Selbstmitleid. Sagt Fremden ohne Umschweife, was sie tun müssen.",
+  "attitudes": {
+    "factions": {
+      "Miliz": "Unfähig: Statt Diebe zu fangen, saufen sie am Freibierstand.",
+      "Reiche aus dem oberen Viertel": "Gehen ihm auf die Nerven, aber sie zahlen.",
+      "Handwerker der Unterstadt": "Bei ihnen findet ein Fremder Arbeit und wird Bürger."
+    },
+    "people": {
+      "Valentino": "Ein reicher Angeber, den er nicht leiden kann.",
+      "Lord Andre": "Nimmt ihm mit dem Freibier die Gäste weg; aber wer zur Wache will, muss zu ihm.",
+      "Lehmar": "Der Geldverleiher, der ungemütlich werden kann, wenn man nicht zahlt."
+    },
+    "politics": "Khorinis ist ein rauer Ort; draußen vor der Mauer warten Banditen und wilde Tiere. Das Gerede über verschwundene Bürger hält er für Panik."
+  },
+  "game_state": {
+    "Held will was trinken": "Schenkt aus und bietet Essen an, wenn er Gold hat.",
+    "Held fragt nach dem Geschäft": "Klagt über das Freibier und die feinen Gäste und erzählt vom Diebstahl.",
+    "Held bringt das Silber zurück": "Ist überrascht und gibt ihm eine Belohnung.",
+    "Held bringt Lehmars Schuldenbuch": "Ist erleichtert und dankt ihm.",
+    "Held fragt nach dem oberen Viertel": "Rät ihm, bei einem Handwerker Arbeit zu suchen und danach zu Andre zu gehen."
+  },
+  "sees_hero": {
+    "fremder": "Ein Gast wie jeder andere, solange er zahlt. Erklärt ihm freundlich, wie man Bürger wird.",
+    "landarbeiter": "Ebenso ein Gast; die Kleidung kümmert ihn nicht.",
+    "lehrling": "Einer aus der Unterstadt, wie seine frühere Stammkundschaft; redet offener mit ihm."
+  },
+  "reacts_to": {
+    "Zechpreller": "Verprügelt ihn, egal wie reich er ist.",
+    "Gerüchte über Vermisste": "Winkt ab und hält die Leute für überängstlich."
+  },
+  "evidence": [
+    {
+      "about": "role",
+      "key": "DIA_ADDON_NEW_CORAGON_ADD_09_00",
+      "excerpt": 0
+    },
+    {
+      "about": "core",
+      "key": "DIA_ADDON_NEW_CORAGON_ADD_09_06",
+      "excerpt": 0
+    },
+    {
+      "about": "core",
+      "key": "DIA_ADDON_NEW_CORAGON_ADD_09_19",
+      "excerpt": 0
+    },
+    {
+      "about": "core",
+      "key": "DIA_ADDON_NEW_CORAGON_ADD_09_21",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_ADDON_NEW_CORAGON_ADD_09_01",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_ADDON_NEW_CORAGON_ADD_09_02",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_ADDON_NEW_CORAGON_ADD_09_07",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_ADDON_NEW_CORAGON_ADD_09_09",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_ADDON_NEW_CORAGON_ADD_09_31",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_ADDON_NEW_CORAGON_ADD_09_33",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_ADDON_NEW_CORAGON_ADD_09_04",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_ADDON_NEW_CORAGON_ADD_09_34",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Miliz",
+      "key": "DIA_ADDON_NEW_CORAGON_ADD_09_11",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Valentino",
+      "key": "DIA_ADDON_NEW_CORAGON_ADD_09_05",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Valentino",
+      "key": "DIA_ADDON_NEW_CORAGON_ADD_09_29",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Handwerker der Unterstadt",
+      "key": "DIA_ADDON_NEW_CORAGON_ADD_09_25",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.politics",
+      "key": "DIA_ADDON_CORAGON_MISSINGPEOPLE_09_05",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.politics",
+      "key": "DIA_ADDON_CORAGON_MISSINGPEOPLE_09_07",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held bringt das Silber zurück",
+      "key": "DIA_ADDON_NEW_CORAGON_ADD_09_14",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held bringt Lehmars Schuldenbuch",
+      "key": "DIA_ADDON_NEW_CORAGON_ADD_09_16",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held fragt nach dem oberen Viertel",
+      "key": "DIA_ADDON_NEW_CORAGON_ADD_09_24",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held fragt nach dem oberen Viertel",
+      "key": "DIA_ADDON_NEW_CORAGON_ADD_09_26",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Lord Andre",
+      "key": "DIA_ADDON_NEW_CORAGON_ADD_09_27",
+      "excerpt": 0
+    },
+    {
+      "about": "reacts_to.Zechpreller",
+      "key": "DIA_ADDON_NEW_CORAGON_ADD_09_38",
+      "excerpt": 0
+    }
+  ],
+  "invented": [
+    "sees_hero.fremder: nur sein Rat zum oberen Viertel ist belegt (game_state)",
+    "sees_hero.landarbeiter",
+    "sees_hero.lehrling",
+    "background: 'steht bei Lehmar in der Kreide' aus seiner Erleichterung über das Schuldenbuch geschlossen",
+    "role: Lage nahe der Kaserne aus dem Tagesablauf, nicht aus einer Zeile",
+    "reacts_to.Zechpreller: belegt nur am Fall Valentino",
+    "game_state.Held will was trinken: Ausschank aus dem Handelsmenü, nicht aus einer Zeile"
+  ]
+}

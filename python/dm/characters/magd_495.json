@@ -1,0 +1,21 @@
+{
+  "npc": "VLK_495_BUERGERIN",
+  "name": "Magd",
+  "voice": "16",
+  "role": "Magd am Marktplatz, ohne Rolle im Spiel; kann eine Geschichte tragen.",
+  "core": "Noch nicht festgelegt. Die erste Geschichte, die diese Figur nutzt, legt es fest und schreibt es hier ein.",
+  "background": "Steht den Tag über am Marktplatz, plaudert (NW_CITY_MERCHANT_PATH_28_B) und isst zwischendurch an einem Stand (NW_CITY_MERCHANT_PATH_30). Alles Weitere: Noch nicht festgelegt. Die erste Geschichte, die diese Figur nutzt, legt es fest und schreibt es hier ein.",
+  "speech": "Noch nicht festgelegt. Die erste Geschichte, die diese Figur nutzt, legt es fest und schreibt es hier ein.",
+  "attitudes": {
+    "factions": {},
+    "people": {},
+    "politics": ""
+  },
+  "game_state": {},
+  "sees_hero": {},
+  "reacts_to": {},
+  "evidence": [],
+  "invented": [
+    "Alles außer Rolle und Ort: die Figur hat keine eigenen Zeilen."
+  ]
+}

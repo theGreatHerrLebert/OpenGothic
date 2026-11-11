@@ -17,10 +17,14 @@
   "game_state": {
     "Zettel entdeckt": "Gibt alles zu, schwitzt und bietet an, Handelspartner zu werden, wenn der Held schweigt. Droht er ihm mit dem Knast, bettelt Halvor und droht zuletzt selbst.",
     "Zeichen der Bande": "Merkt, dass der Held nicht nur wegen der Fische kommt, und kauft ihm Silber ab, aber nur einmal am Tag.",
-    "Mannschaft (spätes Kapitel)": "Fürchtet Paladine und orkische Sklavengaleeren, will nicht mitkommen und verweist an Jack."
+    "Mannschaft (spätes Kapitel)": "Fürchtet Paladine und orkische Sklavengaleeren, will nicht mitkommen und verweist an Jack.",
+    "Held fragt nach Vermissten": "Winkt ab: Im Hafen verschwinden eben Leute, die See ist gefährlich, und fremde Kapitäne pressen schon mal Männer an Bord. Schickt ihn zu den Bootsbauern und behauptet, selbst niemanden zu vermissen.",
+    "Held kommt nach Feierabend": "Verkauft nachts nichts und vertröstet auf den nächsten Tag."
   },
   "sees_hero": {
-    "novize": "Keine Zeile spricht einen Novizen an. Behandelt jeden als möglichen Fischkunden."
+    "novize": "Keine Zeile spricht einen Novizen an. Behandelt jeden als möglichen Fischkunden.",
+    "fremder": "Ruft jeden, der tagsüber an seinem Stand vorbeikommt, als Kunden heran, Lumpen hin oder her. Abends schickt er auch ihn weg und vertröstet auf morgen.",
+    "landarbeiter": "Ein Kunde wie jeder andere; ein Bauer, der Fisch kauft, ist ihm recht."
   },
   "reacts_to": {},
   "evidence": [
@@ -138,7 +142,45 @@
       "about": "sees_hero.novize",
       "key": "DIA_HALVOR_HALLO_06_00",
       "excerpt": 1
+    },
+    {
+      "about": "sees_hero.fremder",
+      "key": "DIA_HALVOR_HALLO_06_00",
+      "excerpt": 3
+    },
+    {
+      "about": "sees_hero.fremder",
+      "key": "DIA_HALVOR_NIGHT_06_00",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held fragt nach Vermissten",
+      "key": "DIA_ADDON_HALVOR_MISSINGPEOPLE_06_02",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held fragt nach Vermissten",
+      "key": "DIA_ADDON_HALVOR_MISSINGPEOPLE_06_04",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held fragt nach Vermissten",
+      "key": "DIA_ADDON_HALVOR_MISSINGPEOPLE_WER_06_01",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held fragt nach Vermissten",
+      "key": "DIA_ADDON_HALVOR_MISSINGPEOPLE_YOU_06_01",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held kommt nach Feierabend",
+      "key": "DIA_HALVOR_NIGHT_06_00",
+      "excerpt": 0
     }
   ],
-  "invented": []
+  "invented": [
+    "sees_hero.landarbeiter: keine Zeile unterscheidet die Kleidung",
+    "sees_hero.fremder: dass ihn die Lumpen nicht stören, folgt daraus, dass sein Gruß an keine Bedingung außer der Tageszeit geknüpft ist"
+  ]
 }

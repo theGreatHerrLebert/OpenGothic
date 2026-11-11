@@ -23,10 +23,18 @@
   "game_state": {
     "Nachricht vom Fremden": "Gibt die Einladung hinter Halvors Fischladen weiter und nimmt dafür ausnahmsweise nichts. Beschwert sich der Held danach, will er nichts damit zu tun haben.",
     "Zeichen der Bande": "Merkt, dass der Held 'bei der Bande mitmischt', und bietet Dietriche an, wenn er nach etwas zu trinken fragt.",
-    "Mannschaft (spätes Kapitel)": "Die meisten Seeleute haben die Stadt verlassen; verweist an den Alten Jack."
+    "Mannschaft (spätes Kapitel)": "Die meisten Seeleute haben die Stadt verlassen; verweist an den Alten Jack.",
+    "Held sucht Arbeit": "Schickt ihn zu den Handwerkern in die Unterstadt; wer kämpfen kann, soll hinter dem Lagerhaus gegen Alrik um Gold antreten.",
+    "Held sucht einen Lehrer": "Nennt Carl für Stärke, Alrik fürs Kämpfen, Lares als gerissenen Gauner und den alten Ignaz für Tränke. Wer sie suchen muss, soll sich bei Brahim eine Karte kaufen.",
+    "Held will schnelles Geld": "Schickt ihn erst zu Nagur. Beim nächsten Mal verrät er, dass der Feuermagier Daron bei Zuris wohnt und seine Wertsachen in einer neuen Truhe von Thorben lagert, und will damit nichts zu tun haben.",
+    "Held feilscht um den Preis": "Spielt den Ruinierten, geht aber auf sieben, sechs oder fünf Gold herunter, wenn der Held hart bleibt.",
+    "Held fragt nach Vermissten": "Weiß nur, dass vor allem am Hafen Leute fehlen, und schickt ihn zu Coragon in der Unterstadt und zu Halvor am Kai."
   },
   "sees_hero": {
-    "novize": "Keine Zeile spricht einen Novizen an. Behandelt jeden als zahlenden Kunden."
+    "novize": "Keine Zeile spricht einen Novizen an. Behandelt jeden als zahlenden Kunden.",
+    "fremder": "Ein Gast, der erst einmal etwas bestellen soll. Für Auskünfte verlangt er zehn Gold je Frage und lässt sich auf fünf herunterhandeln, sobald der Held gehen will. Sein Tipp über die Truhe des Feuermagiers Daron geht nur an Leute ohne Gilde, Miliz oder Kloster.",
+    "landarbeiter": "Behandelt ihn wie jeden Gast ohne Gilde: erst bestellen, dann zahlen. Erwartet bei einem Landarbeiter wenig Gold und handelt umso härter um jede Münze.",
+    "lehrling": "Hat ihn selbst zu den Handwerkern der Unterstadt geschickt und findet es ganz in Ordnung, dass er dort untergekommen ist. Da ein Lehrling keine Gilde hat, bekommt auch er den Tipp über Darons Truhe."
   },
   "reacts_to": {},
   "evidence": [
@@ -164,7 +172,101 @@
       "about": "sees_hero.novize",
       "key": "DIA_KARDIF_HI_14_01",
       "excerpt": 0
+    },
+    {
+      "about": "sees_hero.fremder",
+      "key": "DIA_KARDIF_HI_14_01",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.fremder",
+      "key": "DIA_KARDIF_HALLO_14_04",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.fremder",
+      "key": "DIA_KARDIF_HALLO_ABLEHNEN_14_01",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.fremder",
+      "key": "DIA_KARDIF_DIEBESWERK2_14_01",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.lehrling",
+      "key": "DIA_KARDIF_ARBEIT_14_01",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held sucht Arbeit",
+      "key": "DIA_KARDIF_ARBEIT_14_01",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held sucht Arbeit",
+      "key": "DIA_KARDIF_ARBEIT_14_02",
+      "excerpt": 1
+    },
+    {
+      "about": "game_state.Held sucht einen Lehrer",
+      "key": "DIA_KARDIF_LERNEN_14_02",
+      "excerpt": 1
+    },
+    {
+      "about": "game_state.Held sucht einen Lehrer",
+      "key": "DIA_KARDIF_LERNEN_14_03",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held sucht einen Lehrer",
+      "key": "DIA_KARDIF_LERNEN_14_07",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held will schnelles Geld",
+      "key": "DIA_KARDIF_DIEBESWERK_14_02",
+      "excerpt": 1
+    },
+    {
+      "about": "game_state.Held will schnelles Geld",
+      "key": "DIA_KARDIF_DIEBESWERK2_14_03",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held will schnelles Geld",
+      "key": "DIA_KARDIF_DIEBESWERK2_14_05",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held will schnelles Geld",
+      "key": "DIA_KARDIF_DIEBESWERK2_14_06",
+      "excerpt": 1
+    },
+    {
+      "about": "game_state.Held feilscht um den Preis",
+      "key": "DIA_KARDIF_HALLO_ANGEBOT_14_01",
+      "excerpt": 1
+    },
+    {
+      "about": "game_state.Held feilscht um den Preis",
+      "key": "DIA_KARDIF_HALLO_KEINDEAL_14_01",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held fragt nach Vermissten",
+      "key": "DIA_ADDON_KARDIF_MISSINGPEOPLE_14_02",
+      "excerpt": 1
+    },
+    {
+      "about": "game_state.Held fragt nach Vermissten",
+      "key": "DIA_ADDON_KARDIF_MISSINGPEOPLE_14_04",
+      "excerpt": 0
     }
   ],
-  "invented": []
+  "invented": [
+    "sees_hero.landarbeiter: dass er bei einem Landarbeiter härter feilscht, ist geschlossen; keine Zeile unterscheidet die Kleidung",
+    "sees_hero.lehrling: dass er die Lehre gutheißt, aus seinem Rat zur Unterstadt geschlossen",
+    "sees_hero.fremder: dass der Daron-Tipp nur Gildenlosen gilt, steht in der Bedingung des Dialogs, nicht in einer Zeile"
+  ]
 }

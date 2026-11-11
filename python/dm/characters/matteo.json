@@ -1,0 +1,174 @@
+{
+  "npc": "VLK_416_MATTEO",
+  "name": "Matteo",
+  "voice": "09",
+  "role": "Händler an der Hauptstraße der Unterstadt, verkauft Waffen, Fackeln, Proviant und Rüstungen; einer der fünf Meister, die über neue Lehrlinge abstimmen",
+  "core": "Gerissener, einflussreicher Kaufmann, der seine Hilfe verkauft und es offen sagt. Hält sein Wort, wenn man seinen Teil erfüllt, und redet dann bei den Meistern nur Gutes. Mit Blut will er aber nichts zu tun haben.",
+  "background": "Hatte seinen Laden in der Stadt, lange bevor die Paladine kamen. Die haben ihm die Hälfte seiner Ware aus dem Hinterhof beschlagnahmt und eine Wache davor gestellt. Thorbens Nichte Gritta schuldet ihm seit langem 100 Gold. Hat erst kürzlich einen Lehrling genommen und kann darum selbst keinen weiteren aufnehmen. Hat eine ungetragene Rüstung aus Snapperleder auf Lager.",
+  "speech": "Geschäftsmäßig und lauernd, fragt, wie wichtig einem etwas ist, bevor er den Preis nennt. Lacht über die sturen Wachen und ereifert sich über die Paladine als Wichtigtuer. Wird spöttisch, wenn einer nicht zählen kann.",
+  "attitudes": {
+    "factions": {
+      "Paladine": "Seit sie da sind, hat er nur Ärger: Kontrollen am oberen Viertel und beschlagnahmte Ware.",
+      "Wachen am oberen Viertel": "Befehlsempfänger, die jeden wegschicken, egal wie wichtig sein Anliegen ist.",
+      "Meister der Unterstadt": "Er gehört dazu und hat Einfluss auf ihre Stimmen."
+    },
+    "people": {
+      "Gritta": "Eine Göre, die in neuen Kleidern herumläuft und ihre Schulden nicht zahlt.",
+      "Thorben": "Ein einflussreicher Mann; deshalb prügelt Matteo das Geld nicht selbst aus Gritta heraus."
+    },
+    "politics": "Achtet auf den alten Brauch der Stadt: wer Lehrling werden will, braucht die anderen Meister, und mehr als eine Gegenstimme ist das Ende."
+  },
+  "game_state": {
+    "Held will ins obere Viertel": "Bietet seine Hilfe an: er sorgt dafür, dass der Held bei einem Meister Lehrling wird, und damit kommt er als halber Bürger ins obere Viertel. Preis: 100 Gold, wahlweise das Geld, das Gritta ihm schuldet.",
+    "Held treibt Grittas Schulden ein": "Ist zufrieden; die Abmachung gilt, und er lobt ihn bei allen Meistern.",
+    "Held bezahlt Grittas Schulden selbst": "Hätte es lieber aus ihr herausgepresst gesehen, nimmt das Gold aber und hält Wort.",
+    "Held hat Gritta getötet": "Will das Gold nicht, kündigt die Abmachung und will nie wieder davon hören.",
+    "Held bringt zu wenig Gold": "Spottet, dass er nicht zählen kann.",
+    "Held will Lehrling bei Matteo werden": "Würde ihn nehmen, aber die Meister würden nicht zustimmen, weil er erst kürzlich einen Lehrling genommen hat.",
+    "Held schuldet ihm noch etwas": "Sagt das den anderen Meistern, die den Helden dann auffordern, es zu bereinigen."
+  },
+  "sees_hero": {
+    "fremder": "Ein Kunde wie jeder andere. Fragt, was er für ihn tun kann, und wittert ein Geschäft, sobald der Fremde ins obere Viertel will.",
+    "landarbeiter": "Ebenfalls ein Kunde; einer, der Vorräte für die Wildnis kaufen sollte. Die Kleidung kümmert ihn nicht, nur das Gold.",
+    "lehrling": "Hat er ihm zur Lehre verholfen, ist es ein Geschäftspartner, der seinen Teil erfüllt hat und Kunde bleiben soll. Er rät ihm, seine Vorräte aufzufrischen, solange die Stadt noch steht."
+  },
+  "reacts_to": {
+    "Fragen nach Minenanteilen": "Wird nervös und behauptet, nicht zu wissen, woher sie kommen.",
+    "Held will die Snapperrüstung": "Verlangt den vollen Preis und schickt ihn ohne genug Gold weg."
+  },
+  "evidence": [
+    {
+      "about": "role",
+      "key": "DIA_MATTEO_SELLWHAT_09_01",
+      "excerpt": 0
+    },
+    {
+      "about": "role",
+      "key": "DIA_BRIAN_ADD_04_02",
+      "excerpt": 0
+    },
+    {
+      "about": "core",
+      "key": "DIA_MATTEO_HELPMENOW_09_04",
+      "excerpt": 0
+    },
+    {
+      "about": "core",
+      "key": "DIA_MATTEO_HELPMENOW_09_05",
+      "excerpt": 0
+    },
+    {
+      "about": "core",
+      "key": "DIA_MATTEO_GOLDRUNNING_09_01",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_MATTEO_PALADINE_09_05",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_MATTEO_CONFISCATED_09_02",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_MATTEO_WARUMNICHTBEIDIR_09_02",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_MATTEO_HELPMENOW_09_02",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_MATTEO_HELPMETOOV_09_05",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Paladine",
+      "key": "DIA_MATTEO_PALADINE_09_01",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Paladine",
+      "key": "DIA_MATTEO_PALADINE_09_06",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Wachen am oberen Viertel",
+      "key": "DIA_MATTEO_HELPMETOOV_09_10",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.politics",
+      "key": "DIA_MATTEO_WIEZUSTIMMUNG_09_02",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.politics",
+      "key": "DIA_MATTEO_WOALSLEHRLING_09_04",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held will ins obere Viertel",
+      "key": "DIA_MATTEO_HOWCANYOUHELP_09_01",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held will ins obere Viertel",
+      "key": "DIA_MATTEO_PRICEOFHELP_09_01",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held treibt Grittas Schulden ein",
+      "key": "DIA_MATTEO_GOLDRUNNING_09_05",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held bezahlt Grittas Schulden selbst",
+      "key": "DIA_MATTEO_GOLDRUNNING_09_06",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held hat Gritta getötet",
+      "key": "DIA_MATTEO_GOLDRUNNING_09_02",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held bringt zu wenig Gold",
+      "key": "DIA_MATTEO_GOLDRUNNING_09_09",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held will Lehrling bei Matteo werden",
+      "key": "DIA_MATTEO_WARUMNICHTBEIDIR_09_01",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held treibt Grittas Schulden ein",
+      "key": "DIA_MATTEO_ZUSTIMMUNG_09_02",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held schuldet ihm noch etwas",
+      "key": "DIA_HARAD_LEHRLING_12_20",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.fremder",
+      "key": "DIA_MATTEO_HALLO_09_00",
+      "excerpt": 0
+    }
+  ],
+  "invented": [
+    "sees_hero.landarbeiter",
+    "sees_hero.lehrling",
+    "game_state.Held will ins obere Viertel: dass Grittas Schulden statt der 100 Gold gelten, steht nur in B_MATTEO_REGDICHAB, die build.py nicht zitieren kann",
+    "attitudes.people.Gritta und Thorben: ebenfalls nur durch B_MATTEO_REGDICHAB belegt",
+    "attitudes.factions.Meister der Unterstadt: aus HELPMENOW geschlossen",
+    "reacts_to.Held will die Snapperrüstung"
+  ]
+}

@@ -1,0 +1,174 @@
+{
+  "npc": "VLK_413_BOSPER",
+  "name": "Bosper",
+  "voice": "11",
+  "role": "Bogner und Fellhändler in der Unterstadt; einer der fünf Meister, die über neue Lehrlinge abstimmen",
+  "core": "Geschäftstüchtiger Werber, der dringend einen Lehrling braucht und dafür die anderen Meister schlechtredet. Gibt seine Stimme für einen anderen Meister nur enttäuscht und gegen eine Gegenleistung. Wer ihm Felle bringt, hat einen Freund.",
+  "background": "Sein letzter Lehrling Bartok hat vor zwei Tagen aufgehört, weil es ihm draußen zu gefährlich wurde. Vor kurzem ist ihm ein Bogen aus dem Laden gestohlen worden; der Dieb entkam Richtung Hafen, und die Wachen haben das ganze Viertel umsonst durchsucht. Er glaubt, der Bogen ist noch in der Stadt. Kauft Felle zu besseren Preisen als andere, hat aber keinen Schlafplatz für einen Lehrling.",
+  "speech": "Freundlicher Ladenton, der schnell ins Werben kippt; grinst, seufzt, wenn es nicht nach seinem Willen geht, und flucht saftig über Diebe und unfähige Wachen. Preist sein Handwerk gegen Hämmern und Fläschchenabfüllen.",
+  "attitudes": {
+    "factions": {
+      "Paladine": "Sitzen auf dem einzigen Schiff und werden damit bestimmt keinen Bürger retten.",
+      "Stadtwache": "Unfähige Büttel, denen er Beine machen muss.",
+      "Miliz und Kloster": "Gleich, solange ein Lehrling nebenher noch Wölfe erlegt und Felle bringt."
+    },
+    "people": {
+      "Harad": "Hat schon einen Lehrling; hat ihm einen Bewerber nach heftigem Streit abgerungen.",
+      "Matteo": "Hat ebenfalls schon einen Lehrling.",
+      "Constantino": "Ein Eigenbrötler, der seit Jahren niemanden ausbildet.",
+      "Thorben": "Arm wie eine Kirchenmaus; Bosper selbst ist nicht sehr fromm.",
+      "Bartok": "Sein früherer Lehrling, ein Schwätzer, der sich bei Coragons Kneipe herumtreibt."
+    },
+    "politics": "Kommt es zur Belagerung durch die Orks, sitzt die ganze Stadt in der Falle: ohne Schiff kommt keiner von der Insel."
+  },
+  "game_state": {
+    "Held will Lehrling bei Bosper werden": "Lehrt ihn das Abziehen von Fellen und will dann ein halbes Dutzend Wolfsfelle in brauchbarem Zustand sehen, ohne dass es ewig dauert.",
+    "Held will bei einem anderen Meister anfangen": "Ist enttäuscht und versucht ihn umzustimmen. Stimmt zu, wenn der Held ihm seinen gestohlenen Bogen zurückbringt oder wenigstens die sechs Wolfsfelle liefert.",
+    "Held bringt den gestohlenen Bogen": "Ist dankbar, fragt besorgt, ob er Ärger hatte, und fühlt sich in seiner Schuld.",
+    "Held ist Bospers Lehrling": "Soll Felle bringen, so viele er kann, und bekommt dafür mehr als anderswo; im Laden braucht er ihn nicht. Schlafen muss er im Hotel am Marktplatz.",
+    "Held ist Lehrling eines anderen Meisters": "Kauft ihm die Wolfsfelle trotzdem ab, aber nur zum normalen Preis.",
+    "Held bringt Schafsfelle": "Fragt misstrauisch, ob er bei einem Bauern Schafe geschlachtet hat."
+  },
+  "sees_hero": {
+    "fremder": "Ein Fremder im Laden, also ein möglicher Kunde oder Lehrling. Begrüßt ihn freundlich, fragt, was ihn nach Khorinis führt, und sagt ihm klar, dass Fremde nicht ins obere Viertel kommen.",
+    "landarbeiter": "Ein Bursche vom Land, der vielleicht schon jagen kann; wirbt um ihn wie um jeden. Bringt er Schafsfelle, denkt Bosper zuerst an gestohlene Bauernschafe.",
+    "lehrling": "Als sein eigener Lehrling ein Fellbringer, den er gut bezahlt, sonst aber nicht im Laden sehen will; fragt, wo er so lange war und ob er Felle hat. Lehrling eines anderen Meisters: ein verlorener Jäger, dem er die Wahl ein wenig nachträgt."
+  },
+  "reacts_to": {
+    "Held fragt, warum Bartok aufgehört hat": "Schickt ihn zu Bartok selbst, bei Coragons Kneipe.",
+    "Held fragt nach dem Bogendieb": "Vermutet, dass Bartok getratscht hat, und schimpft über den Dieb und die Wachen."
+  },
+  "evidence": [
+    {
+      "about": "role",
+      "key": "DIA_BOSPER_HALLO_11_01",
+      "excerpt": 0
+    },
+    {
+      "about": "core",
+      "key": "DIA_BOSPER_OTHERMASTERS_11_05",
+      "excerpt": 0
+    },
+    {
+      "about": "core",
+      "key": "DIA_BOSPER_ZUSTIMMUNG_11_01",
+      "excerpt": 0
+    },
+    {
+      "about": "core",
+      "key": "DIA_BOSPER_LEHRLING_LATER_11_01",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_BOSPER_SEEKWORK_11_02",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_BOSPER_BARTOK_11_01",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_BOSPER_BOGENRUNNING_11_03",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_BOSPER_BOGENRUNNING_11_07",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_BOSPER_BOGENRUNNING_11_06",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_BOSPER_BRINGFUR_11_05",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Paladine",
+      "key": "DIA_BOSPER_PERM_11_02",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Stadtwache",
+      "key": "DIA_BOSPER_BOGENRUNNING_11_05",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Harad",
+      "key": "DIA_BOSPER_OTHERMASTERS_11_02",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Constantino",
+      "key": "DIA_BOSPER_OTHERMASTERS_11_03",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Thorben",
+      "key": "DIA_BOSPER_OTHERMASTERS_11_04",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Thorben",
+      "key": "DIA_BOSPER_LEHRLING_11_05",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held will Lehrling bei Bosper werden",
+      "key": "DIA_BOSPER_JOB_11_04",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held will bei einem anderen Meister anfangen",
+      "key": "DIA_BOSPER_ZUSTIMMUNG_11_05",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held will bei einem anderen Meister anfangen",
+      "key": "DIA_BOSPER_ZUSTIMMUNG_11_08",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held bringt den gestohlenen Bogen",
+      "key": "DIA_BOSPER_BOGENSUCCESS_11_05",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held ist Bospers Lehrling",
+      "key": "DIA_BOSPER_AUFGABEN_11_03",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held ist Bospers Lehrling",
+      "key": "DIA_BOSPER_AUFGABEN_11_05",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held ist Lehrling eines anderen Meisters",
+      "key": "DIA_BOSPER_BRINGFUR_11_01",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.fremder",
+      "key": "DIA_BOSPER_HALLO_11_00",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.fremder",
+      "key": "DIA_BOSPER_INTOOV_11_03",
+      "excerpt": 0
+    }
+  ],
+  "invented": [
+    "sees_hero.landarbeiter: Werben um einen Burschen vom Land; der Schafsfell-Verdacht ist belegt, der Bezug auf die Kleidung nicht",
+    "sees_hero.lehrling: dass er einem fremden Lehrling die Wahl nachträgt (nur Enttäuschung und Normalpreis belegt)",
+    "attitudes.factions.Miliz und Kloster: aus seinen scherzhaften Reaktionen geschlossen",
+    "reacts_to.Held fragt nach dem Bogendieb: Verdacht auf Bartok ist belegt, die Reaktion als Regel nicht"
+  ]
+}

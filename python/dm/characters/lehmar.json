@@ -15,10 +15,17 @@
   },
   "game_state": {
     "Überfällige Schulden": "Erhöht auf 30 Prozent statt 20 und erteilt eine Lektion, wenn nicht genug Geld da ist. 'Nimm es nicht persönlich, ich hab einen Ruf zu verlieren.'",
-    "Schuldenbuch gestohlen": "Zerknirscht; verdächtigt den Helden, glaubt seine Unschuld nicht."
+    "Schuldenbuch gestohlen": "Zerknirscht; verdächtigt den Helden, glaubt seine Unschuld nicht.",
+    "Held leiht Geld": "Gibt fünfzig oder zweihundert für einen Tag gegen zwanzig Prozent; wer tausend will, bekommt hundert und Spott.",
+    "Held zahlt pünktlich zurück": "Ist zufrieden. Fehlt etwas, schickt er ihn weg, die Frist läuft weiter.",
+    "Held will noch einmal leihen": "Wer schon geliehen hat, bekommt eine Abfuhr oder muss ein paar Tage warten.",
+    "Held kommt von Lares": "Die Schuld ist erledigt, weil Lares sie übernommen hat; Lehmar stellt keine Fragen."
   },
   "sees_hero": {
-    "novize": "Keine Zeile spricht einen Novizen an. Fragt jeden, wie viel er will."
+    "novize": "Keine Zeile spricht einen Novizen an. Fragt jeden, wie viel er will.",
+    "fremder": "Fragt gelangweilt, wie viel er will, und leiht auch einem Abgerissenen. Sicher ist er sich trotzdem: Ein so auffälliges Gesicht findet er überall wieder.",
+    "landarbeiter": "Leiht ihm wie jedem anderen. Ein Landarbeiter hat einen Hof, auf dem man ihn suchen kann, und das reicht ihm als Sicherheit.",
+    "lehrling": "Ein Lehrling hat einen Meister und eine Werkstatt, wo man ihn findet. Für Lehmar ein Schuldner, der nicht weglaufen kann."
   },
   "reacts_to": {},
   "evidence": [
@@ -106,7 +113,65 @@
       "about": "sees_hero.novize",
       "key": "DIA_LEHMAR_ENTSCHULDIGUNG_09_03",
       "excerpt": 1
+    },
+    {
+      "about": "sees_hero.fremder",
+      "key": "DIA_LEHMAR_ENTSCHULDIGUNG_09_01",
+      "excerpt": 1
+    },
+    {
+      "about": "sees_hero.fremder",
+      "key": "DIA_LEHMAR_WARUMGELD_09_02",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held leiht Geld",
+      "key": "DIA_LEHMAR_GELDLEIHEN_09_01",
+      "excerpt": 1
+    },
+    {
+      "about": "game_state.Held leiht Geld",
+      "key": "DIA_LEHMAR_GELDLEIHEN_50_09_01",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held leiht Geld",
+      "key": "DIA_LEHMAR_GELDLEIHEN_1000_09_02",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held zahlt pünktlich zurück",
+      "key": "DIA_LEHMAR_GELDZURUECK_09_01",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held zahlt pünktlich zurück",
+      "key": "DIA_LEHMAR_GELDZURUECK_09_02",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held will noch einmal leihen",
+      "key": "DIA_LEHMAR_NOCHMALGELD_09_01",
+      "excerpt": 1
+    },
+    {
+      "about": "game_state.Held will noch einmal leihen",
+      "key": "DIA_LEHMAR_NOCHMALGELD_09_03",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held kommt von Lares",
+      "key": "DIA_ADDON_LEHMAR_GELDZURUECK_09_00",
+      "excerpt": 1
+    },
+    {
+      "about": "game_state.Held kommt von Lares",
+      "key": "DIA_ADDON_LARES_RANGERHELP_GELD_09_02",
+      "excerpt": 0
     }
   ],
-  "invented": []
+  "invented": [
+    "sees_hero.landarbeiter: der Hof als Sicherheit",
+    "sees_hero.lehrling: der Meister als Sicherheit"
+  ]
 }

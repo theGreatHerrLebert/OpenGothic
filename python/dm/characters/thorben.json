@@ -1,0 +1,175 @@
+{
+  "npc": "VLK_462_THORBEN",
+  "name": "Thorben",
+  "voice": "06",
+  "role": "Tischler und Schlossmacher der Unterstadt; wohnt mit seiner Nichte Gritta im letzten Haus vor der Schmiede und ist einer der fünf Meister, die über neue Lehrlinge abstimmen",
+  "core": "Frommer, anständiger und hoch verschuldeter Handwerker. Gibt seine Stimme nur einem, der zuvor von den Göttern gesegnet wurde. Fürchtet Herumtreiber, die ehrlichen Leuten die Truhen leeren, und vergisst nie, wer anständig zu ihm war.",
+  "background": "Baut Truhen und fertigt die Schlösser dazu selbst. Hat kein Geld, um einen Lehrling zu bezahlen. Seine verwitwete Nichte Gritta lebt bei ihm und hat bei fast allen Händlern der Stadt Schulden gemacht; um sie zu tilgen, hat er sich bei dem Geldverleiher Lehmar 200 Gold geliehen und steht nun in dessen Schuldenbuch. Fürchtet, dass Lehmar ihm bald Schläger schickt. Kann Schlösserknacken lehren, braucht dafür aber Geld.",
+  "speech": "Freundlich und väterlich, redet den Helden mit mein Junge an. Wird feierlich und ernst, sobald es um Glauben geht. Schimpft verzweifelt über seine Nichte.",
+  "attitudes": {
+    "factions": {
+      "Paladine": "Weiß wenig über sie; vermutet, sie sollen den Bauernaufstand niederschlagen und nicht die Orks abwehren.",
+      "Onar und die Bauern": "Versteht, dass Onar seine Ernte nicht mehr hergeben will; in der Stadt merkt man davon nur die steigenden Preise.",
+      "Diebe": "Gibt es in Khorinis gerade mehr als genug; darum baut er gute Schlösser.",
+      "Innos und Adanos": "Ehrt beide; ein Handwerk ohne den Segen der Götter taugt für ihn nichts."
+    },
+    "people": {
+      "Gritta": "Seine Nichte; seit sie bei ihm wohnt, hat er nur Ärger.",
+      "Lehmar": "Sein Gläubiger, unnachsichtig bei Schulden.",
+      "Matteo": "Einer von Grittas Gläubigern; Thorben zahlt ihm lieber später als Lehmar.",
+      "Vatras": "Der Priester Adanos', dessen Segen er von jedem Bewerber verlangt."
+    },
+    "politics": "Hält sich aus allem heraus und schickt Neugierige zu den Händlern am Marktplatz, die mehr herumkommen."
+  },
+  "game_state": {
+    "Held will Thorbens Stimme": "Gibt sie gern, aber erst wenn der Held sich den Segen von Vatras und danach den eines Priesters Innos' geholt hat.",
+    "Held gibt zu, nicht fromm zu sein": "Verweigert seine Stimme und rät ihm, die Götter um Vergebung zu bitten.",
+    "Held will Lehrling bei Thorben werden": "Lehnt ab: der Held versteht nichts von Holz oder Schlössern, und Geld für einen Lehrling hat er nicht.",
+    "Held bringt Lehmars Schuldenbuch": "Will es misstrauisch haben, kann nur mit Dank bezahlen und bringt ihm danach Schlösserknacken bei.",
+    "Held bezahlt Grittas Schulden bei Matteo": "Hält ihn für anständig und lehrt ihn Schlösserknacken, verlangt aber Geld dafür.",
+    "Held holt Grittas Gold": "Erkennt sein eigenes Gold aus der Truhe und will es für Lehmar zurück; Matteo soll warten.",
+    "Held hat Gritta getötet": "Wird ihm das niemals verzeihen."
+  },
+  "sees_hero": {
+    "fremder": "Ein neues Gesicht von außerhalb; freundlich, warnt vor schlechten Zeiten. Traut ihm aber nicht, bevor er weiß, dass es kein Herumtreiber ist, der Truhen ausräumt.",
+    "landarbeiter": "Ein Mann vom Land; begegnet ihm etwas offener als einem Abgerissenen, fragt aber genauso, ob er gottesfürchtig ist.",
+    "lehrling": "Einer, der den Segen der Götter hat und nun ein Handwerk ausübt; wünscht ihm, er möge es gut verrichten, egal bei welchem Meister."
+  },
+  "reacts_to": {
+    "Held fragt nach Dietrichen": "Verkauft welche, wenn er hat, warnt aber, dass sie ohne Übung nichts nützen.",
+    "Ärger um Gritta": "Fürchtet, dass sie zur Wache läuft, und will die Sache selbst ins Reine bringen."
+  },
+  "evidence": [
+    {
+      "about": "role",
+      "key": "DIA_THORBEN_ARBEIT_06_01",
+      "excerpt": 0
+    },
+    {
+      "about": "role",
+      "key": "DIA_THORBEN_LOCKSMITH_06_02",
+      "excerpt": 0
+    },
+    {
+      "about": "core",
+      "key": "DIA_THORBEN_OTHERMASTERS_NAJA_06_02",
+      "excerpt": 0
+    },
+    {
+      "about": "core",
+      "key": "DIA_THORBEN_PLEASETEACH_06_12",
+      "excerpt": 0
+    },
+    {
+      "about": "core",
+      "key": "DIA_THORBEN_ZUSTIMMUNG_06_05",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_THORBEN_ARBEIT_06_06",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_THORBEN_GRITTA_06_04",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_THORBEN_GRITTA_06_05",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_THORBEN_PLEASETEACH_06_05",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_THORBEN_GRITTA_06_03",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Paladine",
+      "key": "DIA_THORBEN_PALADINE_06_05",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Onar und die Bauern",
+      "key": "DIA_THORBEN_BAUERNAUFSTAND_06_02",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Onar und die Bauern",
+      "key": "DIA_THORBEN_BAUERNAUFSTAND_06_03",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Diebe",
+      "key": "DIA_THORBEN_LOCKSMITH_06_03",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.politics",
+      "key": "DIA_THORBEN_BAUERNAUFSTAND_06_05",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held will Thorbens Stimme",
+      "key": "DIA_THORBEN_ZUSTIMMUNG_06_01",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held will Thorbens Stimme",
+      "key": "DIA_THORBEN_ZUSTIMMUNG_06_03",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held gibt zu, nicht fromm zu sein",
+      "key": "DIA_THORBEN_OTHERMASTERS_NAJA_06_03",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held will Lehrling bei Thorben werden",
+      "key": "DIA_THORBEN_ARBEIT_06_05",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held bringt Lehmars Schuldenbuch",
+      "key": "DIA_THORBEN_SCHULDENBUCH_06_05",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held bezahlt Grittas Schulden bei Matteo",
+      "key": "DIA_THORBEN_PLEASETEACH_06_07",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held holt Grittas Gold",
+      "key": "DIA_THORBEN_GRITTAHATTEGOLD_06_02",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held hat Gritta getötet",
+      "key": "DIA_THORBEN_ANGEPISST_06_00",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.fremder",
+      "key": "DIA_THORBEN_HALLO_06_00",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.fremder",
+      "key": "DIA_THORBEN_HALLO_06_01",
+      "excerpt": 0
+    }
+  ],
+  "invented": [
+    "sees_hero.landarbeiter",
+    "sees_hero.lehrling: aus seinem Segensspruch bei der Zustimmung geschlossen",
+    "reacts_to.Ärger um Gritta: nur durch die Zeile B_THORBEN_DELETEPETZCRIMEGRITTA belegt, die build.py nicht zitieren kann",
+    "game_state.Held will Thorbens Stimme: der Weg über Vatras steht in B_THORBEN_GETBLESSINGS, nicht zitierbar; zitiert ist nur seine Nachfrage"
+  ]
+}

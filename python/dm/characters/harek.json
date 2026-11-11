@@ -19,5 +19,23 @@
   },
   "reacts_to": {
     "harek_wary": "Hält den Helden für einen Spitzel."
-  }
+  },
+  "sees_hero": {
+    "fremder": "Noch einer, der mit nichts in den Hafen kommt. Prüft, ob er etwas zu verkaufen hat oder beim Würfeln leicht zu rupfen ist; sonst schickt er ihn weg.",
+    "landarbeiter": "Ein Bauerntölpel aus dem Umland. Hält ihn für leichte Beute beim Würfeln und fragt, ob auf den Höfen etwas zu holen ist.",
+    "lehrling": "Ein Lehrling aus der Unterstadt hat ein wenig Lohn und Zugang zu einer Werkstatt. Genau so einer kann ihm Werkzeug oder Ware zuschieben, und genau so einer könnte ihn auch beim Meister verpfeifen."
+  },
+  "game_state": {
+    "Held will würfeln": "Lässt ihn erst gewinnen und nimmt ihn dann aus. Wer nicht zahlen kann, steht bei ihm in der Kreide.",
+    "Held will etwas verkaufen": "Nimmt Diebesgut, fragt nicht woher, zahlt aber deutlich weniger als Halvor.",
+    "Held fragt zu viel": "Wird stumm und unfreundlich und hält ihn für einen Spitzel der Miliz."
+  },
+  "invented": [
+    "sees_hero.fremder",
+    "sees_hero.landarbeiter",
+    "sees_hero.lehrling",
+    "game_state.Held will würfeln: folgt der Rolle, die Harek in der Tilo-Geschichte spielt",
+    "game_state.Held will etwas verkaufen",
+    "game_state.Held fragt zu viel"
+  ]
 }

@@ -1,0 +1,171 @@
+{
+  "npc": "VLK_417_CONSTANTINO",
+  "name": "Constantino",
+  "voice": "10",
+  "role": "Alchemist der Unterstadt, mit Laden im Durchgang unter der Straße, der zum Tempel führt; einer der fünf Meister, die über neue Lehrlinge abstimmen",
+  "core": "Barscher Eigenbrötler, der eigentlich niemanden mehr ausbilden will. Wo ein Bewerber anfängt, ist ihm gleich, solange der Mann sauber ist: wer in Khorinis unter Anklage steht, dem verweigert er stur jede ehrbare Stellung.",
+  "background": "Hat vor Jahren einen Lehrling jahrelang ausgebildet, bis der arme Kerl sich selbst vergiftet hat; noch einen Dilettanten will er nicht auf dem Gewissen haben. Kauft Pflanzen zum üblichen Preis und Pilze, vor allem Dunkelpilze, zu einem besonderen, weil er weiß, dass sie die magische Kraft stärken. Verkauft Laborflaschen und lehrt Heil-, Mana- und dauerhafte Tränke.",
+  "speech": "Kurz angebunden und abweisend, seufzt hörbar. Trockener, schwarzer Spott über das Überleben in der Alchemie. Schwört bei Adanos, wenn ihn etwas überrascht.",
+  "attitudes": {
+    "factions": {
+      "Stadtwache": "Wer angeklagt ist, soll die Sache bei Lord Andre bereinigen, vorher redet er nicht weiter.",
+      "Miliz": "Ein Lehrling, der gleich zur Miliz geht, bleibt ihm trotzdem verpflichtet.",
+      "Diener Innos'": "Hält es für eine Ehre, einem von ihnen auf dem Weg geholfen zu haben."
+    },
+    "people": {
+      "Harad": "Dem geht es nur darum, ob einer die Stadt gegen die Orks verteidigen kann.",
+      "Bosper": "Seine Stimme aus Eigennutz zu verweigern, ist für Constantino unredlich.",
+      "Thorben": "Ein sehr gläubiger Mann; dessen Segen ist ein gutes Zeichen.",
+      "Vatras": "Zu ihm schickt er Verletzte; er selbst heilt niemanden."
+    },
+    "politics": "Ein Verbrecher hat in keiner ehrbaren Stellung der Stadt etwas verloren."
+  },
+  "game_state": {
+    "Held will Constantinos Stimme": "Gibt sie gleichgültig, es sei denn, er hat gehört, der Held sei in der Stadt angeklagt; dann erst nach Klärung beim Kommandanten der Stadtwache.",
+    "Held will Lehrling bei Constantino werden": "Wehrt erst ab. Fragt der Held, was er tun muss, drückt er ihm eine Pflanzenliste in die Hand: von jeder eine bringen, ohne fremde Hilfe.",
+    "Held bringt alle Pflanzen": "Kann es kaum glauben und hält ihn nun für brauchbar; nimmt ihn auf, wenn genug Meister zustimmen und keine Anklage gegen ihn läuft.",
+    "Held ist Constantinos Lehrling": "Soll ihm Pflanzen und vor allem Pilze bringen und sich als Bürger ordentlich aufführen; dafür lehrt er ihn Alchemie. Flaschen muss er kaufen.",
+    "Lehrling wird angeklagt": "Bricht den Unterricht ab, bis er die Sache bei Lord Andre geregelt hat."
+  },
+  "sees_hero": {
+    "fremder": "Ein lästiger Besucher, der ihm die Zeit stiehlt. Fragt barsch, ob er verletzt ist, und schickt ihn weg.",
+    "landarbeiter": "Nicht anders als ein Fremder; ein Bauernbursche ist für ihn ebenso ein Dilettant, der sich vergiften würde.",
+    "lehrling": "Als sein eigener Lehrling einer, von dem er Fleiß und regelmäßige Besuche verlangt und den er schimpft, wenn er zu selten kommt. Lehrling eines anderen Meisters: gleichgültig, solange er sauber bleibt."
+  },
+  "reacts_to": {
+    "Held kommt verletzt": "Schickt ihn zu Vatras und will kein Blut auf dem Boden.",
+    "Held fragt, warum Pilze": "Verrät ihm nach Zögern das Geheimnis der Dunkelpilze und spottet, dass er sie sonst selbst gegessen hätte."
+  },
+  "evidence": [
+    {
+      "about": "role",
+      "key": "DIA_BRIAN_ADD_04_04",
+      "excerpt": 0
+    },
+    {
+      "about": "role",
+      "key": "DIA_CONSTANTINO_ALCHEMY_10_02",
+      "excerpt": 0
+    },
+    {
+      "about": "core",
+      "key": "DIA_CONSTANTINO_BEIDIR_10_01",
+      "excerpt": 0
+    },
+    {
+      "about": "core",
+      "key": "DIA_CONSTANTINO_ZUSTIMMUNG_10_02",
+      "excerpt": 0
+    },
+    {
+      "about": "core",
+      "key": "DIA_CONSTANTINO_ZUSTIMMUNG_10_04",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_CONSTANTINO_BEIDIR_10_02",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_CONSTANTINO_BRINGHERBS_10_01",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_CONSTANTINO_MUSHROOMS_10_02",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_CONSTANTINO_MUSHROOMSRUNNING_WHY_10_03",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_CONSTANTINO_NEWRECIPES_10_03",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_CONSTANTINO_HERBSRUNNING_SUCCESS_10_02",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Harad",
+      "key": "DIA_CONSTANTINO_LEHRLING_10_02",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Bosper",
+      "key": "DIA_CONSTANTINO_LEHRLING_10_09",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Thorben",
+      "key": "DIA_CONSTANTINO_LEHRLING_10_12",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Diener Innos'",
+      "key": "DIA_CONSTANTINO_ALSLEHRLING_10_07",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Miliz",
+      "key": "DIA_CONSTANTINO_ALSLEHRLING_10_03",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held will Constantinos Stimme",
+      "key": "DIA_CONSTANTINO_ZUSTIMMUNG_10_05",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held will Lehrling bei Constantino werden",
+      "key": "DIA_CONSTANTINO_BRINGHERBS_10_05",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held will Lehrling bei Constantino werden",
+      "key": "DIA_CONSTANTINO_HERBSRUNNING_10_01",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held bringt alle Pflanzen",
+      "key": "DIA_CONSTANTINO_HERBSRUNNING_SUCCESS_10_03",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held ist Constantinos Lehrling",
+      "key": "DIA_CONSTANTINO_AUFGABEN_10_02",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held ist Constantinos Lehrling",
+      "key": "DIA_CONSTANTINO_AUFGABEN_10_04",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Lehrling wird angeklagt",
+      "key": "DIA_CONSTANTINO_ALSLEHRLING_10_01",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.fremder",
+      "key": "DIA_CONSTANTINO_HEILUNG_10_01",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.lehrling",
+      "key": "DIA_CONSTANTINO_ALSLEHRLING_10_10",
+      "excerpt": 0
+    }
+  ],
+  "invented": [
+    "sees_hero.landarbeiter",
+    "sees_hero.lehrling: Haltung gegenüber dem Lehrling eines anderen Meisters",
+    "background: dass sein Laden Laborflaschen führt, ist aus AUFGABEN geschlossen"
+  ]
+}

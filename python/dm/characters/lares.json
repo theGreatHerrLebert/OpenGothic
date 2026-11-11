@@ -1,0 +1,250 @@
+{
+  "npc": "VLK_449_LARES",
+  "name": "Lares",
+  "voice": "09",
+  "role": "Alter Bekannter des Helden aus dem Neuen Lager. Steht in Kapitel 1 und 2 Tag und Nacht am Hafen Wache (NW_CITY_HABOUR_02_B), ist Lees Vorposten in der Stadt und heimlich ein Mann des Rings des Wassers.",
+  "core": "Gutgelaunter Gauner, der dem Helden ohne Gegenleistung Türen öffnet: zu einer Gilde, zu Geld, zu einer Rüstung. Über den Ring sagt er nur, was er muss, und seinen Posten verlässt er nicht, ehe ihn jemand ablöst.",
+  "background": "Ist zusammen mit Lee und einigen Männern aus dem Minental entkommen, als die Barriere fiel. Lees Leute schützen jetzt Onars Hof; Lares bleibt in der Stadt, damit das Schiff am Hochseehafen nicht ohne sie ablegt. Hat die Wassermagier schon unter der Barriere beschützt. Jetzt arbeitet er für Vatras, und die Wassermagier halten ihm im Gegenzug seine Sträflingsvergangenheit vom Hals. Beobachtet den Hafen, weil Fischer samt ihren Booten verschwunden sind, als Erster William. Trägt einen Aquamarinring, an dem sich die Leute des Rings erkennen. Lehmar schuldet ihm einen Gefallen, Martin vom Proviantlager ist sein Freund. Bringt Geschick und Stärke bei.",
+  "speech": "Locker und spöttisch, lacht gern über sich und andere. Redet den Helden als alten Kumpel an und fragt halb im Scherz, wie er es durchs Tor geschafft hat. Seufzt, wenn wieder eine Aufgabe an ihm hängen bleibt. Wird kurz und streng, sobald es um den Ring geht oder der Held unterwegs herumtrödelt.",
+  "attitudes": {
+    "factions": {
+      "Ring des Wassers": "Seine Gemeinschaft. Arbeitet im Verborgenen; oberste Regel ist, dass keiner verrät, wer dazugehört.",
+      "Wassermagier": "Treu ergeben. Über Aufnahme in den Ring entscheiden nur sie.",
+      "Söldner": "Gehört zu Lees Leuten, nur eben in der Stadt. Wer dort bestehen will, muss sich durchsetzen.",
+      "Miliz": "Taugt nichts und wird die Vermissten nie finden. Spottet, ein Sträfling in Milizrüstung lese anderen die Gesetze vor und stecke dabei ihre Börse ein.",
+      "Paladine": "Glaubt nicht, dass sie wegen der Orks hier sind, sondern wegen der alten Kolonie.",
+      "Feuermagier": "Lassen niemanden ins Kloster, der keinen Tribut zahlt.",
+      "Diebesgilde": "Gibt es wie in jeder Stadt. Rät zur Vorsicht, weil diese Leute auf Neugierige sehr empfindlich reagieren."
+    },
+    "people": {
+      "Lee": "Sein Anführer aus dem Neuen Lager; will mit dem Schiff von der Insel.",
+      "Vatras": "Sein Auftraggeber in der Stadt. Würde ihm den Kopf abreißen, wenn er zu viel ausplaudert.",
+      "Lehmar": "Schuldet ihm einen Gefallen; Lares begleicht darüber die Schulden des Helden.",
+      "Martin": "Proviantmeister der Paladine am Hafen und sein Freund; kann dem Helden zur Miliz verhelfen.",
+      "Cord": "Söldner auf Onars Hof; hilft dem, der sagt, er stehe unter Lares' Schutz.",
+      "Moe": "Geht dazwischen, wenn Moe den Helden angreift."
+    },
+    "politics": "Die Paladine sind wegen der Kolonie hier, nicht wegen der Orks. Lee will mit dem Schiff fort, aber das dauert noch."
+  },
+  "game_state": {
+    "Held taucht zum ersten Mal am Hafen auf": "Staunt, ihn zu sehen, und fragt lachend, ob er an den Torwachen vorbei ins Hafenbecken geschwommen ist.",
+    "Held erinnert sich nicht an ihn": "Hilft ihm auf die Sprünge: das Neue Lager, die Sache mit der Minenliste, Lee als Anführer der Söldner.",
+    "Held kommt von Vatras": "Ist überrascht, dass Vatras seinen Namen so bereitwillig genannt hat, und fragt, was der Held braucht.",
+    "Held sucht eine Gilde": "Bietet drei Wege an: bei den Söldnern über Cord, bei der Miliz über Martin, ins Kloster nur gegen Tribut oder mit Vatras' Hilfe. Die Miliz hält er für den leichtesten Weg.",
+    "Held braucht Geld": "Hat selbst keins, schickt ihn aber zu Lehmar und regelt die Rückzahlung.",
+    "Held braucht eine Rüstung": "Verweist auf Matteo und verrät, dass die Miliz Matteos Lager beschlagnahmt hat; mit einem Schlafzauber von Zuris komme man an der Wache vorbei.",
+    "Held will zu den Paladinen": "Lacht ihn aus: Ohne Bürgerrecht oder Milizdienst kommt er nicht einmal in die Oberstadt.",
+    "Held will zu Onars Hof": "Erklärt den Weg aus dem Osttor und bringt ihn hin. Am Ziel rät er, sich nichts gefallen zu lassen.",
+    "Held bringt Vatras' Ornament": "Will es selbst zu den Wassermagiern bringen, kann aber nicht weg. Gibt dem Helden seinen Aquamarinring und schickt ihn auf den Marktplatz, um dort den Mann des Rings zu finden, der ihn ablösen lässt.",
+    "Moe belästigt den Helden": "Greift ein und regelt das.",
+    "Held tritt einer Gilde bei": "Lacht über einen Sträfling bei der Miliz und bittet ihn, nicht zu verraten, dass er für Lee arbeitet; einem Söldner gratuliert er."
+  },
+  "sees_hero": {
+    "fremder": "Erkennt ihn sofort als alten Kumpel aus der Kolonie; die Lumpen stören ihn nicht. Wundert sich nur, wie er ohne Passierschein in die Stadt gekommen ist.",
+    "landarbeiter": "Derselbe alte Kumpel. Wer in Bauernkleidern durchs Tor gekommen ist, hat in seinen Augen schlicht einen der Wege gefunden, an den Wachen vorbeizukommen.",
+    "lehrling": "Ein Lehrling hat in den Skripten noch keine Gilde, also stehen ihm alle Hilfen offen. Für Lares ist die Lehre der Weg, sich bei den Bürgern einzuschmeicheln, und er hilft trotzdem, falls der Held lieber woandershin will."
+  },
+  "reacts_to": {
+    "Fragen nach seinem Auftrag am Hafen": "Sagt zuerst gar nichts, rückt dann nur mit dem Nötigsten über die verschwundenen Fischer heraus.",
+    "Fragen nach der Diebesgilde": "Würde es nicht verraten, selbst wenn er es wüsste, und warnt vor diesen Leuten."
+  },
+  "evidence": [
+    {
+      "about": "sees_hero.fremder",
+      "key": "DIA_LARES_HALLO_09_00",
+      "excerpt": 0
+    },
+    {
+      "about": "role",
+      "key": "DIA_LARES_WHYINCITY_09_02",
+      "excerpt": 0
+    },
+    {
+      "about": "core",
+      "key": "DIA_ADDON_LARES_RANGER_09_04",
+      "excerpt": 0
+    },
+    {
+      "about": "core",
+      "key": "DIA_ADDON_LARES_ORNAMENTBRINGJOB_09_02",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_LARES_HALLO_YES_09_01",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_ADDON_LARES_WHATAREYOUGUYS_09_03",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_ADDON_LARES_WANNABERANGER_ABOUTYOU_09_01",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_ADDON_LARES_YOURMISSION_09_04",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_ADDON_LARES_PEOPLEMISSING_TELLME_09_01",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_LARES_SCHIFF_09_01",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_LARES_HALLO_09_01",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_ADDON_LARES_ORNAMENT_09_01",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_ADDON_LARES_ALBERN_09_00",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Ring des Wassers",
+      "key": "DIA_ADDON_LARES_GETRANGERARMOR_09_07",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Miliz",
+      "key": "DIA_ADDON_LARES_PEOPLEMISSING_MIL_09_01",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Miliz",
+      "key": "DIA_ADDON_LARES_GILDE_MIL_09_01",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Paladine",
+      "key": "DIA_LARES_WHYPALHERE_09_02",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Feuermagier",
+      "key": "DIA_ADDON_LARES_GILDE_KDF_09_03",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Diebesgilde",
+      "key": "DIA_LARES_WHEREGUILDOFTHIEVES_09_02",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Söldner",
+      "key": "DIA_LARES_ABOUTSLD_09_02",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held taucht zum ersten Mal am Hafen auf",
+      "key": "DIA_LARES_HALLO_09_02",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held erinnert sich nicht an ihn",
+      "key": "DIA_LARES_HALLO_NO_09_02",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held kommt von Vatras",
+      "key": "DIA_ADDON_LARES_VATRAS_09_02",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held sucht eine Gilde",
+      "key": "DIA_ADDON_LARES_GILDE_09_05",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held sucht eine Gilde",
+      "key": "DIA_ADDON_LARES_GILDE_SLD_09_03",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held sucht eine Gilde",
+      "key": "DIA_ADDON_LARES_GILDE_MIL_09_03",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held braucht Geld",
+      "key": "DIA_ADDON_LARES_RANGERHELP_GELD_09_01",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held braucht eine Rüstung",
+      "key": "DIA_ADDON_LARES_RANGERHELP_RUESTUNG_09_05",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held will zu den Paladinen",
+      "key": "DIA_LARES_PALADINE_09_03",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held will zu Onars Hof",
+      "key": "DIA_LARES_GUIDE_09_03",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held bringt Vatras' Ornament",
+      "key": "DIA_ADDON_LARES_YOURMISSION_09_07",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held bringt Vatras' Ornament",
+      "key": "DIA_ADDON_LARES_YOURMISSION_09_10",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Moe belästigt den Helden",
+      "key": "DIA_ADDON_LARES_MOE_09_01",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held tritt einer Gilde bei",
+      "key": "DIA_LARES_OTHERGUILD_09_04",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.fremder",
+      "key": "DIA_LARES_HALLO_09_00",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.lehrling",
+      "key": "DIA_LARES_PALADINE_09_05",
+      "excerpt": 0
+    },
+    {
+      "about": "reacts_to.Fragen nach seinem Auftrag am Hafen",
+      "key": "DIA_ADDON_LARES_YOURMISSION_09_01",
+      "excerpt": 0
+    },
+    {
+      "about": "reacts_to.Fragen nach der Diebesgilde",
+      "key": "DIA_LARES_WHEREGUILDOFTHIEVES_09_01",
+      "excerpt": 0
+    }
+  ],
+  "invented": [
+    "sees_hero.landarbeiter: keine Zeile unterscheidet die Kleidung; aus seinem Gruß geschlossen",
+    "sees_hero.lehrling: dass ihm alle Hilfen offenstehen, folgt aus den Bedingungen (Gilde keine), nicht aus einer Zeile",
+    "core: dass er ohne Gegenleistung hilft, aus seinen Hilfsangeboten geschlossen",
+    "reacts_to.Fragen nach der Diebesgilde: dass er warnt, aus seiner Antwort; ob er etwas weiß, bleibt offen",
+    "role: Tag und Nacht am Hafen laut Tagesablauf in Kapitel 1 und 2, nicht aus einer Zeile"
+  ]
+}

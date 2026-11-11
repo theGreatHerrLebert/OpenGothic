@@ -347,6 +347,132 @@
       "about": "Stadt: Personen",
       "key": "DIA_ADDON_CAVALORN_VATRASBRIEF_08_08",
       "excerpt": 0
+    },
+    {
+      "fact": "Wer in der Unterstadt Lehrling werden will, braucht die Stimmen von vier der fünf Meister: Harad, Bosper, Thorben, Constantino und Matteo.",
+      "about": "Stadt: Regeln",
+      "key": "DIA_HARAD_LEHRLING_12_26",
+      "excerpt": 0
+    },
+    {
+      "fact": "Dass die übrigen Meister einem neuen Lehrling zustimmen müssen, ist in Khorinis ein alter Brauch; mehr als eine Gegenstimme bedeutet das Aus.",
+      "about": "Stadt: Regeln",
+      "key": "DIA_MATTEO_WOALSLEHRLING_09_04",
+      "excerpt": 0
+    },
+    {
+      "fact": "Ein Lehrling bei einem Meister der Unterstadt gilt praktisch als Bürger und darf ins obere Viertel.",
+      "about": "Stadt: Regeln",
+      "key": "DIA_MATTEO_HOWCANYOUHELP_09_02",
+      "excerpt": 0
+    },
+    {
+      "fact": "Fremde lassen die Wachen nicht ins obere Viertel; dorthin kommt nur ein angesehener Bürger oder wer eine ordentliche Arbeit hat.",
+      "about": "Stadt: Regeln",
+      "key": "DIA_BOSPER_INTOOV_11_02",
+      "excerpt": 0
+    },
+    {
+      "fact": "Wer in der Stadt unter Anklage steht, bekommt von den Meistern keine Stimme, bis er es beim Kommandanten der Stadtwache bereinigt hat.",
+      "about": "Stadt: Regeln",
+      "key": "DIA_CONSTANTINO_ZUSTIMMUNG_10_05",
+      "excerpt": 0
+    },
+    {
+      "fact": "Die Meister wohnen und arbeiten an der Hauptstraße der Unterstadt; nur Constantino hat seinen Laden im Durchgang Richtung Tempel.",
+      "about": "Stadt: Orte",
+      "key": "DIA_BRIAN_ADD_04_03",
+      "excerpt": 0
+    },
+    {
+      "fact": "Ins obere Viertel dürfen nur ehrbare Bürger, weil dort Lord Hagen mit seinen Paladinen wohnt; die Wachen am inneren Tor weisen jeden anderen ab.",
+      "about": "Stadt: Regeln",
+      "key": "DIA_LOTHAR_REGELN_01_02",
+      "excerpt": 0
+    },
+    {
+      "fact": "Die Paladine führen ihr Kommando vom Rathaus im oberen Viertel aus; hinein dürfen nur Paladine und Milizsoldaten.",
+      "about": "Stadt: Regeln",
+      "key": "DIA_LOTHAR_ADD_01_04",
+      "excerpt": 0
+    },
+    {
+      "fact": "Bürger wird, wer bei einem Handwerksmeister der Unterstadt Lehrling wird; nach altem Brauch müssen die anderen Meister zustimmen.",
+      "about": "Stadt: Regeln",
+      "key": "DIA_LOTHAR_ADD_01_17",
+      "excerpt": 0
+    },
+    {
+      "fact": "Die Miliz nimmt auf Befehl Lord Hagens nur Bürger der Stadt auf, aus Angst vor Spionen.",
+      "about": "Stadt: Regeln",
+      "key": "DIA_ANDRE_ASKTOJOIN_08_04",
+      "excerpt": 0
+    },
+    {
+      "fact": "Wer eines Verbrechens beschuldigt wird, muss sich bei Lord Andre, dem Kommandanten der Miliz, verantworten und meist eine Strafe in Gold zahlen.",
+      "about": "Stadt: Regeln",
+      "key": "DIA_LOTHAR_ADD_01_05",
+      "excerpt": 0
+    },
+    {
+      "fact": "Im Hotel gegenüber der Kaserne schlafen Reisende umsonst, weil die Paladine die Betten bezahlen; dort wohnen vor allem die fahrenden Händler vom Markt.",
+      "about": "Stadt: Orte",
+      "key": "DIA_HANNA_ADD_17_02",
+      "excerpt": 0
+    },
+    {
+      "fact": "Auf Lord Andres Befehl wird am Galgenplatz Freibier ausgeschenkt; Coragons Kneipe in der Unterstadt hat seitdem kaum noch einfache Gäste.",
+      "about": "Stadt: Orte",
+      "key": "DIA_HANNA_ADD_17_18",
+      "excerpt": 0
+    },
+    {
+      "fact": "Manche Meister, etwa Thorben, nehmen keinen Lehrling an, den die Götter nicht gesegnet haben; Vatras im Adanos-Tempel segnet Neuankömmlinge, wenn sie ihm ehrlich sagen, woher sie kommen.",
+      "about": "Stadt: Regeln",
+      "key": "DIA_THORBEN_OTHERMASTERS_06_02",
+      "excerpt": 0
+    },
+    {
+      "fact": "Lares, ein früherer Sträfling aus dem Neuen Lager, steht in den ersten Kapiteln am Hafen und hält Ausschau.",
+      "about": "Hafenviertel: Personen",
+      "key": "DIA_ADDON_LARES_YOURMISSION_09_05",
+      "excerpt": 0
+    },
+    {
+      "fact": "Moe lässt Miliz, Paladine, Feuermagier und Novizen in Ruhe; jeden anderen Neuen hält er vor der Kneipe an.",
+      "about": "Hafenviertel: Regeln",
+      "key": "DIA_MOE_HALLO_GEHEN_01_02",
+      "excerpt": 0
+    },
+    {
+      "fact": "Im Hafenviertel gibt kaum jemand Arbeit; die findet man bei den Handwerkern der Unterstadt.",
+      "about": "Hafenviertel: Regeln",
+      "key": "DIA_KARDIF_ARBEIT_14_01",
+      "excerpt": 0
+    },
+    {
+      "fact": "Lehmar verleiht Geld für einen Tag gegen 20 Prozent.",
+      "about": "Hafenviertel: Regeln",
+      "key": "DIA_LEHMAR_GELDLEIHEN_09_01",
+      "excerpt": 1
+    },
+    {
+      "fact": "Sarah verkauft Waffen am Marktplatz; die Paladine kaufen ihre Waffen aber bei Harad.",
+      "about": "Stadt: Personen",
+      "key": "DIA_SARAH_HALLO_16_02",
+      "excerpt": 0
+    },
+    {
+      "fact": "Ohne Schiffe im Hafen hängt die Stadt an den Bauern, und die liefern nicht mehr.",
+      "about": "Stadt: Politik",
+      "key": "DIA_SARAH_BAUERN_16_02",
+      "excerpt": 0
+    },
+    {
+      "fact": "Ohne Bürgerrecht oder Dienst bei der Miliz kommt ein Fremder nicht ins obere Viertel.",
+      "about": "Stadt: Regeln",
+      "key": "DIA_LARES_PALADINE_09_05",
+      "excerpt": 0
     }
   ]
 }
