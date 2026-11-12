@@ -10,7 +10,8 @@
 Events: took_item (picked up from the ground), hit, knocked_down, killed, cast_spell, entered_room, read_item (a letter
 opened from the inventory), drew_weapon (fists, blade, bow or spell readied). The player is the
 actor. All fields other than "event" are optional. "seen_by" needs that NPC among those who could see it happen; "unseen"
-needs nobody to have seen it. `target` may be "PLAYER", for what is done to the hero.
+needs nobody to have seen it. `target` may be "PLAYER", for what is done to the hero. `creature` names a story's own
+creature (spawn_creature) by its id instead of a target: {"event": "killed", "creature": "white_wolf"}.
 """
 
 import gothic
@@ -36,6 +37,8 @@ def validate(on):
         return f"not a spell: {on['spell']}"
     if on.get("seen_by") and on.get("unseen"):
         return "seen_by and unseen exclude each other"
+    if "creature" in on and (not isinstance(on["creature"], str) or on.get("target")):
+        return "creature names a story's own creature by id, instead of a target"
     if "object" in on and (on["event"] != "used_object" or not isinstance(on["object"], str) or not on["object"].strip()):
         return "object names the scheme of a used object, such as a water pipe"
     if "name" in on and (on["event"] != "used_object" or not isinstance(on["name"], str) or not on["name"].strip()):
@@ -56,6 +59,10 @@ def matches(on, event):
         return False
     if target and event["target"].upper() != target.upper():
         return False
+    if on.get("creature"):
+        from dm import creatures, story
+        if not creatures.is_target(on["creature"], story.state(), event):
+            return False
     if on.get("item") and event["item"].upper() != on["item"].upper():
         return False
     if on.get("object") and on["object"].upper() not in event["item"].upper():

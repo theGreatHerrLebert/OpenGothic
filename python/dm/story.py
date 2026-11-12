@@ -25,7 +25,7 @@ import time
 
 import gothic
 
-from dm import checks, perceptions, voices
+from dm import checks, creatures, perceptions, voices
 from dm import graph as graphs
 
 RUNTIME_DIR = pathlib.Path(__file__).resolve().parent.parent / "dm_runtime"
@@ -587,6 +587,13 @@ def _fold_fail_rule(args, state):
     state["rules"][args["id"]]["failed"] = args.get("error", True)
 
 
+def _check_creature(args, state):
+    try:
+        creatures.check(args, state, ATTACHABLE)
+    except creatures.Problem as err:
+        raise PlanError(str(err)) from None
+
+
 def _check_flag(args, state):
     _require(args, "name", "value")
 
@@ -629,6 +636,7 @@ OPS = {
     "trip": (_check_trip, _noop, _world_trip),
     "add_topic": (_check_topic, _fold_topic, None),
     "fail_rule": (_check_fire_rule, _fold_fail_rule, None),
+    "spawn_creature": (_check_creature, creatures.fold, creatures.spawn),
 }
 
 def _ready_live(args, plan):
@@ -735,7 +743,7 @@ class Story:
         Effects that cannot be undone (experience, journal, a trip, sending or removing someone) run last; if one of
         those fails, the log records exactly the part that happened and PartlyApplied is raised."""
         # State may have moved on since the plan was queued.
-        plan = dict(plan, ops=self.resolve_items(plan["ops"]))
+        plan = dict(plan, ops=creatures.assign_variants(self.resolve_items(plan["ops"]), self.state))
         # Readiness before validation: validation also finds someone missing, but as a broken plan, and a rule that
         # waits for him to come back must wait, not fail.
         for op in plan["ops"]:
@@ -824,6 +832,7 @@ class Story:
         """NPC handles do not survive a world load; attach graphs again, and define the story's own items again."""
         for entry in self.state.get("items", {}).values():
             _define_in_world(entry)
+        creatures.rebind(self.state)
         for instance in self.state["graphs"]:
             npc = gothic.world.find_npc(instance)
             if npc is not None:

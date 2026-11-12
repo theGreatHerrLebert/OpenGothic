@@ -4,7 +4,7 @@
     {"type": "wears", "item": "ITAR_BAU_L"}                    hero's equipped armour
     {"type": "guild", "guild": "GIL_NOV"}                      hero's guild
     {"type": "npc_state", "npc": "X", "state": "ZS_MAGICBURN"} what an NPC is doing right now
-    {"type": "npc_dead", "npc": "X"}
+    {"type": "npc_dead", "npc": "X"}                           or "creature": "white_wolf", a story's own (gone = dead)
     {"type": "obsessed"}                                       the game's own obsession flag on the hero
     {"type": "hour", "from": 21, "to": 5}                      wraps past midnight
     {"type": "quest", "quest": "MIS_LOBART_RUEBEN", "state": "success"}   the game's own quest state
@@ -45,13 +45,16 @@ def validate(check):
     if kind not in _REQUIRED:
         return f"unknown check: {kind}"
     for field in _REQUIRED[kind]:
-        if field not in check:
+        if field not in check and not (field == "npc" and "creature" in check):
             return f"check {kind} needs {field}"
     if kind in ("has_item", "wears") and gothic.world.instance_kind(check["item"]) != "item":
         return f"not an item instance: {check['item']}"
     if kind == "guild" and not str(check["guild"]).startswith("GIL_"):
         return f"not a guild: {check['guild']}"
-    if kind in ("npc_state", "npc_dead") and gothic.world.instance_kind(check["npc"]) != "npc":
+    if kind in ("npc_state", "npc_dead") and "creature" in check:
+        if not isinstance(check["creature"], str) or "npc" in check:
+            return "creature names a story's own creature by id, instead of an npc"
+    elif kind in ("npc_state", "npc_dead") and gothic.world.instance_kind(check["npc"]) != "npc":
         return f"not an NPC: {check['npc']}"
     if kind == "npc_state" and check["state"] not in STATES:
         return f"state cannot be checked: {check['state']}"
@@ -167,6 +170,12 @@ def _holds(check):
         return (gothic.player.armor or "").upper() == check["item"].upper()
     if kind == "guild":
         return gothic.player.guild == gothic.daedalus.get(check["guild"], 0)
+    if kind in ("npc_state", "npc_dead") and "creature" in check:
+        from dm import creatures, story
+        if kind == "npc_dead":
+            return creatures.is_dead(check["creature"], story.state())
+        npc = creatures.find(check["creature"], story.state())
+        return npc is not None and npc.in_state(check["state"])
     if kind == "npc_state":
         npc = gothic.world.find_npc(check["npc"])
         return npc is not None and npc.in_state(check["state"])

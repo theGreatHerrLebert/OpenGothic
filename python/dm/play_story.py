@@ -47,6 +47,8 @@ def namespaced(ops, prefix):
                 out[key] = flag(item)
             elif key == "id" and top:
                 out[key] = f"{prefix}:{item}"
+            elif key == "creature" and isinstance(item, str) and ":" not in item:
+                out[key] = f"{prefix}:{item}"   # a check or perception naming the story's own creature
             elif key == "ops":
                 out[key] = [walk(o, True) for o in item]
             else:

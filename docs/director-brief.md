@@ -175,10 +175,21 @@ breathes on the drum, edges glow, the world slows, and the hero's thoughts come 
 put any talk that matters before or after it. Fire it from a rule on a deed or a choice, such as taking a pull from a
 pipe, never by surprise. One trip at a time. A player may switch the picture off; the music and thoughts remain.
 
+## A creature of the story's own
+
+`spawn_creature` remixes one of the game's nameless creatures into one that belongs to the story, while every other
+of its kind stays as it is: `{"op": "spawn_creature", "id": "white_wolf", "like": "WOLF", "waypoint": ...,
+"name": "Weißer Wolf", "look": {"tint": [0.92, 0.96, 1.0], "brighten": 2.2}, "scale": 1.3, "hp": 400,
+"strength": 70, "level": 20, "loot": [{"item": "ITAT_WOLFFUR", "count": 1}]}`. The look recolours its own fur; a
+level sets the experience it is worth. Its name must be its own. Refer to it by id: `{"type": "npc_dead",
+"creature": "white_wolf"}` (gone counts as dead) and `{"event": "killed", "creature": "white_wolf"}`. It fights like
+any creature of its kind, so a story with one needs an ending for the hero who kills it, flees from it or never
+comes.
+
 ## What you cannot do yet
 
-Stories cannot invent new people: `spawn_npc` brings an existing character into the world and `rename_npc` gives it
-a new name. Generating
+Stories cannot invent new people or new kinds of creature: `spawn_npc` brings an existing character into the world,
+`rename_npc` gives it a new name, and `spawn_creature` only remixes a creature the game already has. Generating
 voices is a separate step run after a plan is accepted; unvoiced lines appear as
 silent subtitles. Consequences of a choice are recorded as flags for you to act on
 later.
