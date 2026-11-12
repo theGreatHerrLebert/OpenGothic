@@ -13,18 +13,45 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 import bridge  # noqa: E402
 
 
+# Keys whose values name flags, wherever they appear in a plan: rules wait on "when", topics and scenes on "requires",
+# anything may be barred by "unless", a dialogue node "sets" flags, a line's variant waits on "when".
+FLAG_KEYS = ("when", "requires", "unless", "sets")
+# Flags the runtime sets itself for every story (the hero's guild): shared on purpose, never prefixed.
+SHARED_FLAGS = {"hero_mage"}
+
+
 def namespaced(ops, prefix):
-    """A plan's operations with every fact, scene and rule id prefixed, so stories played in one game cannot collide:
-    two stories may both call their hidden truth "truth". The runtime's own follow-ups are built from the stored ids,
-    so they stay consistent. Flags are not touched."""
-    def walk(op):
-        op = dict(op)
-        if "id" in op:
-            op["id"] = f"{prefix}:{op['id']}"
-        if isinstance(op.get("ops"), list):
-            op["ops"] = [walk(o) for o in op["ops"]]
-        return op
-    return [walk(op) for op in ops]
+    """A plan's operations with every fact, scene and rule id prefixed, and every flag, so stories played in one game
+    cannot collide: two stories may both call their hidden truth "truth", and both wait for "blend_mixed". The
+    runtime's own follow-ups are built from the stored ids, so they stay consistent; flags the runtime sets for all
+    stories stay shared."""
+    def flag(name):
+        if not isinstance(name, str) or ":" in name or name in SHARED_FLAGS:
+            return name
+        return f"{prefix}:{name}"
+
+    def flags(value):
+        return [flag(v) for v in value] if isinstance(value, list) else flag(value)
+
+    def walk(value, top=False):
+        if isinstance(value, list):
+            return [walk(v, top) for v in value]
+        if not isinstance(value, dict):
+            return value
+        out = {}
+        for key, item in value.items():
+            if key in FLAG_KEYS:
+                out[key] = flags(item)
+            elif key == "name" and value.get("op") == "set_flag":
+                out[key] = flag(item)
+            elif key == "id" and top:
+                out[key] = f"{prefix}:{item}"
+            elif key == "ops":
+                out[key] = [walk(o, True) for o in item]
+            else:
+                out[key] = walk(item)
+        return out
+    return [walk(op, True) for op in ops]
 
 
 if __name__ == "__main__":
