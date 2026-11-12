@@ -1035,8 +1035,8 @@ RECOGNISE = [
                                    "Darf ich vielleicht … nein. Lieber nicht. Oder doch?"], "Lieber nicht, Ignaz."),
     ("DJG_705_ANGAR_NW", None, "04", ["Diesen Rauch kenne ich. So rochen die Nächte der Gurus.",
                                       "Du hast gesehen, was Y'Berion sah. Behalte es für dich."], "Ich weiß, was er sah."),
-    # where nobody would expect it: the oldest of the Fire Mages, who was young once too
-    ("KDF_500_PYROKAR", None, "11", ["Diese Ringe. Und das Amulett. Komm näher.",
+    # where nobody would expect it: Ulthar of the high council, strictest of the Fire Mages, who was young once too
+    ("KDF_502_ULTHAR", None, "05", ["Diese Ringe. Und das Amulett. Komm näher.",
                                      "Ja. Das ist es. Nordrauch, Wüstenrauch, Mondrauch.",
                                      "Als ich jung war, noch vor dem Kloster, gab es einen Sommer, in dem …",
                                      "Nun. Innos vergibt die Torheiten der Jugend. Meistens.",
