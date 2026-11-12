@@ -410,12 +410,17 @@ assert g["voice"] == "05" and g["nodes"]["a"]["line"] in trip.SPECIAL_OPENERS
 answers = g["nodes"]["a"]["choices"]
 assert len(answers) == 3 and len({c["text"] for c in answers}) == 3
 assert all(c["delivery"] == trip.DELIVERY and c["text"] in trip.SPECIAL_ANSWERS for c in answers)
+for seed in range(30):                                          # the north never babbles of the desert, nor back
+    north = {c["text"] for c in trip.special_graph(5, _random.Random(seed), profile="kriegsgesang")["nodes"]["a"]["choices"]}
+    desert = {c["text"] for c in trip.special_graph(5, _random.Random(seed), profile="skorpion_goa")["nodes"]["a"]["choices"]}
+    assert north <= set(trip.SPECIAL_ANSWERS + trip.NORTH_ANSWERS)
+    assert desert <= set(trip.SPECIAL_ANSWERS + trip.DESERT_ANSWERS)
 assert all(c["repeat"] for c in answers)                        # the same person can be babbled at on every trip
 assert g["nodes"]["z"]["line"] in trip.SPECIAL_CLOSERS and g["nodes"]["z"]["choices"][0]["ends"]
 sys.modules.setdefault("gothic", types.ModuleType("gothic"))   # validating a graph never touches the game
 from dm import graph as _graph  # noqa: E402
 assert _graph.validate(g) is None
-assert set(trip.SPECIAL_ANSWERS) <= set(trip.thought_lines())       # voiced and distorted with the thoughts
+assert set(trip.SPECIAL_ANSWERS + trip.NORTH_ANSWERS + trip.DESERT_ANSWERS) <= set(trip.thought_lines())       # voiced and distorted with the thoughts
 npc = types.SimpleNamespace(voice=7)
 assert trip.special_for(npc) is None                                  # no trip, no special dialogue
 trip.start("kriegsgesang", None)

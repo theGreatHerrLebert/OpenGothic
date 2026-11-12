@@ -114,8 +114,14 @@ SPECIAL_OPENERS = ["Was ist denn mit dir los? Deine Augen sind ganz komisch.",
                    "Du schwankst ja wie ein Kahn im Sturm. Hast du was geraucht?",
                    "Bleib mir vom Leib. Du riechst nach Rauch und Ärger.",
                    "Hallo? Hörst du mich überhaupt?"]
-SPECIAL_ANSWERS = ["Dein Gesicht … das schmilzt.", "Hörst du auch die Trommeln?", "Ich bin ein Skorpion. Glaub ich.",
-                   "Psst. Die Wände hören mit.", "Du hast so schöne … Farben."]
+SPECIAL_ANSWERS = ["Dein Gesicht … das schmilzt.", "Psst. Die Wände hören mit.", "Du hast so schöne … Farben."]
+# And what he babbles depends on where the smoke takes him: the north's war drums or the desert's sand.
+NORTH_ANSWERS = ["Hörst du auch die Trommeln?", "Ich muss nach Nordmar. Die Clans rufen mich.",
+                 "Wo geht's hier nach Nordmar?", "Riechst du das? Schnee. Und Feuer."]
+DESERT_ANSWERS = ["Ich bin ein Skorpion. Glaub ich.", "Der Sand … überall ist Sand.",
+                  "Hast du meine Karawane gesehen?"]
+PROFILE_ANSWERS = {"nordmar": NORTH_ANSWERS, "kriegsgesang": NORTH_ANSWERS,
+                   "skorpion": DESERT_ANSWERS, "skorpion_goa": DESERT_ANSWERS}
 SPECIAL_CLOSERS = ["Geh nach Hause und schlaf deinen Rausch aus.", "Mit dir red ich, wenn du wieder klar bist.",
                    "Verschwinde, bevor dich die Miliz so sieht."]
 SPECIAL_LAST = "Na gut …"
@@ -135,9 +141,10 @@ SPECIAL_PEOPLE = {
 }
 
 
-def special_graph(voice, rng, instance="", guard=False):
-    """A short dialogue for an NPC of this voice number: it notices, the hero babbles, it sends him off."""
-    answers = rng.sample(SPECIAL_ANSWERS, 3)
+def special_graph(voice, rng, instance="", guard=False, profile=None):
+    """A short dialogue for an NPC of this voice number: it notices, the hero babbles (of the trip's own region, if it
+    has one), it sends him off."""
+    answers = rng.sample(SPECIAL_ANSWERS + PROFILE_ANSWERS.get(profile, []), 3)
     own = SPECIAL_PEOPLE.get(instance.upper(), SPECIAL_GUARDS if guard else {})
     return {"voice": f"{int(voice):02d}", "start": "a", "nodes": {
         "a": {"line": rng.choice(own.get("openers", SPECIAL_OPENERS)),
@@ -153,7 +160,8 @@ def special_for(npc):
         return after_graph(npc)
     if _current.black is not None or _current.envelope.intensity <= BLOCK_ABOVE:
         return None
-    return special_graph(npc.voice, _current.rng, getattr(npc, "instance", "") or "", is_guard(npc))
+    return special_graph(npc.voice, _current.rng, getattr(npc, "instance", "") or "", is_guard(npc),
+                         getattr(_current, "profile", None))
 
 
 def is_guard(npc):
@@ -223,7 +231,7 @@ def thought_lines(thoughts=None):
         ups = [line for pools, _ in POOLS.values() for _, pool in pools for line in pool]
     wakes = [line for blackout in BLACKOUTS.values() for line in blackout["wake"]]
     return (ups + [line for _, landings in POOLS.values() for line in landings] + REFUSALS + wakes
-            + SPECIAL_ANSWERS + [SPECIAL_LAST])
+            + SPECIAL_ANSWERS + NORTH_ANSWERS + DESERT_ANSWERS + [SPECIAL_LAST])
 
 
 def draw_thoughts(rng, style="mindcap"):
@@ -580,6 +588,7 @@ def start(profile="mindcap", track=None, seconds=None, thoughts=None):
     phases = stretched(profile, seconds) if seconds else PROFILES[profile]
     _current = Trip(phases, track, [tuple(t) for t in thoughts] if thoughts else None,
                     style=PROFILE_LOOK.get(profile, "mindcap"), blackout=BLACKOUTS.get(profile))
+    _current.profile = profile
     return True
 
 
