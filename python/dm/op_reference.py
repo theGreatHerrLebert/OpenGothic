@@ -63,6 +63,10 @@ OPS = {
     "remove_npc": ("People", "Takes an NPC on the safe list out of the world.", {"op": "remove_npc", "instance": "BAU_901_BAUER"}),
     "return_npc": ("People", "Brings back an NPC a story removed, at a position.",
                    {"op": "return_npc", "instance": "BAU_901_BAUER", "position": [0, 0, 0]}),
+    "attack": ("People", "One of the story's people goes for the hero (or, with target, for another of them) with his "
+                         "fists: the game's own brawl, ended by a knock-down, never a killing. Waits until no "
+                         "conversation runs; give the rule a check that the hero is close.",
+               {"op": "attack", "npc": "SLD_819_SOELDNER", "target": "BAU_904_BAUER"}),
     # Items and rewards
     "define_item": ("Items", "An item of the story's own, on an unused carrier: name, rows, value, damage, look or model.",
                     {"op": "define_item", "item": "MONDALOE", "like": "ITPL_HEALTH_HERB_01", "name": "Mondaloe",

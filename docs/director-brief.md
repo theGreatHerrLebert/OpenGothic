@@ -74,7 +74,9 @@ and was still not worth playing: return a pouch or keep it, 25 gold, no conseque
 - **Stakes that tempt this hero.** Look at what he owns. 25 gold means nothing to a hero with a few hundred; to one
   with 35 it is still too little to betray a widow for. Pitch it where keeping it is a real temptation.
 - **The world hits back.** A hero who lets a mercenary take the fall for his own gain should expect that mercenary's
-  fist, not a journal line. Consequences follow the consistent rules above: strength answers strength.
+  fist, not a journal line. Consequences follow the consistent rules above: strength answers strength. The `attack`
+  operation starts the game's own brawl, at the hero or between two of the story's people (the brute sent after the
+  man the hero blamed); give its rule a `near` check so nobody charges in from across the map.
 - **The story's own things.** The pouch the story is about is Hanno's pouch, not one of the game's many; the sickle
   he left is his sickle. Make them with `define_item`, with a name and a line that says whose they were, so finding
   one tells the player he has found it.

@@ -185,4 +185,10 @@ for bad, word in [({"type": "chapter"}, "needs"), ({"type": "chapter", "from": 0
                   ({"type": "day", "from": 4, "to": 2}, "after"), ({"type": "chapter", "from": 8}, "range")]:
     assert word in checks.validate(bad), bad
 assert checks.validate({"type": "chapter", "from": 3, "to": 6}) is None and checks.validate({"type": "level", "max": 10}) is None
+# The hero is close to someone: within 15 m by default, never near the dead or absent.
+burning.position, corpse.position, fake.player.position = (1000.0, 0.0, 0.0), (0.0, 0.0, 0.0), (0.0, 0.0, 0.0)
+assert checks.failing([{"type": "near", "npc": "BURNER"}]) is None
+assert checks.failing([{"type": "near", "npc": "BURNER", "within": 500}]) is not None
+assert checks.failing([{"type": "near", "npc": "CORPSE"}]) is not None and checks.failing([{"type": "near", "npc": "ABSENT"}]) is not None
+assert checks.validate({"type": "near"}) is not None and checks.validate({"type": "near", "npc": "BURNER"}) is None
 print("checks ok")

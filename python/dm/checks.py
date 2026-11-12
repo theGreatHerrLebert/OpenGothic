@@ -13,6 +13,7 @@
     {"type": "level", "min": 5, "max": 12}                     the hero's level, both ends included
     {"type": "day", "from": 3, "to": 6}                        the game's day counter (0 on the first day), included
     {"type": "story_age", "days": 3}                           at least this many days since the story began
+    {"type": "near", "npc": "X", "within": 1500}               the hero is within this many cm of X (default 1500)
     {"type": "not", "check": {...}}
     {"type": "any", "checks": [{...}, ...]}                    at least one holds
 
@@ -23,6 +24,8 @@ variable, so a story can follow what the hero has really done in the original ga
 
 Flags say what the story remembers. Checks say what is true in the game right now. All of them must hold.
 """
+
+import math
 
 import gothic
 
@@ -35,7 +38,8 @@ QUEST_STATES = {"open": None, "running": "LOG_RUNNING", "success": "LOG_SUCCESS"
 _REQUIRED = {"has_item": ("item",), "wears": ("item",), "guild": ("guild",), "npc_state": ("npc", "state"), "npc_dead": ("npc",),
              "obsessed": (), "hour": ("from", "to"), "not": ("check",),
              "quest": ("quest", "state"), "any": ("checks",), "heard": ("info",),
-             "chapter": (), "level": (), "day": (), "story_age": ("days",)}
+             "chapter": (), "level": (), "day": (), "story_age": ("days",),
+             "near": ("npc",)}
 # Range checks: which two fields bound them, and the smallest sensible value.
 RANGES = {"chapter": ("from", "to", 1, 7), "level": ("min", "max", 0, 100), "day": ("from", "to", 0, 100000)}
 
@@ -185,6 +189,11 @@ def _holds(check):
     if kind == "npc_dead":
         npc = gothic.world.find_npc(check["npc"])
         return npc is not None and npc.dead
+    if kind == "near":
+        npc = gothic.world.find_npc(check["npc"])
+        if npc is None or npc.dead:
+            return False
+        return math.dist(npc.position, gothic.player.position) <= check.get("within", 1500)
     if kind == "obsessed":
         return bool(gothic.daedalus.get("SC_ISOBSESSED", 0))
     if kind == "hour":

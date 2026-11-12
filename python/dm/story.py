@@ -678,6 +678,35 @@ def _check_nothing(args, state):
     _require(args, "reason")
 
 
+def _check_attack(args, state):
+    """Someone of the story goes for the hero or for another of the story's people with his fists: the game's own
+    brawl, which ends when one of them is down, never in a killing."""
+    _require(args, "npc")
+    _live_npc(_castable(args["npc"]))
+    target = str(args.get("target", "PLAYER")).upper()
+    if target != "PLAYER":
+        if target == _npc_instance(args["npc"]):
+            raise PlanError("an NPC cannot attack himself")
+        _live_npc(_castable(target))
+
+
+def _world_attack(args):
+    npc = _live_npc(_npc_instance(args["npc"]))
+    target = str(args.get("target", "PLAYER")).upper()
+    other = gothic.player if target == "PLAYER" else _live_npc(target)
+    gothic.daedalus.call("B_ATTACK", npc, other, gothic.daedalus.get("AR_NONE"), 1)
+    return None
+
+
+def _ready_attack(args, plan):
+    """Not in the middle of a conversation: the fight starts when the talking is over."""
+    _ready_live(args, plan)
+    if args.get("target", "PLAYER").upper() != "PLAYER":
+        _ready_live({"npc": args["target"]}, plan)
+    if gothic.dialog.partner() is not None:
+        raise NotReady("a conversation is running")
+
+
 def _noop(args, state):
     pass
 
@@ -711,6 +740,7 @@ OPS = {
     "spawn_creature": (_check_creature, creatures.fold, creatures.spawn),
     "begin_story": (_check_begin, _fold_begin, None),
     "end_story": (_check_end, _fold_end, None),
+    "attack": (_check_attack, _noop, _world_attack),
 }
 
 def _ready_live(args, plan):
@@ -725,10 +755,10 @@ def _ready_live(args, plan):
 # Checked against the live game just before a plan runs, before any effect: what could make an effect fail although
 # the plan is valid. Failing here changes nothing.
 _READY = {"trip": _ready_trip, "send_npc": _ready_live, "relocate_npc": _ready_live, "remove_npc": _ready_live,
-          "rename_npc": _ready_live, "attach_dialogue_graph": _ready_live}
+          "rename_npc": _ready_live, "attach_dialogue_graph": _ready_live, "attack": _ready_attack}
 # Effects that cannot be undone run after every effect that can, so a failure among the undoable ones still leaves
 # the world untouched. Removal comes last of all.
-_FINAL = {"give_xp", "journal", "trip", "send_npc", "relocate_npc"}
+_FINAL = {"give_xp", "journal", "trip", "send_npc", "relocate_npc", "attack"}
 _LAST = {"remove_npc"}
 
 

@@ -63,7 +63,8 @@ def namespaced(ops, prefix):
 
 # Operations whose NPC belongs to a story's cast: if one of them dies, the story cannot go on as written.
 CAST_FIELDS = {"attach_dialogue_graph": "npc", "add_scene": "npc", "add_topic": "npc", "send_npc": "instance",
-               "rename_npc": "instance", "spawn_npc": "instance", "relocate_npc": "instance", "return_npc": "instance"}
+               "rename_npc": "instance", "spawn_npc": "instance", "relocate_npc": "instance", "return_npc": "instance",
+               "attack": "npc"}
 
 
 def closures(story, prefix):

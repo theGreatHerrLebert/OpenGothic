@@ -156,6 +156,14 @@ Brings back an NPC a story removed, at a position.
 {"op": "return_npc", "instance": "BAU_901_BAUER", "position": [0, 0, 0]}
 ```
 
+### `attack`
+
+One of the story's people goes for the hero (or, with target, for another of them) with his fists: the game's own brawl, ended by a knock-down, never a killing. Waits until no conversation runs; give the rule a check that the hero is close.
+
+```json
+{"op": "attack", "npc": "SLD_819_SOELDNER", "target": "BAU_904_BAUER"}
+```
+
 ## Items
 
 ### `define_item`
