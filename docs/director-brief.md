@@ -69,7 +69,9 @@ What a story can notice and test today:
   `{"op": "add_rule", "id": "found_letter", "when": [], "on": {"event": "read_item", "item": "ITWR_..."},
   "ops": [{"op": "set_flag", "name": "letter_read", "value": true}]}`
 - **How the world stands.** `checks` on a scene, rule or choice: `npc_state` (asleep, burning, frozen, fleeing,
-  unconscious and others), `npc_dead`, `hour`, `has_item`, `wears`, `obsessed`.
+  unconscious and others, and the evening's own: smoking at the water pipes, standing drinking at a barrel),
+  `npc_dead`, `hour`, `has_item`, `wears`, `obsessed`. A topic only open while someone sits smoking talks the way
+  people talk after work, as Hakon does about the dagger he holds in pawn.
 - **Things and people in places.** `place_item` puts an item on a waypoint, with a quest description; a letter is an
   `ITWR_` item that opens on use and raises `read_item`. `send_npc` and `relocate_npc` move someone, `spawn_npc` brings
   an existing character into the world. The inspector's map shows who stands where at each hour of each chapter and

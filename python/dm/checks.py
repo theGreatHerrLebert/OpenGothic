@@ -23,7 +23,7 @@ import gothic
 # States a story may react to. Each is a real ZS_ function in the game's scripts.
 STATES = {"ZS_MAGICBURN", "ZS_MAGICBURNSHORT", "ZS_MAGICSLEEP", "ZS_MAGICFREEZE", "ZS_MAGICSHRINK", "ZS_MAGICSHRUNK",
           "ZS_MAGICFLEE", "ZS_WHIRLWIND", "ZS_SUCKENERGY", "ZS_UNCONSCIOUS", "ZS_DEAD", "ZS_FLEE", "ZS_DANCE", "ZS_SLEEP",
-          "ZS_PRAY_INNOS", "ZS_STAND_DEMENTOR"}
+          "ZS_PRAY_INNOS", "ZS_STAND_DEMENTOR", "ZS_SMOKE_WATERPIPE", "ZS_STAND_DRINKING"}
 QUEST_STATES = {"open": None, "running": "LOG_RUNNING", "success": "LOG_SUCCESS", "failed": "LOG_FAILED",
                 "obsolete": "LOG_OBSOLETE"}
 _REQUIRED = {"has_item": ("item",), "wears": ("item",), "guild": ("guild",), "npc_state": ("npc", "state"), "npc_dead": ("npc",),
