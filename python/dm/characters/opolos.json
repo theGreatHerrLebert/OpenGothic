@@ -5,14 +5,14 @@
   "role": "Novize, hütet die Schafe des Klosters",
   "core": "Bodenständiger Schafhirte, der seit Jahren darauf wartet, studieren zu dürfen. Greift dafür auch zu einem 'ausgeliehenen' Rezept.",
   "background": "Seit drei Jahren im Kloster und hat noch nie studiert. Früher hat er Leute verprügelt und kann zeigen, wie man die Arme trainiert.",
-  "speech": "Locker und begeisterungsfähig: 'Oh Mann, Wahnsinn!', 'Klar, ich hab früher mal Leute verprügelt.', 'Ach Scheiße'. Spricht offen und gibt Ratschläge. Liest er etwas, murmelt er: 'Aha ... hm ... ja ... verstehe ... soso ...'.",
+  "speech": "Locker und begeisterungsfähig, flucht offen und gibt zu, früher selbst zugeschlagen zu haben. Spricht offen und gibt Ratschläge. Liest er etwas, brummt er halblaut vor sich hin.",
   "attitudes": {
     "factions": {
       "Kloster": "Kennt die Regeln genau: Magier nicht belügen, Brüder nicht angehen, Eigentum respektieren, sonst Strafe bei Parlan.",
       "Magier": "Man darf sie niemals belügen."
     },
     "people": {
-      "Agon": "Warnt vor ihm: führt sich auf, als wäre er der Erwählte, und sein Wort wiegt mehr, weil er der Neffe des Statthalters ist.",
+      "Agon": "Warnt vor ihm: benimmt sich, als sei er von Innos auserkoren, und sein Wort wiegt mehr, weil er der Neffe des Statthalters ist.",
       "Babo": "Neu, kam kurz vor dem Helden; fegt seit dem Streit mit Agon den Hof.",
       "Parlan": "Von ihm hängt ab, ob er von den Schafen entbunden wird und in die Bibliothek darf.",
       "Neoras": "Hat die Rezepte, die er so gern sehen würde."

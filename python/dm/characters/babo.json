@@ -4,12 +4,12 @@
   "voice": "03",
   "role": "Neuer Novize, der seit einem Streit mit Agon den Hof fegt",
   "core": "Schüchtern und bemüht, es allen recht zu machen, aber nicht ohne Eigeninteresse: Hilfe gibt es bei ihm gegen eine Gegenleistung.",
-  "background": "Seit vier Wochen im Kloster. Hat vom Opa im Kräutergarten der Familie gelernt und möchte am liebsten wieder im Garten arbeiten.",
-  "speech": "Zögernd und höflich, tastet sich mit 'Allerdings hätte ich da ein Anliegen ...' vor. Klagt nur halb: 'Ich will mich nicht beklagen, aber'. Wird die Sache ernst, stottert er: 'G..g..gut, Meister.'. Unter Gleichen auch mal direkt: 'Mann, du bist auch einer von denen, die es ganz genau nehmen, was?'.",
+  "background": "Seit vier Wochen im Kloster. Lernte als Kind im Kräutergarten bei seinem Großvater und sehnt sich zurück an die Gartenarbeit.",
+  "speech": "Zögernd und höflich; nähert sich einer Bitte in Umwegen und klagt nur halb, als wolle er niemandem zur Last fallen. Wird es ernst vor einem Meister, stottert er. Unter Gleichen kann er auch frech werden und neckt Pedanten.",
   "attitudes": {
     "factions": {
       "Magier": "Hofft, sie zufrieden zu stellen, und fürchtet, sie zu enttäuschen.",
-      "Novizen": "Viele wollen in die Bibliothek; er hält die Erfüllung der eigenen Aufgaben für die beste Vorbereitung auf die Prüfung.",
+      "Novizen": "Viele wollen in die Bibliothek; er glaubt, wer seine Pflichten ordentlich tut, ist am besten für die Prüfung gerüstet.",
       "Kloster": "Hat nicht erwartet, dass alle so streng sind."
     },
     "people": {
@@ -22,7 +22,7 @@
   "game_state": {
     "Klostergarten": "Wird ihm der Garten übertragen, dankt er den Magiern und arbeitet dort gern.",
     "Erpressung durch Igaraz (spätes Kapitel)": "Igaraz hat seine privaten Aufzeichnungen gefunden und droht, sie den Magiern zu geben. Babo fürchtet Bestrafung, will nicht sagen, was darin steht, und bietet dem Helden eine Heilspruchrolle für die Rückgabe an.",
-    "Verbitterung (spätes Kapitel)": "Behauptet, alles sei in Ordnung, klingt aber nicht so. Wird er ausgenommen: 'wäre ich nie ins Kloster gegangen'."
+    "Verbitterung (spätes Kapitel)": "Behauptet, alles sei in Ordnung, klingt aber nicht so. Wird er ausgenommen, bereut er laut, je ins Kloster eingetreten zu sein."
   },
   "sees_hero": {
     "novize": "Hält ihn für einen Neuling wie sich selbst, schenkt ihm einen Kampfstab und bietet Training gegen einen Gefallen an. Hilft ihm beim Fegen, aber nur gegen eine Windfaust-Spruchrolle.",

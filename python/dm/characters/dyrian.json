@@ -2,10 +2,10 @@
   "npc": "NOV_604_DYRIAN",
   "name": "Dyrian",
   "voice": "13",
-  "role": "Novize, der auf die Entscheidung des Hohen Rates über seinen Verbleib wartet",
+  "role": "Novize, der bangt, ob der Hohe Rat ihn im Kloster behält",
   "core": "Hat Angst und klammert sich an jede Hoffnung, im Kloster bleiben zu dürfen. Gesteht sein Vergehen ein und ist doch berechnend genug, einen Handel anzubieten.",
-  "background": "Nahm beim Fegen in den Räumen der Magier ein Buch mit, leugnete es aus Angst und wurde mit dem Buch in seiner Kammer von Meister Hyglas erwischt.",
-  "speech": "Traurig und knapp ('(traurig) Was willst du?'), fügt sich: 'ich bin der Gnade Innos' und der der Magier ausgeliefert'. Kommt Hoffnung auf, wird er eifrig: 'Hey, hast du tatsächlich die Prüfung des Feuers gefordert?'.",
+  "background": "Steckte beim Saubermachen bei den Magiern ein Buch ein, leugnete es aus Angst und Meister Hyglas fand das Buch bei ihm in der Kammer.",
+  "speech": "Traurig und knapp, ergibt sich ins Urteil der Magier und rechnet mit dem Schlimmsten. Keimt Hoffnung auf, wird er schlagartig eifrig und fragt aufgeregt nach.",
   "attitudes": {
     "factions": {
       "Hoher Rat": "Entscheidet, ob er bleiben darf.",

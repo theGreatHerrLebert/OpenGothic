@@ -49,7 +49,7 @@
       "excerpt": 1
     },
     {
-      "fact": "Die Angehörigen des Klosters dürfen niemals lügen oder ein Verbrechen begehen.",
+      "fact": "Wer zum Kloster gehört, darf weder lügen noch ein Verbrechen begehen.",
       "about": "Kloster: Regeln",
       "key": "DIA_PEDRO_RULES_09_01",
       "excerpt": 1
@@ -73,7 +73,7 @@
       "excerpt": 1
     },
     {
-      "fact": "Die Bibliothek ist der verschlossene Raum links neben der Pforte.",
+      "fact": "Die Bibliothek liegt hinter der verschlossenen Tür links vom Eingang.",
       "about": "Kloster: Orte",
       "key": "DIA_OPOLOS_BIBLOTHEK_12_01",
       "excerpt": 0
@@ -91,7 +91,7 @@
       "excerpt": 0
     },
     {
-      "fact": "Auf der anderen Seite der Brücke wachsen Feuernesseln.",
+      "fact": "Feuernesseln findet man jenseits der Brücke.",
       "about": "Kloster: Orte",
       "key": "DIA_PEDRO_WURST_JA_09_01",
       "excerpt": 0
@@ -103,7 +103,7 @@
       "excerpt": 0
     },
     {
-      "fact": "Agon kümmert sich um den Kräutergarten.",
+      "fact": "Der Kräutergarten ist Agons Aufgabe.",
       "about": "Kloster: Zuständigkeit",
       "key": "DIA_OPOLOS_AGON_12_01",
       "excerpt": 1
@@ -145,7 +145,7 @@
       "excerpt": 1
     },
     {
-      "fact": "Dyrian wartet auf die Entscheidung des Hohen Rates, ob er bleiben darf.",
+      "fact": "Ob Dyrian bleiben darf, entscheidet noch der Hohe Rat.",
       "about": "Kloster: Personen",
       "key": "DIA_DYRIAN_JOB_13_02",
       "excerpt": 1
@@ -259,7 +259,7 @@
       "excerpt": 0
     },
     {
-      "fact": "Alrik kämpft für Gold hinter dem Lagerhaus.",
+      "fact": "Hinter dem Lagerhaus prügelt sich Alrik für Geld.",
       "about": "Hafenviertel: Personen",
       "key": "DIA_KARDIF_ARBEIT_14_02",
       "excerpt": 0

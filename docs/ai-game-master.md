@@ -1,6 +1,7 @@
 # AI Game Master for OpenGothic
 
-Status: proposal. Branch: `python-repl`.
+Status: built and played in the game (five stories so far). Branch: `python-repl`. What comes next is in
+`docs/plan-automatic-dm.md`.
 
 ## Goal
 

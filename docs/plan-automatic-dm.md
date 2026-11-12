@@ -24,18 +24,18 @@ during play; see "Live authoring and the DM overlay".
 ## What exists today
 
 Working in the game along the paths played so far: event observer, typed story operations,
-per-save story log, one-off scenes with sight checks, consequence rules, quest items, journal,
-dialogue graphs with conditions, character sheets for five people, pre-generated voices, an MCP
-server, and a local inspector whose approvals are bound to exact text and audio.
+per-save story log, one-off scenes with sight checks, consequence rules, quest items and own items with their own
+look or model, XP rewards, journal, dialogue graphs with conditions and live checks, character sheets for the
+monastery, the harbour, Lobart's farm and Onar's farm, pre-generated voices, the trip system, an MCP server, and a
+local inspector whose approvals are bound to exact text and audio. Five stories have been played end to end.
 
 Known to be weaker than it sounds:
-- The logic checker models conversations only. It ignores scene conditions, rules and guild gates,
-  covers 7 of Der Fall Tilo's 14 conversations, and trusts each line's declared facts.
-- Der Fall Tilo fails the checker as written, because five flags are undeclared.
-- Rule contents are barely validated when submitted, so bad data surfaces during play.
-- Plans are all-or-nothing only for operations that have an undo.
+- The logic checker ignores rules, `checks` and guild gates, and trusts each line's declared facts.
+- Plans are all-or-nothing only for operations that have an undo; give_item, give_xp, journal, trip, narrate,
+  send and relocate have none.
+- The rule loop swallows runtime errors, and a failed rule is remembered only until the game is reloaded.
 - The dependency map guards removal and relocation only, and lists just two safe NPCs.
-- The Director cannot see the hero's guild, chapter or level.
+- A save keeps its own copy of a story, so fixes to a story file do not reach saves that already loaded it.
 
 ## Phases
 

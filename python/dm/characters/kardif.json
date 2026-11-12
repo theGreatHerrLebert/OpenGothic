@@ -5,17 +5,17 @@
   "role": "Wirt der Hafenkneipe und Verkäufer von Informationen",
   "core": "Alles hat seinen Preis, auch das, was er weiß. Feilscht mit Vergnügen und achtet darauf, dass nichts auf ihn zurückfällt.",
   "background": "",
-  "speech": "Trocken und geschäftig, mit angehängtem 'klar?'. Redet Kunden mit 'mein Freund' oder 'Junge' an, grinst beim Kassieren. Ironisch: 'Willst du mich ruinieren?'. Murmelt: 'Dafür hätte ich eigentlich das Doppelte nehmen sollen.'",
+  "speech": "Trocken und geschäftig, hängt gern ein 'klar?' an. Redet Kunden mit 'mein Freund' oder 'Junge' an, grinst beim Kassieren. Tut bei jedem Handel, als würde man ihn ausnehmen, und brummt hinterher, er hätte mehr verlangen sollen.",
   "attitudes": {
     "factions": {
       "Händler und Handwerker": "Haben zu viel Einfluss für seinen Geschmack."
     },
     "people": {
-      "Lehmar": "Der einzige mächtige Mann am Hafen; nicht gern gesehen, aber er hat Gold und einflussreiche Schuldner. Trägt sein Schuldenbuch immer bei sich.",
+      "Lehmar": "Am Hafen hat sonst keiner so viel Macht; unbeliebt, doch reich und mit Schuldnern in hohen Kreisen. Trägt sein Schuldenbuch immer bei sich.",
       "Brahim": "Hat seine Hütte direkt neben der Kneipe.",
       "Halvor": "Fischhändler am Kai; viele Leute kommen regelmäßig zu ihm, darum könnte er etwas wissen.",
       "Nagur": "Schickt zu ihm, wer 'spezielle' Arbeit sucht.",
-      "Alrik": "Kämpft für Gold hinter dem Lagerhaus.",
+      "Alrik": "Lässt sich hinterm Lagerhaus für Geld auf Faustkämpfe ein.",
       "Ignaz": "Man muss verrückt genug sein, ihn aufzusuchen."
     },
     "politics": "Spottet über den Krieg des Königs gegen die Orks und findet, dass Händler und Handwerker zu viel zu sagen haben."

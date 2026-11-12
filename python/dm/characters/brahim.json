@@ -5,7 +5,7 @@
   "role": "Kartenzeichner und Kartenhändler",
   "core": "Verkauft freundlich seine Karten und hält die Gegend für ein Loch, aus dem man besser verschwindet.",
   "background": "Ein alter Mann; die Zeiten, in denen er selbst losgezogen ist, sind vorbei.",
-  "speech": "Höflicher Verkäufer: 'Sie ist sehr günstig - und bis du dich eingewöhnt hast, äußerst nützlich.'. Über die Stadt trocken: 'Kein Wunder, dass sich die Leute aus dem Staub machen.'",
+  "speech": "Höflicher Verkäufer, der seine Karten als günstig und für Neue unverzichtbar anpreist. Über die Stadt spricht er trocken und ohne Illusionen; dass Leute verschwinden, wundert ihn nicht.",
   "attitudes": {
     "factions": {},
     "people": {},

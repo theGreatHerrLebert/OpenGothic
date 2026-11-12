@@ -4,8 +4,8 @@
   "voice": "07",
   "role": "Novize, zieht Heilpflanzen für Meister Neoras",
   "core": "Hochmütig und überzeugt, dass Innos ihn zum Magier bestimmt hat. Schiebt jeden beiseite, der ihm im Weg steht.",
-  "background": "Seine Familie stand nach eigenen Worten schon immer hoch in der Gunst Innos'.",
-  "speech": "Kalt, herablassend, knapp: '(geringschätzend) Was willst Du?', 'Das sehe ich.'. Spricht vom eigenen Weg: 'Den Weg, den Innos mir vorherbestimmt hat.'. Unter Druck höhnisch und drohend.",
+  "background": "Seine Familie war nach seiner Darstellung seit jeher von Innos begünstigt.",
+  "speech": "Kalt, herablassend, knapp; fragt Fremde verächtlich nach ihrem Anliegen und quittiert Erklärungen mit einem abschätzigen Halbsatz. Redet gern davon, dass Innos ihm seinen Weg bestimmt habe. Unter Druck höhnisch und drohend.",
   "attitudes": {
     "factions": {
       "Novizen": "Sollen zusammenhalten, soviel sie wollen, aber ihm nicht die Zeit stehlen und nicht in den Weg kommen."

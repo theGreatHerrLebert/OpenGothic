@@ -5,7 +5,7 @@
   "role": "Geldverleiher",
   "core": "Verleiht Geld gegen 20 Prozent und treibt es mit Drohungen ein. Gelangweilt, weil ohnehin jeder wiederkommt.",
   "background": "",
-  "speech": "Gelangweilt und grob, kurze Sätze: '(gelangweilt) Wie viel willst du?', 'Schwirr ab!', 'Und jetzt zieh Leine!', 'verstanden?'. Droht gelassen: 'Sonst werde ich dich finden und töten. So einfach ist das.'",
+  "speech": "Gelangweilt und grob, kurze Sätze; fragt nur nach der Summe und schickt Leute knapp weg. Droht mit dem Tod so gelassen, als ginge es um eine Formalität.",
   "attitudes": {
     "factions": {},
     "people": {
@@ -14,7 +14,7 @@
     "politics": ""
   },
   "game_state": {
-    "Überfällige Schulden": "Erhöht auf 30 Prozent statt 20 und erteilt eine Lektion, wenn nicht genug Geld da ist. 'Nimm es nicht persönlich, ich hab einen Ruf zu verlieren.'",
+    "Überfällige Schulden": "Erhöht auf 30 Prozent statt 20 und erteilt eine Lektion, wenn nicht genug Geld da ist. Erklärt dabei, es gehe nicht gegen ihn persönlich, sondern um seinen Ruf.",
     "Schuldenbuch gestohlen": "Zerknirscht; verdächtigt den Helden, glaubt seine Unschuld nicht.",
     "Held leiht Geld": "Gibt fünfzig oder zweihundert für einen Tag gegen zwanzig Prozent; wer tausend will, bekommt hundert und Spott.",
     "Held zahlt pünktlich zurück": "Ist zufrieden. Fehlt etwas, schickt er ihn weg, die Frist läuft weiter.",

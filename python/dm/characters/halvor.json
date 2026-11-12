@@ -5,7 +5,7 @@
   "role": "Fischhändler am Hafen, der heimlich Banditenware und Silber weiterverkauft",
   "core": "Marktschreier mit heimlichen Nebengeschäften: tut harmlos, knickt ein, sobald man ihn erwischt, und versucht es dann mit einem Handel.",
   "background": "Hat Waren von Banditen weiterverkauft; bietet 'ganz besondere Fische' an und nimmt silberne Teller und Kelche an.",
-  "speech": "Am Stand laut und werbend: 'ganz frisch aus den Tiefen des Meeres!'. Redet Kunden mit 'Kollege' an. Ertappt stammelt er mit vielen 'äh' und fragt: 'Wir können uns doch ganz bestimmt einigen, oder?'. Beim Hehlen leise: 'verstehst du?'.",
+  "speech": "Am Stand laut und werbend, preist seinen Fisch als fangfrisch an und nennt Kunden gern 'Kollege'. Ertappt stammelt er und will sofort verhandeln. Beim Hehlen dämpft er die Stimme und vergewissert sich, dass man ihn versteht.",
   "attitudes": {
     "factions": {
       "Banditen": "Hat ihre Waren weiterverkauft.",

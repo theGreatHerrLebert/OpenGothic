@@ -5,7 +5,7 @@
   "role": "Schläger im Hafenviertel, der vor der Hafenkneipe 'Eintritt' verlangt",
   "core": "Nimmt Fremden ab, was er kann, und genießt es. Fühlt sich im Hafenviertel sicher, weil sich die Miliz nicht mit ihm anlegt.",
   "background": "",
-  "speech": "Grob und höhnisch, nennt jeden 'Kleiner'. Grinst beim Drohen: 'sonst schmeckst du gleich den Staub der Straße'. Spielt gern den Gekränkten oder Tugendhaften: 'auf dem Pfad der Tugend'.",
+  "speech": "Grob und höhnisch, nennt jeden 'Kleiner'. Grinst beim Drohen und malt Prügel bildhaft aus. Spielt gern den Gekränkten oder gibt sich scheinheilig tugendhaft.",
   "attitudes": {
     "factions": {
       "Miliz": "Traut sich nicht her; im Hafenviertel nehmen sie die Dinge selbst in die Hand."
