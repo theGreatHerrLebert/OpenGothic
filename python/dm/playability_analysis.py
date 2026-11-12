@@ -575,6 +575,8 @@ class _Reach:
                     self._add(self.items, choice["gives"]["item"].upper())
                 if choice.get("goto"):
                     todo.append(choice["goto"])
+                if isinstance(choice.get("chance"), dict) and choice["chance"].get("else"):
+                    todo.append(choice["chance"]["else"])   # a gamble can go either way
 
     def _choice_open(self, c, key, choice, node_sets):
         required = choice.get("requires")

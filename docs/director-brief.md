@@ -83,6 +83,11 @@ and was still not worth playing: return a pouch or keep it, 25 gold, no conseque
   a dialogue that hands it over: then the player can trade for it, steal it, or take it from him when he lies in the
   dirt, and the `npc_has` and `has_item` checks tell the story which way it went. Players make their own plans with
   the game's rules (set the brute on the cheat, then loot the coin from him); a story should let them work.
+- **What a story brings in, the player gets to use.** A story about loaded dice where the hero never throws one leaves
+  its best part on the table. A game, a trick or a tool the story introduces is something the player will want to try,
+  and turn against its owner. A choice with `chance` is a gamble decided when it is chosen (a stake with `takes`, a
+  win and a loss, `repeat` to play again); a loaded die in his pocket can open a choice that always wins, and winning
+  too often can make someone suspicious.
 
 ## Rules for a story
 

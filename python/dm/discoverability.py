@@ -76,7 +76,8 @@ def _graph_texts(graph):
             continue
         order.append(key)
         node = nodes[key]
-        queue += [node.get("returns")] + [c.get("goto") for c in node.get("choices", []) or []]
+        queue += [node.get("returns")] + [c.get("goto") for c in node.get("choices", []) or []] \
+            + [(c.get("chance") or {}).get("else") for c in node.get("choices", []) or [] if isinstance(c.get("chance"), dict)]
     order += [k for k in nodes if k not in order]
     for node in (nodes[k] for k in order):
         for field in ("line", "again"):

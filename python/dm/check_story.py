@@ -141,7 +141,7 @@ def lint(data):
         seen, frontier = {conversation["start"]}, [conversation["start"]]
         while frontier:
             node = nodes[frontier.pop()]
-            for target in [node.get("returns")] + [c.get("goto") for c in node.get("choices", [])]:
+            for target in [node.get("returns")] + [t for c in node.get("choices", []) for t in graph.choice_targets(c)]:
                 if target in nodes and target not in seen:
                     seen.add(target)
                     frontier.append(target)

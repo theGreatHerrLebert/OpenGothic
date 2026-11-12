@@ -17,11 +17,25 @@ so the hero can only say what the player has actually learned. Once asked, a que
 is gone for good, as in the original game, unless the choice sets "repeat". A node with "sets"
 may also have "again", a line used instead once that flag is already set. Every node needs
 at least one unconditional choice, so a conversation can always continue.
+
+A choice with "chance" is a gamble decided when it is chosen: {"text": "Würfeln wir.", "goto": "won",
+"chance": {"percent": 40, "else": "lost"}} goes to "won" in 40 of 100 tries and to "lost" otherwise. Combine it with
+"takes" for a stake and "repeat" to let the hero play again.
 """
+
+import random
 
 import gothic
 
 from dm import checks, voices
+
+
+def choice_targets(choice):
+    """Where a choice can lead: its goto, and for a gamble also where losing goes."""
+    out = [choice.get("goto")]
+    if isinstance(choice.get("chance"), dict):
+        out.append(choice["chance"].get("else"))
+    return out
 
 
 def validate(graph):
@@ -47,6 +61,13 @@ def validate(graph):
         for choice in choices:
             if not choice.get("text"):
                 return f"choice has no text: {key}"
+            if "chance" in choice:
+                chance = choice["chance"]
+                percent = chance.get("percent") if isinstance(chance, dict) else None
+                if not isinstance(percent, int) or isinstance(percent, bool) or not 1 <= percent <= 99:
+                    return f"chance needs a percent from 1 to 99: {key}"
+                if chance.get("else") not in nodes or choice.get("goto") not in nodes:
+                    return f"a gamble needs both a goto and an else node: {key}"
             if choice.get("requires") or choice.get("unless") or choice.get("checks") or choice.get("takes"):
                 if choice.get("goto") not in nodes and not choice.get("ends"):
                     return f"choice goes nowhere: {key}"
@@ -61,7 +82,7 @@ def validate(graph):
     while changed:
         changed = False
         for key, node in nodes.items():
-            targets = [node["returns"]] if node.get("returns") else [c.get("goto") for c in node["choices"]]
+            targets = [node["returns"]] if node.get("returns") else [t for c in node["choices"] for t in choice_targets(c)]
             if key not in can_end and any(t in can_end for t in targets):
                 can_end.add(key)
                 changed = True
@@ -69,7 +90,7 @@ def validate(graph):
     reachable, frontier = {start}, [start]
     while frontier:
         current = nodes[frontier.pop()]
-        targets = [current["returns"]] if current.get("returns") else [c.get("goto") for c in current["choices"]]
+        targets = [current["returns"]] if current.get("returns") else [t for c in current["choices"] for t in choice_targets(c)]
         for target in targets:
             if target and target not in reachable:
                 reachable.add(target)
@@ -214,6 +235,9 @@ class Player:
                 return
             self.choice = self.visible[index]
             checks.transfer(self.choice)
+            chance = self.choice.get("chance")
+            if isinstance(chance, dict) and random.random() * 100 >= chance["percent"]:
+                self.choice = dict(self.choice, goto=chance["else"])   # the throw went against him
             is_question = self.choice.get("goto") and self.choice["goto"] not in self.path
             if is_question and not self.choice.get("repeat"):
                 self.on_flag(self._asked_flag(self.choice))

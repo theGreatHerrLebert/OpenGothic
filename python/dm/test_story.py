@@ -157,6 +157,37 @@ def test_conditional_choices():
     assert d.lines[-1] == "Wissend"
 
 
+def test_gamble():
+    # A choice decided by chance when it is chosen: won and lost both lead somewhere, and both count as reachable.
+    graph = {"start": "a", "nodes": {
+        "a": {"line": "Würfeln?", "choices": [{"text": "Los.", "goto": "won", "repeat": True,
+                                                 "chance": {"percent": 40, "else": "lost"}},
+                                                {"text": "Nein.", "ends": True}]},
+        "won": {"line": "Gewonnen.", "returns": "a", "choices": []},
+        "lost": {"line": "Verloren.", "returns": "a", "choices": []}}}
+    assert graphs.validate(graph) is None
+    bad = {"start": "a", "nodes": {"a": {"line": "x", "choices": [
+        {"text": "y", "goto": "a", "chance": {"percent": 100, "else": "a"}}, {"text": "z", "ends": True}]}}}
+    assert "percent" in graphs.validate(bad)
+    nowhere = {"start": "a", "nodes": {"a": {"line": "x", "choices": [
+        {"text": "y", "goto": "a", "chance": {"percent": 50, "else": "q"}}, {"text": "z", "ends": True}]}}}
+    assert "else" in graphs.validate(nowhere)
+    original = graphs.random.random
+    for roll, heard in ((0.1, "Gewonnen."), (0.9, "Verloren.")):
+        graphs.random.random = lambda: roll
+        d = fake.dialog
+        d.reset()
+        player = graphs.Player(lambda: {"NOV_B": graph}, lambda n: None)
+        d.who, d.opened, d.open = Npc("NOV_B"), True, True
+        for _ in range(3):
+            player.on_tick()
+        d.selection = 0
+        for _ in range(6):
+            player.on_tick()
+        assert heard in d.lines, (roll, d.lines)
+    graphs.random.random = original
+
+
 def test_returns_to_menu():
     graph = {"start": "a", "nodes": {
         "a": {"line": "Menü.", "choices": [{"text": "Frage", "goto": "b"}, {"text": "Tschüss", "ends": True}]},
@@ -995,7 +1026,7 @@ def test_plans_are_all_or_nothing_where_the_game_allows():
         del fake.daedalus.call, fake.journal
 
 
-for test in (test_plans_are_all_or_nothing_where_the_game_allows, test_owed_aftercare_survives_a_save, test_topic_while_he_smokes, test_return_to_a_split_menu, test_items_of_our_own, test_item_with_a_model_of_its_own, test_give_xp, test_attack, test_npc_item, test_waited_for_pipe_is_reserved, test_handed_over_but_nothing_to_play, test_topics_extend_an_npc, test_trip_operation, test_rule_contents_are_checked_when_submitted, test_graph_validation, test_validation, test_apply_and_rollback, test_return_npc, test_conditional_choices, test_returns_to_menu, test_questions_are_asked_once, test_variant_line, test_again_line, test_scene_and_rule, test_rule_fires_on_perception, test_narration_waits_for_quiet, test_drawing_a_weapon_is_perceived,
+for test in (test_plans_are_all_or_nothing_where_the_game_allows, test_owed_aftercare_survives_a_save, test_topic_while_he_smokes, test_return_to_a_split_menu, test_items_of_our_own, test_item_with_a_model_of_its_own, test_give_xp, test_attack, test_npc_item, test_waited_for_pipe_is_reserved, test_handed_over_but_nothing_to_play, test_topics_extend_an_npc, test_trip_operation, test_rule_contents_are_checked_when_submitted, test_graph_validation, test_validation, test_apply_and_rollback, test_return_npc, test_conditional_choices, test_gamble, test_returns_to_menu, test_questions_are_asked_once, test_variant_line, test_again_line, test_scene_and_rule, test_rule_fires_on_perception, test_narration_waits_for_quiet, test_drawing_a_weapon_is_perceived,
              test_queue_waits_for_safe_point, test_save_load_does_not_reapply_world,
              test_player):
     test()

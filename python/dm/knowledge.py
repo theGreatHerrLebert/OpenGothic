@@ -105,6 +105,8 @@ def _explore(graph, known, facts, relevant=None):
             snapshots.add(frozenset(final))
             if not choice.get("ends"):
                 stack.append((choice["goto"], frozenset(final)))
+                if isinstance(choice.get("chance"), dict):
+                    stack.append((choice["chance"]["else"], frozenset(final)))
     return issues, snapshots
 
 
