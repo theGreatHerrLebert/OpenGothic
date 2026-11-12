@@ -662,3 +662,21 @@ trip._current = types.SimpleNamespace(generation=7, tick=lambda g, now: False, p
 trip._tick(0.0)
 assert trip._aftercare == ("north", 7)                          # ran its course here
 print("aftercare load ok")
+
+# No saving during a trip, nor while a preacher's own sermon is on hold.
+blocks = []
+fake.trip.block_save = lambda on: blocks.append(on)
+sys.modules["gothic"].trip = fake.trip
+trip._after = None
+trip._current = types.SimpleNamespace(generation=7, tick=lambda g, now: True, profile="kriegsgesang")
+trip._tick(0.0)
+assert blocks[-1] is True
+trip._current = None
+trip._tick(0.0)
+assert blocks[-1] is False
+trip._after = [[{"npc": "X", "sermon": ["a"], "hushed": True}], 1e12, 7]
+sys.modules["gothic"].world = types.SimpleNamespace(generation=7, find_npc=lambda n: None)
+assert trip.saving_blocked()
+trip._after = None
+assert not trip.saving_blocked()
+print("save block ok")

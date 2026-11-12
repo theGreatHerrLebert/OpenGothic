@@ -963,6 +963,17 @@ def after_lines():
             + [(HERO_VOICE, line["reply"]) for line in said if line.get("reply")])
 
 
+def saving_blocked():
+    """While a trip runs, or a preacher's own sermon is on hold for the morning's: a save would keep half of it."""
+    held = _after is not None and any(line.get("hushed") for line in _after[0])
+    return _current is not None or held
+
+
+def _block_save(gothic):
+    if hasattr(gothic.trip, "block_save"):
+        gothic.trip.block_save(saving_blocked())
+
+
 def _tick(_dt):
     global _aftercare
     import gothic
@@ -971,6 +982,7 @@ def _tick(_dt):
             tick_after(gothic, time.monotonic())
         except RuntimeError:
             pass                    # no world while loading
+        _block_save(gothic)
         return
     try:
         if not _current.tick(gothic, time.monotonic()):
@@ -980,6 +992,7 @@ def _tick(_dt):
             _end(gothic)
     except RuntimeError:
         _end(gothic)                # no world while loading
+    _block_save(gothic)
 
 
 def start_ticking():
