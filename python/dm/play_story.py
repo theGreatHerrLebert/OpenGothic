@@ -97,6 +97,24 @@ def cast(ops):
     return found
 
 
+def voice_graphs(story, prefix):
+    """Every line a story speaks, as graphs for bake_voices.py: its conversations, and the titles of its topics, which
+    the hero says when he picks one and which live in the plan, not in a conversation."""
+    graphs = {f"{prefix}__{key}": graph for key, graph in story.get("conversations", {}).items()}
+    titles = []
+
+    def walk(ops):
+        for op in ops or []:
+            if isinstance(op, dict):
+                if op.get("op") == "add_topic" and isinstance(op.get("title"), str) and op["title"] not in titles:
+                    titles.append(op["title"])
+                walk(op.get("ops"))
+    walk(story.get("plan"))
+    if titles:
+        graphs[f"{prefix}__TOPIC_TITLES"] = {"voice": "15", "narration": titles}   # the hero's voice
+    return graphs
+
+
 def prepare(story, prefix):
     """What the game is sent to start a story: its plan and closures, every id under the story's own prefix, and the
     cast whose death ends it. The game adds the day it begins (dm.api.play)."""

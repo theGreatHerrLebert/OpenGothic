@@ -33,3 +33,12 @@ assert rule["ops"][0]["name"] == "story_5:geraucht" and rule["on"]["object"] == 
 assert topic["checks"] == [{"type": "hour", "from": 0, "to": 2}] and node["line"] == "Hm."
 assert plan[1]["requires"] == ["legend"]                           # the story file itself is untouched
 print("play_story tests passed")
+
+# Voicing a story covers its topic titles too: the hero says them, and they live in the plan, not a conversation.
+story = {"conversations": {"A": {"voice": "13", "start": "a", "nodes": {}}},
+         "plan": [{"op": "add_topic", "id": "t", "npc": "X", "title": "Kanntest du ihn?", "graph": {}},
+                  {"op": "add_rule", "id": "r", "when": [], "ops": [{"op": "add_topic", "id": "u", "title": "Und?"}]}]}
+graphs = play_story.voice_graphs(story, "newgame_9")
+assert graphs["newgame_9__TOPIC_TITLES"] == {"voice": "15", "narration": ["Kanntest du ihn?", "Und?"]}
+assert "newgame_9__A" in graphs
+print("voice graphs ok")
