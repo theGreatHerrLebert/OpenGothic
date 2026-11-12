@@ -925,6 +925,8 @@ AFTERCARE = {
               "sky": ["Ich hab bis ans Ende der Welt gesehen."]},
 }
 AFTERCARE_OPEN = "Ah, mein Freund! Du lebst noch. Erzähl, wie war die Reise?"
+# Said by Abuyin when a pipe he filled for the hero is freed of someone sitting at it (story.py keeps it reserved).
+RESERVED_LINE = "Die Pfeife ist bestellt, Freund. Such dir heute eine andere."
 AFTERCARE_SKY = "Und der Himmel? Man sagt, er öffnet sich, wenn das Kraut gut ist."
 AFTERCARE_CLOSE = "Gut, gut. Komm wieder, wenn du bereit bist. Und nimm beim nächsten Mal kleinere Züge."
 AFTERCARE_LAST = "Mach ich."
@@ -962,6 +964,7 @@ def after_lines():
     """Every line said after a blackout, by voice, for voicing: the speakers' and the hero's replies."""
     said = [line for b in BLACKOUTS.values() for line in b.get("after", [])]
     care = [(AFTERCARE_VOICE, AFTERCARE_OPEN), (AFTERCARE_VOICE, AFTERCARE_SKY), (AFTERCARE_VOICE, AFTERCARE_CLOSE),
+            (AFTERCARE_VOICE, RESERVED_LINE),
             (HERO_VOICE, AFTERCARE_TITLE), (HERO_VOICE, AFTERCARE_LAST)]
     for talk in AFTERCARE.values():
         care += [(AFTERCARE_VOICE, talk["ask"])] + [(HERO_VOICE, t) for t in talk["tell"] + talk["fight"] + talk["sky"]]

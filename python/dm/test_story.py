@@ -585,6 +585,30 @@ def test_trip_operation():
     rejected(s, [{"op": "add_rule", "id": "r", "when": ["x"], "ops": [{"op": "trip", "profile": "nope"}]}], "unknown trip")
 
 
+def test_waited_for_pipe_is_reserved():
+    # A pipe a rule waits for the hero to smoke is kept for him while the rule's conditions hold, then given back.
+    calls = []
+    fake.world.reserve_object = lambda scheme, x, z, on=True: calls.append((scheme, x, z, on)) or ("BJARNE" if on else "")
+    fake.world.find_npc = lambda name: types.SimpleNamespace(position=(0, 0, 0))   # Abuyin, right there
+    st._narration.clear()
+    s = st.Story()
+    s.state["rules"]["smoke"] = {"on": {"event": "used_object", "object": "SMOKE", "near": [6741, 2972, 1.5]},
+                                 "when": ["pipe_ready"], "checks": [], "fired": False, "ops": []}
+    s._tick_reservations()
+    assert calls == []                                   # not filled yet: the pipe is everyone's
+    s.state["flags"]["pipe_ready"] = True
+    s._tick_reservations()
+    assert calls == [("SMOKE", 6741.0, 2972.0, True)]    # filled: kept for the hero, the smoker gets up
+    assert st._narration[-1]["voice"] == "13"            # and Abuyin tells him why
+    s._tick_reservations()
+    assert len(calls) == 1                               # once
+    s.state["rules"]["smoke"]["fired"] = True
+    s._tick_reservations()
+    assert calls[-1] == ("SMOKE", 6741.0, 2972.0, False) and s.reserved == {}   # smoked: given back
+    del fake.world.reserve_object, fake.world.find_npc
+    st._narration.clear()
+
+
 def test_topics_extend_an_npc():
     fake.world.__init__()
     fake.dialog.__init__()
@@ -649,7 +673,7 @@ def test_topics_extend_an_npc():
     assert fake.dialog.topics["PARLAN"] == [("legend", "Kennst du die Kriegsmischung?")]
 
 
-for test in (test_handed_over_but_nothing_to_play, test_topics_extend_an_npc, test_trip_operation, test_rule_contents_are_checked_when_submitted, test_graph_validation, test_validation, test_apply_and_rollback, test_return_npc, test_conditional_choices, test_returns_to_menu, test_questions_are_asked_once, test_variant_line, test_again_line, test_scene_and_rule, test_rule_fires_on_perception, test_narration_waits_for_quiet, test_drawing_a_weapon_is_perceived,
+for test in (test_waited_for_pipe_is_reserved, test_handed_over_but_nothing_to_play, test_topics_extend_an_npc, test_trip_operation, test_rule_contents_are_checked_when_submitted, test_graph_validation, test_validation, test_apply_and_rollback, test_return_npc, test_conditional_choices, test_returns_to_menu, test_questions_are_asked_once, test_variant_line, test_again_line, test_scene_and_rule, test_rule_fires_on_perception, test_narration_waits_for_quiet, test_drawing_a_weapon_is_perceived,
              test_queue_waits_for_safe_point, test_save_load_does_not_reapply_world,
              test_player):
     test()

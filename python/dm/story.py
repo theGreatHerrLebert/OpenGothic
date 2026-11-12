@@ -522,6 +522,7 @@ class Story:
         self.failed_rules = set()
         self.topics_generation = None
         self.topics_shown = {}
+        self.reserved = {}   # (scheme, x, z) of objects kept for the hero -> world generation it was set in
 
     def validate(self, ops):
         """Raise PlanError unless the whole plan is acceptable."""
@@ -703,6 +704,33 @@ class Story:
             return [{"kind": "drew_weapon", "actor": perceptions.PLAYER, "target": "", "item": "", "spell": -1, "seen_by": seen}]
         return []
 
+    def _tick_reservations(self):
+        """An object a rule is waiting for the hero to use (a pipe filled for him) is kept for him while the rule's
+        conditions hold: NPCs treat it as taken, and one sitting there gets up. Given back once the rule fired or
+        its conditions lapse. The engine forgets reservations on a load; they are set again from here."""
+        if not hasattr(gothic.world, "reserve_object"):
+            return
+        wanted = set()
+        for rule in self.state.get("rules", {}).values():
+            on = rule.get("on") or {}
+            if on.get("event") == "used_object" and on.get("object") and len(on.get("near") or []) >= 2 \
+                    and not rule["fired"] and self._conditions(rule):
+                wanted.add((on["object"], float(on["near"][0]), float(on["near"][1])))
+        generation = gothic.world.generation
+        for key in list(self.reserved):
+            if key not in wanted or self.reserved[key] != generation:
+                if self.reserved.pop(key) == generation:
+                    gothic.world.reserve_object(*key, on=False)
+        for key in wanted - set(self.reserved):
+            evicted = gothic.world.reserve_object(*key, on=True)
+            self.reserved[key] = generation
+            if evicted:
+                trip = __import__("dm.trip").trip
+                abuyin = gothic.world.find_npc(trip.AFTERCARE_NPC)
+                here = gothic.player.position
+                if abuyin is not None and sum((a - b) ** 2 for a, b in zip(here, abuyin.position)) < 2000 ** 2:
+                    _narration.append({"text": trip.RESERVED_LINE, "voice": trip.AFTERCARE_VOICE})
+
     def _tick_topics(self):
         """Tells the engine which story topics each NPC's menu shows now; only what changed, and all again after a
         world change, when the engine has forgotten them."""
@@ -784,6 +812,7 @@ class Story:
         self._track_hero()
         self._take_perceptions()
         self._tick_topics()
+        self._tick_reservations()
         self._tick_narration()
 
         self._tick_scenes()
