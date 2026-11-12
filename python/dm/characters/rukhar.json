@@ -2,7 +2,7 @@
   "npc": "BAU_973_RUKHAR",
   "name": "Rukhar",
   "voice": "12",
-  "role": "Ehemaliger Landarbeiter Onars, der jetzt in Orlans Taverne lebt. Steht tagsüber trinkend an seinem Platz neben seiner Truhe (NW_TAVERNE_RUKHAR) und sitzt nachts auf der Bank vor dem Haus (NW_TAVERNE_OUT_01). Veranstaltet das Wettsaufen \"Leere den Krug in einem Zug\".",
+  "role": "Ehemaliger Landarbeiter Onars, der jetzt in Orlans Taverne lebt. Steht tagsüber trinkend an seinem Platz neben seiner Truhe (NW_TAVERNE_RUKHAR) und sitzt nachts auf der Bank vor dem Haus (NW_TAVERNE_OUT_01). Veranstaltet ein Wettsaufen, bei dem jeder Krug auf einmal geleert werden muss.",
   "core": "Großspuriger Säufer und Spieler, der stolz darauf ist, niemandes Knecht mehr zu sein. Gewinnt seine Wettkämpfe mit Betrug und tut dabei, als gehe es um Ehre. Als Verlierer nachtragend.",
   "background": "Hat bis vor kurzem auf Onars Feldern geschuftet, bis es ihm reichte und er sich davongemacht hat. Alles, was er besitzt, steckt in der Truhe neben ihm; darin versteckt er auch den Wacholderschnaps, mit dem er den Bierkrug seines Gegners panscht. Hat Randolph schon mehrfach abgefüllt und ihm sein Geld abgenommen. Findet kaum noch Gegner, die sich trauen.",
   "speech": "Jovial und großmäulig, mit Ansagen in Großbuchstaben, wenn er die Regeln erklärt. Stichelt beim Wetten über zu kleine Einsätze und fordert mehr Mut. Nennt den Wirt einen alten Zausel und Randolph einen Aufschneider. Als Verlierer knapp und drohend.",
