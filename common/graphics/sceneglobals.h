@@ -37,6 +37,7 @@ class SceneGlobals final {
     void setUnderWater(bool w);
 
     void setTime(uint64_t time);
+    void setWeatherCover(float cover) { uboGlobalCpu.weatherCover = cover; }
     void commitUbo(uint8_t fId);
     void prepareGlobals(Tempest::Encoder<Tempest::CommandBuffer> &cmd, uint8_t frameId);
 
@@ -120,6 +121,7 @@ class SceneGlobals final {
       Tempest::Vec2                   cloudsDir[2] = {};
 
       float                           probeGridBias = 3;
+      float                           weatherCover  = 0;   // snow lying on the landscape, 0..1 (plan-weather.md)
       };
 
     Tempest::UniformBuffer<UboGlobal> uboGlobalPf[Resources::MaxFramesInFlight][V_Count];

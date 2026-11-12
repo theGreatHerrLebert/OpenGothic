@@ -1,4 +1,7 @@
 #include "worldview.h"
+#include "game/globaleffects.h"
+#include "world/world.h"
+#include "gothic.h"
 
 #include <Tempest/Application>
 
@@ -57,6 +60,8 @@ void WorldView::preFrameUpdate(const Camera& camera, uint64_t tickCount, uint8_t
   pfxGroup.tick(tickCount);
   gLights.tick(tickCount);
   sGlobal.setTime(tickCount);
+  if(auto* world = Gothic::inst().world())
+    sGlobal.setWeatherCover(world->globalFx()->weatherState().cover);
   sGlobal.commitUbo(fId);
 
   pfxGroup.preFrameUpdate(fId);
