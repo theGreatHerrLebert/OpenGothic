@@ -75,12 +75,12 @@ from dm import models  # noqa: E402
 with tempfile.TemporaryDirectory() as d:
     d = pathlib.Path(d)
     src = d / "aloe.obj"
-    src.write_text("mtllib aloe.mtl\nv -2 0 0\nv 2 0 0\nv 0 10 0\nvt 0 0\nvt 1 0\nvt 0 1\nvn 0 0 1\nvn 0 0 1\nvn 0 0 1\n"
+    src.write_text("mtllib aloe.mtl\nv -30 0 0\nv 30 0 0\nv 0 2 25\nvt 0 0\nvt 1 0\nvt 0 1\nvn 0 1 0\nvn 0 1 0\nvn 0 1 0\n"
                    "usemtl m0\nf 1/1/1 2/2/2 3/3/3\n", encoding="utf-8")
     (d / "aloe.mtl").write_text("newmtl m0\nmap_Kd aloe_0.png\n", encoding="utf-8")
     out = models.mondaloe(src, d, petals=5)
     v, vt, vn, rest = models.read_obj(out.read_text(encoding="utf-8"))
-    assert max(p[1] for p in v[:3]) > 10                                    # drawn up
+    assert max(p[1] for p in v[:3]) > 5 and max(abs(p[0]) for p in v[:3]) < 30   # leaf tips curled up, drawn in
     assert sum(1 for line in rest if line.startswith("f ")) == 1 + 5 * 7     # the aloe's face, 5 petals both sides + heart
     assert "usemtl bloom" in rest and "map_Kd mondaloe_bloom.png" in (d / "mondaloe.mtl").read_text(encoding="utf-8")
     assert (d / "mondaloe_bloom.png").read_bytes().startswith(b"\x89PNG")

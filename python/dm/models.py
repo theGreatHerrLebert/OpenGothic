@@ -236,29 +236,31 @@ def bloom_texture(size=64):
     return png(size, size, rows)
 
 
-def mondaloe(source, folder, name="mondaloe", petals=7, stretch=1.35, slender=0.25, twist=0.6):
-    """Mondaloe from the game's own aloe (an OBJ resources.export_mesh wrote, with its moon-tinted texture): its
-    leaves drawn up slender and turning a little as they rise, and an open pale blossom of `petals` petals on top.
-    Writes <name>.obj, <name>.mtl and <name>_bloom.png beside the source's textures; returns the OBJ's path."""
+def mondaloe(source, folder, name="mondaloe", petals=7, curl=0.35, slender=0.85, twist=0.5):
+    """Mondaloe from the game's own aloe (an OBJ resources.export_mesh wrote, with its moon-tinted texture). The aloe
+    is a flat rosette (about 65 cm across, 8 cm high), so its leaves are curled up towards their tips (`curl`: the
+    rise per unit of distance from the middle), drawn in a little (`slender`) and turned as they reach out (`twist`
+    radians at the tips), like a rosette opening to the moon; an open pale blossom of `petals` petals, sized to the
+    rosette, stands in its middle. Writes <name>.obj, <name>.mtl and <name>_bloom.png beside the source's textures;
+    returns the OBJ's path."""
     source, folder = pathlib.Path(source), pathlib.Path(folder)
     v, vt, vn, rest = read_obj(source.read_text(encoding="utf-8"))
-    ys = [p[1] for p in v]
-    y0, y1 = min(ys), max(ys)
     cx = sum(p[0] for p in v) / len(v)
     cz = sum(p[2] for p in v) / len(v)
-    height = max(y1 - y0, 1e-3)
+    reach = max(math.hypot(p[0] - cx, p[2] - cz) for p in v) or 1.0
     for p in v:
-        h = (p[1] - y0) / height
-        squeeze = 1.0 - slender * h
-        x, z = cx + (p[0] - cx) * squeeze, cz + (p[2] - cz) * squeeze
-        p[0], p[2] = _turn(x, z, cx, cz, twist * h)
-        p[1] = y0 + (p[1] - y0) * stretch
-    top = y0 + height * stretch
-    # The blossom: petals fanning out and up from a ring around the top, and a small heart; its own material.
-    base_v, base_t, base_n = len(v), len(vt), len(vn)
+        r = math.hypot(p[0] - cx, p[2] - cz)
+        x, z = cx + (p[0] - cx) * slender, cz + (p[2] - cz) * slender
+        p[0], p[2] = _turn(x, z, cx, cz, twist * r / reach)
+        p[1] += curl * r * (r / reach)          # rises more the further out: a curl, not a cone
+    middle = [p[1] for p in v if math.hypot(p[0] - cx, p[2] - cz) < reach * 0.25]
+    top = max(middle) if middle else min(p[1] for p in v)   # the heart of the rosette, else its foot
+    # The blossom: petals fanning out and up from a ring in the middle, and a small heart; its own material.
+    base_t, base_n = len(vt), len(vn)
     bloom = []
-    r_in, r_out, lift = height * 0.04, height * 0.22, height * 0.10
-    heart = [cx, top + lift * 0.4, cz]
+    r_in, r_out, lift = reach * 0.04, reach * 0.22, reach * 0.12
+    stem = reach * 0.05
+    heart = [cx, top + stem + lift * 0.3, cz]
     v.append(heart)
     vt.append([0.75, 0.5])
     vn.append([0.0, 1.0, 0.0])
@@ -269,16 +271,14 @@ def mondaloe(source, folder, name="mondaloe", petals=7, stretch=1.35, slender=0.
         corners = []
         for ang, r, up in ((a - da, r_in, 0.0), (a + da, r_in, 0.0), (a + da * 0.6, r_out, lift),
                            (a, r_out * 1.12, lift * 1.2), (a - da * 0.6, r_out, lift)):
-            v.append([cx + math.cos(ang) * r, top + up, cz + math.sin(ang) * r])
+            v.append([cx + math.cos(ang) * r, top + stem + up, cz + math.sin(ang) * r])
             corners.append(len(v))
         for (uu, vv) in ((0.15, 0.95), (0.35, 0.95), (0.42, 0.25), (0.25, 0.05), (0.08, 0.25)):
             vt.append([uu, 1.0 - vv])
-        out = [math.cos(a) * 0.4, 0.9, math.sin(a) * 0.4]
-        vn.append(out)
+        vn.append([math.cos(a) * 0.4, 0.9, math.sin(a) * 0.4])
         ni = len(vn)
         ti = len(vt) - 5
-        fan = [(0, 1, 2), (0, 2, 3), (0, 3, 4)]
-        for i, j, m in fan:
+        for i, j, m in ((0, 1, 2), (0, 2, 3), (0, 3, 4)):
             bloom.append(f"f {corners[i]}/{ti + i + 1}/{ni} {corners[j]}/{ti + j + 1}/{ni} {corners[m]}/{ti + m + 1}/{ni}")
             bloom.append(f"f {corners[m]}/{ti + m + 1}/{ni} {corners[j]}/{ti + j + 1}/{ni} {corners[i]}/{ti + i + 1}/{ni}")
         bloom.append(f"f {heart_i}/{base_t + 1}/{base_n + 1} {corners[1]}/{ti + 2}/{ni} {corners[0]}/{ti + 1}/{ni}")
