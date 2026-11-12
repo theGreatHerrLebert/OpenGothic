@@ -172,3 +172,17 @@ assert perc.validate({"event": "read_item", "item": "ITWR_LETTER"}) is None
 for count in (1.5, 0, -1, True, "2"):
     assert "whole number" in checks.validate_graph({"nodes": {"a": {"choices": [{"text": "y", "gives": {"item": "ITMI_GOLD", "count": count}}]}}}), count
 print("handover ok")
+
+# Chapter, level and day: ranges with both ends included and either end optional.
+values["KAPITEL"] = 2
+fake.player.level, fake.world.day = 7, 4
+assert holds(type="chapter", **{"from": 2}) and holds(type="chapter", to=2) and not holds(type="chapter", **{"from": 3})
+assert holds(type="level", min=5, max=7) and not holds(type="level", min=8) and not holds(type="level", max=6)
+assert holds(type="day", **{"from": 0, "to": 4}) and not holds(type="day", **{"from": 5})
+assert checks.failing([{"type": "chapter", "from": 1}, {"type": "level", "min": 9}]) == {"type": "level", "min": 9}
+assert checks.failing([{"type": "chapter", "from": 1}]) is None and checks.failing(None) is None
+for bad, word in [({"type": "chapter"}, "needs"), ({"type": "chapter", "from": 0}, "range"), ({"type": "level", "min": "5"}, "range"),
+                  ({"type": "day", "from": 4, "to": 2}, "after"), ({"type": "chapter", "from": 8}, "range")]:
+    assert word in checks.validate(bad), bad
+assert checks.validate({"type": "chapter", "from": 3, "to": 6}) is None and checks.validate({"type": "level", "max": 10}) is None
+print("checks ok")

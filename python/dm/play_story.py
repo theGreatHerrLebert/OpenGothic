@@ -2,7 +2,8 @@
 
     python python/dm/play_story.py <story.json>
 
-The game must run with OPENGOTHIC_PY_BRIDGE=1 and a save must be loaded.
+The game must run with OPENGOTHIC_PY_BRIDGE=1 and a save must be loaded. A story whose "requires" checks do not
+hold in that save (an earlier chapter, too low a level, ...) is not started.
 """
 
 import json
@@ -59,7 +60,7 @@ if __name__ == "__main__":
         raise SystemExit(__doc__)
     path = pathlib.Path(sys.argv[1])
     story = json.loads(path.read_text(encoding="utf-8"))
-    reply = bridge.call("play", story["title"], namespaced(story["plan"], path.stem))
+    reply = bridge.call("play", story["title"], namespaced(story["plan"], path.stem), story.get("requires") or [])
     if reply.get("error") or reply.get("ok") is False:
         raise SystemExit("not started: " + str(reply.get("error")))
     print(f"„{story['title']}“ is running. Alt+O shows the game master's panel.")

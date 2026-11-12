@@ -2,7 +2,8 @@
 
     python3 python/dm/check_story.py <story.json> <world_names.json>
 
-A story file holds "title", "hidden_truth", "plot", "conversations" and "plan". Prints a JSON report.
+A story file holds "title", "hidden_truth", "plot", "conversations" and "plan", and may hold "requires": checks that
+must hold in the save before the story starts (see checks.py). Prints a JSON report.
 """
 
 import json
@@ -15,7 +16,7 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 gothic = types.ModuleType("gothic")
 sys.modules["gothic"] = gothic
 
-from dm import graph, knowledge, story  # noqa: E402
+from dm import checks, graph, knowledge, story  # noqa: E402
 
 STAGE_DIRECTION = re.compile(r"\([^)]*\)|\*[^*]+\*")
 
@@ -176,6 +177,13 @@ def check(path, names_path):
     errors += lint_errors
     warnings += lint_warnings
 
+    requires = data.get("requires", [])
+    if not isinstance(requires, list):
+        errors.append("requires must be a list of checks")
+    else:
+        problem = checks.validate_all(requires)
+        if problem:
+            errors.append(f"requires: {problem}")
     scratch = story.Story()
     try:
         scratch.validate(data["plan"])

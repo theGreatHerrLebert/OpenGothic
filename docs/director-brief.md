@@ -134,6 +134,8 @@ Flags record what the story remembers. A `checks` list on a scene, a rule or a d
 now: `has_item`, `wears`, `guild`, `npc_state` (burning, asleep, frozen and so on), `npc_dead`, `obsessed`, `hour`,
 `quest` (the game's own quest state, such as `{"type": "quest", "quest": "MIS_LOBART_RUEBEN", "state": "success"}`),
 `heard` (the hero has heard one of the game's own topics, such as `{"type": "heard", "info": "DIA_ABUYIN_DU"}`),
+`chapter`, `level` and `day` (ranges with both ends included, either end optional: `{"type": "chapter", "from": 2}`,
+`{"type": "level", "min": 5, "max": 12}`, `{"type": "day", "from": 3}`; the first day is 0),
 `not`, and `any` (at least one of several holds). A choice can also carry `takes` and `gives` (`{"item": ..., "count": ...}`): it only appears while the hero has
 the item, and the item really changes hands. A checked choice never counts as the way out of a node. Often the best use is a hint: one line mentions a rule
 that is already true, such as a sleep scroll working on a guard, and the player makes the plan.
@@ -142,6 +144,11 @@ A line that judges the hero by what others can see needs a check behind it. When
 clothing ("Ach, Kutte"), the first scene with that character checks `wears`. When someone addresses the hero by rank
 ("Novize"), it checks `guild`. Excluding other guilds with `not_guilds` is not enough: a hero in plain clothes is then
 still greeted as a monk.
+
+A story as a whole can say when it may begin. Its top-level `requires` is a list of the same checks, tested once
+when the story is started in a save: `[{"type": "chapter", "from": 2}, {"type": "guild", "guild": "GIL_SLD"}]`.
+A story that names a mercenary's arrest, a dragon or a guild robe must require the chapter or guild that makes it
+true, and a story built on a snapshot should require what the snapshot showed. It is not started where they fail.
 
 ## A voice from off-screen
 

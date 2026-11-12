@@ -939,7 +939,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
         if library.stage_of(story_id, rev=fingerprint(story_id, content_index(data)))[0] != library.ACCEPTED:
             return self._error("only accepted stories can be played", status=409)
         reply = bridge.call("play_demo") if story_id == library.DEMO_ID else \
-            bridge.call("play", data["title"], library.plan(story_id))
+            bridge.call("play", data["title"], library.plan(story_id), library.requires(story_id))
         if reply.get("error") or reply.get("ok") is False:
             return self._error(reply.get("error") or "the game refused the story", status=502)
         self._send(b"{}")

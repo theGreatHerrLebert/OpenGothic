@@ -36,3 +36,17 @@ assert check_story.unlisted_graphs(hidden) == []
 nested = {"plan": [{"op": "add_rule", "id": "r", "when": ["x"], "ops": [{"op": "add_topic", "id": "deep", "graph": extra}]}],
           "conversations": {}}
 assert check_story.unlisted_graphs(nested) == ["plan: add_topic deep plays a dialogue missing from conversations"]
+
+# A story's requires are checked like any other checks.
+import json, tempfile  # noqa: E401,E402
+with tempfile.TemporaryDirectory() as d:
+    names = pathlib.Path(d) / "names.json"
+    names.write_text(json.dumps({"npcs": [], "items": [], "waypoints": []}))
+    base = {"title": "t", "hidden_truth": "", "plot": {"facts": {}, "conversations": {}}, "conversations": {}, "plan": []}
+    for requires, wanted in [([{"type": "chapter", "from": 9}], "requires: chapter out of range: 9"),
+                             ({"type": "chapter"}, "requires must be a list of checks")]:
+        report = check_story.check({**base, "requires": requires}, str(names))
+        assert wanted in report["errors"], report
+    report = check_story.check({**base, "requires": [{"type": "chapter", "from": 2}]}, str(names))
+    assert not any(e.startswith("requires") for e in report["errors"]), report
+print("requires ok")

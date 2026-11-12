@@ -9,8 +9,13 @@
     {"type": "hour", "from": 21, "to": 5}                      wraps past midnight
     {"type": "quest", "quest": "MIS_LOBART_RUEBEN", "state": "success"}   the game's own quest state
     {"type": "heard", "info": "DIA_ABUYIN_DU"}                 the hero has heard this topic of the game's own
+    {"type": "chapter", "from": 2, "to": 3}                    the game's chapter (KAPITEL), both ends included
+    {"type": "level", "min": 5, "max": 12}                     the hero's level, both ends included
+    {"type": "day", "from": 3, "to": 6}                        the game's day counter (0 on the first day), included
     {"type": "not", "check": {...}}
     {"type": "any", "checks": [{...}, ...]}                    at least one holds
+
+For chapter, level and day either end may be left out: {"type": "chapter", "from": 3} holds from chapter 3 on.
 
 A quest state is "open" (never given), "running", "success", "failed" or "obsolete", read from the game's MIS_
 variable, so a story can follow what the hero has really done in the original game.
@@ -28,7 +33,10 @@ QUEST_STATES = {"open": None, "running": "LOG_RUNNING", "success": "LOG_SUCCESS"
                 "obsolete": "LOG_OBSOLETE"}
 _REQUIRED = {"has_item": ("item",), "wears": ("item",), "guild": ("guild",), "npc_state": ("npc", "state"), "npc_dead": ("npc",),
              "obsessed": (), "hour": ("from", "to"), "not": ("check",),
-             "quest": ("quest", "state"), "any": ("checks",), "heard": ("info",)}
+             "quest": ("quest", "state"), "any": ("checks",), "heard": ("info",),
+             "chapter": (), "level": (), "day": ()}
+# Range checks: which two fields bound them, and the smallest sensible value.
+RANGES = {"chapter": ("from", "to", 1, 7), "level": ("min", "max", 0, 100), "day": ("from", "to", 0, 100000)}
 
 
 def validate(check):
@@ -49,6 +57,16 @@ def validate(check):
         return f"state cannot be checked: {check['state']}"
     if kind == "hour" and not (0 <= check["from"] <= 23 and 0 <= check["to"] <= 23):
         return "hour out of range"
+    if kind in RANGES:
+        low_key, high_key, smallest, largest = RANGES[kind]
+        low, high = check.get(low_key), check.get(high_key)
+        if low is None and high is None:
+            return f"check {kind} needs {low_key} or {high_key}"
+        for value in (low, high):
+            if value is not None and (type(value) is not int or not smallest <= value <= largest):
+                return f"{kind} out of range: {value}"
+        if low is not None and high is not None and low > high:
+            return f"{kind}: {low_key} is after {high_key}"
     if kind == "quest":
         if not str(check["quest"]).upper().startswith("MIS_"):
             return f"not a quest variable: {check['quest']}"
@@ -165,11 +183,31 @@ def _holds(check):
         value = gothic.daedalus.get(check["quest"].upper(), 0)
         constant = QUEST_STATES[check["state"]]
         return value == (0 if constant is None else gothic.daedalus.get(constant, 0))
+    if kind in RANGES:
+        low_key, high_key, _, _ = RANGES[kind]
+        value = _current(kind)
+        return check.get(low_key, value) <= value <= check.get(high_key, value)
     if kind == "any":
         return any(_holds(c) for c in check["checks"])
     if kind == "heard":
         return bool(gothic.player.heard(check["info"].upper()))
     return not _holds(check["check"])
+
+
+def _current(kind):
+    if kind == "chapter":
+        return int(gothic.daedalus.get("KAPITEL", 0))
+    if kind == "level":
+        return int(gothic.player.level)
+    return int(gothic.world.day)
+
+
+def failing(checks):
+    """The first check that does not hold right now, or None."""
+    for check in checks or []:
+        if not _holds(check):
+            return check
+    return None
 
 
 def all_hold(checks):

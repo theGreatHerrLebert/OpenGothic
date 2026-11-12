@@ -74,8 +74,18 @@ def submit(reason, ops):
         _reply({"ok": False, "error": str(err)})
 
 
-def play(reason, ops):
-    """Start the game master if it is not running yet, then queue a whole story."""
+def play(reason, ops, requires=None):
+    """Start the game master if it is not running yet, then queue a whole story. A story's "requires" checks must
+    hold in this game right now (chapter, level, guild, a quest the hero finished, ...), or it is not started."""
+    from dm import checks
+    problem = checks.validate_all(requires)
+    if problem:
+        _reply({"ok": False, "error": f"bad requirement: {problem}"})
+        return
+    unmet = checks.failing(requires)
+    if unmet is not None:
+        _reply({"ok": False, "error": "not yet: " + json.dumps(unmet, ensure_ascii=False), "unmet": unmet})
+        return
     import dm
     dm.start()
     submit(reason, ops)

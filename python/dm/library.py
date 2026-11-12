@@ -239,6 +239,12 @@ def plan(story_id):
     return None if data is None else data["plan"]
 
 
+def requires(story_id):
+    """The checks that must hold in the save before a generated story may start; none for the demo."""
+    data, _ = (None, None) if story_id == DEMO_ID else generated(story_id)
+    return [] if data is None else data.get("requires") or []
+
+
 def entries():
     """Every story with its stage: the demo first, then generated stories by title, which says nothing about their source."""
     stages = load_stages()
