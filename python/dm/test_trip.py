@@ -807,3 +807,14 @@ assert (trip.HERO_VOICE, trip.SMOKE_THANKS) in trip.after_lines() and ("04", tri
 del sys.modules["dm.story"]
 trip._aftercare = None
 print("three smokes ok")
+
+# The talk Abuyin still owes survives a restart: it is kept in the save's story state.
+sys.modules["dm.story"] = types.SimpleNamespace(_story=_FakeStory())
+trip._aftercare = None
+gw2 = types.SimpleNamespace(world=types.SimpleNamespace(generation=3, find_npc=lambda n: None), player=types.SimpleNamespace(items=[]))
+sys.modules["dm.story"]._story.state["aftercare"] = "desert"            # as a loaded save would have it
+assert (trip.AFTERCARE_TOPIC, trip.AFTERCARE_TITLE) in trip.extra_topics(gw2)[trip.AFTERCARE_NPC]
+assert trip.topic(trip.AFTERCARE_TOPIC)["graph"]["nodes"]["b"]["line"] == trip.AFTERCARE["desert"]["ask"]
+assert "aftercare" not in sys.modules["dm.story"]._story.state                 # talked about: gone
+del sys.modules["dm.story"]
+print("aftercare across restarts ok")
