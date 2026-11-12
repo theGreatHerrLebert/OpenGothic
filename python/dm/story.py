@@ -594,6 +594,46 @@ def _check_creature(args, state):
         raise PlanError(str(err)) from None
 
 
+# ---- a story as a whole: begun when played, ended by a closure or when its cast is gone ----
+
+def story_of(item_id):
+    """The story an id belongs to: play_story puts "<story>:" before every id of a story."""
+    return item_id.split(":", 1)[0] if isinstance(item_id, str) and ":" in item_id else None
+
+
+def _check_begin(args, state):
+    _require(args, "story", "title")
+    if args["story"] in state.get("stories", {}):
+        raise PlanError(f"story already begun: {args['story']}")
+    cast = args.get("cast", [])
+    if not isinstance(cast, list) or not all(isinstance(c, str) for c in cast):
+        raise PlanError("cast is a list of NPC instances")
+
+
+def _fold_begin(args, state):
+    state.setdefault("stories", {})[args["story"]] = {
+        "title": args["title"], "started": args.get("day"), "cast": [c.upper() for c in args.get("cast", [])],
+        "ended": None}
+
+
+def _check_end(args, state):
+    _require(args, "story")
+    if args["story"] not in state.get("stories", {}):
+        raise PlanError(f"no such story: {args['story']}")
+
+
+def _fold_end(args, state):
+    story = state["stories"][args["story"]]
+    if story["ended"] is None:   # the first ending counts; a second closure firing the same tick changes nothing
+        story["ended"] = args.get("outcome") or "ended"
+
+
+def ended(state, item_id):
+    """Whether the story an id belongs to has ended: its rules, scenes and topics are retired."""
+    story = state.get("stories", {}).get(story_of(item_id))
+    return story is not None and story["ended"] is not None
+
+
 def _check_flag(args, state):
     _require(args, "name", "value")
 
@@ -637,6 +677,8 @@ OPS = {
     "add_topic": (_check_topic, _fold_topic, None),
     "fail_rule": (_check_fire_rule, _fold_fail_rule, None),
     "spawn_creature": (_check_creature, creatures.fold, creatures.spawn),
+    "begin_story": (_check_begin, _fold_begin, None),
+    "end_story": (_check_end, _fold_end, None),
 }
 
 def _ready_live(args, plan):
@@ -885,7 +927,7 @@ class Story:
             return
         px, _, pz = gothic.player.position
         for scene_id, scene in self.state.get("scenes", {}).items():
-            if scene["done"] or not self._conditions(scene):
+            if scene["done"] or ended(self.state, scene_id) or not self._conditions(scene):
                 continue
             if self._guild_excluded(scene):
                 continue
@@ -966,7 +1008,7 @@ class Story:
         visible = {}
         for topic_id, topic in self.state.get("topics", {}).items():
             visible.setdefault(topic["npc"], [])
-            if self._conditions(self._as_now(topic, topic_id)):
+            if not ended(self.state, topic_id) and self._conditions(self._as_now(topic, topic_id)):
                 visible[topic["npc"]].append((topic_id, topic["title"]))
         for instance, topics in __import__("dm.trip").trip.extra_topics(gothic).items():
             visible.setdefault(instance, []).extend(topics)   # a trip's topics beside the story's own
@@ -984,7 +1026,7 @@ class Story:
         if key.startswith("trip:"):
             return __import__("dm.trip").trip.topic(key)
         topic = self.state.get("topics", {}).get(key)
-        if topic is None:
+        if topic is None or ended(self.state, key):
             return None
         return topic if self._conditions(self._as_now(topic, key)) else None
 
@@ -1012,13 +1054,14 @@ class Story:
         for event in gothic.world.take_perceptions() + self._weapon_events():
             recent.append(event)
             for rule_id, rule in self.state.get("rules", {}).items():
-                if (rule.get("on") and not rule["fired"] and not rule.get("perceived") and self._conditions(rule)
+                if (rule.get("on") and not rule["fired"] and not rule.get("perceived") and not ended(self.state, rule_id)
+                        and self._conditions(rule)
                         and perceptions.matches(rule["on"], event)):
                     self.apply_plan({"reason": f"Wahrgenommen: {rule_id}", "ops": [{"op": "perceive", "id": rule_id}]})
 
     def _tick_rules(self):
         for rule_id, rule in self.state.get("rules", {}).items():
-            if rule["fired"] or rule.get("failed") or not self._conditions(rule):
+            if rule["fired"] or rule.get("failed") or ended(self.state, rule_id) or not self._conditions(rule):
                 continue
             if rule.get("on") and not rule.get("perceived"):
                 continue
@@ -1037,6 +1080,40 @@ class Story:
                     # Kept in the log, so a load does not try the broken rule again.
                     self._record(f"Regel gescheitert: {rule_id}",
                                  [{"op": "fail_rule", "id": rule_id, "error": str(err)[:200]}])
+
+    def _tick_cast(self):
+        """The safety net: a story whose cast member has died ends quietly, unless one of its closures speaks of that
+        death (it fires as a rule of its own). A story that ends this way leaves nothing waiting in the world."""
+        for story_id, story in self.state.get("stories", {}).items():
+            if story["ended"] is not None:
+                continue
+            for instance in story.get("cast", []):
+                if instance in self.state.get("removed", []):
+                    continue   # taken out by a story on purpose
+                npc = gothic.world.find_npc(instance)
+                if npc is None or not npc.dead:
+                    continue   # alive, or in another world
+                own = [r for rid, r in self.state.get("rules", {}).items() if story_of(rid) == story_id]
+                if any("npc_dead" in json.dumps(r.get("checks", [])) and instance in json.dumps(r.get("checks", [])).upper()
+                       for r in own):
+                    continue
+                self._record(f"Geschichte endet: {instance} ist tot",
+                             [{"op": "end_story", "story": story_id, "outcome": f"cast_dead:{instance}"}])
+                self.results.append({"reason": f"{story['title']}: endet still", "ok": True})
+                break
+
+    def health(self):
+        """What each story is doing, without giving anything away: started, ended and how, rules waiting or broken."""
+        out = {}
+        for story_id, story in self.state.get("stories", {}).items():
+            rules = [r for rid, r in self.state.get("rules", {}).items() if story_of(rid) == story_id]
+            started = story.get("started")
+            out[story_id] = {"title": story["title"], "ended": story["ended"],
+                             "days": None if started is None else gothic.world.day - started,
+                             "rules_waiting": sum(1 for r in rules if not r["fired"] and not r.get("failed")),
+                             "rules_fired": sum(1 for r in rules if r["fired"]),
+                             "rules_failed": sum(1 for r in rules if r.get("failed"))}
+        return out
 
     def _track_hero(self):
         for flag, guild in HERO_GUILD_FLAGS.items():
@@ -1071,6 +1148,7 @@ class Story:
         self._tick_scenes()
         if gothic.dialog.partner() is None:
             self._tick_rules()
+            self._tick_cast()
 
         if gothic.dialog.partner() is None and self.queue:
             plan = self.queue.pop(0)

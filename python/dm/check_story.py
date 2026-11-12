@@ -81,6 +81,7 @@ def lint(data):
 
     walk(data["conversations"], "conversations")
     walk(data["plan"], "plan")
+    walk(data.get("closures") or [], "closures")
     for flag, where in needed.items():
         if flag not in written and not flag.startswith("asked:"):  # the dialogue player writes these itself
             errors.append(f"flag is needed but never set: {flag} ({where})")
@@ -184,9 +185,21 @@ def check(path, names_path):
         problem = checks.validate_all(requires)
         if problem:
             errors.append(f"requires: {problem}")
+    closures = data.get("closures")
+    if closures is not None and (not isinstance(closures, list) or not all(isinstance(c, dict) for c in closures)):
+        errors.append("closures must be a list of rules")
+        closures = []
+    if not closures:
+        warnings.append("no closure: the story cannot end quietly if it is never finished (a timeout with story_age, "
+                        "a chapter change); see 'Endings' in docs/director-brief.md")
+    elif not any("story_age" in json.dumps(c) for c in closures):
+        warnings.append("no timeout: no closure waits on story_age, so an unfinished story waits for ever")
     scratch = story.Story()
     try:
-        scratch.validate(data["plan"])
+        from dm import play_story
+        start = play_story.prepare({**data, "closures": closures or []}, "check")
+        scratch.validate([{"op": "begin_story", "story": "check", "title": data["title"], "day": 0,
+                           "cast": start["cast"]}] + start["ops"])
     except story.PlanError as error:
         errors.append(f"plan: {error}")
     except (KeyError, TypeError, AttributeError) as error:

@@ -175,6 +175,16 @@ breathes on the drum, edges glow, the world slows, and the hero's thoughts come 
 put any talk that matters before or after it. Fire it from a rule on a deed or a choice, such as taking a pull from a
 pipe, never by surprise. One trip at a time. A player may switch the picture off; the music and thoughts remain.
 
+## Endings
+
+A story must be able to end quietly when it is never finished. Its top-level `closures` are rules that end it:
+`[{"id": "too_late", "outcome": "timeout", "checks": [{"type": "story_age", "days": 5}], "ops": [...]}]`. When one
+fires, its operations run (a last line from off, a flag for a later story) and the story ends: its waiting rules,
+scenes and topics are retired. `story_age` counts days since the story began in this save. Write at least a timeout,
+and a closure for each death that matters, such as `{"type": "npc_dead", "npc": ...}` with a line about it. If a cast
+member dies and no closure speaks of it, the game master ends the story quietly by itself. Every operation is listed
+in `docs/story-ops.md`.
+
 ## A creature of the story's own
 
 `spawn_creature` remixes one of the game's nameless creatures into one that belongs to the story, while every other

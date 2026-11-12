@@ -12,6 +12,7 @@
     {"type": "chapter", "from": 2, "to": 3}                    the game's chapter (KAPITEL), both ends included
     {"type": "level", "min": 5, "max": 12}                     the hero's level, both ends included
     {"type": "day", "from": 3, "to": 6}                        the game's day counter (0 on the first day), included
+    {"type": "story_age", "days": 3}                           at least this many days since the story began
     {"type": "not", "check": {...}}
     {"type": "any", "checks": [{...}, ...]}                    at least one holds
 
@@ -34,7 +35,7 @@ QUEST_STATES = {"open": None, "running": "LOG_RUNNING", "success": "LOG_SUCCESS"
 _REQUIRED = {"has_item": ("item",), "wears": ("item",), "guild": ("guild",), "npc_state": ("npc", "state"), "npc_dead": ("npc",),
              "obsessed": (), "hour": ("from", "to"), "not": ("check",),
              "quest": ("quest", "state"), "any": ("checks",), "heard": ("info",),
-             "chapter": (), "level": (), "day": ()}
+             "chapter": (), "level": (), "day": (), "story_age": ("days",)}
 # Range checks: which two fields bound them, and the smallest sensible value.
 RANGES = {"chapter": ("from", "to", 1, 7), "level": ("min", "max", 0, 100), "day": ("from", "to", 0, 100000)}
 
@@ -60,6 +61,8 @@ def validate(check):
         return f"state cannot be checked: {check['state']}"
     if kind == "hour" and not (0 <= check["from"] <= 23 and 0 <= check["to"] <= 23):
         return "hour out of range"
+    if kind == "story_age" and (type(check["days"]) is not int or not 0 <= check["days"] <= 1000):
+        return "story_age days is a whole number from 0 to 1000"
     if kind in RANGES:
         low_key, high_key, smallest, largest = RANGES[kind]
         low, high = check.get(low_key), check.get(high_key)
@@ -192,6 +195,11 @@ def _holds(check):
         value = gothic.daedalus.get(check["quest"].upper(), 0)
         constant = QUEST_STATES[check["state"]]
         return value == (0 if constant is None else gothic.daedalus.get(constant, 0))
+    if kind == "story_age":
+        # Which story: play_story writes it in; a check of a story not begun (or not named) never holds.
+        from dm import story
+        begun = story.state().get("stories", {}).get(check.get("story"), {}).get("started")
+        return begun is not None and gothic.world.day - begun >= check["days"]
     if kind in RANGES:
         low_key, high_key, _, _ = RANGES[kind]
         value = _current(kind)

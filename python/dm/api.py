@@ -50,6 +50,11 @@ def story_state():
             "safe_to_remove": sorted(story.SAFE_TO_REMOVE)})
 
 
+def health():
+    """Each story's progress without spoilers: whether it is running or how it ended, its age, its rules' counts."""
+    _reply(story._story.health())
+
+
 def describe(name):
     kind = gothic.world.instance_kind(name)
     npc = gothic.world.find_npc(name) if kind == "npc" else None
@@ -74,7 +79,7 @@ def submit(reason, ops):
         _reply({"ok": False, "error": str(err)})
 
 
-def play(reason, ops, requires=None):
+def play(reason, ops, requires=None, story_id=None, cast=None):
     """Start the game master if it is not running yet, then queue a whole story. A story's "requires" checks must
     hold in this game right now (chapter, level, guild, a quest the hero finished, ...), or it is not started."""
     from dm import checks
@@ -86,6 +91,10 @@ def play(reason, ops, requires=None):
     if unmet is not None:
         _reply({"ok": False, "error": "not yet: " + json.dumps(unmet, ensure_ascii=False), "unmet": unmet})
         return
+    if story_id:
+        # The story as a whole: from today, with the cast whose death ends it (see story._tick_cast).
+        ops = [{"op": "begin_story", "story": story_id, "title": reason, "day": gothic.world.day,
+                "cast": list(cast or [])}] + list(ops)
     import dm
     dm.start()
     submit(reason, ops)

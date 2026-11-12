@@ -239,6 +239,13 @@ def plan(story_id):
     return None if data is None else data["plan"]
 
 
+def start(story_id):
+    """What the game is sent to start a generated story: see play_story.prepare."""
+    from dm import play_story
+    data, _ = generated(story_id)
+    return None if data is None else play_story.prepare(data, re.sub(r"[^A-Za-z0-9_]+", "_", story_id))
+
+
 def requires(story_id):
     """The checks that must hold in the save before a generated story may start; none for the demo."""
     data, _ = (None, None) if story_id == DEMO_ID else generated(story_id)

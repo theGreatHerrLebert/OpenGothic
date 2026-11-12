@@ -49,6 +49,8 @@ def namespaced(ops, prefix):
                 out[key] = f"{prefix}:{item}"
             elif key == "creature" and isinstance(item, str) and ":" not in item:
                 out[key] = f"{prefix}:{item}"   # a check or perception naming the story's own creature
+            elif key == "type" and item == "story_age" and "story" not in value:
+                out[key], out["story"] = item, prefix   # "days since this story began" names its own story
             elif key == "ops":
                 out[key] = [walk(o, True) for o in item]
             else:
@@ -57,12 +59,59 @@ def namespaced(ops, prefix):
     return [walk(op, True) for op in ops]
 
 
+# Operations whose NPC belongs to a story's cast: if one of them dies, the story cannot go on as written.
+CAST_FIELDS = {"attach_dialogue_graph": "npc", "add_scene": "npc", "add_topic": "npc", "send_npc": "instance",
+               "rename_npc": "instance", "spawn_npc": "instance", "relocate_npc": "instance", "return_npc": "instance"}
+
+
+def closures(story, prefix):
+    """A story's closures as rules: each is a rule whose operations end with the story's quiet ending.
+
+        "closures": [{"id": "too_late", "outcome": "timeout", "checks": [{"type": "story_age", "days": 5}],
+                      "ops": [{"op": "narrate", "text": "..."}]}]
+
+    A closure may carry everything a rule carries ("when", "unless", "checks", "on")."""
+    rules = []
+    for closure in story.get("closures") or []:
+        rule = {k: v for k, v in closure.items() if k not in ("outcome",)}
+        rule["op"] = "add_rule"
+        rule.setdefault("when", [])
+        rule["ops"] = list(closure.get("ops", [])) + [
+            {"op": "end_story", "story": prefix, "outcome": closure.get("outcome") or closure.get("id", "closed")}]
+        rules.append(rule)
+    return rules
+
+
+def cast(ops):
+    found = []
+    for op in ops:
+        if not isinstance(op, dict):
+            continue
+        field = CAST_FIELDS.get(op.get("op"))
+        if field and isinstance(op.get(field), str) and op[field].upper() not in found:
+            found.append(op[field].upper())
+        for nested in op.get("ops", []) if isinstance(op.get("ops"), list) else []:
+            for name in cast([nested]):
+                if name not in found:
+                    found.append(name)
+    return found
+
+
+def prepare(story, prefix):
+    """What the game is sent to start a story: its plan and closures, every id under the story's own prefix, and the
+    cast whose death ends it. The game adds the day it begins (dm.api.play)."""
+    plan = list(story["plan"]) + closures(story, prefix)
+    return {"story": prefix, "title": story["title"], "ops": namespaced(plan, prefix), "cast": cast(plan),
+            "requires": story.get("requires") or []}
+
+
 if __name__ == "__main__":
     if len(sys.argv) != 2:
         raise SystemExit(__doc__)
     path = pathlib.Path(sys.argv[1])
     story = json.loads(path.read_text(encoding="utf-8"))
-    reply = bridge.call("play", story["title"], namespaced(story["plan"], path.stem), story.get("requires") or [])
+    start = prepare(story, path.stem)
+    reply = bridge.call("play", start["title"], start["ops"], start["requires"], start["story"], start["cast"])
     if reply.get("error") or reply.get("ok") is False:
         raise SystemExit("not started: " + str(reply.get("error")))
     print(f"„{story['title']}“ is running. Alt+O shows the game master's panel.")
