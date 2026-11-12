@@ -585,6 +585,51 @@ def test_trip_operation():
     rejected(s, [{"op": "add_rule", "id": "r", "when": ["x"], "ops": [{"op": "trip", "profile": "nope"}]}], "unknown trip")
 
 
+def test_item_with_a_model_of_its_own():
+    # A look can be a shape the game does not have: an OBJ with its PNG from dm_runtime/assets/models.
+    from dm import looks
+    saved_assets, saved_define = looks.ASSETS, getattr(fake.world, "define_item", None)
+    with tempfile.TemporaryDirectory() as d:
+        looks.ASSETS = pathlib.Path(d)
+        looks.models_dir().mkdir()
+        (looks.models_dir() / "blume.obj").write_text("v 0 0 0\nv 1 0 0\nv 0 1 0\nf 1 2 3\n", encoding="utf-8")
+        (looks.models_dir() / "blume.png").write_bytes(b"png")
+        registered, defined = [], []
+        fake.resources = types.SimpleNamespace(register_texture=lambda n, p: registered.append(n),
+                                               register_mesh_file=lambda a, p, t, s: registered.append(a) or True)
+        fake.world.define_item = lambda *a: defined.append(a)
+        s = st.Story()
+        op = {"op": "define_item", "item": "Blume", "like": "ITPL_A", "name": "Blume",
+              "look": {"model": "blume.obj", "texture": "blume.png"}}
+        s.validate([op])
+        s.apply_plan({"reason": "r", "ops": [op]})
+        assert defined and defined[0][6] == registered[-1] and registered[-1].startswith("DM_"), (defined, registered)
+        assert s.state["items"]["BLUME"]["look"]["model"] == "blume.obj"    # kept, so a load defines it again
+        defined.clear()
+        s.rebind()
+        assert defined and defined[0][6] == registered[-1]
+        s.validate([dict(op, item="Blume2", look={"model": "blume.obj"})])          # its MTL's images, or white
+        s.validate([dict(op, item="Blume3", look={"model": "blume.obj", "scale": 100})])
+        for look, fragment in (({"model": "blume.3ds"}, "obj"), ({"model": "../blume.obj"}, "obj"),
+                               ({"model": "blume.obj", "texture": "blume.tga"}, "png"),
+                               ({"model": "blume.obj", "scale": 0}, "scale"),
+                               ({"model": "blume.obj", "scale": True}, "scale"),
+                               ({"model": "fehlt.obj"}, "not in"),
+                               ({"model": "blume.obj", "texture": "fehlt.png"}, "not in")):
+            rejected(s, [dict(op, item="Y", look=look)], fragment)
+        # a model the engine cannot load leaves the base item's look
+        fake.resources.register_mesh_file = lambda *a: False
+        defined.clear()
+        s.rebind()
+        assert defined and defined[0][6] == ""
+    looks.ASSETS = saved_assets
+    if saved_define is None:
+        del fake.world.define_item
+    else:
+        fake.world.define_item = saved_define
+    del fake.resources
+
+
 def test_items_of_our_own():
     # An item of the story's own gets a carrier nothing in the game uses, and every mention of it becomes that carrier.
     s = st.Story()
@@ -735,7 +780,7 @@ def test_topics_extend_an_npc():
     assert fake.dialog.topics["PARLAN"] == [("legend", "Kennst du die Kriegsmischung?")]
 
 
-for test in (test_items_of_our_own, test_give_xp, test_waited_for_pipe_is_reserved, test_handed_over_but_nothing_to_play, test_topics_extend_an_npc, test_trip_operation, test_rule_contents_are_checked_when_submitted, test_graph_validation, test_validation, test_apply_and_rollback, test_return_npc, test_conditional_choices, test_returns_to_menu, test_questions_are_asked_once, test_variant_line, test_again_line, test_scene_and_rule, test_rule_fires_on_perception, test_narration_waits_for_quiet, test_drawing_a_weapon_is_perceived,
+for test in (test_items_of_our_own, test_item_with_a_model_of_its_own, test_give_xp, test_waited_for_pipe_is_reserved, test_handed_over_but_nothing_to_play, test_topics_extend_an_npc, test_trip_operation, test_rule_contents_are_checked_when_submitted, test_graph_validation, test_validation, test_apply_and_rollback, test_return_npc, test_conditional_choices, test_returns_to_menu, test_questions_are_asked_once, test_variant_line, test_again_line, test_scene_and_rule, test_rule_fires_on_perception, test_narration_waits_for_quiet, test_drawing_a_weapon_is_perceived,
              test_queue_waits_for_safe_point, test_save_load_does_not_reapply_world,
              test_player):
     test()

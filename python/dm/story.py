@@ -391,6 +391,28 @@ ITEM_CARRIERS = ["ITKE_KEY_01", "ITKE_KEY_02", "ITKE_KEY_03", "ITMI_IECELLOBOW",
                  "ITWR_ADDON_BOOKLP2", "ITWR_ADDON_BOOKLP3", "ITWR_ADDON_BOOKLP5", "ITWR_ADDON_BOOKLP8"]
 
 
+def _check_look(look):
+    # Either the base item's model recoloured towards a tint, or a model of the story's own (an OBJ file with its PNG
+    # texture in dm_runtime/assets/models, see looks.py).
+    if isinstance(look, dict) and "model" in look:
+        from dm import looks
+        if not looks.plain_name(look["model"], ".obj"):
+            raise PlanError("define_item look model needs an .obj file name")
+        texture = look.get("texture", "")
+        if texture and not looks.plain_name(texture, ".png"):
+            raise PlanError("define_item look texture needs a .png file name")
+        scale = look.get("scale", 1)
+        if isinstance(scale, bool) or not isinstance(scale, (int, float)) or not 0 < scale <= 1000:
+            raise PlanError("define_item look scale needs a number above 0, up to 1000")
+        for name in (look["model"], texture):
+            if name and not (looks.models_dir() / name).is_file():
+                raise PlanError(f"define_item look file not in dm_runtime/assets/models: {name}")
+        return
+    if not (isinstance(look, dict) and isinstance(look.get("tint"), list) and len(look["tint"]) == 3
+            and all(isinstance(v, (int, float)) and 0 <= v <= 2 for v in look["tint"])):
+        raise PlanError("define_item look needs a tint of three numbers from 0 to 2, or a model")
+
+
 def _check_define_item(args, state):
     _require(args, "item", "like", "name", "carrier")
     if not isinstance(args["item"], str) or not args["item"].strip():
@@ -400,9 +422,8 @@ def _check_define_item(args, state):
     if not isinstance(args["name"], str) or not args["name"].strip():
         raise PlanError("define_item needs a name")
     look = args.get("look")
-    if look is not None and not (isinstance(look, dict) and isinstance(look.get("tint"), list) and len(look["tint"]) == 3
-                                 and all(isinstance(v, (int, float)) and 0 <= v <= 2 for v in look["tint"])):
-        raise PlanError("define_item look needs a tint of three numbers from 0 to 2")
+    if look is not None:
+        _check_look(look)
     rows = args.get("rows", [])
     if not isinstance(rows, list) or len(rows) > 5 or not all(
             isinstance(r, list) and len(r) == 2 and isinstance(r[0], str) and isinstance(r[1], int) for r in rows):
@@ -420,10 +441,17 @@ def _define_in_world(entry):
     if not hasattr(gothic.world, "define_item"):
         return
     visual = ""
-    if entry.get("look") and hasattr(gothic.world, "item_visual"):
+    look = entry.get("look")
+    if look and "model" in look:
         from dm import looks
         try:
-            visual = looks.variant(gothic, gothic.world.item_visual(entry["like"]), entry["look"])
+            visual = looks.model(gothic, look["model"], look.get("texture", ""), look.get("scale", 1))
+        except (OSError, RuntimeError, ValueError):
+            visual = ""             # no shape of its own, then: the base item's
+    elif look and hasattr(gothic.world, "item_visual"):
+        from dm import looks
+        try:
+            visual = looks.variant(gothic, gothic.world.item_visual(entry["like"]), look)
         except (OSError, RuntimeError, ValueError):
             visual = ""             # no look of its own, then: the base item's
     gothic.world.define_item(entry["carrier"], entry["like"], entry["name"], entry["description"],

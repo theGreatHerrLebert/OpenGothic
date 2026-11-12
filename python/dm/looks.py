@@ -7,6 +7,13 @@ it grows beside, but in moonlight.
 The engine writes the game's textures out recoloured (the game's own Python has no imaging library, and it is
 faster there), into the gitignored dm_runtime/assets, named by their content, so a look made once is found again and
 a changed look never replaces one in use.
+
+Or a shape the game does not have: a Wavefront OBJ file in dm_runtime/assets/models with its PNG texture beside it.
+
+    looks.model(gothic, "flower.obj", "flower.png")
+
+The OBJ is read as Blender writes it by default (Y up, -Z forward): y up, 1 unit = 1 cm (give scale=100 for a model
+made in metres), its origin where the item stands, one UV set laid on the one texture. models.py makes a test flower.
 """
 
 import hashlib
@@ -39,3 +46,38 @@ def variant(gothic, mesh, look):
         return ""
     alias = f"DM_{key}.3DS"
     return alias if gothic.resources.register_mesh_variant(alias, mesh, swapped) else ""
+
+
+def models_dir():
+    """Where a story's own models and their textures are kept (gitignored)."""
+    return ASSETS / "models"
+
+
+def plain_name(name, suffix):
+    """Whether `name` is a bare file name with that suffix: nothing outside the models folder can be named."""
+    return (isinstance(name, str) and name.lower().endswith(suffix) and len(name) > len(suffix)
+            and pathlib.PurePath(name).name == name and name not in (".", ".."))
+
+
+def model(gothic, file, texture="", scale=1.0):
+    """The name of a mesh read from the OBJ `file` in models_dir(), drawn with the PNG `texture` from there (or, with
+    none, with the images of its MTL file, else plain white), registered with the engine, or "" when the engine or a
+    file cannot give one. Named by the files' content, so a changed model never replaces one in use."""
+    if not plain_name(file, ".obj") or not (texture == "" or plain_name(texture, ".png")):
+        return ""
+    if not hasattr(gothic, "resources") or not hasattr(gothic.resources, "register_mesh_file"):
+        return ""
+    obj = models_dir() / file
+    png = models_dir() / texture if texture else None
+    if not obj.is_file() or (png is not None and not png.is_file()):
+        return ""
+    digest = hashlib.sha1(obj.read_bytes())
+    digest.update(png.read_bytes() if png is not None else b"")
+    digest.update(json.dumps(float(scale)).encode("utf-8"))
+    key = digest.hexdigest()[:10]
+    own = ""
+    if png is not None:
+        own = f"DM_{key}_T.TGA"
+        gothic.resources.register_texture(own, str(png))
+    alias = f"DM_{key}.3DS"
+    return alias if gothic.resources.register_mesh_file(alias, str(obj), own, float(scale)) else ""

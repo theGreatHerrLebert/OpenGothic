@@ -77,7 +77,10 @@ What a story can notice and test today:
   "ITPL_SAGITTA_HERB_MIS", "name": "Mondaloe", "rows": [["Öffnet sich nur im Mondlicht.", 0]], "look": {"tint":
   [0.78, 0.86, 1.0], "strength": 0.85}}`. From then on the story names it by its id wherever it would name an item
   (to place, give, take, check or notice it), and it never counts as the item it was made like. `look` recolours the
-  base item's model towards the tint, so it is told apart at a glance. Use it only for what the story truly needs.
+  base item's model towards the tint, so it is told apart at a glance. For a shape the game does not have, `look`
+  can instead name a model of the story's own, `{"model": "flower.obj", "texture": "flower.png"}`: an OBJ file and
+  its PNG texture in `dm_runtime/assets/models` (y up, 1 unit = 1 cm, origin where it stands; `"scale": 100` for a
+  model made in metres). Use it only for what the story truly needs.
 - **Rewards.** `give_item` for a thing, `give_xp` (`{"op": "give_xp", "amount": 150}`) for experience, through the
   game's own reward with its message and sound. Keep to the game's scale for chapter one: 50 for an errand, 100 for a
   task with some risk, 150 to 200 for a quest of several steps or a fight. A first level needs 500, so never more than

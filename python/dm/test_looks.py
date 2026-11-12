@@ -28,4 +28,44 @@ with tempfile.TemporaryDirectory() as d:
     calls.clear()
     assert looks.variant(g, "ITPL_ALOE.3DS", look) == alias and [c[0] for c in calls] == ["tex", "mesh"]   # made once
     assert looks.variant(types.SimpleNamespace(), "X.3DS", look) == ""     # an engine without looks: none
+
+    # a shape of its own: the made flower, registered with its texture under a name from their content
+    from dm import models
+    obj_path, png_path = models.write_flower(looks.models_dir())
+    text = obj_path.read_text(encoding="utf-8")
+    faces = [line.split()[1:] for line in text.splitlines() if line.startswith("f ")]
+    counts = {k: sum(1 for line in text.splitlines() if line.startswith(k + " ")) for k in ("v", "vt", "vn")}
+    assert 0 < len(faces) < 300 and all(len(f) == 3 for f in faces)
+    assert all(1 <= int(i) <= counts[k] for f in faces for c in f for i, k in zip(c.split("/"), ("v", "vt", "vn")))
+    vts = [tuple(map(float, line.split()[1:])) for line in text.splitlines() if line.startswith("vt ")]
+    assert all(0 <= u <= 1 and 0 <= v <= 1 for u, v in vts)                  # one texture, nothing outside it
+    ys = [float(line.split()[2]) for line in text.splitlines() if line.startswith("v ")]
+    assert min(ys) == 0 and 10 < max(ys) < 25                                  # standing on its origin, in cm
+    assert png_path.read_bytes().startswith(b"\x89PNG\r\n\x1a\n")
+    # every triangle counter-clockwise seen from where its normals point, as OBJ wants it
+    vs = [tuple(map(float, line.split()[1:])) for line in text.splitlines() if line.startswith("v ")]
+    ns = [tuple(map(float, line.split()[1:])) for line in text.splitlines() if line.startswith("vn ")]
+    for f in faces:
+        a, b, c = (vs[int(x.split("/")[0]) - 1] for x in f)
+        n = [sum(ns[int(x.split("/")[2]) - 1][k] for x in f) for k in range(3)]
+        cr = models._cross(models._sub(b, a), models._sub(c, a))
+        assert models._dot(cr, n) > 0
+
+    calls.clear()
+    res.register_mesh_file = lambda a, p, t, s: calls.append(("file", a, p, t, s)) or True
+    alias = looks.model(g, "flower.obj", "flower.png")
+    assert alias.startswith("DM_") and alias.endswith(".3DS")
+    assert [c[0] for c in calls] == ["tex", "file"] and calls[1][2] == str(obj_path) and calls[1][3] == calls[0][1]
+    assert calls[1][4] == 1.0
+    assert looks.model(g, "flower.obj", "flower.png") == alias                # the same files, the same name
+    assert looks.model(g, "flower.obj", "flower.png", scale=100) != alias     # scaled is another mesh
+    calls.clear()
+    plain = looks.model(g, "flower.obj")
+    assert plain not in ("", alias) and [c[0] for c in calls] == ["file"] and calls[0][3] == ""   # its MTL's or white
+    obj_path.write_text(text + "# changed\n", encoding="utf-8")
+    assert looks.model(g, "flower.obj", "flower.png") != alias                # changed: a new name, the old one stays
+    for bad in (("missing.obj", ""), ("flower.obj", "missing.png"), ("../flower.obj", ""), ("flower.png", ""),
+                ("flower.obj", "flower.obj"), ("sub/flower.obj", "")):
+        assert looks.model(g, *bad) == "", bad
+    assert looks.model(types.SimpleNamespace(resources=types.SimpleNamespace()), "flower.obj") == ""   # older engine
 print("looks tests passed")
