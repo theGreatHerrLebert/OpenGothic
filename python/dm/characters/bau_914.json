@@ -1,0 +1,23 @@
+{
+  "npc": "BAU_914_BAEUERIN",
+  "name": "Magd",
+  "voice": "16",
+  "role": "Magd auf Onars Hof, kocht im Obergeschoss des Haupthauses (NW_BIGFARM_HOUSE_UP1_COOK). Hat nur die allgemeinen Gesprächsthemen, die alle Bäuerinnen mit Stimme 16 teilen (DIA_BAU_16_…: Neuigkeiten, Gegend, Söldner, wer das Sagen hat). Hat keine eigene Rolle im Spiel und kann eine Geschichte tragen.",
+  "core": "Noch nicht festgelegt. Die erste Geschichte, die diese Figur nutzt, legt es fest und schreibt es hier ein.",
+  "background": "Kocht tagsüber oben im Haupthaus und steht abends essend in der Scheune (NW_BIGFARM_STABLE_05). Alles Weitere: Noch nicht festgelegt. Die erste Geschichte, die diese Figur nutzt, legt es fest und schreibt es hier ein.",
+  "speech": "Noch nicht festgelegt. Die erste Geschichte, die diese Figur nutzt, legt es fest und schreibt es hier ein.",
+  "attitudes": {
+    "factions": {},
+    "people": {
+      "Onar": "Ihr Herr."
+    },
+    "politics": ""
+  },
+  "game_state": {},
+  "sees_hero": {},
+  "reacts_to": {},
+  "evidence": [],
+  "invented": [
+    "Alles außer Rolle und Ort: die Figur hat keine eigenen Zeilen."
+  ]
+}

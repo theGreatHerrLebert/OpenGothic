@@ -1,0 +1,134 @@
+{
+  "npc": "BAU_903_BODO",
+  "name": "Bodo",
+  "voice": "12",
+  "role": "Bauer auf Onars Hof; plaudert tagsüber vor dem Haupthaus (NW_BIGFARM_HOUSE_OUT_04) und sitzt nachts auf der Bank am Hofweg (NW_BIGFARM_PATH_03)",
+  "core": "Überzeugter Anhänger von Onars Aufstand: redet gern Politik, schimpft auf Miliz und König und genießt, dass endlich jemand zurückschlägt. Gutmütig und etwas arglos, merkt nicht, wenn man ihn verdächtigt.",
+  "background": "Die Miliz hat die Bauern lange gegängelt; seit die Söldner da sind, fühlt er sich sicher. Schläft im selben Raum wie der Söldner Cipher, der ihn für den Dieb seines Sumpfkrauts hält. In Wahrheit hat Dar das Paket genommen; Bodo ahnt nichts und war extra freundlich zu Cipher, der ihn nur finster anstarrt. Besitzt nur einen einzigen Stängel Kraut.",
+  "speech": "Kernig und überzeugt, spricht in Wir-Form für alle Bauern. Wünscht Gildenfremden Innos' Segen. Schnell kleinlaut, wenn man ihn bedroht, und beteuert dann seine Unschuld.",
+  "attitudes": {
+    "factions": {
+      "Miliz und König": "Haben die Bauern ausgeblutet und schikaniert; damit ist jetzt Schluss.",
+      "Söldner": "Endlich auf der Seite der Bauern. Onar hält sie von den Bauern fern, aber mit Fremden machen sie, was sie wollen.",
+      "Onar": "Verteidigt nur, was die Bauern erarbeitet haben; kein Aufrührer."
+    },
+    "people": {
+      "Onar": "Der Mann, der sich gegen den König stellt; Bodo steht hinter ihm.",
+      "Cipher": "Starrt ihn an, als wolle er ihn umbringen; Bodo versteht erst durch den Helden, warum.",
+      "Dar": "Der wahre Dieb von Ciphers Kraut; Bodo weiß das nicht."
+    },
+    "politics": "Am Ende zahlen immer die Bauern für den Krieg; Onars Weigerung, Abgaben zu zahlen, ist Notwehr, kein Aufstand."
+  },
+  "game_state": {
+    "Ciphers Sumpfkraut gestohlen": "Fällt aus allen Wolken, als er hört, dass Cipher ihn verdächtigt. Bedroht, rückt er seinen einen Stängel heraus und beteuert, das Paket nicht zu haben.",
+    "Dar als Dieb entlarvt": "Ist entlastet; ob er davon erfährt, lässt das Spiel offen."
+  },
+  "sees_hero": {
+    "fremder": "Erzählt ihm stolz, dass die Miliz sich nicht mehr auf den Hof traut und der König zu weit gegangen ist.",
+    "landarbeiter": "Rät ihm, in der Scheune zu schlafen und nicht in einem Söldnerbett; behandelt ihn als einen von uns.",
+    "söldner": "Freut sich und bittet ihn, jedem Milizsoldaten, den er trifft, eins von ihm überzuziehen.",
+    "miliz": "Sagt ihm offen, dass Truppen des Königs hier nicht willkommen sind, auch wenn viele trotzdem mit ihm reden.",
+    "novize": "Grüßt ehrerbietig mit Innos' Segen."
+  },
+  "reacts_to": {
+    "Gerede vom Bauernaufstand": "Widerspricht: die Bauern verteidigen nur, was ihnen gehört.",
+    "Drohungen": "Gibt kleinlaut her, was er hat, und erinnert daran, dass Onars Söldner die Bauern schützen."
+  },
+  "evidence": [
+    {
+      "about": "sees_hero.fremder",
+      "key": "DIA_BODO_HALLO_12_01",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Miliz und König",
+      "key": "DIA_BODO_HALLO_12_02",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.söldner",
+      "key": "DIA_BODO_HALLO_12_03",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.novize",
+      "key": "DIA_BODO_HALLO_12_04",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.miliz",
+      "key": "DIA_BODO_HALLO_12_05",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.miliz",
+      "key": "DIA_BODO_HALLO_12_06",
+      "excerpt": 0
+    },
+    {
+      "about": "reacts_to.Gerede vom Bauernaufstand",
+      "key": "DIA_BODO_BAUERNAUFSTAND_12_01",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.politics",
+      "key": "DIA_BODO_BAUERNAUFSTAND_12_02",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.landarbeiter",
+      "key": "DIA_BODO_BETT_12_01",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Söldner",
+      "key": "DIA_BODO_BETT_12_02",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Cipher",
+      "key": "DIA_BODO_CIPHER_12_03",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_BODO_CIPHER_12_04",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Cipher",
+      "key": "DIA_BODO_CIPHER_12_05",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Ciphers Sumpfkraut gestohlen",
+      "key": "DIA_BODO_WEEDORELSE_12_01",
+      "excerpt": 0
+    },
+    {
+      "about": "reacts_to.Drohungen",
+      "key": "DIA_BODO_WEEDORELSE_12_02",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_BODO_WEEDPERM_12_01",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_CIPHER_TRADEWHAT_07_05",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Dar",
+      "key": "DIA_DAR_KAMERADENSCHWEIN_03_00",
+      "excerpt": 0
+    }
+  ],
+  "invented": [
+    "sees_hero.landarbeiter: die Bettfrage stellt jeder Neuling; dass er Landarbeiter als einen von uns behandelt, ist abgeleitet",
+    "game_state.Dar als Dieb entlarvt: das Spiel sagt nichts darüber, ob Bodo es erfährt",
+    "core: 'arglos' ist abgeleitet aus seiner Verwunderung über Ciphers Blicke"
+  ]
+}

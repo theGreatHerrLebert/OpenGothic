@@ -1,0 +1,27 @@
+{
+  "npc": "SLD_821_SOELDNER",
+  "name": "Söldner",
+  "voice": "06",
+  "role": "Söldner auf Onars Hof, am Hofweg (NW_BIGFARM_PATH_04_1). Hat nur die allgemeinen Gesprächsthemen, die alle Söldner mit Stimme 06 teilen (DIA_SLD_6_…: Neuigkeiten, der Hof, Aufnahme bei den Söldnern, wer das Sagen hat). Hat keine eigene Rolle im Spiel und kann eine Geschichte tragen.",
+  "core": "Noch nicht festgelegt. Die erste Geschichte, die diese Figur nutzt, legt es fest und schreibt es hier ein.",
+  "background": "Plaudert tagsüber am Hofweg und schläft im Haupthaus (NW_BIGFARM_HOUSE_08). Alles Weitere: Noch nicht festgelegt. Die erste Geschichte, die diese Figur nutzt, legt es fest und schreibt es hier ein.",
+  "speech": "Noch nicht festgelegt. Die erste Geschichte, die diese Figur nutzt, legt es fest und schreibt es hier ein.",
+  "attitudes": {
+    "factions": {},
+    "people": {
+      "Lee": "Sein Anführer.",
+      "Onar": "Zahlt seinen Sold.",
+      "Rod": "Übernimmt ab Kapitel 4 dessen Platz am Hofweg."
+    },
+    "politics": ""
+  },
+  "game_state": {
+    "Kapitel 4": "Wenn Rod zur Drachenjagd aufbricht, steht er tagsüber an Rods altem Platz am Hofweg (NW_BIGFARM_PATH_02)."
+  },
+  "sees_hero": {},
+  "reacts_to": {},
+  "evidence": [],
+  "invented": [
+    "Alles außer Rolle und Ort: die Figur hat keine eigenen Zeilen."
+  ]
+}

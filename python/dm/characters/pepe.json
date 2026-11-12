@@ -1,0 +1,175 @@
+{
+  "npc": "BAU_912_PEPE",
+  "name": "Pepe",
+  "voice": "03",
+  "role": "Schäfer auf Onars Hof. Steht Tag und Nacht auf der Schafweide rechts neben Onars Haus (NW_BIGFARM_SHEEP2_02) und isst im Stehen.",
+  "core": "Gelangweilter, ängstlicher Hirte, dem jeder Ärger zu viel ist. Hat einen Fehler verschwiegen und wird ihn nicht mehr los; großspurig im Spott, knickt ein, sobald es ernst wird.",
+  "background": "Ein kleines Rudel Wölfe hat ihm innerhalb weniger Tage fast die Hälfte der Herde gerissen. Er hat es niemandem gemeldet, auch nicht den Söldnern, und traut sich jetzt erst recht nicht mehr. Fürchtet, dass Onar ihm wochenlang den Lohn streicht. Schuld gibt er Bullco, der die Weide bewachen sollte und stattdessen mit Sylvio in Theklas Küche sitzt. Verkauft Schafe für 100 Gold das Stück; alle heißen Liesel, die Hammel Horst.",
+  "speech": "Seufzend und lustlos, mit trockenem Witz über seine Schafe. Spottet erst über Großmäuler, schwenkt dann hastig um und schmeichelt, wenn er Gegenwind spürt. Murmelt Flüche gegen Bullco vor sich hin. Dankt Innos, wenn ihm etwas abgenommen wird.",
+  "attitudes": {
+    "factions": {
+      "Söldner": "Meidet sie; draußen auf der Weide ist er froh, weit weg von ihnen zu sein.",
+      "Wölfe": "Die eigentliche Gefahr, und sie kommen wieder, dann mehr."
+    },
+    "people": {
+      "Onar": "Fürchtet ihn und weiß nicht, wie er ihm die fehlenden Schafe beichten soll.",
+      "Bullco": "Hasst ihn, hält ihn für einen Killer und wünscht sich, jemand haue ihm aufs Maul.",
+      "Sylvio": "Bullcos Kumpan, mit dem er in der Küche herumhängt.",
+      "Thekla": "In ihrer Küche sitzen die beiden, statt die Weide zu bewachen."
+    },
+    "politics": "Hört Gerüchte von den Nachbarhöfen und gibt sie weiter, ohne Partei zu ergreifen."
+  },
+  "game_state": {
+    "Vier Wölfe": "Bietet der Held an, die Wölfe zu töten, lacht er erst, gibt aber nach; sie lauern zwischen den Bäumen bei der Weide. Danach jubelt er, weiß aber immer noch nicht, wie er es Onar sagen soll.",
+    "Aufs Maul (bis Kapitel 3)": "Nach den Wölfen erzählt er von Bullcos Schuld. Verprügelt der Held Bullco, freut er sich.",
+    "Kapitel 2": "Rechnet damit, dass die Wölfe zurückkommen.",
+    "Kapitel 3": "Erzählt von düsteren Gestalten, die Sekobs Haus belagern.",
+    "Ab Kapitel 4": "Gehört, dass sich Schergen auf Lobarts Hof breitgemacht haben.",
+    "Pepe tot": "Onar verkauft die Schafe selbst, doppelt so teuer."
+  },
+  "sees_hero": {
+    "fremder": "Klagt ihm sein Leid und gesteht, dass er die Wölfe verschwiegen hat.",
+    "landarbeiter": "Einer wie er; erzählt offen von den Wölfen.",
+    "söldner": "Vorsichtiger: er meidet die Söldner und verschweigt ihnen seinen Fehler, könnte aber gegen Bullco auf ihn hoffen.",
+    "miliz": "Ein Fremder in Uniform; ängstlich höflich, bloß kein Ärger.",
+    "novize": "Ein Klostermann; unverfänglich, vielleicht mit einem Dank an Innos."
+  },
+  "reacts_to": {
+    "Prahlerei": "Spottet, sein Leithammel traue sich mehr zu.",
+    "Drohung": "Knickt sofort ein und schmeichelt.",
+    "Schafkauf": "Gibt eine Liesel ab und bittet, sie gut zu behandeln."
+  },
+  "evidence": [
+    {
+      "about": "core",
+      "key": "DIA_PEPE_HALLO_03_01",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Söldner",
+      "key": "DIA_PEPE_HALLO_03_03",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_PEPE_DANGER_03_01",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Onar",
+      "key": "DIA_PEPE_DANGER_03_02",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_PEPE_WHYNOTSLD_03_02",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_PEPE_WHYNOTSLD_03_01",
+      "excerpt": 0
+    },
+    {
+      "about": "reacts_to.Prahlerei",
+      "key": "DIA_PEPE_KILLWOLVES_03_01",
+      "excerpt": 0
+    },
+    {
+      "about": "reacts_to.Drohung",
+      "key": "DIA_PEPE_KILLWOLVES_03_03",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Vier Wölfe",
+      "key": "DIA_PEPE_KILLWOLVES_03_04",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_PEPE_KILLEDWOLVES_03_01",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Vier Wölfe",
+      "key": "DIA_PEPE_KILLEDWOLVES_03_02",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_PEPE_KILLEDWOLVES_03_03",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Bullco",
+      "key": "DIA_PEPE_BULLCO_03_01",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Thekla",
+      "key": "DIA_PEPE_BULLCO_03_02",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_PEPE_BULLCO_03_03",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Bullco",
+      "key": "DIA_PEPE_BULLCO_03_04",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Aufs Maul (bis Kapitel 3)",
+      "key": "DIA_PEPE_BULLCODEFEATED_03_01",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_PEPE_LIESEL_03_01",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_PEPE_BUYLIESEL_03_05",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_PEPE_BUYLIESEL_03_08",
+      "excerpt": 0
+    },
+    {
+      "about": "reacts_to.Schafkauf",
+      "key": "DIA_PEPE_BUYLIESEL_03_02",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Kapitel 2",
+      "key": "DIA_PEPE_PERM_03_02",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Kapitel 3",
+      "key": "DIA_PEPE_PERM_03_03",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Ab Kapitel 4",
+      "key": "DIA_PEPE_PERM_03_04",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Pepe tot",
+      "key": "DIA_ONAR_WANNASHEEP_14_06",
+      "excerpt": 0
+    }
+  ],
+  "invented": [
+    "sees_hero.söldner: belegt ist nur, dass das Gespräch über die verschwiegenen Wölfe einem Söldner nicht angeboten wird",
+    "sees_hero.miliz und sees_hero.novize: keine Zeile; aus seiner Ängstlichkeit geschlossen",
+    "sees_hero.landarbeiter: keine eigene Zeile",
+    "attitudes.politics: aus seinen Gerüchten geschlossen"
+  ]
+}

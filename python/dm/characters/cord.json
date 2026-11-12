@@ -1,0 +1,186 @@
+{
+  "npc": "SLD_805_CORD",
+  "name": "Cord",
+  "voice": "14",
+  "role": "Söldner und Schwertmeister auf Onars Hof; übt den ganzen Tag auf seinem Platz mit der Klinge und bildet Söldner im Ein- und Zweihandkampf aus. Heimlich Mitglied im Ring des Wassers",
+  "core": "Harter, verschwiegener Veteran, der Leute nach ihrer Kampfkraft misst. Hält nichts von Anfängern und Bauernsorgen, lobt aber trocken, wer besser wird. Wer sein Geheimnis kennt, bekommt Hilfe und eine ernste Drohung dazu.",
+  "background": "Gehört seit der Kolonie zu Lees Söldnern. Gehört zugleich zum Ring des Wassers, dem geheimen Bund um Vatras; Lee ahnt das, sonst weiß es kaum einer, und Lares schickt Eingeweihte mit einem Losungswort zu ihm. Einer seiner Leute, Patrick, wollte mit den Banditen im Südosten handeln und ist seitdem verschwunden; Cord hatte ihn gewarnt.",
+  "speech": "Barsch, militärisch, knappe Urteile. Nennt Neue Junge oder Kleiner, droht mit gebrochenen Knochen und eingeschlagenen Zähnen, wenn man frech wird. Erklärt Kampftechnik dagegen geduldig und genau, fast wie ein Lehrbuch. Seufzt, wenn ihm jemand Arbeit macht.",
+  "attitudes": {
+    "factions": {
+      "Söldner": "Eine Truppe, in der sich jeder auf jeden verlassen muss; nur wer kämpfen kann, gehört dazu.",
+      "Bauern": "Kommen nur mit Wölfen und Feldräubern zu ihm; das sollen die Jüngeren erledigen.",
+      "Paladine": "Der einzige Feind, für den er sich zuständig fühlt.",
+      "Banditen": "Dreckskerle, mit denen man keine Geschäfte macht; ein Söldner kommt bei ihnen nicht durch.",
+      "Ring des Wassers": "Treues Mitglied; schweigt eisern darüber und erwartet das auch von anderen Brüdern."
+    },
+    "people": {
+      "Lee": "Sein Anführer. Ärgert sich, dass jemand (auch Lee) über den Ring geplaudert hat.",
+      "Lares": "Bruder im Ring; schickt ihm Leute mit dem Erkennungszeichen.",
+      "Vatras": "Leitet den Ring; zu ihm schickt Cord neue Brüder zuerst.",
+      "Torlof": "Nimmt die Probe ab. Cord kann sie für einen Ringbruder als erledigt erklären lassen.",
+      "Patrick": "Einer seiner Leute, verschollen bei den Banditen; Cord hält ihn für einen Narren, sorgt sich aber.",
+      "Dexter": "Anführer der Banditen im Turm; Cord kennt nur seinen Namen."
+    },
+    "politics": "Rechnet damit, dass die Paladine irgendwann anrücken. Darauf bereitet er Lees Leute vor."
+  },
+  "game_state": {
+    "Beitrittswahl": "Fragt den Anwärter nach Ein- und Zweihandkampf. Wer kein Anfänger mehr ist, bekommt seine Stimme und Unterricht, sonst nichts.",
+    "Ring des Wassers (Addon)": "Hat der Held von Lares oder Lee vom Ring erfahren, hilft Cord widerwillig: Kampftraining oder Fürsprache für die Aufnahme. Die Fürsprache erledigt Torlofs Probe, wenn der Held dafür nach Patrick sucht.",
+    "Patrick zurück": "Ist nach der Rückkehr der Verschleppten aufrichtig froh und nennt den Helden einen Teufelskerl."
+  },
+  "sees_hero": {
+    "fremder": "Hält ihn erst für einen Bauern mit Tierproblemen, dann für einen Feldarbeiter. Prüft kühl, ob er kämpfen kann.",
+    "landarbeiter": "Erst recht ein Bauer, der jemanden zum Tiere-Erschlagen sucht; schickt ihn zu den jüngeren Söldnern.",
+    "söldner": "Ein Kamerad. Trainiert ihn an jeder Waffe und lobt, wenn er Fortschritte macht.",
+    "miliz": "Ein Stadtsoldat, also die Seite der Paladine. Trainiert ihn nicht und bleibt einsilbig.",
+    "novize": "Unterrichtet keinen Klosterschüler; höflich-kühl, da die Magier ihm über den Ring nicht fremd sind."
+  },
+  "reacts_to": {
+    "Erpressung oder Plaudern über den Ring": "Wird gefährlich und droht mit Prügel; lässt sich nicht erpressen.",
+    "Frechheiten (Rüstung oder Waffe verlangen)": "Antwortet grimmig mit Drohungen.",
+    "Fortschritte im Kampf": "Knappes, ehrliches Lob."
+  },
+  "invented": [
+    "sees_hero.miliz: im Spiel nur die Regel, dass er bloß Söldner und würdige Anwärter ausbildet; Haltung gegen Milizionäre erschlossen",
+    "sees_hero.novize: Cord spricht Novizen nirgends an; Haltung erschlossen aus Ring-Mitgliedschaft und Trainingsregel",
+    "attitudes.people.Lee: Ärger über Lee erschlossen aus seiner Frage, wer geplaudert hat"
+  ],
+  "evidence": [
+    {
+      "about": "attitudes.factions.Bauern",
+      "key": "DIA_CORD_HALLO_14_00",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Paladine",
+      "key": "DIA_CORD_HALLO_14_01",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.fremder",
+      "key": "DIA_CORD_HALLO_14_03",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.fremder",
+      "key": "DIA_CORD_WANNAJOIN_14_01",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Beitrittswahl",
+      "key": "DIA_CORD_WANNAJOIN_14_10",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Beitrittswahl",
+      "key": "DIA_CORD_WANNAJOIN_14_12",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Söldner",
+      "key": "DIA_CORD_WANNAJOIN_14_13",
+      "excerpt": 0
+    },
+    {
+      "about": "core",
+      "key": "DIA_CORD_TEACH_14_03",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.miliz",
+      "key": "DIA_CORD_TEACH_14_06",
+      "excerpt": 0
+    },
+    {
+      "about": "reacts_to.Fortschritte im Kampf",
+      "key": "DIA_CORD_TEACH_BACK_14_00",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_CORD_EXPLAINWEAPONS_14_02",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_ADDON_CORD_YOUARERANGER_WEG_14_01",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_ADDON_CORD_YOUARERANGER_14_04",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_ADDON_LEE_RANGER_04_06",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_GUNNAR_COLONY_10_01",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Lares",
+      "key": "DIA_ADDON_LARES_GILDE_SLD_09_02",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Lee",
+      "key": "DIA_ADDON_CORD_YOUARERANGER_14_01",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Vatras",
+      "key": "DIA_ADDON_CORD_MEETINGISRUNNING_14_01",
+      "excerpt": 0
+    },
+    {
+      "about": "reacts_to.Erpressung oder Plaudern über den Ring",
+      "key": "DIA_ADDON_CORD_YOUARERANGER_WARN_14_00",
+      "excerpt": 0
+    },
+    {
+      "about": "reacts_to.Erpressung oder Plaudern über den Ring",
+      "key": "DIA_ADDON_CORD_YOUARERANGER_GOLD_14_01",
+      "excerpt": 0
+    },
+    {
+      "about": "reacts_to.Frechheiten (Rüstung oder Waffe verlangen)",
+      "key": "DIA_ADDON_CORD_YOUARERANGER_RUESTUNG_14_01",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Patrick",
+      "key": "DIA_ADDON_CORD_IDOITFORYOU_14_06",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_ADDON_CORD_IDOITFORYOU_14_05",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Banditen",
+      "key": "DIA_ADDON_CORD_IDOITFORYOU_MIST_14_02",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Dexter",
+      "key": "DIA_ADDON_CORD_IDOITFORYOU_DEXTER_14_01",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Ring des Wassers (Addon)",
+      "key": "DIA_ADDON_CORD_TALKEDTODEXTER_14_10",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Patrick zurück",
+      "key": "DIA_ADDON_CORD_RETURNPATRICK_14_07",
+      "excerpt": 0
+    }
+  ]
+}

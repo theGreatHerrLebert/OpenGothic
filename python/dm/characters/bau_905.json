@@ -1,0 +1,23 @@
+{
+  "npc": "BAU_905_BAUER",
+  "name": "Bauer",
+  "voice": "07",
+  "role": "Feldarbeiter auf Onars Hof, auf dem Feld (NW_BIGFARM_FIELD_01). Hat nur die allgemeinen Gesprächsthemen, die alle Bauern mit Stimme 07 teilen (DIA_BAU_7_…: Neuigkeiten, Gegend, Söldner, wer das Sagen hat). Hat keine eigene Rolle im Spiel und kann eine Geschichte tragen.",
+  "core": "Noch nicht festgelegt. Die erste Geschichte, die diese Figur nutzt, legt es fest und schreibt es hier ein.",
+  "background": "Erntet von früh bis spät auf Onars Feld und sitzt nachts in der Scheune (NW_BIGFARM_STABLE_06). Alles Weitere: Noch nicht festgelegt. Die erste Geschichte, die diese Figur nutzt, legt es fest und schreibt es hier ein.",
+  "speech": "Noch nicht festgelegt. Die erste Geschichte, die diese Figur nutzt, legt es fest und schreibt es hier ein.",
+  "attitudes": {
+    "factions": {},
+    "people": {
+      "Onar": "Sein Herr."
+    },
+    "politics": ""
+  },
+  "game_state": {},
+  "sees_hero": {},
+  "reacts_to": {},
+  "evidence": [],
+  "invented": [
+    "Alles außer Rolle und Ort: die Figur hat keine eigenen Zeilen."
+  ]
+}

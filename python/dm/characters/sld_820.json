@@ -1,0 +1,70 @@
+{
+  "npc": "SLD_820_SOELDNER",
+  "name": "Söldner",
+  "voice": "07",
+  "role": "Türwache vor Onars Haupthaus (NW_BIGFARM_HOUSE_OUT_03), Tag und Nacht. Hält jeden an, der kein Söldner ist, fragt nach seinem Anliegen und lässt ihn zu Lee durch; Milizen soll er laut Onar nicht hereinlassen. Hat nur diese Torwächterzeilen und kann darüber hinaus eine Geschichte tragen.",
+  "core": "Noch nicht festgelegt. Die erste Geschichte, die diese Figur nutzt, legt es fest und schreibt es hier ein.",
+  "background": "Steht Tag und Nacht vor der Tür des Haupthauses. Alles Weitere: Noch nicht festgelegt. Die erste Geschichte, die diese Figur nutzt, legt es fest und schreibt es hier ein.",
+  "speech": "Noch nicht festgelegt. Die erste Geschichte, die diese Figur nutzt, legt es fest und schreibt es hier ein.",
+  "attitudes": {
+    "factions": {},
+    "people": {
+      "Lee": "Sein Anführer.",
+      "Onar": "Zahlt seinen Sold; will nicht ungefragt angesprochen werden, schon gar nicht von Neulingen."
+    },
+    "politics": ""
+  },
+  "game_state": {},
+  "sees_hero": {
+    "fremder": "Stellt ihn an der Tür, spottet über ihn als Kanonenfutter oder Lügner, lässt ihn aber zu Lee durch.",
+    "miliz": "Erinnert daran, dass Onar ihm verboten hat, Milizen hereinzulassen.",
+    "söldner": "Hält ihn nicht mehr auf."
+  },
+  "reacts_to": {},
+  "evidence": [
+    {
+      "about": "role",
+      "key": "DIA_SLD_820_HALT_07_00",
+      "excerpt": 0
+    },
+    {
+      "about": "role",
+      "key": "DIA_SLD_820_HALT_07_02",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.miliz",
+      "key": "DIA_SLD_820_HALT_07_03",
+      "excerpt": 0
+    },
+    {
+      "about": "role",
+      "key": "DIA_SLD_820_HALT_07_05",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.fremder",
+      "key": "DIA_SLD_820_HALT_KENNELEE_07_01",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.fremder",
+      "key": "DIA_SLD_820_HALT_WANNAJOIN_07_01",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Onar",
+      "key": "DIA_SLD_820_HALT_WANNAJOIN_07_02",
+      "excerpt": 0
+    },
+    {
+      "about": "role",
+      "key": "DIA_SLD_820_PERM_07_01",
+      "excerpt": 0
+    }
+  ],
+  "invented": [
+    "core, speech, background über den Torposten hinaus: die Figur hat nur Torwächterzeilen.",
+    "sees_hero.söldner: die Anhaltezeile gilt nur Nicht-Söldnern; dass er Söldner durchlässt, folgt daraus."
+  ]
+}

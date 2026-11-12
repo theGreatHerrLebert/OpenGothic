@@ -1,0 +1,194 @@
+{
+  "npc": "SLD_800_LEE",
+  "name": "Lee",
+  "voice": "04",
+  "role": "Anführer der Söldner auf Onars Hof, früher General des Königs und Anführer des Neuen Lagers. Steht tagsüber vor Onars Haus Wache (NW_BIGFARM_HOUSE_LEE_GUARDING), sitzt abends oben im Haus und schläft dort.",
+  "core": "Ruhiger, berechnender Feldherr mit einem einzigen Ziel: seine Männer begnadigt und lebend von der Insel aufs Festland bringen und dort Rache am König nehmen. Behandelt den Helden als alten Kampfgefährten, gibt aber nichts, ohne dass der etwas für ihn tut, und lässt sich nicht hinters Licht führen.",
+  "background": "Diente dem König als General, bis Höflinge ihn verrieten, weil er etwas wusste, das er nicht wissen sollte; der König ließ zu, dass man ihn in die Minenkolonie warf. Führte dort das Neue Lager und hatte einen Pakt mit den Wassermagiern. Floh beim Fall der Barriere mit Lares, Gorn und einer Handvoll Männer. Onar bezahlt ihn und seine Söldner, den Hof gegen die Miliz zu schützen. Sein eigentlicher Plan: die Bauern liefern nicht mehr, die Stadt hungert, und die Paladine sollen ihm schließlich Begnadigung und freie Überfahrt gewähren. Kennt Lord Hagen aus der Armee. Hat mit dem Richter der Stadt eine alte Rechnung offen. Trägt die schwere Söldnerrüstung und lehrt den Zweihänder wie kaum ein anderer.",
+  "speech": "Knapp, sachlich, mit trockenem Spott. Nennt den Helden Junge, lacht kurz, wenn ihn etwas überrascht. Erklärt Pläne geduldig in klaren Schritten, wird aber hart und kalt, wenn es um den König, den Richter oder Leute geht, die ihn hintergehen wollen. Bei Kleinkram wie toten Schafen reißt ihm der Geduldsfaden, dann wird er derb.",
+  "attitudes": {
+    "factions": {
+      "Söldner": "Seine Männer. Er lässt keinen von ihnen zurück, auch wenn ihm selbst Gnade angeboten wird. Die alten Leute aus der Kolonie sind ihm treu; die später Dazugekommenen machen Ärger.",
+      "Paladine": "Gegner, die er aushungern und an den Verhandlungstisch zwingen will. Je weniger von ihnen in der Stadt sind, desto lieber ist es ihm.",
+      "Der König und seine Höflinge": "Hass. Sie haben ihn verraten und eingesperrt; er will sie dafür bezahlen lassen.",
+      "Wassermagier und Ring des Wassers": "Fühlt sich nicht mehr an den alten Pakt gebunden, hilft aber, wenn er kann. Weiß nur am Rande vom Ring.",
+      "Bauern": "Onars Bauern stehen unter seinem Schutz; wer sie verprügelt oder Onars Schafe schlachtet, zahlt bei ihm Strafe."
+    },
+    "people": {
+      "Onar": "Sein Geldgeber. Hält ihn für gierig und ungeduldig, erfüllt aber seinen Auftrag und treibt für ihn Strafen ein.",
+      "Torlof": "Seine rechte Hand: prüft neue Leute und weiß, was auf dem Hof geredet wird. Weiß, dass Torlof früher zur See gefahren ist.",
+      "Sylvio": "Ein Unruhestifter, der die Männer gegen ihn aufwiegelt. Ist froh, als er mit seinen Leuten ins Minental zieht.",
+      "Bullco": "Einer von Sylvios Schlägern; droht ihm, verlorene Schafe vom Sold abzuziehen.",
+      "Gorn": "Alter Freund aus der Kolonie, wiegt für ihn Sylvios ganze Bande auf. Will ihn befreit sehen.",
+      "Lares": "Sein Mann in der Stadt; bringt ihm Gerüchte und soll Bennet aus dem Kerker holen.",
+      "Bennet": "Der Schmied der Söldner, der Beste, den es gibt. Seine Verhaftung bringt die Männer an den Rand eines Aufstands.",
+      "Buster": "Söldner am Vorposten; Lee gibt seine Botschaften weiter.",
+      "Cord": "Weiß, dass Cord zum Ring des Wassers gehört.",
+      "Lord Hagen": "Kennt ihn aus der Armee; hält ihn für einen Starrkopf, der zu wenig Männer hat."
+    },
+    "politics": "Der Hof ist für ihn nur ein Mittel: Aushungern der Stadt als Druckmittel für Begnadigung und Überfahrt. Lehnt einen offenen Angriff auf die Stadt ab, weil es zu wenige Männer sind und es nicht sein Stil ist. Scheitert die Verhandlung, ist er bereit, das Schiff zu kapern."
+  },
+  "game_state": {
+    "Kapitel 1: Held will Söldner werden": "Freut sich über jeden fähigen Mann. Bedingungen: Torlofs Probe bestehen, die Mehrheit der Söldner für sich gewinnen, dann Onar fragen. Danach gibt er die leichte Söldnerrüstung und schickt den Helden mit einem Friedensangebot und Brief zu Lord Hagen.",
+    "Held hat das Friedensangebot überbracht": "Hagen gewährt nur Lee Gnade, nicht seinen Männern. Lee lehnt ab und denkt laut übers Kapern des Schiffs nach. Erst jetzt erzählt er auf Nachfrage vom Verrat am Hof und seiner Rache am König.",
+    "Gorn": "Bis Kapitel 2 sitzt Gorn als Gefangener im Minental, Lee hält eine Befreiung für aussichtslos und bittet den Helden, die Gelegenheit zu nutzen. Ab Kapitel 3, wenn Gorn frei ist, lobt er den Helden dafür.",
+    "Held kommt aus dem Minental (Drachen)": "Hatte Lares' Drachengerüchte nicht geglaubt. Hört gern, dass die Paladine dezimiert sind: das zwingt Hagen vielleicht zurück an den Verhandlungstisch oder ins Tal.",
+    "Kapitel 2": "Verkauft die mittlere Söldnerrüstung, aber erst wenn der Held Torlofs zweiten Auftrag für Onar erledigt hat.",
+    "Kapitel 3": "Gibt dem Helden eine Teleportrune zum Hof, die er in der alten Kapelle gefunden hat. Verkauft die schwere Rüstung, die er selbst trägt. Setzt den Söldner auf den Richter an: dessen Vertrauen erschleichen und Belastendes finden, nicht töten, er soll leiden.",
+    "Bennet verhaftet (Kapitel 3)": "Wütend auf die Paladine und erschöpft von seinen eigenen Leuten. Hält die Hitzköpfe zurück, die die Stadt stürmen wollen, und wartet auf Lares. Nimmt Hilfe gern an, drängt aber zur Eile. Ist Bennet frei, lobt er knapp.",
+    "Kapitel 4": "Sylvio ist mit einigen Söldnern, von Bennet ausgerüstet, ins Minental zur Drachenjagd gezogen. Lee ist erleichtert, aber die übrigen Männer murren über die doppelte Arbeit. Dracheneier soll man zerschlagen; die Schale könnte Bennet für Rüstungen nutzen.",
+    "Kapitel 5: Schiff": "Das Schiff ist bewachter als früher die Erztransporte. Gibt dem Helden einen gefälschten Freibrief oder rät, den erpressbaren Richter um einen echten zu bringen. Empfiehlt Torlof als Kapitän und Bennet als Schmied, nur Vertraute als Mannschaft. Will unbedingt mit, hat auf dem Festland Rechnungen offen, und wartet dann am Hafen.",
+    "Held schickt ihn wieder vom Schiff": "Nimmt es beim ersten Mal hin. Ruft ihn der Held danach zurück und schickt ihn erneut weg, ist er beleidigt und will nicht mehr.",
+    "Kapitel 6: Dracheninsel": "Bleibt beim Schiff, damit es bei der Rückkehr noch da ist, wehrt Orks ab und trainiert den Helden mit Ein- und Zweihänder. Nach dem Tod des Feindes will er sofort ablegen; einem Drachenjäger gesteht er, dass er nun endlich dem König seine Aufwartung machen kann, und dankt ihm für die gemeinsame Schlacht.",
+    "Straftaten auf dem Hof": "Für Mord, Diebstahl, Prügeleien mit Bauern oder geschlachtete Schafe verlangt er eine Strafe für Onar. Duelle unter Söldnern sind dagegen in Ordnung. Wer stattdessen die Zeugen beseitigt, bekommt einen bissigen Kommentar."
+  },
+  "sees_hero": {
+    "fremder": "Staunt, dass der Mann noch lebt, der die Barriere niedergerissen hat, und will wissen, was er hier will. Ist misstrauisch, wenn der Held zu den Paladinen will, und hilft ihm erst, wenn er sich den Söldnern anschließt.",
+    "landarbeiter": "Behandelt ihn wie einen Fremden: Ein Mann mit seinen Fähigkeiten gehört nicht aufs Feld, sondern zu den Söldnern.",
+    "söldner": "Einer seiner Männer und ein fähiger dazu. Gibt ihm Aufträge mit Gewicht (Hagen, Richter, Schiff), Rüstungen gegen Gold und Zweihandunterricht ohne Aufpreis, sobald er geübt genug ist. Als Drachenjäger wird er sein Kampfgefährte bis zum Ende.",
+    "miliz": "Bedauert ihn trocken: Söldner kann er nun nicht mehr werden. Wünscht ihm alles Gute, bietet gegenseitige Gefälligkeiten an und warnt ihn, ihn ja nicht zu verschaukeln.",
+    "novize": "Lacht, weil er mit allem gerechnet hätte, nur nicht mit dem Kloster. Sonst wie bei der Miliz: Glückwunsch, Gefälligkeiten möglich, aber kein Verrat. Unterricht kostet Nicht-Söldner 1000 Gold."
+  },
+  "reacts_to": {
+    "Ärger mit Bullco oder Sylvio": "Will davon nichts hören; der Held soll sich selbst durchsetzen.",
+    "Der Held bringt Belastendes gegen den Richter": "Zahlt gut und verlangt Schweigen. Ist der Richter schon tot, gibt es nur ein paar Münzen.",
+    "Der Held will Arbeit": "Spottet über seine Gier, hat aber immer einen Auftrag."
+  },
+  "evidence": [
+    {
+      "about": "sees_hero.fremder",
+      "key": "DIA_LEE_HALLO_04_00",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.fremder",
+      "key": "DIA_LEE_PALADINE_04_07",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_LEE_LEESPLAN_04_03",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_LEE_ADD_04_12",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Der König und seine Höflinge",
+      "key": "DIA_LEE_ADD_04_17",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Söldner",
+      "key": "DIA_LEE_ANGEBOTSUCCESS_04_06",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Wassermagier und Ring des Wassers",
+      "key": "DIA_ADDON_LEE_RANGER_04_04",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Onar",
+      "key": "DIA_LEE_PETZMASTER_04_06",
+      "excerpt": 1
+    },
+    {
+      "about": "attitudes.people.Torlof",
+      "key": "DIA_LEE_JOINNOW_04_07",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Gorn",
+      "key": "DIA_LEE_SUCCESS_04_02",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Sylvio",
+      "key": "DIA_LEE_SYLVIO_04_05",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.politics",
+      "key": "DIA_LEE_DOABOUTBENNET_04_02",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_LEE_ADD_04_01",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Kapitel 1: Held will Söldner werden",
+      "key": "DIA_LEE_CLEARWHAT_04_02",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held hat das Friedensangebot überbracht",
+      "key": "DIA_LEE_ANGEBOTSUCCESS_04_05",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Kapitel 3",
+      "key": "DIA_LEE_RICHTER_04_10",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Bennet verhaftet (Kapitel 3)",
+      "key": "DIA_LEE_CANHELPYOU_04_04",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Kapitel 4",
+      "key": "DIA_LEE_KAP4_PERM_04_03",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Kapitel 5: Schiff",
+      "key": "DIA_LEE_KNOWWHEREENEMY_04_01",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held schickt ihn wieder vom Schiff",
+      "key": "DIA_LEE_STILLNEEDYOU_04_03",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Kapitel 6: Dracheninsel",
+      "key": "DIA_LEE_DI_HALLO_04_01",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Kapitel 6: Dracheninsel",
+      "key": "DIA_LEE_ADD_04_26",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Straftaten auf dem Hof",
+      "key": "DIA_LEE_PETZMASTER_04_12",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.miliz",
+      "key": "DIA_LEE_KEINSLD_04_02",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.novize",
+      "key": "DIA_LEE_KEINSLD_04_01",
+      "excerpt": 0
+    },
+    {
+      "about": "reacts_to.Der Held will Arbeit",
+      "key": "DIA_LEE_RICHTER_04_01",
+      "excerpt": 0
+    }
+  ],
+  "invented": [
+    "sees_hero.landarbeiter: nirgends belegt, Lee spricht Landarbeiterkleidung nie an",
+    "attitudes.people.Buster: nur belegt, dass Lee eine Nachricht weitergibt",
+    "reacts_to.Der Held will Arbeit: verallgemeinert aus dem Richter-Auftrag"
+  ]
+}

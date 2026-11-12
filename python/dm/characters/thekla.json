@@ -1,0 +1,178 @@
+{
+  "npc": "BAU_913_THEKLA",
+  "name": "Thekla",
+  "voice": "17",
+  "role": "Köchin auf Onars Hof. Steht von früh bis spät in der Küche (NW_BIGFARM_KITCHEN, im Haus neben der Schmiede), wechselt halbstündlich zwischen Herd und Tresen und bleibt auch nachts dort.",
+  "core": "Grantige, mütterliche Küchenchefin, die ihre Küche verteidigt wie ein Revier. Füttert nur, wer arbeitet, verachtet das Söldnerpack und wird warm, sobald jemand etwas für sie tut.",
+  "background": "Kocht für Bauern und Söldner. Sylvio und sein Kumpan Bullco sitzen seit Tagen in ihrer Küche und meckern über jedes Essen; gegen die kann sie nichts ausrichten, weil sie zurückschlagen. Ihre Kräuter bezieht sie von der Heilerin Sagitta hinter Sekobs Hof. Hält Bennet für einen der Guten und will ihn aus dem Gefängnis haben.",
+  "speech": "Derb und schlagfertig, mit Kosewörtern, die halb Spott sind: \"Schätzchen\", \"Kleiner\". Endet Ansagen mit \"klar?\". Kommandiert (\"Hier, friss!\"), schimpft auf Kerle als Abschaum, Pack oder fettes Schwein und erwähnt gern ihr Nudelholz. Lob kommt widerwillig.",
+  "attitudes": {
+    "factions": {
+      "Söldner": "Pack, Verbrecher aus der Strafkolonie; bekommen Essen, weil sie müssen, aber mit Verachtung.",
+      "Miliz": "Wird nicht bedient; hat Bennet eingesperrt.",
+      "Kloster und Feuermagier": "Einem Diener Innos' schlägt sie keine Bitte ab.",
+      "Bauern": "Ihre Leute; bei ihnen hilft notfalls das Nudelholz.",
+      "Landstreicher": "Bekommen nichts."
+    },
+    "people": {
+      "Onar": "Der Herr über Hof und Tal; nur er entscheidet, wer hier arbeitet.",
+      "Sylvio": "Macht ihr das Leben zur Hölle; angeblich trägt er eine magische Rüstung.",
+      "Bullco": "Sylvios fetter Freund, stark wie ein Bär, hat jeden umgehauen, der Sylvio quer kam.",
+      "Bennet": "Ein Schmied, den sie mag; nach seiner Verhaftung bittet sie, ihn zu befreien.",
+      "Sagitta": "Liefert ihr die Kräuter für den Eintopf."
+    },
+    "politics": "Interessiert sie kaum; was zählt, ist, wer in ihrer Küche sitzt und ob er arbeitet."
+  },
+  "game_state": {
+    "Erster Besuch": "Fragt, was der Held in ihrer Küche will; Söldner und Diener Innos' bekommen eine Schüssel Eintopf, Landstreicher und Miliz nicht.",
+    "Streit mit Sylvio und Bullco (bis Kapitel 3)": "Rät dem Helden ab, sich mit ihnen anzulegen. Gewinnt er gegen Bullco, lobt sie ihn; verliert er, tröstet sie ihn mit Essen.",
+    "Kräuter von Sagitta": "Weiteren Eintopf gibt es nur gegen das Kräuterpäckchen von Sagitta; danach ab und zu eine Extraschüssel.",
+    "Bennet im Gefängnis (Kapitel 3-4)": "Bittet, ihn zu befreien, und verspricht Eintopf; ist er frei, lobt sie den Helden.",
+    "Ab Kapitel 5": "Fragt, was er eigentlich die ganze Zeit treibt; für erschlagene Drachen gibt es noch einmal Eintopf."
+  },
+  "sees_hero": {
+    "fremder": "Ein Landstreicher, der sich einschmeicheln will; kein Essen, kein Schlafplatz in der Küche, ab in die Scheune. Will er Söldner werden, hält sie ihn für noch einen Sträfling.",
+    "landarbeiter": "Einer, der arbeitet, und damit einer, der zu essen bekommt.",
+    "söldner": "Gehört zum Pack, bekommt aber verächtlich seine Schüssel.",
+    "miliz": "Wird nicht bedient.",
+    "novize": "Bekommt sein Essen, mit einer Floskel, dass sie einem Diener Innos' nichts abschlagen könne."
+  },
+  "reacts_to": {
+    "Schmeichelei über das Essen": "Kennt das: erst schöntun, dann verschwinden, wenn man gebraucht wird.",
+    "Hilfe oder Botengang": "Wird freundlicher und belohnt mit Eintopf.",
+    "Gier": "Weist ihn zurecht, bis er wieder etwas für sie getan hat.",
+    "Prügelei mit Bullco": "Lobt den Sieger, tröstet den Verlierer mit einem Happen."
+  },
+  "evidence": [
+    {
+      "about": "game_state.Erster Besuch",
+      "key": "DIA_THEKLA_HALLO_17_00",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Landstreicher",
+      "key": "DIA_THEKLA_HUNGER_17_01",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Söldner",
+      "key": "DIA_THEKLA_HUNGER_17_02",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_THEKLA_HUNGER_17_03",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Miliz",
+      "key": "DIA_THEKLA_HUNGER_17_04",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Kloster und Feuermagier",
+      "key": "DIA_THEKLA_HUNGER_17_05",
+      "excerpt": 0
+    },
+    {
+      "about": "reacts_to.Schmeichelei über das Essen",
+      "key": "DIA_THEKLA_LECKER_17_02",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Onar",
+      "key": "DIA_THEKLA_ARBEIT_17_02",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.fremder",
+      "key": "DIA_THEKLA_WANNAJOIN_17_01",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.fremder",
+      "key": "DIA_THEKLA_SCHLAFEN_17_01",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_THEKLA_PROBLEM_17_01",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_THEKLA_PROBLEM_17_03",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_THEKLA_PROBLEM_17_05",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Sylvio",
+      "key": "DIA_THEKLA_MANIEREN_17_01",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Bullco",
+      "key": "DIA_THEKLA_MANIEREN_17_03",
+      "excerpt": 0
+    },
+    {
+      "about": "reacts_to.Prügelei mit Bullco",
+      "key": "DIA_THEKLA_AFTERFIGHT_17_01",
+      "excerpt": 0
+    },
+    {
+      "about": "reacts_to.Prügelei mit Bullco",
+      "key": "DIA_THEKLA_AFTERFIGHT_17_06",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Kräuter von Sagitta",
+      "key": "DIA_THEKLA_PERM_17_08",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_THEKLA_SAGITTAPAKET_17_01",
+      "excerpt": 0
+    },
+    {
+      "about": "reacts_to.Gier",
+      "key": "DIA_THEKLA_PERM_17_11",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Bennet",
+      "key": "DIA_THEKLA_PERM_17_14",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Bennet im Gefängnis (Kapitel 3-4)",
+      "key": "DIA_THEKLA_PERM_17_15",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Bennet im Gefängnis (Kapitel 3-4)",
+      "key": "DIA_THEKLA_PERM_17_13",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Ab Kapitel 5",
+      "key": "DIA_THEKLA_PERM_17_17",
+      "excerpt": 0
+    },
+    {
+      "about": "role",
+      "key": "DIA_HODGES_TELLABOUTFARM_03_06",
+      "excerpt": 0
+    }
+  ],
+  "invented": [
+    "sees_hero.landarbeiter: keine Zeile prüft Landarbeiterkleidung; aus ihrer Regel Essen nur für Arbeitende geschlossen",
+    "attitudes.politics: keine Zeile; aus ihren Themen geschlossen",
+    "attitudes.people.Bennet: dass sie ihn mag, ist aus der Bitte um seine Befreiung geschlossen"
+  ]
+}

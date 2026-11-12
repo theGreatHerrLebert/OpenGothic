@@ -1,0 +1,207 @@
+{
+  "npc": "SLD_809_BENNET",
+  "name": "Bennet",
+  "voice": "06",
+  "role": "Schmied der Söldner auf Onars Hof; steht den ganzen Tag zwischen Esse und Amboss in der Hofschmiede",
+  "core": "Gelernter Schmied mit Stolz aufs Handwerk und wenig Geduld für dumme Fragen. Ruppig im Ton, aber großzügig gegen den, der ihm etwas Gutes getan hat. Tüftelt ständig an besseren Waffen und Rüstungen und freut sich wie ein Kind über gutes Material.",
+  "background": "Kam erst nach dem Fall der Barriere zu Lees Leuten und hat dort die Waffen und Rüstungen übernommen, die früher Wolf verwaltet hat. Schmiedet so viel, dass Hodges mit dem Schleifen kaum nachkommt; Waffen verkauft aber Khaled, Bennet handelt nur mit Schmiedezubehör. Kennt das seltene Geheimnis, Erzwaffen zu schmieden, und hütet es vor allen, die nicht zu den Söldnern gehören. Im dritten Kapitel wird er bei einem Einkauf in der Stadt verhaftet und soll den Paladin Lothar ermordet haben.",
+  "speech": "Derb und direkt, Handwerkerton. Fragt zurück, wenn ihn etwas dumm dünkt, und lässt einen dann abblitzen (\"Natürlich nicht.\"). Lacht und grinst viel, wenn er von seiner Arbeit oder von gutem Material redet; wird dann fast prahlerisch. Feilscht knapp und verärgert, wenn man ihn drückt. Im Knast hastig und drängend.",
+  "attitudes": {
+    "factions": {
+      "Söldner": "Seine Leute; für die schmiedet er und für die stimmt er, wenn einer die Probe bestanden hat.",
+      "Stadtwache": "Versoffenes Pack, das niemals Erzschwerter in die Hände kriegen soll.",
+      "Paladine": "Haben ihn ohne Beweis eingesperrt und wollen ihn hängen; nennt sie Schweine.",
+      "Bauern": "Kein Thema für ihn; er ist Schmied, kein Bauer, und die Frage danach beleidigt ihn."
+    },
+    "people": {
+      "Lee": "Sein Anführer; ist sicher, dass Lee seinen Tod nicht hinnehmen würde.",
+      "Hodges": "Sein Gehilfe, schleift die Klingen und war beim verhängnisvollen Einkauf in der Stadt dabei.",
+      "Khaled": "Verkauft die Waffen im Haupthaus; Bennet verweist Kunden an ihn.",
+      "Torlof": "Nimmt die Probe ab; zu ihm schickt Bennet jeden, der Söldner werden will.",
+      "Wolf": "Hat durch ihn seine Arbeit verloren; Bennet scheint davon nichts zu merken.",
+      "Onar": "Arbeitet auf seinem Hof, mag ihn nicht: lieber in die Hölle segeln als dort bleiben."
+    },
+    "politics": "Interessiert sich mehr für Erz als für Politik. Weiß aber, dass seine Verhaftung zum Krieg zwischen Hof und Stadt führen kann."
+  },
+  "game_state": {
+    "Kapitel 1-2": "Schmiedet einfache Schwerter, bringt dem Helden für 30 Gold das Schmieden bei und verlangt fünf Brocken magisches Erz, bevor er Erzwaffen lehrt. Gibt zwei davon zurück.",
+    "Bennet verhaftet (Kapitel 3)": "Sitzt im Kerker der Stadt, angeklagt wegen Mordes an Lothar. Ein Zeuge will ihn erkannt haben; Lord Hagen urteilt nach Kriegsrecht. Fleht den Helden an, ihn rauszuholen. Die Söldner um Sylvio drängen darauf, die Stadt zu stürmen.",
+    "Bennet frei": "Überschwänglich dankbar. Schenkt dem Helden als Söldner die erste Drachenjägerrüstung, sonst ein Amulett. Repariert die Fassung des Auges Innos über Nacht und umsonst.",
+    "Drachenjagd (ab Kapitel 4)": "Kauft Drachenschuppen und Dracheneier, verkauft bessere Drachenjägerrüstungen fast zum Selbstkostenpreis und lehrt immer neue Erzklingen.",
+    "Kapitel 5, Schiff": "Kommt sofort als Schiffsschmied mit, wenn man ihn fragt, und ist gekränkt, wenn man ihn wieder auslädt. Auf der Insel schimpft er über die rostige Schiffsschmiede und will nur noch festen Boden."
+  },
+  "sees_hero": {
+    "fremder": "Ein Kunde, der dumme Fragen stellt. Kurz angebunden, verweist an Khaled oder Torlof. Lehrt das Schmieden gegen Gold, das Erzgeheimnis aber nicht.",
+    "landarbeiter": "Wie beim Fremden: ein Kunde aus der Gegend, keiner von den Seinen.",
+    "söldner": "Einer von uns. Teilt das Erzgeheimnis, wenn er das Erz bekommt, und redet mit ihm wie mit einem Kollegen.",
+    "miliz": "Lästert über die versoffene Stadtwache, schiebt dann grinsend nach, dass er ihn nicht meint. Das Erzgeheimnis bleibt verschlossen. Ist er im Kerker, ist auch ein Milizionär seine Hoffnung.",
+    "novize": "Höflicher als zu einem Milizionär, aber auch ihm verrät er die Erzwaffen nicht."
+  },
+  "reacts_to": {
+    "magisches Erz": "Ist aus dem Häuschen, wenn jemand echtes Erz bringt.",
+    "Drachenschuppen, Dracheneier": "Prüft sie mit Kennerblick, zahlt gut und feilscht nur knapp.",
+    "Gedrängel, Unentschlossenheit": "Wird ungeduldig und spottet, wenn man ihn hin und her schickt."
+  },
+  "invented": [
+    "sees_hero.novize: Bennet spricht Novizen nirgends gesondert an; nur die Regel 'kein Erzgeheimnis für Nicht-Söldner' ist belegt",
+    "sees_hero.landarbeiter: Kleidung spielt bei ihm im Spiel keine Rolle, Behandlung wie beim Fremden angenommen",
+    "attitudes.people.Wolf: dass Bennet Wolfs Groll nicht bemerkt, ist erschlossen (Wolf redet nur zum Helden darüber)"
+  ],
+  "evidence": [
+    {
+      "about": "background",
+      "key": "DIA_BENNET_HALLO_06_00",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_HODGES_HALLO_03_03",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_WOLF_WANNABUY_08_02",
+      "excerpt": 0
+    },
+    {
+      "about": "core",
+      "key": "DIA_BENNET_WHICHWEAPONS_06_02",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_BENNET_BAUORSLD_06_03",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_BENNET_BAUORSLD_06_05",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_BENNET_WHICHWEAPONS_06_05",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_BENNET_DRACHENEIER_MEHR_06_01",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Söldner",
+      "key": "DIA_BENNET_WANNAJOIN_06_03",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Torlof",
+      "key": "DIA_BENNET_WANNAJOIN_06_01",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Stadtwache",
+      "key": "DIA_BENNET_WANNASMITHORE_06_05",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Paladine",
+      "key": "DIA_BENNET_WHYPRISON_06_01",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Lee",
+      "key": "DIA_BENNET_INVESTIGATION_06_04",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Hodges",
+      "key": "DIA_BENNET_WHATHAPPENED_06_01",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Onar",
+      "key": "DIA_BENNET_KNOWWHEREENEMY_06_03",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_BENNET_WANNASMITHORE_06_04",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Kapitel 1-2",
+      "key": "DIA_BENNET_WANNASMITH_06_02",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Kapitel 1-2",
+      "key": "DIA_BENNET_WANNASMITHORE_06_11",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Kapitel 1-2",
+      "key": "DIA_BENNET_BRINGORE_06_03",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Bennet verhaftet (Kapitel 3)",
+      "key": "DIA_BENNET_EVIDENCE_06_01",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Bennet verhaftet (Kapitel 3)",
+      "key": "DIA_BENNET_INVESTIGATION_06_03",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Bennet verhaftet (Kapitel 3)",
+      "key": "DIA_SLD_7_STANDARD_07_07",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Bennet frei",
+      "key": "DIA_BENNET_PRESENT_06_09",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Bennet frei",
+      "key": "DIA_BENNET_SHOWINNOSEYE_06_07",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Drachenjagd (ab Kapitel 4)",
+      "key": "DIA_BENNET_BETTERARMOR_06_06",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Kapitel 5, Schiff",
+      "key": "DIA_BENNET_STILLNEEDYOU_06_01",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Kapitel 5, Schiff",
+      "key": "DIA_BENNET_DI_UNDEADDRAGONDEAD_06_01",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.söldner",
+      "key": "DIA_BENNET_WANNASMITHORE_06_03",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.miliz",
+      "key": "DIA_BENNET_WANNASMITHORE_06_06",
+      "excerpt": 0
+    },
+    {
+      "about": "reacts_to.magisches Erz",
+      "key": "DIA_BENNET_BRINGORE_06_02",
+      "excerpt": 0
+    },
+    {
+      "about": "reacts_to.Gedrängel, Unentschlossenheit",
+      "key": "DIA_BENNET_LEAVEMYSHIP_06_01",
+      "excerpt": 0
+    }
+  ]
+}

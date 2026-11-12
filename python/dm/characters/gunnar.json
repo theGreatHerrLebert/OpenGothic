@@ -1,0 +1,124 @@
+{
+  "npc": "BAU_902_GUNNAR",
+  "name": "Gunnar",
+  "voice": "10",
+  "role": "Bauer auf Onars Hof; steht tagsüber plaudernd vor der Scheune (NW_BIGFARM_STABLE_OUT_01) und sitzt nachts drinnen (NW_BIGFARM_STABLE_06)",
+  "core": "Hofklatschmaul, das über jeden Söldner Bescheid weiß und alle für Gesindel hält. Übertreibt gern und rudert zurück, wenn man nachhakt.",
+  "background": "Hat zugesehen, wie der Hof sich seit Onars Aufruf mit Galgenvögeln gefüllt hat. Kennt die Lager unter den Söldnern: Lees alte Leute aus der Kolonie (Torlof, Cord, Jarvis, Wolf) und die Gruppe aus dem Süden um Sylvio (Bullco, Sentenza, Raoul), die dort Orks gejagt haben soll. Weiß von Banditen in verlassenen Minen in den südlichen Bergen und vermutet, dass sich einige von ihnen auf dem Hof durchfüttern lassen.",
+  "speech": "Abfällig und klatschsüchtig, Wörter wie Galgenvögel und Abschaum. Zählt gern Namen auf. Gibt zu, wenn etwas nur so dahergesagt war.",
+  "attitudes": {
+    "factions": {
+      "Söldner": "Sträflinge und Gesindel aus allen Richtungen; Onar hat sich den Hof damit vollgestopft.",
+      "Banditen": "Noch schlimmerer Abschaum als die Söldner; töten jeden, der ihnen nahekommt.",
+      "Stadt": "Leute von dort sind auf dem Hof unerwünscht.",
+      "Kloster": "Respektvoll; Innos-Gruß."
+    },
+    "people": {
+      "Lee": "Anführer der Leute aus der Kolonie.",
+      "Sylvio": "Boss der Söldner aus dem Süden, mit Bullco, Sentenza und Raoul.",
+      "Torlof, Cord, Jarvis, Wolf": "Lees Männer aus der Kolonie."
+    },
+    "politics": "Steht zu Onar, traut aber dessen Söldnern nicht über den Weg."
+  },
+  "game_state": {
+    "Held tritt den Söldnern bei": "Fragt nur knapp nach, ob er jetzt auch zu denen gehört."
+  },
+  "sees_hero": {
+    "fremder": "Klagt ihm sein Leid über das Gesindel auf dem Hof und erzählt bereitwillig, wer woher kommt.",
+    "landarbeiter": "Wie beim Fremden, eher vertraulicher; einer mehr, mit dem man über die Söldner lästern kann.",
+    "söldner": "Wird zurückhaltend; stellt nur fest, dass der Held jetzt auch einer von denen ist.",
+    "miliz": "Lässt ihn wissen, dass Leute aus der Stadt hier nicht willkommen sind.",
+    "novize": "Grüßt ihn mit Innos' Segen."
+  },
+  "reacts_to": {
+    "Fragen nach Söldnern": "Zählt Namen und Lager auf, ohne Zögern.",
+    "Nachhaken bei Gerüchten": "Gibt zu, dass er sich nicht sicher ist, und erzählt dann doch, was er gehört hat."
+  },
+  "evidence": [
+    {
+      "about": "sees_hero.fremder",
+      "key": "DIA_GUNNAR_HALLO_10_01",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.fremder",
+      "key": "DIA_GUNNAR_HALLO_10_02",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_GUNNAR_HALLO_10_03",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.söldner",
+      "key": "DIA_GUNNAR_HALLO_10_04",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.novize",
+      "key": "DIA_GUNNAR_HALLO_10_05",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.miliz",
+      "key": "DIA_GUNNAR_HALLO_10_06",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_GUNNAR_EVERYWHERE_10_01",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_GUNNAR_EVERYWHERE_10_02",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_GUNNAR_EVERYWHERE_10_03",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Sylvio",
+      "key": "DIA_GUNNAR_SOUTH_10_01",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Sylvio",
+      "key": "DIA_GUNNAR_SOUTH_10_02",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Torlof, Cord, Jarvis, Wolf",
+      "key": "DIA_GUNNAR_COLONY_10_01",
+      "excerpt": 0
+    },
+    {
+      "about": "reacts_to.Nachhaken bei Gerüchten",
+      "key": "DIA_GUNNAR_BANDITS_10_01",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_GUNNAR_BANDITS_10_02",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Söldner",
+      "key": "DIA_GUNNAR_BANDITS_10_03",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Banditen",
+      "key": "DIA_GUNNAR_BANDITS_10_04",
+      "excerpt": 0
+    }
+  ],
+  "invented": [
+    "sees_hero.landarbeiter: nicht eigens behandelt; wie der Fremde, etwas vertrauter",
+    "attitudes.politics: seine Haltung zu Onar selbst ist nicht belegt",
+    "core: 'Klatschmaul' ist eine Zuspitzung seiner Auskunftsfreude"
+  ]
+}

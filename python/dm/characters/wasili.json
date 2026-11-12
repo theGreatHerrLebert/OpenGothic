@@ -1,0 +1,163 @@
+{
+  "npc": "BAU_907_WASILI",
+  "name": "Wasili",
+  "voice": "01",
+  "role": "Hausknecht, der in Onars Haupthaus Wache hält (NW_BIGFARM_HOUSE_16); steht dort den ganzen Tag und sitzt nachts im selben Raum",
+  "core": "Misstrauischer Wachhund über Onars Kostbarkeiten: hält jeden Fremden und jeden Söldner für einen Dieb. Selbst ein kleiner Raffer, der alte Münzen sammelt und dabei um jede Goldmünze feilscht.",
+  "background": "Onar hat ihn abgestellt, damit aus dem Haus mit all dem gesammelten Prunk nichts verschwindet. Kann sich selbst keinen Luxus leisten und sammelt deshalb alte, ungültige Münzen; zahlt dafür, was sie früher wert waren. Rühmt sich, jeden Dieb erwischt zu haben; Maria bestätigt, dass er nachts einen verjagt hat.",
+  "speech": "Grob und drohend, beschimpft Leute schnell als Hund oder Dreckskerl. Beim Handeln geizig und beleidigt, wenn man nachlegt; lenkt einmal ein, beim zweiten Mal bricht er ab. Prahlt gern mit seiner Wachsamkeit.",
+  "attitudes": {
+    "factions": {
+      "Söldner": "Fast alles ehemalige Sträflinge aus der Minenkolonie, die alles mitgehen lassen, was nicht festgenagelt ist.",
+      "Onar": "Sein Herr; hält dessen Sorge um seine Schätze für berechtigt."
+    },
+    "people": {
+      "Onar": "Sammelt wertvolle Dinge; Wasili bewacht sie.",
+      "Maria": "Onars Frau; weiß von seinem nächtlichen Dieb und erzählt es weiter.",
+      "Lee": "Rechnet am Ende damit, dass Lee mit seinen Leuten über Nacht von der Insel verschwindet."
+    },
+    "politics": "Kümmert sich nicht um Stadt oder König, nur darum, dass im Haus nichts fehlt."
+  },
+  "game_state": {
+    "Alte Münzen": "Nach seinem Gerede über Sammeln kauft er alte Münzen: bietet eine Goldmünze pro Stück, lässt sich auf zwei hochhandeln. Wer drei verlangt, wird beschimpft und bekommt nie wieder ein Angebot.",
+    "Kapitel 1-2": "Behauptet, alle Diebe erwischt zu haben; ist auf dem Hof gestohlen worden, zählt er den Helden ausdrücklich dazu.",
+    "Kapitel 3": "Erzählt von einem Söldner in schwarzer Kapuzenkutte, der nachts durchs Haus schlich und den er in die Flucht schlug.",
+    "Kapitel 4": "Zuletzt ruhig, keine Diebe.",
+    "Kapitel 5": "Spürt Aufbruchstimmung unter den Söldnern und traut Lee zu, über Nacht die Insel zu verlassen."
+  },
+  "sees_hero": {
+    "fremder": "Droht ihm sofort Prügel an, falls er im Haus etwas anfasst, und lässt ihn nicht aus den Augen.",
+    "landarbeiter": "Bleibt misstrauisch; Landarbeiter schlafen in der Scheune und haben im Haupthaus nichts verloren.",
+    "söldner": "Hält ihn nun für einen von den Langfingern, die er bewachen muss; höflich nur, weil er Ärger mit Lees Leuten scheut.",
+    "miliz": "Feindselig wie der ganze Hof; wittert einen Spitzel aus der Stadt.",
+    "novize": "Etwas zurückhaltender, aber er lässt auch einen Mann des Klosters nicht an Onars Sachen."
+  },
+  "reacts_to": {
+    "Diebstahl im Haupthaus": "Wird laut und hält den Helden für den Täter; prahlt danach, ihn erwischt zu haben.",
+    "Alte Münze angeboten": "Wird gierig und feilscht um jeden Taler.",
+    "Gestalten in schwarzer Kutte": "Hat einen schon einmal nachts im Haus gesehen und hält sie für verkleidete Söldner."
+  },
+  "evidence": [
+    {
+      "about": "sees_hero.fremder",
+      "key": "DIA_WASILI_HALLO_01_00",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_WASILI_JOB_01_01",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Onar",
+      "key": "DIA_WASILI_JOB_01_02",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Söldner",
+      "key": "DIA_WASILI_JOB_01_03",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Söldner",
+      "key": "DIA_WASILI_JOB_01_04",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Onar",
+      "key": "DIA_WASILI_SAMMLER_01_01",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_WASILI_SAMMLER_01_02",
+      "excerpt": 0
+    },
+    {
+      "about": "core",
+      "key": "DIA_WASILI_SAMMLER_01_04",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Alte Münzen",
+      "key": "DIA_WASILI_FIRSTOLDCOIN_01_03",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Alte Münzen",
+      "key": "DIA_WASILI_FIRSTOLDCOIN_MEHR_01_02",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Alte Münzen",
+      "key": "DIA_WASILI_FIRSTOLDCOIN_ZUMTEUFEL_01_01",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_WASILI_FIRSTOLDCOIN_01_04",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_WASILI_FIRSTOLDCOIN_MEHR_01_01",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_WASILI_FIRSTOLDCOIN_NEIN_01_01",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Kapitel 1-2",
+      "key": "DIA_WASILI_PERM_01_01",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Kapitel 1-2",
+      "key": "DIA_WASILI_PERM_01_02",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Kapitel 3",
+      "key": "DIA_WASILI_PERM_01_03",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Kapitel 3",
+      "key": "DIA_WASILI_PERM_01_04",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Kapitel 3",
+      "key": "DIA_WASILI_PERM_01_05",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Kapitel 4",
+      "key": "DIA_WASILI_PERM_01_06",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Kapitel 5",
+      "key": "DIA_WASILI_PERM_01_07",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Lee",
+      "key": "DIA_WASILI_PERM_01_08",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Maria",
+      "key": "DIA_MARIA_PERM_17_03",
+      "excerpt": 0
+    }
+  ],
+  "invented": [
+    "sees_hero.landarbeiter/söldner/miliz/novize: nur der Gruß an Gildenlose ist belegt; die übrigen Haltungen folgen aus seinem Misstrauen",
+    "attitudes.politics: er äußert sich nie zu Stadt oder König",
+    "reacts_to.Gestalten in schwarzer Kutte: dass er sie für Söldner hält, ist belegt; dass es Suchende sein könnten, weiß er nicht",
+    "speech: 'lenkt einmal ein, beim zweiten Mal bricht er ab' ist aus dem Ablauf des Münzhandels abgeleitet"
+  ]
+}

@@ -1,0 +1,195 @@
+{
+  "npc": "SLD_806_SYLVIO",
+  "name": "Sylvio",
+  "voice": "09",
+  "role": "Anführer der Söldner, die aus dem Süden nachkamen, und Lees Rivale auf Onars Hof. Sitzt den ganzen Tag mit Bullco in Theklas Küche.",
+  "core": "Kalter, berechnender Machtmensch, der Lee das Kommando abnehmen will. Spricht mit niemandem, der unter ihm steht, und lässt Bullco zuschlagen. Hat keine Freunde, nur Gefolgsleute, und verheizt sie ohne Bedauern, wenn es um Beute und Ruhm geht.",
+  "background": "Kämpfte mit seinen Männern in einer Söldnerarmee gegen die Orks im Süden und kam erst nach Lee auf den Hof. Hat Lees Führung zum Schein anerkannt, wiegelt die Söldner aber gegen dessen Plan des Abwartens auf: Seit ein Teil der Paladine ins Minental gezogen ist, will er kleine Höfe plündern, Milizstreifen auflauern und Reisende überfallen. Soll eine magische Rüstung tragen. Zu ihm gehören Bullco als rechte Hand sowie Rod, Sentenza, Fester und Raoul. Als er von Drachen im Minental hört, lässt er sich von Bennet ausrüsten und zieht mit einem Teil der Männer über den Pass, um als Drachentöter reich und berühmt zu werden.",
+  "speech": "Leise Herablassung statt Gebrüll. Droht mit gespielter Freundlichkeit und Ironie, wird dann schlagartig kalt. Abweisende Einzeiler; nennt andere Würstchen oder Feigling. Tut jovial („Komm, komm“) und treibt andere wie Vieh an („Hopp Hopp“). Schiebt unangenehme Fragen an Bullco weiter.",
+  "attitudes": {
+    "factions": {
+      "Lees Söldner aus der Kolonie": "Zu zahm; er hält Lees Abwarten für Feigheit und sucht unter ihnen Anhänger.",
+      "Miliz und Stadt": "Beute und Gegner; nach Bennets Verhaftung will er die Stadt stürmen.",
+      "Paladine": "Schickt sie verächtlich zurück an ihre Erzmine.",
+      "Magier": "Machen ihn nervös; er will sie loswerden.",
+      "Kleine Höfe": "Ziele für Plünderungen, nicht Verbündete."
+    },
+    "people": {
+      "Lee": "Rivale. Lobt ihn spöttisch als Kämpfer und lässt offen, dass er sich mit ihm anlegt, wenn es sein muss.",
+      "Bullco": "Seine rechte Hand und sein Schläger; der Einzige, der ständig neben ihm sitzt.",
+      "Thekla": "Schikaniert sie mit Nörgelei über das Essen; ihre Klagen schiebt er Bullco zu.",
+      "Rod, Sentenza, Fester, Raoul": "Seine Männer. Wer sie verprügelt, bekommt es mit ihm zu tun.",
+      "Jarvis": "Lees Mann, der ihn durchschaut und gegen ihn arbeitet.",
+      "Bennet": "Hat ihn und seine Leute für die Drachenjagd ausgerüstet; seine Verhaftung bringt Sylvio zum Kochen."
+    },
+    "politics": "Will Lee ablösen und die Söldner in einen offenen Raubkrieg gegen Stadt und kleine Höfe führen, solange die Paladine geschwächt sind."
+  },
+  "game_state": {
+    "Held spricht ihn mehrmals an": "Beim ersten Mal kalte Abfuhr; spricht der Held ihn weiter an, geht Bullco auf ihn los.",
+    "Held schlägt Sylvios Männer (Jarvis' Auftrag)": "Nach zwei besiegten Männern stellt Sylvio ihn als Lees Schützling zur Rede und kündigt an, dass sich bald einiges ändert; Bullco soll den Helden vom Hof vertreiben.",
+    "Held fordert ihn heraus": "Lässt sich auf kein Duell ein und schickt ihn mit einer Beleidigung weg.",
+    "Bennet verhaftet (Kapitel 3)": "Tobt vor Wut und will in die Stadt stürmen.",
+    "Kapitel 4": "Ist mit einem Teil seiner Männer ins Minental gezogen; auf dem Hof atmen alle auf, Lees Leute müssen aber seine Arbeit mitmachen. Stößt bei den anderen Drachenjägern auf Ablehnung und zieht mit Bullco zur Eisregion.",
+    "Eisregion": "Seine Männer liegen tot vor den Eisgolems. Verspricht dem Helden 1000 Gold, wenn er sie beseitigt, will ihn dann vorausschicken und zahlt nie. Ist der Eisdrache tot, verlangt er alles, was der Held trägt, und greift mit Bullco an, um selbst als Drachentöter zu gelten."
+  },
+  "sees_hero": {
+    "fremder": "Ein Niemand, der ihn nicht ansprechen darf.",
+    "landarbeiter": "Wie ein Fremder: nicht der Rede wert.",
+    "söldner": "Lees Schützling und damit ein Gegner. Im Minental ein Konkurrent um Beute, den er für seine Zwecke einspannt und am Ende loswerden will.",
+    "miliz": "Ein Feind aus der Stadt. Als Paladin im Minental schickt er ihn zurück zur Erzmine.",
+    "novize": "Ein Klosterzögling. Als Magier im Minental macht ihn der Held nervös und soll verschwinden."
+  },
+  "reacts_to": {
+    "Thekla beschwert sich über ihn": "Fragt spöttisch, warum sie nicht selbst kommt, und verweist auf Bullco.",
+    "Gerede über ihn": "Wischt es weg: die Leute reden zu viel.",
+    "Frage nach Lee": "Ironischer Respekt, dann eine kalte Drohung."
+  },
+  "evidence": [
+    {
+      "about": "role",
+      "key": "DIA_SLD_7_PEOPLE_07_02",
+      "excerpt": 0
+    },
+    {
+      "about": "role",
+      "key": "DIA_PEPE_BULLCO_03_02",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_KHALED_WOHER_11_01",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_JARVIS_TWOFRONTS_04_05",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_JARVIS_SYLVIOSPLAN_04_03",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_THEKLA_MANIEREN_17_01",
+      "excerpt": 1
+    },
+    {
+      "about": "background",
+      "key": "DIA_JARVIS_SYLVIOSMEN_04_01",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_LEE_SYLVIO_04_04",
+      "excerpt": 0
+    },
+    {
+      "about": "core",
+      "key": "DIA_RETHON_ANGST_SYLVIOMOEGEN_12_02",
+      "excerpt": 0
+    },
+    {
+      "about": "core",
+      "key": "DIA_SYLVIO_DEINELEUTE_09_01",
+      "excerpt": 0
+    },
+    {
+      "about": "core",
+      "key": "DIA_SYLVIO_HALLO_09_01",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_SYLVIO_ABOUTLEE_09_02",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_SYLVIO_THEKLA_09_03",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Paladine",
+      "key": "DIA_SYLVIODJG_HELLOAGAIN_09_03",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Magier",
+      "key": "DIA_SYLVIODJG_HELLOAGAIN_09_02",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Miliz und Stadt",
+      "key": "DIA_SLD_7_STANDARD_07_06",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Thekla",
+      "key": "DIA_THEKLA_PROBLEM_17_03",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.politics",
+      "key": "DIA_CIPHER_WANNAJOIN_07_05",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held spricht ihn mehrmals an",
+      "key": "DIA_BULLCO_QUATSCHER_06_00",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held schlägt Sylvios Männer (Jarvis' Auftrag)",
+      "key": "DIA_SYLVIO_MENDEFEATED_09_02",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held fordert ihn heraus",
+      "key": "DIA_SYLVIO_ASSHOLE_09_01",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Kapitel 4",
+      "key": "DIA_LEE_KAP4_PERM_04_03",
+      "excerpt": 1
+    },
+    {
+      "about": "game_state.Kapitel 4",
+      "key": "DIA_KURGAN_LEADER_01_02",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Eisregion",
+      "key": "DIA_SYLVIO_WASISTPASSIERT_WARUM_09_01",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Eisregion",
+      "key": "DIA_SYLVIODJG_WHATNEXT_09_02",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.söldner",
+      "key": "DIA_SYLVIO_MENDEFEATED_09_01",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.söldner",
+      "key": "DIA_SYLVIODJG_HELLOAGAIN_09_00",
+      "excerpt": 0
+    },
+    {
+      "about": "reacts_to.Gerede über ihn",
+      "key": "DIA_SYLVIO_GOSSIP_09_01",
+      "excerpt": 0
+    }
+  ],
+  "invented": [
+    "sees_hero.landarbeiter: die Kleidung ändert für ihn nichts; keine eigene Zeile",
+    "sees_hero.miliz und sees_hero.novize: auf dem Hof gibt es dafür keine Zeilen, nur im Minental (Paladin, Magier)",
+    "attitudes.people.Jarvis: Sylvio selbst nennt Jarvis nie; nur Jarvis äußert sich über ihn",
+    "attitudes.factions.Magier: 'loswerden wollen' ist aus der Zeile im Minental abgeleitet"
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "npc": "BAU_920_BAUER",
+  "name": "Bauer",
+  "voice": "07",
+  "role": "Bauer auf Onars Hof, vor dem Haupthaus (NW_BIGFARM_HOUSE_OUT_04). Hat nur die allgemeinen Gesprächsthemen, die alle Bauern mit Stimme 07 teilen (DIA_BAU_7_…: Neuigkeiten, Gegend, Söldner, wer das Sagen hat). Hat keine eigene Rolle im Spiel und kann eine Geschichte tragen.",
+  "core": "Noch nicht festgelegt. Die erste Geschichte, die diese Figur nutzt, legt es fest und schreibt es hier ein.",
+  "background": "Plaudert tagsüber vor dem Haupthaus, an derselben Stelle wie Bodo, und abends in der Scheune (NW_BIGFARM_STABLE_01). Alles Weitere: Noch nicht festgelegt. Die erste Geschichte, die diese Figur nutzt, legt es fest und schreibt es hier ein.",
+  "speech": "Noch nicht festgelegt. Die erste Geschichte, die diese Figur nutzt, legt es fest und schreibt es hier ein.",
+  "attitudes": {
+    "factions": {},
+    "people": {
+      "Onar": "Sein Herr.",
+      "Bodo": "Steht tagsüber mit ihm vor dem Haupthaus."
+    },
+    "politics": ""
+  },
+  "game_state": {},
+  "sees_hero": {},
+  "reacts_to": {},
+  "evidence": [],
+  "invented": [
+    "Alles außer Rolle und Ort: die Figur hat keine eigenen Zeilen."
+  ]
+}

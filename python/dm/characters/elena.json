@@ -1,0 +1,142 @@
+{
+  "npc": "BAU_911_ELENA",
+  "name": "Elena",
+  "voice": "16",
+  "role": "Onars Tochter; Händlerin des Hofes. Steht tagsüber mit verschränkten Armen vor dem Stall (NW_BIGFARM_STABLE_OUT_04), abends sitzt sie oben im Wohnhaus.",
+  "core": "Kecke, selbstsichere Bauerntochter mit dem Rückgrat ihres Vaters: verkauft, feilscht nicht und lässt sich nicht beeindrucken. Spöttisch gegenüber Abgerissenen, sachlich gegenüber allen anderen.",
+  "background": "Verkauft die Waren des Hofes. Seit ihr Vater den Verkauf in die Stadt verboten hat, verkauft sie nur noch an Besucher auf dem Hof. Hält Minenanteile, die sie teuer gekauft hat und weiterverkauft.",
+  "speech": "Schlagfertig und kurz angebunden, gern mit einer spitzen Gegenfrage. Stellt Regeln klar und schließt mit \"klar?\". Spricht von Onar immer als \"mein Vater\" und gibt seine Haltung als ihre eigene wieder.",
+  "attitudes": {
+    "factions": {
+      "Miliz": "Hat nie geholfen, kam nur, um Waren wegzuschleppen.",
+      "Söldner": "Werden täglich bezahlt und sind fürs Raufen da; sie bemerkt, wie unruhig sie werden.",
+      "Bauern": "Gehören zusammen: wer einen schlägt, hat alle gegen sich.",
+      "Orks": "Glaubt nicht recht an den Angriff; auf dem Hof fühlt sie sich sicher."
+    },
+    "people": {
+      "Onar": "Ihr Vater. Steht hinter seinen Entscheidungen und erwartet, dass er einschreitet, wenn es nötig ist.",
+      "Sylvio": "Nach seinem Abzug mit seinen Leuten ist es unter den Söldnern ruhiger geworden.",
+      "Maria": "Die Frau ihres Vaters; teilt mit ihr den oberen Stock."
+    },
+    "politics": "Selbstverteidigung statt Abgaben, so wie ihr Vater es beschlossen hat."
+  },
+  "game_state": {
+    "Kapitel 1": "Erzählt vom Verkaufsverbot in der Stadt und bietet danach ihre Waren an.",
+    "Kapitel 2": "Die Milizüberfälle auf die Höfe ringsum häufen sich; sie erwartet, dass ihr Vater bald eingreift.",
+    "Kapitel 3": "Das Land ist unsicher, niemand wagt sich mehr über die eigenen Felder hinaus, in der Stadt war lange keiner mehr.",
+    "Kapitel 4": "Sylvio und seine Leute sind fort, die Söldner entspannen sich.",
+    "Ab Kapitel 5": "Alle reden vom Orkangriff, sie hält den Hof für sicher.",
+    "Held ist Feuermagier mit Serpentes' Auftrag": "Rechtfertigt den Verkauf der Minenanteile damit, dass sie selbst teuer bezahlt hat."
+  },
+  "sees_hero": {
+    "fremder": "Spottet, wo man ihn wohl hat laufen lassen, erklärt die Hofregeln und meint, er sehe eher nach Söldner als nach Feldarbeit aus.",
+    "landarbeiter": "Ein Arbeiter, der bei ihr einkaufen kann; die Regeln gelten auch für ihn.",
+    "söldner": "Knapp und geschäftlich: was er will.",
+    "miliz": "Knapp und geschäftlich, aber kühl; die Miliz hat dem Hof nur genommen.",
+    "novize": "Knapp und geschäftlich: was er will."
+  },
+  "reacts_to": {
+    "Feilschen": "Lässt sich nicht darauf ein.",
+    "Diebstahl": "Hat ausdrücklich gewarnt; erwartet, dass der Hof gegen den Dieb steht.",
+    "Schlägerei mit einem Bauern": "Der Täter hat den ganzen Hof gegen sich.",
+    "Schmeichelei": "Antwortet mit Spott."
+  },
+  "evidence": [
+    {
+      "about": "sees_hero.fremder",
+      "key": "DIA_ELENA_HALLO_16_01",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.söldner",
+      "key": "DIA_ELENA_HALLO_16_02",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_ELENA_AUFGABE_16_01",
+      "excerpt": 0
+    },
+    {
+      "about": "reacts_to.Feilschen",
+      "key": "DIA_ELENA_AUFGABE_16_02",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.politics",
+      "key": "DIA_ELENA_AUFSTAND_16_01",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Miliz",
+      "key": "DIA_ELENA_AUFSTAND_16_02",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.fremder",
+      "key": "DIA_ELENA_ARBEIT_16_02",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Söldner",
+      "key": "DIA_ELENA_ARBEIT_16_05",
+      "excerpt": 0
+    },
+    {
+      "about": "reacts_to.Diebstahl",
+      "key": "DIA_ELENA_REGELN_16_01",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Söldner",
+      "key": "DIA_ELENA_REGELN_16_03",
+      "excerpt": 0
+    },
+    {
+      "about": "reacts_to.Schlägerei mit einem Bauern",
+      "key": "DIA_ELENA_REGELN_16_04",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Kapitel 1",
+      "key": "DIA_ELENA_PERM_16_01",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Kapitel 1",
+      "key": "DIA_ELENA_PERM_16_02",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Kapitel 2",
+      "key": "DIA_ELENA_PERM_16_03",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Kapitel 3",
+      "key": "DIA_ELENA_PERM_16_04",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Kapitel 4",
+      "key": "DIA_ELENA_PERM_16_05",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Ab Kapitel 5",
+      "key": "DIA_ELENA_PERM_16_06",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held ist Feuermagier mit Serpentes' Auftrag",
+      "key": "DIA_ELENA_MINENANTEIL_16_01",
+      "excerpt": 0
+    }
+  ],
+  "invented": [
+    "attitudes.people.Maria: keine Zeile verbindet die beiden; ob Maria ihre Mutter ist, bleibt offen",
+    "sees_hero.miliz: die Kühle ist aus ihrer Haltung zur Miliz geschlossen; belegt ist nur das knappe Was willst du",
+    "sees_hero.landarbeiter: keine eigene Zeile",
+    "reacts_to.Schmeichelei: aus ihrer Antwort auf den Gruß des Helden geschlossen"
+  ]
+}

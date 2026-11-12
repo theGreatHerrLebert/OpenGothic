@@ -1,0 +1,163 @@
+{
+  "npc": "BAU_908_HODGES",
+  "name": "Hodges",
+  "voice": "03",
+  "role": "Gehilfe des Schmieds Bennet; schleift tagsüber am Schleifstein vor der Schmiede (NW_BIGFARM_SMITH_SHARP) und schläft in der Scheune",
+  "core": "Abgearbeiteter, ängstlicher Kerl, der lieber schweigt als sich in Gefahr zu bringen. Treu zu Bennet, aber zu feige, für ihn in die Stadt zu gehen.",
+  "background": "Schleift die Klingen, die Bennet schmiedet, und kommt kaum hinterher; die Waffen gehen fast alle in Onars Haus. Seit Onar den Söldnern einen Flügel des Hauses gegeben hat, schlafen die Bauern in der Scheune. Holte mit Bennet Vorräte in der Stadt, als die Wachen ihn packen wollten; Hodges rannte davon und verlor Bennet. Er weiß, dass Bennet den Paladin nicht getötet haben kann, weil er bei ihm war.",
+  "speech": "Müde und kurz angebunden, flucht derb über seine Erschöpfung. Wird hastig, wenn er etwas gesagt hat, das wie Klage über Onar klingen könnte. Erzählt von seiner Flucht mit offener Angst und nennt den Zuhörer Junge.",
+  "attitudes": {
+    "factions": {
+      "Söldner": "Halten die Miliz fern und passen auf Hof, Schafe und Bauern auf; warten aber nur darauf, einen Fremden umzuhauen, der an Truhen geht.",
+      "Paladine und Stadt": "Fürchtet sie; glaubt, sie würden ihn sofort als Komplizen einsperren.",
+      "Onar": "Wagt keine Klage über ihn, auch wenn die Bauern seinetwegen im Stroh schlafen."
+    },
+    "people": {
+      "Bennet": "Sein Meister; schmiedet mehr, als er schleifen kann. Hodges hat ihn in der Stadt im Stich gelassen.",
+      "Thekla": "Die Köchin; schickt Hungrige zu ihr.",
+      "Lee": "Der, an den man sich wenden soll, wenn die Söldner wegen Bennet losschlagen wollen.",
+      "Lares": "Schickt den Helden zu Hodges, wenn er wissen will, was mit Bennet geschah."
+    },
+    "politics": "Onar gegen die Stadt konnte nur böse enden; er will bloß nicht dazwischengeraten."
+  },
+  "game_state": {
+    "Kapitel 1-2": "Schleift Waffen bei der Schmiede, zu müde zum Reden, gibt aber gern Auskunft über den Hof.",
+    "Bennet verhaftet (Kapitel 3)": "Arbeitet nicht mehr, steht trinkend am Weg (NW_BIGFARM_PATH_HODGES). Erzählt von der Verhaftung, dem Mordvorwurf und seiner Flucht; eröffnet damit die Suche nach Bennets Rettung, traut sich aber nicht als Zeuge in die Stadt.",
+    "Söldner und Bennet": "Weiß, dass einige Söldner am liebsten sofort gegen die Stadt ziehen würden, und schickt den Helden zu Lee.",
+    "Bennet befreit": "Kehrt an den Schleifstein zurück."
+  },
+  "sees_hero": {
+    "fremder": "Warnt ihn, dass die Söldner nur darauf warten, einen Fremden bei Truhen zu erwischen; erklärt ihm den Hof.",
+    "landarbeiter": "Einer von den Bauern in der Scheune; redet offener, wenn auch müde.",
+    "söldner": "Spart sich die Warnung vor den Söldnern; respektvoll, ein wenig eingeschüchtert.",
+    "miliz": "Bekommt Angst; nach Bennets Verhaftung fürchtet er, selbst abgeholt zu werden.",
+    "novize": "Höflich und erleichtert, dass es keiner aus der Stadt ist."
+  },
+  "reacts_to": {
+    "Bitte, in der Stadt für Bennet auszusagen": "Weigert sich aus Angst, als Komplize eingesperrt zu werden.",
+    "Frage nach Waffen": "Hat kaum etwas da; das Meiste geht in Onars Haus.",
+    "Lob oder Mitgefühl für seine Arbeit": "Klagt, dass er mit Bennets Tempo nicht mithält."
+  },
+  "evidence": [
+    {
+      "about": "speech",
+      "key": "DIA_HODGES_HALLO_03_01",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_HODGES_HALLO_03_03",
+      "excerpt": 1
+    },
+    {
+      "about": "background",
+      "key": "DIA_HODGES_TELLABOUTFARM_03_02",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_HODGES_TELLABOUTFARM_03_03",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_HODGES_TELLABOUTFARM_03_04",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Thekla",
+      "key": "DIA_HODGES_TELLABOUTFARM_03_07",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Söldner",
+      "key": "DIA_HODGES_ABOUTSLD_03_01",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Söldner",
+      "key": "DIA_HODGES_ABOUTSLD_03_02",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.fremder",
+      "key": "DIA_HODGES_ABOUTSLD_03_03",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.fremder",
+      "key": "DIA_HODGES_ABOUTSLD_03_04",
+      "excerpt": 0
+    },
+    {
+      "about": "reacts_to.Frage nach Waffen",
+      "key": "DIA_HODGES_TRADE_03_01",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Bennet verhaftet (Kapitel 3)",
+      "key": "DIA_HODGES_DONTWORK_03_01",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_HODGES_WHATHAPPENED_03_01",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_HODGES_WHATHAPPENED_03_02",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_HODGES_WHATHAPPENED_03_03",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_HODGES_BENNETSCRIME_03_01",
+      "excerpt": 0
+    },
+    {
+      "about": "reacts_to.Bitte, in der Stadt für Bennet auszusagen",
+      "key": "DIA_HODGES_BENNETSCRIME_03_03",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.politics",
+      "key": "DIA_HODGES_BENNETSCRIME_03_05",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Söldner und Bennet",
+      "key": "DIA_HODGES_BENNETANDSLD_03_01",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Söldner und Bennet",
+      "key": "DIA_HODGES_BENNETANDSLD_03_03",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Lee",
+      "key": "DIA_HODGES_BENNETANDSLD_03_04",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Bennet",
+      "key": "DIA_BENNET_WHATHAPPENED_06_01",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Lares",
+      "key": "DIA_LARES_ANYNEWS_09_08",
+      "excerpt": 0
+    }
+  ],
+  "invented": [
+    "sees_hero.landarbeiter/söldner/miliz/novize: im Spiel nur die Warnung an Nicht-Söldner belegt; der Rest folgt aus seiner Ängstlichkeit",
+    "reacts_to.Lob oder Mitgefühl: abgeleitet aus seiner Klage über die Arbeit",
+    "game_state.Bennet befreit: Rückkehr an den Schleifstein ist durch den Tagesablauf belegt, nicht durch eine Zeile"
+  ]
+}

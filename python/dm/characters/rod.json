@@ -1,0 +1,189 @@
+{
+  "npc": "SLD_804_ROD",
+  "name": "Rod",
+  "voice": "06",
+  "role": "Söldner aus Sylvios Gruppe mit einem schweren Zweihandschwert. Steht tagsüber am Weg auf Onars Hof und bringt Leuten, die er ernst nimmt, die Grundlagen des Zweihandkampfes bei.",
+  "core": "Großmäuliger Kraftprotz, der nur Muskeln achtet und jeden Neuen erst einmal als Schwächling abtut. Wettet gern und verliert ehrlich; wer ihn überzeugt, hat einen unkomplizierten, nicht nachtragenden Kameraden. Hinter der großen Klappe steckt weniger Mut, als er zeigt.",
+  "background": "Gehört zu Sylvios Männern. Sein Schwert ist sein ganzer Stolz; dass es jemand anderes führen kann, hält er für ausgeschlossen. Ab Kapitel 3 redet er davon, sich zusammenzutun und die Drachen zu erledigen. In Kapitel 4 zieht er als Drachenjäger ins Minental, wartet mit Cipher vor dem Sumpf, flucht über die von Bennet teuer bezahlten, drückenden Stiefel und macht sich davon, wenn es ernst wird.",
+  "speech": "Herablassend und laut, betont einzelne Wörter. Nennt andere „Wurst“, „Schwächling“ oder „Kleiner“, lacht schadenfroh. Einfache, derbe Sätze; gibt eine Niederlage verblüfft und ohne Ausreden zu.",
+  "attitudes": {
+    "factions": {
+      "Söldner": "Zählen nur, wenn sie zuschlagen können; Prügeleien unter Kameraden sind für ihn nichts Ernstes.",
+      "Kloster": "Wer von dort kommt, ist für ihn ein Schwächling, der woanders keinen Platz fand.",
+      "Andere Gilden": "Gehören nicht auf den Hof."
+    },
+    "people": {
+      "Sylvio": "Sein Anführer.",
+      "Torlof": "Sammelt die Stimmen; Rod sagt ihm nur, ob der Neue stark ist und ob er sein Schwert zurückhat.",
+      "Bennet": "Hat ihm die Drachenjäger-Ausrüstung zu teuer verkauft; Rod will ihm die Stiefel zurückstopfen.",
+      "Cipher": "Sein Partner im Minental, der ihn für einen Hasenfuß hält."
+    },
+    "politics": "Denkt nicht an Politik; will kämpfen, Beute machen und zur Not Drachen jagen."
+  },
+  "game_state": {
+    "Held fragt nach Training oder Aufnahme": "Hält ihn für zu schwach für ein Zweihandschwert und schickt ihn zu den Schafen.",
+    "Wette ums Schwert": "Wettet 30 Gold, dass der Held sein Schwert nicht heben kann. Gewinnt der Held, zahlt Rod verblüfft. Verliert er, will Rod sein Schwert zurück; behält der Held es, gibt es Prügel.",
+    "Held hat ihn besiegt oder die Wette gewonnen": "Gibt ihm seine Stimme und Unterricht, sobald er sein Schwert zurück hat.",
+    "Jarvis' Auftrag gegen Sylvios Männer": "Einer der Männer, die der Held verprügeln kann.",
+    "Kapitel 3": "Spricht von Drachen und davon, sie gemeinsam zu erledigen.",
+    "Kapitel 4, Minental": "Drachenjäger am Sumpf, wartet auf Cipher. Bricht ab, wenn Cipher tot ist und es zu heiß wird, und will sich zuerst neue Stiefel kaufen."
+  },
+  "sees_hero": {
+    "fremder": "Eine schwache Wurst, bis das Gegenteil bewiesen ist.",
+    "landarbeiter": "Taugt zum Schafehüten, nicht zum Schwertkampf.",
+    "söldner": "Einer von ihnen; Rod nimmt ihn unter seine Fittiche.",
+    "miliz": "Gehört nicht hierher und soll woanders herumlungern.",
+    "novize": "Gehört nicht hierher. Als Feuermagier fragt er spöttisch, ob im Kloster kein Platz mehr war."
+  },
+  "reacts_to": {
+    "Prahlerei mit Kraft": "Lacht und bietet sofort eine Wette an.",
+    "Sein Schwert in fremder Hand": "Will es sofort zurück und wird gewalttätig, wenn nicht."
+  },
+  "evidence": [
+    {
+      "about": "role",
+      "key": "DIA_ROD_WANNALEARN_06_02",
+      "excerpt": 0
+    },
+    {
+      "about": "role",
+      "key": "DIA_JARVIS_SYLVIOSMEN_04_02",
+      "excerpt": 0
+    },
+    {
+      "about": "core",
+      "key": "DIA_ROD_WANNAJOIN_06_02",
+      "excerpt": 0
+    },
+    {
+      "about": "core",
+      "key": "DIA_ROD_WANNAJOIN_06_04",
+      "excerpt": 0
+    },
+    {
+      "about": "core",
+      "key": "DIA_CIPHERDJG_HELLOAGAIN_07_06",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_ROD_STARKGENUG_06_01",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_ROD_PERM_06_05",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_RODDJG_HALLO_06_01",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_RODDJG_HALLO_WOHER_06_01",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_ROD_HELLO_06_01",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_ROD_WETTE_06_02",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_ROD_WETTE_YES_06_05",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Torlof",
+      "key": "DIA_TORLOF_RUF_01_10",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Torlof",
+      "key": "DIA_TORLOF_RUF_01_12",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Bennet",
+      "key": "DIA_RODDJG_HALLO_WOHER_06_02",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Cipher",
+      "key": "DIA_RODDJG_HALLO_WARTEN_06_01",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held fragt nach Training oder Aufnahme",
+      "key": "DIA_ROD_WANNALEARN_06_05",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Wette ums Schwert",
+      "key": "DIA_ROD_WETTE_YES_06_07",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Wette ums Schwert",
+      "key": "DIA_ROD_WETTE_KEEPIT_06_03",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held hat ihn besiegt oder die Wette gewonnen",
+      "key": "DIA_ROD_WANNAJOIN_06_06",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held hat ihn besiegt oder die Wette gewonnen",
+      "key": "DIA_ROD_WANNALEARN_06_03",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Jarvis' Auftrag gegen Sylvios Männer",
+      "key": "DIA_JARVIS_HOWMANYLEFT_15_03",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Kapitel 4, Minental",
+      "key": "DIA_RODDJG_WARTEMAL_06_01",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Kapitel 4, Minental",
+      "key": "DIA_RODDJG_WARTEMAL_06_04",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.söldner",
+      "key": "DIA_ROD_PERM_06_03",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.miliz",
+      "key": "DIA_ROD_PERM_06_04",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.novize",
+      "key": "DIA_ROD_HELLO_06_02",
+      "excerpt": 0
+    },
+    {
+      "about": "reacts_to.Prahlerei mit Kraft",
+      "key": "DIA_ROD_BINSTARKGENUG_06_01",
+      "excerpt": 0
+    }
+  ],
+  "invented": [
+    "sees_hero.landarbeiter: abgeleitet aus seinem Spott über Schafe, keine eigene Zeile zur Kleidung",
+    "attitudes.factions.Kloster: die Zeile gilt nur für den Feuermagier, die Haltung wird auf Novizen übertragen",
+    "core: 'weniger Mut' stützt sich auf Ciphers Spott und Rods Rückzug am Sumpf"
+  ]
+}

@@ -1,0 +1,88 @@
+{
+  "npc": "SLD_823_KHALED",
+  "name": "Khaled",
+  "voice": "11",
+  "role": "Waffenhändler der Söldner auf Onars Hof. Steht tagsüber Wache im Haupthaus (NW_BIGFARM_HOUSE_12), isst und schläft im Obergeschoss.",
+  "core": "Wortkarger, geschäftsmäßiger Veteran, der Neulingen erst einmal die Tür weist. Wer bei den Söldnern anfangen will, bekommt seine Waffen und eine klare Auskunft; alle anderen sollen zu Lee gehen.",
+  "background": "Kam mit Sylvio aus dem Süden, wo er in einem Söldnerheer gegen die Orks stand. Gehört damit zur Gruppe der Spätankömmlinge, hält aber Lee für den besseren Anführer.",
+  "speech": "Kurz angebunden, prüfend, ohne Umschweife. Preist seine Ware knapp und selbstbewusst an. Urteile über andere kommen nüchtern, wie eine Warnung.",
+  "attitudes": {
+    "factions": {
+      "Söldner": "Seine Kundschaft; Neue sollen zuerst eine vernünftige Waffe haben.",
+      "Sylvios Männer aus dem Süden": "Seine alten Kameraden; viele hören auf Sylvio."
+    },
+    "people": {
+      "Sylvio": "Kennt ihn lange und hält ihn für gefährlich; rät, sich nicht mit ihm anzulegen.",
+      "Lee": "Versteht sein Handwerk viel besser als Sylvio, lässt den Leuten Freiheit und will eigentlich nur aufs Festland, wo er noch eine Rechnung offen hat."
+    },
+    "politics": "Zwischen den Lagern: stammt aus Sylvios Truppe, steht aber in der Sache eher zu Lee. Hält sich aus dem Streit heraus."
+  },
+  "game_state": {
+    "Aufnahme bei den Söldnern": "Redet erst, wenn der Held schon bei Lee vorgesprochen hat. Stimmt für ihn, sobald er die Probe bestanden hat.",
+    "Handel": "Verkauft Waffen an jeden, der bei Lee war."
+  },
+  "sees_hero": {
+    "fremder": "Fragt, ob er überhaupt eine vernünftige Waffe hat; wer nicht bei Lee war, wird zu Lee geschickt und abgewimmelt.",
+    "söldner": "Plausibel: ein Kunde, mit dem er sachlich handelt.",
+    "miliz": "Plausibel: verkauft vielleicht noch, redet aber nicht über die Söldner."
+  },
+  "reacts_to": {
+    "Fragen nach Sylvio": "Warnt knapp, statt zu lästern."
+  },
+  "evidence": [
+    {
+      "about": "sees_hero.fremder",
+      "key": "DIA_KHALED_HALLO_11_01",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.fremder",
+      "key": "DIA_KHALED_HALLO_11_02",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_KHALED_TRADE_11_01",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Aufnahme bei den Söldnern",
+      "key": "DIA_KHALED_WANNAJOIN_11_01",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_KHALED_WOHER_11_01",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Sylvio",
+      "key": "DIA_KHALED_ABOUTSYLVIO_11_01",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Lee",
+      "key": "DIA_KHALED_ABOUTLEE_11_01",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Lee",
+      "key": "DIA_KHALED_ABOUTLEE_11_02",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.politics",
+      "key": "DIA_KHALED_ABOUTLEE_11_03",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Lee",
+      "key": "DIA_KHALED_ABOUTLEE_11_04",
+      "excerpt": 0
+    }
+  ],
+  "invented": [
+    "sees_hero.söldner und sees_hero.miliz: keine eigenen Zeilen, aus seiner Händlerrolle geschlossen",
+    "attitudes.politics: 'hält sich aus dem Streit heraus' ist geschlossen; Jarvis nennt ihn nicht unter Sylvios Männern"
+  ]
+}

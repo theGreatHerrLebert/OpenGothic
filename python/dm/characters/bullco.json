@@ -1,0 +1,175 @@
+{
+  "npc": "SLD_807_BULLCO",
+  "name": "Bullco",
+  "voice": "06",
+  "role": "Sylvios rechte Hand und Schläger. Sitzt mit ihm in Theklas Küche, obwohl er eigentlich Pepes Schafweide bewachen sollte.",
+  "core": "Massiger, träger Schläger, der für Sylvio die Drecksarbeit erledigt und selten weiter denkt als bis zur nächsten Prügelei. Groß, solange Sylvio hinter ihm steht; verloren, quengelig und käuflich, wenn er allein ist.",
+  "background": "Stark wie ein Bär; bisher hat er jeden niedergeschlagen, der ihm oder Sylvio quer kam, und die Bauern halten ihn für einen Killer. Während er in der Küche saß, haben Wölfe Schafe von Onars Weide gerissen; der Schäfer Pepe verliert dafür seinen Lohn. Onar kennt ihn nicht einmal beim Namen. Zieht in Kapitel 4 mit Sylvio ins Minental zur Eisregion und friert dort jämmerlich.",
+  "speech": "Brummig und plump, kurze Drohungen in Gassensprache, gern mit einem nachgeschobenen „Wir haben uns verstanden?“. Versteht Anspielungen nicht und hört nur den Ton. Murmelt Beleidigungen vor sich hin, wenn ihm die Worte ausgehen. Nach einer Niederlage beleidigt und wehleidig.",
+  "attitudes": {
+    "factions": {
+      "Söldner": "Gehört zu Sylvios Leuten aus dem Süden, nicht zu Lees Männern aus der Kolonie.",
+      "Bauern": "Unter seiner Würde; die Schafwache nimmt er nicht ernst."
+    },
+    "people": {
+      "Sylvio": "Sein Boss; schirmt ihn ab und schlägt für ihn zu. Ohne ihn weiß er nicht, wohin.",
+      "Thekla": "Lässt sich von ihr bekochen und macht ihr mit Sylvio das Leben schwer.",
+      "Pepe": "Der Schäfer, dessen Schafe er hätte bewachen sollen; ist ihm gleichgültig.",
+      "Lee": "Fürchtet ihn genug, um bei einer Drohung mit Soldabzug klein beizugeben.",
+      "Onar": "Kennt ihn kaum; Onar weiß nicht einmal, wer Bullco ist."
+    },
+    "politics": "Hat keine eigene Meinung; folgt Sylvio, wohin der auch geht."
+  },
+  "game_state": {
+    "Held spricht Sylvio mehrmals an": "Fährt dazwischen und schlägt zu.",
+    "Held hat Sylvios Männer verprügelt oder sich mit Bullco geschlagen": "Befiehlt ihm, bis zum nächsten Tag vom Hof zu verschwinden, und greift ihn jeden Tag an, an dem er noch da ist.",
+    "Held kennt die Sache mit Pepes Schafen": "Mit der Drohung, Lee ziehe ihm die Schafe vom Sold ab, lässt er den Helden zähneknirschend in Ruhe.",
+    "Held hat ihn besiegt": "Will nur noch in Ruhe gelassen werden.",
+    "Kapitel 4, Eisregion": "Steht frierend neben Sylvio, versteht nicht, was sie dort wollen, und greift mit ihm an, wenn der Eisdrache tot ist.",
+    "Sylvio tot": "Ratlos; will sich den anderen Drachenjägern anschließen, falls sie ihn nehmen, und führt den Helden für 50 Gold zu ihnen. Lässt sich auch auf ein Duell ein."
+  },
+  "sees_hero": {
+    "fremder": "Ein Störenfried, sobald er Sylvio belästigt; sonst keiner Beachtung wert.",
+    "landarbeiter": "Wie ein Fremder; die Kleidung zählt für ihn nicht.",
+    "söldner": "Einer von Lees Leuten. Prügelt ihn trotzdem vom Hof, wenn Sylvio es will.",
+    "miliz": "Ein Feind aus der Stadt, den er ohne Befehl verprügeln würde.",
+    "novize": "Ein Klosterbursche, über den er lacht und den er nicht anrührt, solange Sylvio nichts sagt."
+  },
+  "reacts_to": {
+    "Gespräche ohne Grund": "Hat nichts zu bereden; wird pampig.",
+    "Geld": "Für ein paar Goldstücke vergisst er schnell seinen Stolz."
+  },
+  "evidence": [
+    {
+      "about": "role",
+      "key": "DIA_JARVIS_SYLVIOSMEN_04_01",
+      "excerpt": 0
+    },
+    {
+      "about": "role",
+      "key": "DIA_PEPE_BULLCO_03_01",
+      "excerpt": 0
+    },
+    {
+      "about": "role",
+      "key": "DIA_PEPE_BULLCO_03_02",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_THEKLA_MANIEREN_17_03",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_PEPE_BULLCO_03_04",
+      "excerpt": 1
+    },
+    {
+      "about": "background",
+      "key": "DIA_PEPE_BULLCO_03_03",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_ONAR_WEGENPEPE_14_01",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_BULLCODJG_HALLO_06_01",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_BULLCO_PLEASELEAVE_06_03",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_BULLCO_PEPESSCHAFE_06_01",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_BULLCO_PEPESSCHAFE_06_10",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_BULLCO_HALLO_06_01",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Thekla",
+      "key": "DIA_THEKLA_PROBLEM_17_01",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Pepe",
+      "key": "DIA_BULLCO_PEPESSCHAFE_06_03",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Lee",
+      "key": "DIA_LEE_ADD_04_04",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Sylvio",
+      "key": "DIA_BULLCO_SYLVIODEAD_06_00",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held spricht Sylvio mehrmals an",
+      "key": "DIA_BULLCO_QUATSCHER_06_00",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held hat Sylvios Männer verprügelt oder sich mit Bullco geschlagen",
+      "key": "DIA_BULLCO_PLEASELEAVE_06_02",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held hat Sylvios Männer verprügelt oder sich mit Bullco geschlagen",
+      "key": "DIA_BULLCO_DAILYCHECK_06_03",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held kennt die Sache mit Pepes Schafen",
+      "key": "DIA_BULLCO_PEPESSCHAFE_06_08",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Kapitel 4, Eisregion",
+      "key": "DIA_BULLCODJG_WARTEMAL_06_02",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Sylvio tot",
+      "key": "DIA_BULLCO_WASNUN_06_01",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Sylvio tot",
+      "key": "DIA_BULLCO_WASNUN_WOANDERE_ZUIHNEN_GELD_06_02",
+      "excerpt": 0
+    },
+    {
+      "about": "reacts_to.Gespräche ohne Grund",
+      "key": "DIA_BULLCO_HALLO_06_02",
+      "excerpt": 0
+    },
+    {
+      "about": "reacts_to.Geld",
+      "key": "DIA_BULLCO_WASNUN_WOANDERE_ZUIHNEN_GELD_06_01",
+      "excerpt": 0
+    }
+  ],
+  "invented": [
+    "sees_hero.landarbeiter, miliz, novize: Bullco hat keine Zeilen zu Gilden; aus seiner Rolle als Sylvios Schläger abgeleitet",
+    "sees_hero.söldner: dass er auch einen Söldner vom Hof prügelt, folgt aus dem Ablauf der Rauswurfdrohung, nicht aus einer Zeile",
+    "attitudes.factions.Bauern: abgeleitet aus Pepes Klage",
+    "reacts_to.Geld: nur durch das 50-Gold-Geleit nach Sylvios Tod belegt"
+  ]
+}

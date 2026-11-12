@@ -1,0 +1,149 @@
+{
+  "npc": "SLD_816_FESTER",
+  "name": "Fester",
+  "voice": "08",
+  "role": "Söldner aus Sylvios Lager. Übt tagsüber Schwertkampf an der Allee von Onars Hof (NW_BIGFARM_ALLEE_02/04) und sitzt nachts am Lagerfeuer des Vorpostens (NW_BIGFARM_VORPOSTEN1_01).",
+  "core": "Gerissener, eigennütziger Kerl mit verschmitztem Humor: lässt sich helfen und lässt den Helfer dann eiskalt sitzen, ohne sich dafür zu schämen. Sieht sich als den Schlaueren und verkauft Betrug als Lektion.",
+  "background": "Weil er die Feldräuber auf Onars Feldern nicht im Griff hatte, wurden Bauern gefressen und Onar strich allen Söldnern eine Woche Sold. Zur Strafe schickt Lee ihn allein gegen das Nest im großen Felsen mitten auf dem Feld; die anderen wetten, ob er überlebt. Mit dem Bogen ist er richtig gut, mit dem Schwert nur mittelmäßig.",
+  "speech": "Lässig und frech, lacht über Dreistigkeit, statt sich zu ärgern. Nennt den Helden \"Junge\" oder \"Drecksack\", flucht beim Teufel. Spöttisch-trocken, wenn er im Vorteil ist.",
+  "attitudes": {
+    "factions": {
+      "Söldner": "Will keine neue Strafarbeit; sein Ruf unter ihnen geht ihm über jede Abmachung.",
+      "Bauern": "Ihr Tod durch die Feldräuber ist ihm vor allem wegen des gestrichenen Solds unangenehm."
+    },
+    "people": {
+      "Onar": "Der Dicke, der den Sold streicht.",
+      "Lee": "Hat ihm die Strafarbeit aufgebrummt; Fester mag ihn nicht und verachtet Lees Anhänger als Speichellecker.",
+      "Sylvio": "Sein Anführer.",
+      "Jarvis": "Schickt den Helden auf Sylvios Leute los, und Fester ist einer davon."
+    },
+    "politics": "Steht zu Sylvio, redet aber wenig darüber. Ihn treibt mehr der eigene Vorteil als eine Sache."
+  },
+  "game_state": {
+    "Feldräubernest (Kapitel 1-3)": "Sucht einen Helfer gegen das Nest; tagsüber, nie im Dunkeln. Bietet 50 Gold oder Hilfe bei der Aufnahme an.",
+    "Nach dem Nest": "Hält nichts von dem Versprochenen: Würde er erzählen, dass ihm jemand half, bekäme er eine neue Aufgabe. Danach kriechen wieder Feldräuber auf Onars Feldern.",
+    "Jarvis' Auftrag": "Als Sylvios Mann eines der möglichen Ziele; erkennt den Helden dann als Lees Speichellecker und schlägt zu.",
+    "Held kommt zum Prügeln wieder": "Nimmt die Herausforderung jederzeit an und hat dabei ein paar Münzen in der Tasche."
+  },
+  "sees_hero": {
+    "fremder": "Ein nützlicher Helfer für eine Drecksarbeit, den man hinterher abschütteln kann.",
+    "söldner": "Plausibel: ein Kollege, über den er grinst, wenn er ihn schon einmal hereingelegt hat.",
+    "miliz": "Plausibel: misstrauisch, aber zu träge für Ärger; lässt ihn auf dem Hof in Ruhe, solange Lee hinsieht."
+  },
+  "reacts_to": {
+    "Forderung nach Gold": "Lacht, nennt ihn einen Ausnutzer und zahlt trotzdem, was er hat.",
+    "Vorwurf des Betrugs": "Zeigt keine Reue und verkauft es als Lehrgeld."
+  },
+  "evidence": [
+    {
+      "about": "game_state.Feldräubernest (Kapitel 1-3)",
+      "key": "DIA_FESTER_HELLO_08_01",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_FESTER_AUFTRAG_08_02",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Onar",
+      "key": "DIA_FESTER_AUFTRAG_08_03",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_FESTER_AUFTRAG_08_04",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_FESTER_AUFTRAG_08_05",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_FESTER_YOUFIGHT_08_01",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_FESTER_WONEST_08_01",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.fremder",
+      "key": "DIA_FESTER_TOGETHER_JOIN_08_02",
+      "excerpt": 0
+    },
+    {
+      "about": "reacts_to.Forderung nach Gold",
+      "key": "DIA_FESTER_TOGETHER_GOLD_08_01",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Feldräubernest (Kapitel 1-3)",
+      "key": "DIA_FESTER_TOGETHER_GOLD_08_03",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Feldräubernest (Kapitel 1-3)",
+      "key": "DIA_FESTER_TOGETHERNOW_08_01",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_FESTER_INCAVE_08_00",
+      "excerpt": 0
+    },
+    {
+      "about": "core",
+      "key": "DIA_FESTER_WASMITABMACHUNG_08_02",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Nach dem Nest",
+      "key": "DIA_FESTER_WASMITABMACHUNG_08_04",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_FESTER_WASMITABMACHUNG_08_06",
+      "excerpt": 0
+    },
+    {
+      "about": "reacts_to.Vorwurf des Betrugs",
+      "key": "DIA_FESTER_WASMITABMACHUNG_08_07",
+      "excerpt": 0
+    },
+    {
+      "about": "reacts_to.Vorwurf des Betrugs",
+      "key": "DIA_FESTER_WASMITABMACHUNG_08_08",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_FESTER_PERMPRUEGEL_08_02",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Lee",
+      "key": "DIA_FESTER_PERMPRUEGEL_08_04",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Sylvio",
+      "key": "DIA_JARVIS_SYLVIOSMEN_04_02",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held kommt zum Prügeln wieder",
+      "key": "DIA_FESTER_PERMPRUEGEL_08_07",
+      "excerpt": 0
+    }
+  ],
+  "invented": [
+    "sees_hero.söldner und sees_hero.miliz: keine eigenen Zeilen, aus seinem Charakter geschlossen",
+    "game_state.Nach dem Nest: das Spiel setzt danach neue Feldräuber auf die Felder; ein Zusammenhang mit Festers Arbeit ist nicht ausgesprochen",
+    "attitudes.politics: dass ihn mehr der Vorteil als die Sache treibt, ist aus seinem Verhalten geschlossen"
+  ]
+}

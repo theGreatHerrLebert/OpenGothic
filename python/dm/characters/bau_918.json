@@ -1,0 +1,23 @@
+{
+  "npc": "BAU_918_BAUER",
+  "name": "Bauer",
+  "voice": "07",
+  "role": "Bauer auf Onars Hof, in der Küche (NW_BIGFARM_KITCHEN_09). Hat nur die allgemeinen Gesprächsthemen, die alle Bauern mit Stimme 07 teilen (DIA_BAU_7_…: Neuigkeiten, Gegend, Söldner, wer das Sagen hat). Hat keine eigene Rolle im Spiel und kann eine Geschichte tragen.",
+  "core": "Noch nicht festgelegt. Die erste Geschichte, die diese Figur nutzt, legt es fest und schreibt es hier ein.",
+  "background": "Steht Tag und Nacht plaudernd in der Küche, zusammen mit einem zweiten Bauern (BAU_919). Alles Weitere: Noch nicht festgelegt. Die erste Geschichte, die diese Figur nutzt, legt es fest und schreibt es hier ein.",
+  "speech": "Noch nicht festgelegt. Die erste Geschichte, die diese Figur nutzt, legt es fest und schreibt es hier ein.",
+  "attitudes": {
+    "factions": {},
+    "people": {
+      "Onar": "Sein Herr."
+    },
+    "politics": ""
+  },
+  "game_state": {},
+  "sees_hero": {},
+  "reacts_to": {},
+  "evidence": [],
+  "invented": [
+    "Alles außer Rolle und Ort: die Figur hat keine eigenen Zeilen."
+  ]
+}

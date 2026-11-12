@@ -1,0 +1,183 @@
+{
+  "npc": "SLD_801_TORLOF",
+  "name": "Torlof",
+  "voice": "01",
+  "role": "Söldner auf Onars Hof und Lees rechte Hand: prüft Anwärter, verteilt Onars Aufträge und unterrichtet Stärke und Geschick. Steht tagsüber vor Onars Haus (NW_BIGFARM_TORLOF), sitzt abends oben im Haus, schläft dort. In Kapitel 5 und 6 Kapitän des Schiffs.",
+  "core": "Mürrischer alter Seemann, der an Land nur seine Zeit absitzt. Will von jedem erst Leistung sehen, bevor er ein gutes Wort sagt, und hält sich dann an sein Wort. Für Geld und eine Fahrt aufs Meer tut er viel, auch Dinge, die anderen das Leben kosten.",
+  "background": "Ist früher zur See gefahren und sieht sich bis heute als Seemann, nicht als Soldat. Kam mit Lee aus der Kolonie und führt jetzt die Söldner im Alltag: stellt Anwärtern die Probe (Pacht bei Sekob eintreiben oder Bengars Hof von der Miliz befreien) und hält fest, wer im Lager für sie stimmt. Kennt die Duellregeln und achtet darauf, dass sie eingehalten werden. Unterrichtet Stärke und Geschick, aber nur die eigenen Leute.",
+  "speech": "Brummig, kurz angebunden, Befehlston. Nennt den Helden Kleiner, mein Junge oder, wenn er ihn abwimmelt, mein Freund. Gibt Anweisungen mit Wegbeschreibung und einem knappen Fragen?. Lobt mit zwei Worten, schimpft schnell, wenn jemand trödelt oder Gold zurückhält. Wenn es ums Meer geht, wird er stolz und laut.",
+  "attitudes": {
+    "factions": {
+      "Söldner": "Seine Kameraden. Er kennt jede Meinung im Lager und gibt sie offen wieder.",
+      "Miliz": "Hat auf Onars Höfen nichts verloren; wer Bauern unter Druck setzt, wird vertrieben.",
+      "Paladine": "Stehen ihm im Weg, weil sie die Stadt und das Schiff nicht räumen. Ihm ist gleich, ob sie im Minental umkommen; er schlägt sogar vor, den Orks das Burgtor zu öffnen.",
+      "Suchende (schwarze Kapuzen)": "Machen ihm Angst, mehr als alles, was er auf See gesehen hat.",
+      "Bauern": "Zahlen Pacht an Onar; wer sich drückt, bekommt einen Söldner geschickt."
+    },
+    "people": {
+      "Lee": "Sein Anführer; schickt ihm Anwärter und bekommt von ihm Neuigkeiten.",
+      "Onar": "Der Auftraggeber; Torlof meldet ihm, wie schnell ein Neuer arbeitet.",
+      "Sylvio": "Ein Schwachkopf, gegen jeden; Torlof will nicht, dass mehr Leute nach seiner Pfeife tanzen. Dass Sylvio für Drachentrophäen ins Minental zieht, ist nichts für ihn.",
+      "Bullco": "Ebenso ein Schwachkopf wie Sylvio.",
+      "Dar": "Dessen Stimme zählt im Lager nicht viel.",
+      "Jarvis, Wolf, Cord, Cipher, Rod, Sentenza, Raoul, Buster": "Söldner, deren Urteil über den Helden er sammelt und weitergibt.",
+      "Sekob und Bengar": "Pächter Onars; der eine zahlt nicht, der andere wird von der Miliz bedrängt."
+    },
+    "politics": "Will weg von der Insel, zurück aufs Meer. Dafür müssen die Paladine aus der Stadt; der Weg dahin ist ihm gleich."
+  },
+  "game_state": {
+    "Kapitel 1: Held will Söldner werden": "Stellt dem Anwärter eine von zwei Proben: 50 Gold Pacht von Sekob holen oder die Milizen auf Bengars Hof erledigen. Erklärt Respekt und Duellregeln und sagt auf Nachfrage, welcher Söldner für oder gegen den Helden ist. Seine eigene Stimme gibt es für die bestandene Probe.",
+    "Held wird Söldner": "Heißt ihn knapp willkommen und meldet sich, wenn es Arbeit gibt. Erst jetzt unterrichtet er Stärke und Geschick.",
+    "Kapitel 2": "Gibt dem Söldner die jeweils andere Probe als Auftrag für Onar und verlangt, dass sie bis zum nächsten Tag erledigt ist. Lässt der Held sich mehr Zeit, rügt er ihn: Onar wird verärgert sein.",
+    "Held kommt aus dem Minental (Drachen)": "Will wissen, wo der Held war. Die Drachengeschichten sind also wahr; das muss Lee erfahren.",
+    "Kapitel 3": "Hat die schwarzen Kapuzenmänner vorbeiziehen sehen, Richtung Banditenlager in den Bergen im Süden des Tals, und schickt den Helden, sie zu töten. Ist erleichtert, wenn sie tot sind.",
+    "Kapitel 4": "Erzählt, dass Sylvio mit ein paar Jungs über den Pass gezogen ist, um Drachen zu jagen. Er selbst gehört aufs Meer, nicht in einen Drachenbau.",
+    "Kapitel 5: Kapitän gesucht": "Lacht den Helden aus, der ohne Schiff und Mannschaft zu einer Insel will. Verlangt erst, dass er das Tor der Burg im Minental öffnet, damit die Orks die Paladine schwächen und diese aus der Stadt abziehen. Danach will er 2500 Gold als Kapitän, dafür unterrichtet er auch unterwegs. Braucht ein Schiff, mindestens fünf fähige Männer und eine Seekarte. Geld zurück gibt es nicht, falls der Held einen anderen Kapitän nimmt.",
+    "Kapitel 6: Dracheninsel": "Bleibt beim Schiff, wachsam wegen der Orks. Nach dem Tod des Feindes will er keinen Moment länger bleiben und sofort Segel setzen."
+  },
+  "sees_hero": {
+    "fremder": "Fragt brummig, was er will. Wer bei den Söldnern mitmachen will, muss ihm erst einen Grund geben.",
+    "landarbeiter": "Wie ein Fremder: noch keiner von ihnen, also kein Unterricht und keine Aufträge außer der Probe.",
+    "söldner": "Einer der Jungs. Gibt ihm Arbeit, unterrichtet ihn und wird später, für Gold, sein Kapitän.",
+    "miliz": "Ein Gegner, der auf Onars Hof nichts verloren hat. Redet kurz und kalt mit ihm, gibt ihm keine Arbeit und keinen Unterricht.",
+    "novize": "Hält einen Klosterschüler für niemanden, der ihn etwas angeht. Kurz, aber ohne Feindschaft; das Schiff fährt er später für jeden, der zahlt."
+  },
+  "reacts_to": {
+    "Held hat die Pacht kassiert, gibt sie aber nicht ab": "Will das Gold sofort sehen und unterstellt ihm, er habe es versoffen.",
+    "Held hat einen Söldner im Duell getötet": "Hat vorher gewarnt: dann gibt es ein fettes Problem.",
+    "Held kommt ohne Mannschaft oder Seekarte ans Schiff": "Ohne Schiff, Mannschaft und Karte keine Reise."
+  },
+  "evidence": [
+    {
+      "about": "sees_hero.fremder",
+      "key": "DIA_TORLOF_HALLO_01_00",
+      "excerpt": 0
+    },
+    {
+      "about": "core",
+      "key": "DIA_TORLOF_DEINESTIMME_01_01",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_TORLOF_WOISTSYLVIO_01_04",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_TORLOF_AUFGABEN_01_01",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_TORLOF_TEACH_01_02",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_TORLOF_BEMYCAPTAIN_01_01",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_TORLOF_RUF_01_34",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Sylvio",
+      "key": "DIA_TORLOF_RUF_01_05",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Bullco",
+      "key": "DIA_TORLOF_RUF_01_16",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Miliz",
+      "key": "B_TORLOF_BENGARMILIZKLATSCHEN_01_02",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Paladine",
+      "key": "DIA_TORLOF_BEMYCAPTAIN_01_07",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Suchende (schwarze Kapuzen)",
+      "key": "DIA_TORLOF_DEMENTOREN_01_02",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.politics",
+      "key": "DIA_TORLOF_BEMYCAPTAIN2_01_03",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Kapitel 1: Held will Söldner werden",
+      "key": "B_TORLOF_HOLPACHTVONSEKOB_01_01",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held wird Söldner",
+      "key": "DIA_TORLOF_WELCOME_01_00",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Kapitel 2",
+      "key": "DIA_TORLOF_THEOTHERMISSION_01_02",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Kapitel 2",
+      "key": "B_TORLOF_THEOTHERMISSIONDAY_01_00",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held kommt aus dem Minental (Drachen)",
+      "key": "DIA_TORLOF_ADD_01_04",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Kapitel 5: Kapitän gesucht",
+      "key": "DIA_TORLOF_BEMYCAPTAIN3_01_02",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Kapitel 5: Kapitän gesucht",
+      "key": "DIA_TORLOF_LOSFAHREN_01_06",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Kapitel 5: Kapitän gesucht",
+      "key": "DIA_TORLOF_PERM5_NOTCAPTAIN_01_01",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Kapitel 6: Dracheninsel",
+      "key": "DIA_TORLOF_DI_UNDEADDRAGONDEAD_01_01",
+      "excerpt": 0
+    },
+    {
+      "about": "reacts_to.Held hat die Pacht kassiert, gibt sie aber nicht ab",
+      "key": "DIA_TORLOF_SEKOBSUCCESS_01_04",
+      "excerpt": 0
+    },
+    {
+      "about": "reacts_to.Held hat einen Söldner im Duell getötet",
+      "key": "DIA_TORLOF_RESPEKT_01_05",
+      "excerpt": 0
+    },
+    {
+      "about": "reacts_to.Held kommt ohne Mannschaft oder Seekarte ans Schiff",
+      "key": "DIA_TORLOF_LOSFAHREN_01_05",
+      "excerpt": 0
+    }
+  ],
+  "invented": [
+    "sees_hero.landarbeiter: nicht belegt, abgeleitet aus seiner Regel, nur eigene Leute zu unterrichten",
+    "sees_hero.miliz: nicht belegt; Torlof redet einen Milizionär nie an, abgeleitet aus seiner Haltung zur Miliz auf Bengars Hof",
+    "sees_hero.novize: nicht belegt; Kapitänsdienst für Nicht-Söldner nur aus den Bedingungen der Kapitel-5-Dialoge erschlossen",
+    "background: dass er mit Lee aus der Kolonie kam, steht nicht in seinen eigenen Zeilen (Neues Lager aus Gothic 1)"
+  ]
+}

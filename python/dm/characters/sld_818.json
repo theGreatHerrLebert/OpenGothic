@@ -1,0 +1,24 @@
+{
+  "npc": "SLD_818_SOELDNER",
+  "name": "Söldner",
+  "voice": "07",
+  "role": "Söldner auf Onars Hof, am Hofweg (NW_BIGFARM_PATH_02). Hat nur die allgemeinen Gesprächsthemen, die alle Söldner mit Stimme 07 teilen (DIA_SLD_7_…: Neuigkeiten, der Hof, Aufnahme bei den Söldnern, wer das Sagen hat). Hat keine eigene Rolle im Spiel und kann eine Geschichte tragen.",
+  "core": "Noch nicht festgelegt. Die erste Geschichte, die diese Figur nutzt, legt es fest und schreibt es hier ein.",
+  "background": "Plaudert tagsüber am Hofweg und sitzt nachts in der Küche (NW_BIGFARM_KITCHEN_09). Alles Weitere: Noch nicht festgelegt. Die erste Geschichte, die diese Figur nutzt, legt es fest und schreibt es hier ein.",
+  "speech": "Noch nicht festgelegt. Die erste Geschichte, die diese Figur nutzt, legt es fest und schreibt es hier ein.",
+  "attitudes": {
+    "factions": {},
+    "people": {
+      "Lee": "Sein Anführer.",
+      "Onar": "Zahlt seinen Sold."
+    },
+    "politics": ""
+  },
+  "game_state": {},
+  "sees_hero": {},
+  "reacts_to": {},
+  "evidence": [],
+  "invented": [
+    "Alles außer Rolle und Ort: die Figur hat keine eigenen Zeilen."
+  ]
+}

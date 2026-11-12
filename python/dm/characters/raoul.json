@@ -1,0 +1,178 @@
+{
+  "npc": "SLD_822_RAOUL",
+  "name": "Raoul",
+  "voice": "01",
+  "role": "Söldner aus Sylvios Lager. Hält zusammen mit Sentenza Wache am Weg zum Eingang von Onars Hof (NW_BIGFARM_PATH_01).",
+  "core": "Verächtlicher, gelangweilter Großkotz, der jeden Neuen für einen Schwächling hält und Prahler noch mehr hasst. Respekt kennt er nicht, und eine Abmachung hält er nur, solange sie ihm passt.",
+  "background": "Glühender Anhänger Sylvios und überzeugt, dass Sylvio bald das Sagen hat. Hat erst kürzlich einem Kameraden die Fresse poliert, weil der mit einem Sieg über einen schwarzen Troll angab. Sieht keinen Grund, Khorinis zu verlassen: Geld verdient er hier wie drüben.",
+  "speech": "Gelangweilt bis genervt, schnauzt kurze Befehle (\"Hau ab!\"). Gespielt höflich, wenn er jemanden reinlegen will, zynisch und sauer bei Widerworten. Beleidigt gern: Großmaul, Tagedieb, Schafhirte.",
+  "attitudes": {
+    "factions": {
+      "Söldner": "Seine Truppe; wer neu dazukommt, muss sich bei ihm erst gar nichts erhoffen.",
+      "Miliz": "Stadtpenner.",
+      "Bauern": "Gelegentlich einschüchtern, mehr tut Lee ihm nicht.",
+      "Feuermagier": "Feine Pinkel, die ihm nichts vormachen."
+    },
+    "people": {
+      "Sylvio": "Der nächste Anführer, wenn es nach ihm geht; warnt Fremde vor seiner schlechten Laune im linken Haus.",
+      "Lee": "Lässt alle Däumchen drehen und hat bald nichts mehr zu sagen.",
+      "Sentenza": "Sein Wachkumpan am Eingang, der Neuankömmlinge filzt; Raoul ruft ihn herbei.",
+      "Torlof": "Ist früher zur See gefahren, wie Raoul weiß."
+    },
+    "politics": "Sylvios Mann: Angriff sei die beste Verteidigung, Lees Abwarten nur Schwäche."
+  },
+  "game_state": {
+    "Held ohne Gilde": "Schickt ihn auf Sentenzas Kontrolle, warnt spöttisch vor Sylvio. Seine Stimme bekommt der Held erst, wenn er ihn verprügelt hat; dann sagt er gleichgültig ja.",
+    "Jarvis' Auftrag": "Als Sylvios Mann eines der möglichen Ziele.",
+    "Held hat eine Gilde": "Verachtet ihn trotzdem und fordert ihn heraus, das Fell eines schwarzen Trolls zu bringen. Zahlt 500 Gold und drei starke Heiltränke; wer mehr will, dem behält er das Fell ein, bis er Prügel bezieht.",
+    "Kapitel 5, Schiff nach Irdorath": "Lacht über die Idee, das Schiff der Paladine zu nehmen, und lehnt ab; verweist auf Torlof."
+  },
+  "sees_hero": {
+    "fremder": "Ein Schwächling, der höchstens zum Schafehüten taugt; lässt Sentenza auf ihn los.",
+    "landarbeiter": "Plausibel: wie beim Fremden, nur mit noch mehr Spott über den Bauernknecht.",
+    "söldner": "Einer von ihnen, aber kein Grund für Respekt.",
+    "miliz": "Hat sich den Stadtpennern angeschlossen; sieht durch jede Rüstung den kleinen Tagedieb.",
+    "novize": "Plausibel: dieselbe Verachtung wie für alle; Kleider ändern für ihn nichts."
+  },
+  "reacts_to": {
+    "Prahlerei": "Wird wütend und verlangt Beweise.",
+    "Prügel bezogen": "Vergisst es nicht und lässt es den Helden spüren.",
+    "Betrug aufgeflogen": "Wiegelt ab, als sei Übervorteilen hier üblich."
+  },
+  "evidence": [
+    {
+      "about": "speech",
+      "key": "DIA_RAOUL_NOSENTENZA_01_03",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Sentenza",
+      "key": "DIA_RAOUL_NOSENTENZA_01_02",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_RAOUL_HELLO_01_00",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Sylvio",
+      "key": "DIA_RAOUL_PERMNONE_01_01",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held ohne Gilde",
+      "key": "DIA_RAOUL_PERMNONE_01_02",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Lee",
+      "key": "DIA_RAOUL_WANNAJOIN_01_01",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Bauern",
+      "key": "DIA_RAOUL_WANNAJOIN_01_03",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.politics",
+      "key": "DIA_RAOUL_WANNAJOIN_01_04",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_RAOUL_ABOUTSYLVIO_01_01",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.fremder",
+      "key": "DIA_RAOUL_ABOUTSYLVIO_01_02",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held ohne Gilde",
+      "key": "DIA_RAOUL_STIMME_01_01",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_RAOUL_PERM_01_02",
+      "excerpt": 0
+    },
+    {
+      "about": "reacts_to.Prügel bezogen",
+      "key": "DIA_RAOUL_PERM_01_03",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.miliz",
+      "key": "DIA_RAOUL_TROLL_01_02",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.söldner",
+      "key": "DIA_RAOUL_TROLL_01_03",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Feuermagier",
+      "key": "DIA_RAOUL_TROLL_01_04",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.miliz",
+      "key": "DIA_RAOUL_TROLL_01_06",
+      "excerpt": 0
+    },
+    {
+      "about": "reacts_to.Prahlerei",
+      "key": "DIA_RAOUL_TROLL_RECHNUNG_01_02",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_RAOUL_TROLL_RECHNUNG_01_03",
+      "excerpt": 0
+    },
+    {
+      "about": "reacts_to.Prahlerei",
+      "key": "DIA_RAOUL_TROLL_RECHNUNG_B_RAOUL_BLAME_01_01",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held hat eine Gilde",
+      "key": "DIA_RAOUL_TROLLFELL_01_04",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held hat eine Gilde",
+      "key": "DIA_RAOUL_TROLLFELL_NEIN_01_01",
+      "excerpt": 0
+    },
+    {
+      "about": "reacts_to.Betrug aufgeflogen",
+      "key": "DIA_RAOUL_GOTTROLLFURBACK_01_01",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Kapitel 5, Schiff nach Irdorath",
+      "key": "DIA_RAOUL_SHIP_01_03",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_RAOUL_SHIP_01_04",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Torlof",
+      "key": "DIA_RAOUL_SHIP_01_06",
+      "excerpt": 0
+    }
+  ],
+  "invented": [
+    "sees_hero.landarbeiter und sees_hero.novize: keine eigenen Zeilen; aus seiner Verachtung für jeden Neuen und der Zeile über Kleider geschlossen",
+    "role: Wachposten aus dem Vorstart-Tagesablauf (RTN_PRESTART_822); ein eigener Start-Ablauf fehlt"
+  ]
+}

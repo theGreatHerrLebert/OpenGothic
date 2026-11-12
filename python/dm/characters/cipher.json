@@ -1,0 +1,167 @@
+{
+  "npc": "SLD_803_CIPHER",
+  "name": "Cipher",
+  "voice": "07",
+  "role": "Söldner auf Onars Hof, früher Sumpfkrauthändler im Neuen Lager der Kolonie. Steht tagsüber plaudernd am Weg über den Hof (NW_BIGFARM_PATH_04_1), schläft im Söldnerhaus; handelt nebenbei mit Kleinkram und Kraut.",
+  "core": "Gemütlicher Kiffer und Kleinhändler mit kurzer Lunte: freundlich, solange er sein Kraut hat, nachtragend und handgreiflich, wenn ihn jemand bestiehlt. Denkt in Geschäften und verkauft sogar seine Stimme für ein paar Stängel.",
+  "background": "Brachte einen großen Vorrat Sumpfkraut aus der Kolonie mit und gut daran verdient, bis es ihm aus der Truhe gestohlen wurde. Verdächtigt den Bauern Bodo, der im selben Raum schläft; in Wahrheit war es der Söldner Dar. Will den Dieb abseits stellen, weil Lee für jeden geschlagenen Bauern Strafe nimmt. Im vierten Kapitel taucht er als Drachenjäger im Minental auf, wo er mit Rod vor dem Sumpf des Sumpfdrachen hockt und auf einen Begleiter wartet.",
+  "speech": "Locker, kumpelhaft, umgangssprachlich; schimpft derb über Gestank und Diebe. Wird laut und brüllt, wenn er wütend ist, seufzt zufrieden, wenn die Sache erledigt ist. Lob kommt herzlich und schnell, etwa \"Du bist mein Mann!\".",
+  "attitudes": {
+    "factions": {
+      "Söldner": "Seine Leute und seine Kundschaft; viele rauchen gern mal einen.",
+      "Bauern": "Darf sie nicht anrühren und hält sich daran, aber nur aus Angst vor Lees Strafgeld.",
+      "Paladine": "Sollen ausgehungert werden; ihm dauert das zu lange."
+    },
+    "people": {
+      "Lee": "War schon in der Kolonie ruhig; findet, er übertreibt es jetzt mit dem Abwarten.",
+      "Sylvio": "Findet dessen Plan, die kleinen Höfe aufzumischen, eine willkommene Abwechslung.",
+      "Bodo": "Der Bauer im selben Raum; hält ihn für den Dieb, weil er so dämlich grinst.",
+      "Dar": "Der wahre Dieb. Erfährt er es, verprügelt er ihn sofort.",
+      "Rod": "Später sein Begleiter am Sumpf; hält ihn für einen Feigling."
+    },
+    "politics": "Neigt zu Sylvio: Herumsitzen langweilt ihn, ein paar Überfälle wären ihm recht. Gehört aber nicht zu Sylvios engem Kreis."
+  },
+  "game_state": {
+    "Krautpaket gestohlen (Kapitel 1-3)": "Erzählt jedem vom Diebstahl und verdächtigt Bodo. Bringt der Held das Paket zurück, schenkt er ihm reichlich Stängel und stimmt für ihn.",
+    "Held verrät Dar": "Rennt sofort los und schlägt Dar hinter dem Küchenhaus zusammen; danach ist er zufrieden.",
+    "Aufnahme bei den Söldnern": "Verkauft seine Stimme für zehn Stängel Sumpfkraut.",
+    "Kapitel 4, Drachenjagd": "Sitzt mit Rod am Rand des Sumpfgebiets im Minental, traut sich allein nicht hinein und bittet den Helden, gemeinsam gegen den Sumpfdrachen zu ziehen. Danach wittert er Geld im Ruhm des Drachentöters."
+  },
+  "sees_hero": {
+    "fremder": "Meint, ihn aus der Kolonie zu kennen, und erzählt gleich von seinem Krautgeschäft. Bietet seine Stimme gegen Sumpfkraut an.",
+    "söldner": "Ein Kollege und Kunde; handelt mit ihm und fragt nach Kraut.",
+    "miliz": "Plausibel: bleibt geschäftlich, behält Lees Strafen im Kopf und rührt ihn auf dem Hof nicht an, mag ihn aber nicht.",
+    "novize": "Plausibel: macht sich über den Klosterbruder lustig und fragt, ob man im Kloster auch mal einen raucht."
+  },
+  "reacts_to": {
+    "Sumpfkraut als Geschenk": "Wird sofort warm und freundlich; zu wenig ärgert ihn aber.",
+    "Diebstahl an seiner Truhe": "Sinnt auf Rache, aber heimlich und ohne Zeugen.",
+    "Schlägerei mit einem Bauern": "Vermeidet sie, weil Zeugen das Strafgeld in die Höhe treiben."
+  },
+  "evidence": [
+    {
+      "about": "sees_hero.fremder",
+      "key": "DIA_CIPHER_HELLO_07_01",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_CIPHER_HELLO_07_03",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_CIPHER_TRADEWHAT_07_02",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Söldner",
+      "key": "DIA_CIPHER_TRADEWHAT_07_03",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_CIPHER_TRADEWHAT_07_04",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Bodo",
+      "key": "DIA_CIPHER_TRADEWHAT_07_05",
+      "excerpt": 0
+    },
+    {
+      "about": "reacts_to.Diebstahl an seiner Truhe",
+      "key": "DIA_CIPHER_DOWITHTHIEF_07_02",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Bauern",
+      "key": "DIA_CIPHER_DOWITHTHIEF_07_05",
+      "excerpt": 0
+    },
+    {
+      "about": "reacts_to.Schlägerei mit einem Bauern",
+      "key": "DIA_CIPHER_DOWITHTHIEF_07_06",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Lee",
+      "key": "DIA_CIPHER_WANNAJOIN_07_03",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Paladine",
+      "key": "DIA_CIPHER_WANNAJOIN_07_04",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Sylvio",
+      "key": "DIA_CIPHER_WANNAJOIN_07_05",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.politics",
+      "key": "DIA_CIPHER_WANNAJOIN_07_06",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Aufnahme bei den Söldnern",
+      "key": "DIA_CIPHER_YESJOIN_07_03",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Aufnahme bei den Söldnern",
+      "key": "DIA_CIPHER_JOINTS_SUCCESS_07_04",
+      "excerpt": 0
+    },
+    {
+      "about": "reacts_to.Sumpfkraut als Geschenk",
+      "key": "DIA_CIPHER_JOINTS_SUCCESS_07_03",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_CIPHER_JOINTS_SUCCESS_07_01",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held verrät Dar",
+      "key": "DIA_CIPHER_DARDIEB_07_07",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_CIPHER_DARLOST_07_01",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Krautpaket gestohlen (Kapitel 1-3)",
+      "key": "DIA_CIPHER_KRAUTPAKET_07_03",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Kapitel 4, Drachenjagd",
+      "key": "DIA_CIPHERDJG_HELLOAGAIN_07_05",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Rod",
+      "key": "DIA_CIPHERDJG_HELLOAGAIN_07_06",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Kapitel 4, Drachenjagd",
+      "key": "DIA_CIPHERDJG_WHATNEXT_07_02",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_CIPHER_HALLO_07_01",
+      "excerpt": 0
+    }
+  ],
+  "invented": [
+    "sees_hero.miliz und sees_hero.novize: keine Zeilen für diese Gilden, aus seiner Furcht vor Lees Strafen und seinem Spott geschlossen",
+    "attitudes.politics: Jarvis zählt ihn nicht zu Sylvios Männern; dass er mit Sylvio ins Minental zog, ist nicht belegt, nur sein Auftauchen dort als Drachenjäger"
+  ]
+}

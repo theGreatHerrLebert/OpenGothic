@@ -1,0 +1,179 @@
+{
+  "npc": "SLD_808_JARVIS",
+  "name": "Jarvis",
+  "voice": "04",
+  "role": "Söldner aus Lees altem Gefolge aus der Kolonie. Sitzt den ganzen Tag im Küchenhaus von Onars Hof (NW_BIGFARM_KITCHEN_07) und schläft im Haupthaus.",
+  "core": "Nüchterner, misstrauischer Lee-Getreuer, der die Spaltung unter den Söldnern ernster nimmt als die anderen. Erklärt die Lage ruhig und klar, aber seine Stimme gibt es nur gegen einen Beweis der Treue, und der besteht aus Fäusten.",
+  "background": "Kam mit Lee aus der Kolonie. Kennt die Geschichte der zwei Lager: Sylvio stieß später mit Männern aus dem Süden dazu, die gegen die Orks gekämpft hatten, und wiegelt jetzt gegen Lee auf. Vertraut Lees Plan, die Paladine auszuhungern und alle von der Insel zu bringen, und will selbst nichts lieber als fort.",
+  "speech": "Ruhig, sachlich, ein Lagebericht in ganzen Sätzen. Gibt knappe Ratschläge und lacht dreckig, wenn Sylvios Leute eins auf die Nase bekommen. Lob kommt trocken, etwa \"Reife Leistung\".",
+  "attitudes": {
+    "factions": {
+      "Söldner aus der Kolonie": "Seine Leute; die meisten stehen zu Lee.",
+      "Sylvios Männer aus dem Süden": "Gefährlich, weil sie bis zum Äußersten gehen.",
+      "Paladine": "Sollen in der Stadt ausgehungert werden."
+    },
+    "people": {
+      "Lee": "Vertraut ihm, auch ohne seinen Plan ganz zu kennen; er hat sie bisher gut geführt.",
+      "Sylvio": "Kennt solche Typen und hält ihn für die eigentliche Gefahr; warnt davor, sich mit ihm selbst zu prügeln.",
+      "Bullco": "Sylvios rechte Hand.",
+      "Rod, Sentenza, Fester, Raoul": "Sylvios Gefolgsleute; Ziel seiner Prüfung.",
+      "Torlof": "Der, der die Duellregeln erklärt."
+    },
+    "politics": "Lees Mann. Sylvios Raubzüge gegen kleine Höfe, Milizpatrouillen und Reisende hält er für das Dümmste, was man jetzt tun kann."
+  },
+  "game_state": {
+    "Aufnahme bei den Söldnern": "Gibt seine Stimme nur, wenn der Held drei von Sylvios Männern zu Boden schickt; Duellregeln sind ihm dabei egal.",
+    "Held hat Sylvios Männer verprügelt": "Zählt mit, freut sich über jeden und stimmt dann bedenkenlos für ihn.",
+    "Kapitel 4": "Sylvio ist nach den Drachengerüchten mit einem Teil seiner Leute ins Minental gezogen. Jarvis ist erleichtert und gespannt, wie alles ausgeht."
+  },
+  "sees_hero": {
+    "fremder": "Erkennt ihn vage aus der Kolonie und fragt nüchtern, was er will.",
+    "söldner": "Einer von ihnen; das freut ihn.",
+    "miliz": "Hält es für die falsche Wahl; er hätte zu ihnen gehören können.",
+    "novize": "Wie bei der Miliz: die falsche Wahl, sagt er ohne Groll."
+  },
+  "reacts_to": {
+    "Schläge gegen Sylvios Leute": "Zufrieden, auch wenn sie unfair waren.",
+    "Streit mit Sylvio selbst": "Rät dringend ab."
+  },
+  "evidence": [
+    {
+      "about": "sees_hero.fremder",
+      "key": "DIA_JARVIS_HELLO_04_00",
+      "excerpt": 0
+    },
+    {
+      "about": "core",
+      "key": "DIA_JARVIS_DIELAGE_04_01",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Söldner aus der Kolonie",
+      "key": "DIA_JARVIS_TWOFRONTS_04_01",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_JARVIS_TWOFRONTS_04_03",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_JARVIS_TWOFRONTS_04_05",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Sylvio",
+      "key": "DIA_JARVIS_TWOFRONTS_04_06",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Sylvios Männer aus dem Süden",
+      "key": "DIA_JARVIS_TWOFRONTS_04_07",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Paladine",
+      "key": "DIA_JARVIS_LEESPLAN_04_01",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_JARVIS_LEESPLAN_04_02",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Lee",
+      "key": "DIA_JARVIS_LEESPLAN_04_03",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.politics",
+      "key": "DIA_JARVIS_SYLVIOSPLAN_04_03",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.politics",
+      "key": "DIA_JARVIS_SYLVIOSPLAN_04_04",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Aufnahme bei den Söldnern",
+      "key": "DIA_JARVIS_WANNAJOIN_04_04",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Aufnahme bei den Söldnern",
+      "key": "DIA_JARVIS_MISSIONKO_04_01",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Torlof",
+      "key": "DIA_JARVIS_DUELLREGELN_04_01",
+      "excerpt": 0
+    },
+    {
+      "about": "reacts_to.Schläge gegen Sylvios Leute",
+      "key": "DIA_JARVIS_DUELLREGELN_04_02",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Bullco",
+      "key": "DIA_JARVIS_SYLVIOSMEN_04_01",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Rod, Sentenza, Fester, Raoul",
+      "key": "DIA_JARVIS_SYLVIOSMEN_04_02",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Aufnahme bei den Söldnern",
+      "key": "DIA_JARVIS_HOWMANY_04_01",
+      "excerpt": 0
+    },
+    {
+      "about": "reacts_to.Streit mit Sylvio selbst",
+      "key": "DIA_JARVIS_HOWMANY_04_03",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_JARVIS_HOWMANYLEFT_04_02",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held hat Sylvios Männer verprügelt",
+      "key": "DIA_JARVIS_HOWMANYLEFT_04_17",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.söldner",
+      "key": "DIA_JARVIS_PERM_04_01",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.miliz",
+      "key": "DIA_JARVIS_PERM_04_02",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_JARVIS_PERM_04_03",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Kapitel 4",
+      "key": "DIA_JARVIS_PERM_04_04",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Kapitel 4",
+      "key": "DIA_JARVIS_PERM_04_06",
+      "excerpt": 0
+    }
+  ],
+  "invented": [
+    "sees_hero.novize: das Spiel gibt jedem Gildenfremden dieselbe Zeile wie der Miliz; 'ohne Groll' ist aus seinem Ton geschlossen"
+  ]
+}

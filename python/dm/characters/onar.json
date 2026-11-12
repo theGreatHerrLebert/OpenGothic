@@ -1,0 +1,184 @@
+{
+  "npc": "BAU_900_ONAR",
+  "name": "Onar",
+  "voice": "14",
+  "role": "Großbauer, Herr über den großen Hof im Osten, die verpachteten Höfe und das ganze Tal; Dienstherr der Söldner. Sitzt tagsüber auf seinem Stuhl im Wohnhaus (NW_BIGFARM_HOUSE_ONAR_SIT) und schläft oben im Haus.",
+  "core": "Geiziger, ungeduldiger Patriarch, der sich von niemandem etwas nehmen lässt: nicht vom König, nicht von Pächtern, nicht von faulen Söldnern. Hält jeden für dumm, bis Lee das Gegenteil bezeugt, und rechnet in Gold, nicht in Treue.",
+  "background": "Hat Hof und Land von Vater und Großvater geerbt und will es nicht an einen König abgeben, der den Orkkrieg verliert. Hat mit der Stadt gebrochen, schickt ihr keine Ernte mehr und kauft sich von dem gesparten Geld eine eigene Armee: Lee und seine Söldner, die zum Teil aus der Strafkolonie kommen. Hat einen Flügel seines Hauses für sie geräumt; seine Bauern schlafen seitdem in der Scheune. Treibt über die Söldner die Pacht seiner Pächter ein, etwa bei Sekob. Sammelt Wertsachen, die Wasili im Haus bewacht. Strafgelder für Ärger auf dem Hof steckt er meist selbst ein.",
+  "speech": "Poltert, fragt anklagend zurück und beleidigt beiläufig den Verstand des anderen (Dummkopf, Faulpelz, \"nicht besonders schlau\"). Kurze Befehle, oft mit \"klar?\" am Ende. Zählt beim Lohn jede Verfehlung einzeln auf, bevor er die Zahl nennt. Lenkt er ein, dann zerknirscht und mit einer Drohung, dass es das letzte Mal war. Kleinigkeiten wie verlorene Schafe wischt er weg und verweist an Lee oder Torlof.",
+  "attitudes": {
+    "factions": {
+      "König und Stadt": "Der König ist für ihn ein gieriger Schwachkopf, der mit seinen Steuern nutzlose Armeen füttert.",
+      "Miliz und Paladine": "Bekommen auf seinem Hof keine Gastfreundschaft.",
+      "Kloster": "Scheinheilige Bastarde, die hier nichts zu suchen haben.",
+      "Söldner": "Bezahlte Leute. Wer seinen Sold will, muss täglich bei ihm erscheinen und arbeiten; Faulheit kostet Lohn.",
+      "Drachenjäger": "Bezahlt er nicht; er wollte Söldner, keine Abenteurer.",
+      "Pächter": "Schulden ihm Pacht; Ausreden wie schlechte Ernte glaubt er nicht."
+    },
+    "people": {
+      "Lee": "Sein Söldnerführer. Vertraut dessen Urteil über Neue und schiebt ihm die Verantwortung und den Ärger zu.",
+      "Torlof": "Verteilt in seinem Auftrag die Arbeit; Onar fragt ihn, wie sich ein Söldner macht.",
+      "Maria": "Seine Frau. Mischt sich überall ein, worüber er schimpft, aber er gibt ihr nach.",
+      "Elena": "Seine Tochter; verkauft die Waren des Hofes.",
+      "Pepe": "Sein Schäfer. Fürchtet ihn wegen der verlorenen Schafe.",
+      "Wasili": "Bewacht seine Wertsachen im Haus.",
+      "Sekob": "Pächter, der seit Wochen mit der Pacht im Rückstand ist.",
+      "Bullco": "Kennt ihn nicht einmal beim Namen."
+    },
+    "politics": "Offener Aufstand gegen die Krone: keine Abgaben, kein Verkauf in die Stadt, eigene Söldnerarmee. Die kleinen Bauern rundum fürchten, dass er alle in den Krieg zieht."
+  },
+  "game_state": {
+    "Söldnerprobe (Kapitel 1)": "Ohne Lees Wort lacht er den Helden aus. Hat Lee für ihn gesprochen, nimmt er ihn murrend an, ermahnt ihn, Bauern, Mägde und Besitz in Ruhe zu lassen, und handelt den Sold aus.",
+    "Sold": "Fängt bei 50 Gold am Tag an und zieht je 10 ab: wenn der Held zuerst ohne Lee kam, wenn er Sekobs Pacht nicht bekam, wenn er auf dem Hof Ärger gemacht hat, wenn er ihn mit Pepes Schafen behelligt hat. Mehr gibt es nicht; der Lohn wird nur abgeholt, nicht gebracht.",
+    "Sold abholen": "Zahlt nur einmal am Tag, nur wer Erfahrung gesammelt hat, und nicht, wer offene Strafen hat oder Torlofs Auftrag verschleppt hat. Wer tagelang fehlt, muss erst einen Tag arbeiten.",
+    "Sekobs Pacht": "Glaubt die Geschichte von der schlechten Ernte nicht und befiehlt, das Geld aus Sekob herauszuprügeln.",
+    "Marias Teller zurück": "Wenn der Held sagt, Maria verlange mehr Lohn für ihn, legt er knurrend 10 Gold drauf.",
+    "Held wird Drachenjäger (ab Kapitel 4)": "Zahlt keinen Sold mehr und spottet über die Drachenjagd.",
+    "Pepe tot": "Verkauft Schafe selbst, für 200 statt Pepes 100 Gold."
+  },
+  "sees_hero": {
+    "fremder": "Ein Eindringling in seinem Haus. Fragt, wer ihn hereingelassen hat, braucht keine Knechte und wirft ihn hinaus; dass er Söldner werden will, nimmt er erst ernst, wenn Lee es sagt.",
+    "landarbeiter": "Wie ein Fremder: noch ein Knecht, den er nicht braucht. Er hat seine Leute und lässt sich nicht im Haus stören.",
+    "söldner": "Sein bezahlter Mann. Erwartet, dass alles in Ordnung ist, weil er dafür zahlt, schickt ihn zu Torlof, wenn er herumsteht, und knausert beim Sold.",
+    "miliz": "Ein Soldat des Königs in seinem Haus; keine Gastfreundschaft.",
+    "novize": "Einer der scheinheiligen Klosterleute; nicht willkommen."
+  },
+  "reacts_to": {
+    "Diebstahl oder Schlägerei auf dem Hof": "Erwartet, dass Lee den Täter zur Rechenschaft zieht, und kassiert die Strafe selbst.",
+    "Bitte um Geld oder Gefallen": "Feilscht nach unten und rechnet die Fehler des Bittstellers vor.",
+    "Verlust an Vieh": "Kümmert ihn erst, wenn es ihn Geld kostet; der Schuldige soll sich vor Lee verantworten."
+  },
+  "evidence": [
+    {
+      "about": "background",
+      "key": "DIA_ONAR_AUFSTAND_14_01",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.König und Stadt",
+      "key": "DIA_ONAR_AUFSTAND_14_03",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_ONAR_AUFSTAND_14_05",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_HODGES_TELLABOUTFARM_03_02",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_WASILI_SAMMLER_01_01",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_LEE_PETZMASTER_04_15",
+      "excerpt": 0
+    },
+    {
+      "about": "core",
+      "key": "DIA_LEE_PETZMASTER_04_06",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.fremder",
+      "key": "DIA_ONAR_HALLO_14_00",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Söldnerprobe (Kapitel 1)",
+      "key": "DIA_ONAR_WORKASSLD_14_01",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Lee",
+      "key": "DIA_ONAR_LEESENTME_14_03",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Söldnerprobe (Kapitel 1)",
+      "key": "DIA_ONAR_LEESENTME_14_05",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_ONAR_HOWMUCH_14_02",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Sold",
+      "key": "DIA_ONAR_HOWMUCH_14_03",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Torlof",
+      "key": "DIA_ONAR_COLLECTGOLD_14_03",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Söldner",
+      "key": "DIA_ONAR_COLLECTGOLD_14_04",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_ONAR_COLLECTGOLD_14_13",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held wird Drachenjäger (ab Kapitel 4)",
+      "key": "DIA_ONAR_COLLECTGOLD_14_01",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Sekobs Pacht",
+      "key": "DIA_ONAR_WEGENSEKOB_14_07",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Maria",
+      "key": "DIA_ONAR_MARIAGOLD_14_03",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Marias Teller zurück",
+      "key": "DIA_ONAR_MARIAGOLD_14_07",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Bullco",
+      "key": "DIA_ONAR_WEGENPEPE_14_01",
+      "excerpt": 0
+    },
+    {
+      "about": "reacts_to.Verlust an Vieh",
+      "key": "DIA_ONAR_WEGENPEPE_14_03",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Kloster",
+      "key": "DIA_ONAR_PERM_14_05",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Miliz und Paladine",
+      "key": "DIA_ONAR_PERM_14_06",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Pepe tot",
+      "key": "DIA_ONAR_WANNASHEEP_14_06",
+      "excerpt": 0
+    }
+  ],
+  "invented": [
+    "sees_hero.landarbeiter: keine Zeile unterscheidet Landarbeiterkleidung; aus seiner Absage an Knechte geschlossen",
+    "attitudes.people.Elena: dass sie für ihn verkauft, sagt nur Elena; Onar selbst erwähnt sie nie",
+    "attitudes.people.Pepe: Onars Sicht auf Pepe ist nicht belegt, nur Pepes Angst vor ihm",
+    "reacts_to.Bitte um Geld oder Gefallen: verallgemeinert aus den Soldgesprächen"
+  ]
+}

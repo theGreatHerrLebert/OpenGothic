@@ -1,0 +1,27 @@
+{
+  "npc": "SLD_815_SOELDNER",
+  "name": "Söldner",
+  "voice": "06",
+  "role": "Söldner am Vorposten von Onars Hof (NW_BIGFARM_VORPOSTEN1_01). Hat nur die allgemeinen Gesprächsthemen, die alle Söldner mit Stimme 06 teilen (DIA_SLD_6_…: Neuigkeiten, der Hof, Aufnahme bei den Söldnern, wer das Sagen hat). Hat keine eigene Rolle im Spiel und kann eine Geschichte tragen.",
+  "core": "Noch nicht festgelegt. Die erste Geschichte, die diese Figur nutzt, legt es fest und schreibt es hier ein.",
+  "background": "Sitzt Tag und Nacht am Lagerfeuer des Vorpostens. Alles Weitere: Noch nicht festgelegt. Die erste Geschichte, die diese Figur nutzt, legt es fest und schreibt es hier ein.",
+  "speech": "Noch nicht festgelegt. Die erste Geschichte, die diese Figur nutzt, legt es fest und schreibt es hier ein.",
+  "attitudes": {
+    "factions": {},
+    "people": {
+      "Lee": "Sein Anführer.",
+      "Onar": "Zahlt seinen Sold.",
+      "Wolf": "Folgt ihm zu Bengars Hof, wenn der Held Wolf bezahlt."
+    },
+    "politics": ""
+  },
+  "game_state": {
+    "Söldner bei Bengar": "Bezahlt der Held Wolf dafür, Bengars Hof zu schützen, zieht er mit Wolf und SLD_817 dorthin (NW_FARM3_PATH_02)."
+  },
+  "sees_hero": {},
+  "reacts_to": {},
+  "evidence": [],
+  "invented": [
+    "Alles außer Rolle und Ort: die Figur hat keine eigenen Zeilen."
+  ]
+}

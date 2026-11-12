@@ -1,0 +1,186 @@
+{
+  "npc": "SLD_814_SENTENZA",
+  "name": "Sentenza",
+  "voice": "09",
+  "role": "Söldner aus Sylvios Gruppe. Steht an der Allee vor Onars Hof, hält jeden Neuen an und kassiert „Wegzoll“.",
+  "core": "Grinsender Wegelagerer mit Söldnerabzeichen: durchsucht Neulinge, steckt ihr Gold ein und nennt das fair. Hält sich für den einzigen ehrlichen Kerl unter lauter Halsabschneidern und verkauft seine Stimme bei der Aufnahme für genau den Betrag, den er sowieso verlangt.",
+  "background": "Gilt unter den Söldnern als harter Kämpfer, mit dem man sich besser nicht anlegt. Nimmt jedem Neuen Gold ab; wer zahlt, bekommt dafür später seine Stimme, wer sich weigert, wird verprügelt. Buster hat damals all sein Gold bei ihm gelassen und war am Ende froh darüber. Gehört zu Sylvios Leuten aus dem Süden. Neue sind selten, doch gezahlt hat bislang noch jeder.",
+  "speech": "Gönnerhaft und gut gelaunt, lacht viel, auch wenn er droht. Nennt den Helden „mein Junge“, verpackt Erpressung als Rechnung („Wegzoll“, „fairer Preis“) und Raub als Fürsorge. Kippt mit zwei Wörtern ins Bedrohliche. Seufzt wie ein geduldiger Lehrer, bevor er zuschlägt.",
+  "attitudes": {
+    "factions": {
+      "Söldner": "Viele davon hält er für Halsabschneider; er selbst sei ein ehrlicher Geschäftsmann.",
+      "Neulinge": "Eine Einnahmequelle; die Aufnahmeabstimmung ist für ihn ein Markt."
+    },
+    "people": {
+      "Sylvio": "Sein Anführer; Sentenza zählt zu dessen Männern.",
+      "Buster": "Hat ihm einst das Gold abgenommen und ihm dafür die Stimme gegeben: eine Hand wäscht die andere.",
+      "Torlof": "Sammelt die Stimmen für Lee ein; dem sagt Sentenza, ob der Neue ihm noch Gold schuldet."
+    },
+    "politics": "Steht bei Sylvio, solange es sich lohnt; Gold ist ihm wichtiger als jede Seite."
+  },
+  "game_state": {
+    "Erste Begegnung": "Fragt, wohin der Held will, und will ihn durchsuchen. Wer frech wird, wird verprügelt. Wer sich durchsuchen lässt, verliert sein Gold; wer nichts dabei hat, wird verdächtigt, es versteckt zu haben.",
+    "Held kommt wieder vorbei": "Hat er noch kein Gold bekommen, will er ihn an einem späteren Tag erneut durchsuchen.",
+    "Aufnahme bei den Söldnern": "Gibt seine Stimme für 50 Gold, auch wenn das Gold aus der Durchsuchung stammt. Wer ihn verprügelt oder sich das Gold zurückholt, bekommt keine Stimme.",
+    "Held ist Söldner und will sein Gold zurück": "Schimpft und greift ihn einmal an; sonst beschwichtigt er, er passe nur darauf auf.",
+    "Jarvis' Auftrag gegen Sylvios Männer": "Ist einer der Männer, die der Held umhauen kann."
+  },
+  "sees_hero": {
+    "fremder": "Ein Neuer mit Gold in der Tasche, der Wegzoll zahlen soll.",
+    "landarbeiter": "Genauso: wer den Hof betritt, wird durchsucht, egal in welcher Kleidung.",
+    "söldner": "Einer von ihnen. Grinst darüber, dass er als Einziger nicht gezahlt hat, wenn er sein Gold zurückgeholt hat.",
+    "miliz": "Ein Stadtsoldat auf Söldnergebiet; er würde ihn spöttisch durchsuchen wollen und auf Streit hoffen.",
+    "novize": "Ein Klosterzögling, der wahrscheinlich nichts dabei hat; er verlangt trotzdem Zoll."
+  },
+  "reacts_to": {
+    "Beleidigung": "Lacht wütend und schlägt zu.",
+    "Gold": "Sieht es sofort und warnt scheinheilig davor, so viel herumzutragen."
+  },
+  "evidence": [
+    {
+      "about": "role",
+      "key": "DIA_BUSTER_OTHERSLD_13_06",
+      "excerpt": 0
+    },
+    {
+      "about": "role",
+      "key": "DIA_SENTENZA_HELLO_09_00",
+      "excerpt": 0
+    },
+    {
+      "about": "role",
+      "key": "DIA_SENTENZA_HELLO_SEARCHME_09_10",
+      "excerpt": 0
+    },
+    {
+      "about": "core",
+      "key": "DIA_SENTENZA_HELLO_SEARCHME_09_03",
+      "excerpt": 0
+    },
+    {
+      "about": "core",
+      "key": "DIA_SENTENZA_VOTE_09_06",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_BUSTER_ABOUTSENTENZA_13_01",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_BUSTER_ABOUTSENTENZA_13_03",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_BUSTER_ABOUTSENTENZA_13_04",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_GUNNAR_SOUTH_10_02",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_SENTENZA_PERM_09_01",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_SENTENZA_HELLO_JUSTLOOKING_09_01",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_SENTENZA_HELLO_NOTYOURBUSINESS_09_01",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_SENTENZA_VOTE_09_03",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_SENTENZA_HELLO_HANDSOFF_09_01",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Sylvio",
+      "key": "DIA_JARVIS_SYLVIOSMEN_04_02",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Torlof",
+      "key": "DIA_TORLOF_RUF_01_14",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Torlof",
+      "key": "DIA_TORLOF_RUF_01_13",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Erste Begegnung",
+      "key": "DIA_SENTENZA_HELLO_JUSTLOOKING_09_03",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Erste Begegnung",
+      "key": "DIA_SENTENZA_HELLO_SEARCHME_09_07",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held kommt wieder vorbei",
+      "key": "DIA_SENTENZA_VZWEI_09_00",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Aufnahme bei den Söldnern",
+      "key": "DIA_SENTENZA_VOTE_09_01",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Aufnahme bei den Söldnern",
+      "key": "DIA_SENTENZA_VOTE_09_04",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held ist Söldner und will sein Gold zurück",
+      "key": "DIA_SENTENZA_GOLDBACK_09_02",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held ist Söldner und will sein Gold zurück",
+      "key": "DIA_SENTENZA_GOLDBACK_09_03",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Jarvis' Auftrag gegen Sylvios Männer",
+      "key": "DIA_JARVIS_HOWMANYLEFT_15_05",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.söldner",
+      "key": "DIA_SENTENZA_PERM_09_02",
+      "excerpt": 0
+    },
+    {
+      "about": "reacts_to.Beleidigung",
+      "key": "DIA_SENTENZA_AUFSMAUL_09_01",
+      "excerpt": 0
+    },
+    {
+      "about": "reacts_to.Gold",
+      "key": "DIA_SENTENZA_HELLO_SEARCHME_09_02",
+      "excerpt": 0
+    }
+  ],
+  "invented": [
+    "sees_hero.landarbeiter: die Durchsuchung hängt im Spiel an keiner Gilde; Kleidung spielt keine Rolle",
+    "sees_hero.miliz und sees_hero.novize: keine Zeilen; abgeleitet aus seiner Zollmasche",
+    "politics: Gold vor Treue ist aus seinem Verhalten abgeleitet, nicht ausgesprochen"
+  ]
+}

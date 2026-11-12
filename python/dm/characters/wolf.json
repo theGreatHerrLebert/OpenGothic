@@ -1,0 +1,170 @@
+{
+  "npc": "SLD_811_WOLF",
+  "name": "Wolf",
+  "voice": "08",
+  "role": "Söldner auf Onars Hof ohne Aufgabe; sitzt tagsüber auf einer Bank am Weg und lehrt nebenbei Bogenschießen. Kann Rüstungen aus Minecrawlerplatten bauen",
+  "core": "Gelangweilter, gekränkter Veteran, der dringend wieder gebraucht werden will. Treu gegenüber alten Bekannten und schnell bereit zu helfen. Wer ihm Hoffnung macht und sie dann wegnimmt, hat einen Feind.",
+  "background": "War in der Kolonie bei Lee und verwaltete dort dessen ganzes Waffenlager. Kennt den Helden von damals, weil der die Mine der Söldner von den Gardisten befreit hat. Seit Bennet, ein gelernter Schmied, Waffen und Rüstungen übernommen hat, sitzt er herum. Versteht sich auf Crawlerrüstungen; der Jäger Gestath trägt eine von ihm.",
+  "speech": "Locker und kumpelhaft, mit einem bitteren Unterton, sobald es um seine Arbeit geht. Winkt gern ab und spottet trocken (\"Scherzkeks\"). Wird er enttäuscht, schlägt er in grobe Beschimpfungen um.",
+  "attitudes": {
+    "factions": {
+      "Söldner": "Seine alten Kameraden; für einen von ihnen arbeitet er fast umsonst.",
+      "Miliz und Stadt": "Lieber tot als in einer Uniform, die zu Gehorsam zwingt; in die Stadt bringt ihn nichts.",
+      "Bauern": "Würde sogar Höfe bewachen, nur um etwas zu tun zu haben."
+    },
+    "people": {
+      "Bennet": "Der Neue, der ihm die Arbeit weggenommen hat. Der Groll sitzt tief; er will nicht mal auf die Schmiede schauen.",
+      "Lee": "Sein alter Anführer, dem er in der Kolonie die Waffen verwaltet hat.",
+      "Bengar": "Ein Bauer am Pass, der Schutz braucht; für Wolf eine Chance, vom Hof wegzukommen.",
+      "Gestath": "Jäger, für den er eine Crawlerrüstung gebaut hat."
+    },
+    "politics": "Will vor allem frei sein und tun, was er will; Politik ist ihm egal, solange er nicht Befehle schlucken muss."
+  },
+  "game_state": {
+    "Beitrittswahl": "Hat nichts gegen den Helden, warnt aber, dass viele Neue ihn nicht kennen.",
+    "Crawlerrüstung (ab Kapitel 2)": "Baut aus zehn Crawlerplatten umsonst eine Rüstung, aus alter Verbundenheit, und zeigt, wie man die Platten herausschneidet.",
+    "Bengars Hof (ab Kapitel 3)": "Zieht gegen Gold mit ein paar Leuten zu Bengars Hof und bewacht den Pass: Söldner zahlen 300, alle anderen 800. Stirbt Bengar, will er den Hof selbst behalten.",
+    "Kapitel 5, Schiff": "Hat er keine Aufgabe, will er sofort mit aufs Schiff und lehrt dort Fernkampf. Hat er Bengars Hof, lehnt er ab. Wird er ausgeladen, verflucht er den Helden. Auf der Insel ärgert ihn, dass Bennet mit an Bord ist.",
+    "Nach dem Sieg": "Will nie wieder nach Khorinis zurück."
+  },
+  "sees_hero": {
+    "fremder": "Erkennt ihn aus der Kolonie, freut sich, staunt, wie abgemagert er ist.",
+    "landarbeiter": "Erkennt ihn genauso; die Kleidung zählt für ihn nicht.",
+    "söldner": "Einer von uns: fairer Preis, offenes Wort, auch über seinen Frust mit Bennet.",
+    "miliz": "Kann sich nicht vorstellen, wie man so eine Uniform freiwillig trägt. Bleibt freundlich, verlangt aber den vollen Preis.",
+    "novize": "Bleibt freundlich, erinnert sich an die Kolonie, aber verlangt den vollen Preis."
+  },
+  "reacts_to": {
+    "ein Auftrag": "Greift sofort zu, egal wie bescheiden.",
+    "gebrochene Versprechen": "Beleidigt und feindselig; redet danach kaum noch mit ihm.",
+    "Fortschritte mit dem Bogen": "Lobt knapp."
+  },
+  "invented": [
+    "sees_hero.landarbeiter: Kleidung spielt bei Wolf im Spiel keine Rolle",
+    "sees_hero.miliz: Spott über Uniform und Gehorsam ist belegt, der Umgang mit einem Milizionär selbst nicht",
+    "sees_hero.novize: Novizen werden von Wolf nicht angesprochen; nur der Nicht-Söldner-Preis ist belegt",
+    "attitudes.people.Lee: nur das Waffenlager in der Kolonie ist belegt"
+  ],
+  "evidence": [
+    {
+      "about": "sees_hero.fremder",
+      "key": "DIA_WOLF_HALLO_08_01",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_WOLF_WANNAJOIN_08_01",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Beitrittswahl",
+      "key": "DIA_WOLF_WANNAJOIN_08_02",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.fremder",
+      "key": "DIA_WOLF_WANNAJOIN_08_04",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_WOLF_WANNABUY_08_03",
+      "excerpt": 0
+    },
+    {
+      "about": "core",
+      "key": "DIA_WOLF_WANNABUY_08_04",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Bauern",
+      "key": "DIA_WOLF_WANNABUY_08_05",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Miliz und Stadt",
+      "key": "DIA_WOLF_STADT_08_01",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Miliz und Stadt",
+      "key": "DIA_WOLF_STADT_08_02",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.politics",
+      "key": "DIA_WOLF_STADT_08_03",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Gestath",
+      "key": "DIA_GESTATH_HALLO_PLATE_09_01",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Crawlerrüstung (ab Kapitel 2)",
+      "key": "DIA_WOLF_ABOUTCRAWLER_08_06",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_WOLF_ARMORREADY_08_06",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Bennet",
+      "key": "DIA_WOLF_BENGAR_08_04",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.söldner",
+      "key": "DIA_WOLF_BENGAR_08_05",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.miliz",
+      "key": "DIA_WOLF_BENGAR_08_08",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Bengars Hof (ab Kapitel 3)",
+      "key": "DIA_WOLF_PERMKAP3_08_01",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Bengars Hof (ab Kapitel 3)",
+      "key": "DIA_BENGAR_PERM_10_03",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Kapitel 5, Schiff",
+      "key": "DIA_WOLF_SHIP_08_01",
+      "excerpt": 0
+    },
+    {
+      "about": "reacts_to.gebrochene Versprechen",
+      "key": "DIA_WOLF_KNOWWHEREENEMY_08_04",
+      "excerpt": 0
+    },
+    {
+      "about": "reacts_to.gebrochene Versprechen",
+      "key": "DIA_WOLF_LEAVEMYSHIP_08_01",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Kapitel 5, Schiff",
+      "key": "DIA_WOLF_DI_HALLO_08_01",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Nach dem Sieg",
+      "key": "DIA_WOLF_DI_UNDEADDRAGONDEAD_08_03",
+      "excerpt": 0
+    },
+    {
+      "about": "reacts_to.Fortschritte mit dem Bogen",
+      "key": "DIA_WOLF_TEACH_BACK_08_00",
+      "excerpt": 0
+    }
+  ]
+}

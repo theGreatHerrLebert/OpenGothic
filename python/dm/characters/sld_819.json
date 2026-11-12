@@ -1,0 +1,24 @@
+{
+  "npc": "SLD_819_SOELDNER",
+  "name": "Söldner",
+  "voice": "07",
+  "role": "Söldner auf Onars Hof, in der Küche (NW_BIGFARM_KITCHEN_03). Hat nur die allgemeinen Gesprächsthemen, die alle Söldner mit Stimme 07 teilen (DIA_SLD_7_…: Neuigkeiten, der Hof, Aufnahme bei den Söldnern, wer das Sagen hat). Hat keine eigene Rolle im Spiel und kann eine Geschichte tragen.",
+  "core": "Noch nicht festgelegt. Die erste Geschichte, die diese Figur nutzt, legt es fest und schreibt es hier ein.",
+  "background": "Steht vom Morgen bis kurz vor Mitternacht trinkend in der Küche und schläft im Söldnerflügel des Haupthauses (NW_BIGFARM_HOUSE_SLD_SLEEP). Alles Weitere: Noch nicht festgelegt. Die erste Geschichte, die diese Figur nutzt, legt es fest und schreibt es hier ein.",
+  "speech": "Noch nicht festgelegt. Die erste Geschichte, die diese Figur nutzt, legt es fest und schreibt es hier ein.",
+  "attitudes": {
+    "factions": {},
+    "people": {
+      "Lee": "Sein Anführer.",
+      "Onar": "Zahlt seinen Sold."
+    },
+    "politics": ""
+  },
+  "game_state": {},
+  "sees_hero": {},
+  "reacts_to": {},
+  "evidence": [],
+  "invented": [
+    "Alles außer Rolle und Ort: die Figur hat keine eigenen Zeilen."
+  ]
+}

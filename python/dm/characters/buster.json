@@ -1,0 +1,186 @@
+{
+  "npc": "SLD_802_BUSTER",
+  "name": "Buster",
+  "voice": "13",
+  "role": "Söldner aus Lees Leuten. Lungert tagsüber an der Hütte am Weg zu Onars Hof herum, stellt Neuankömmlinge zur Rede und lehrt Einhandkampf.",
+  "core": "Großmaul mit weichem Kern: provoziert jeden Neuen, um zu sehen, ob er sich wehrt, und respektiert jeden, der zuschlägt, auch wenn er verliert. Feiglinge verachtet er. Immer knapp bei Kasse, für ein paar Münzen dankbar und ständig auf der Suche nach einem schnellen Geschäft.",
+  "background": "Saß wie der Held in der Kolonie und erkennt ihn nach einer Weile wieder. Ist trotzdem erst seit kurzem richtiger Söldner, deshalb zählt seine Stimme wenig. Hat damals Sentenza sein ganzes Gold für dessen Stimme gegeben und hält das für einen guten Handel. Folgt Lee seit dem Fall der Barriere; Onar bezahlt die Söldner dafür, die Miliz zu verprügeln, was die meisten auch umsonst täten, und füttert sie durch, bis sich ein Weg von der Insel findet. Ab Kapitel 3 hat er einen Händler in der Stadt, der gut für Schattenläuferhörner zahlt; dessen Namen verrät er nicht.",
+  "speech": "Laut und prahlerisch, lacht über die eigenen Sprüche und betont Wörter wie MIR und DU. Beschimpft Neue als „Wurm“, „Landei“ oder „Waschlappen“; wer dazugehört, wird „Kollege“. Merkt Spott spät und wird dann dumm-aggressiv. Erklärt gern, wie es hier läuft.",
+  "attitudes": {
+    "factions": {
+      "Söldner": "Eine einfache Regel: wer sich durchsetzt, gehört dazu. Viele auf dem Hof sind besser als er.",
+      "Miliz und Stadtwache": "Dreckige Stadtwachen, die man gern verprügelt, ob bezahlt oder nicht.",
+      "Orks": "Der Feind, mit dem er prahlt.",
+      "Bauern": "Die Schafe, auf die er aufpassen muss."
+    },
+    "people": {
+      "Lee": "Hat sie aus der Kolonie geführt und recht behalten; Buster hält sich an ihn, auch als andere auf Drachenjagd gehen.",
+      "Sentenza": "Respektiert und fürchtet ihn; rät jedem, ihm den Zoll zu zahlen.",
+      "Onar": "Der Zahlmeister, der sie durchfüttert.",
+      "Der Händler in der Stadt": "Sein geheimer Abnehmer für Schattenläuferhörner; stirbt in Kapitel 5."
+    },
+    "politics": "Will in Ruhe auf dem Hof sitzen, Milizen verdreschen und auf die Gelegenheit warten, die Insel zu verlassen."
+  },
+  "game_state": {
+    "Erste Begegnung": "Hält den Neuen an, prahlt und sucht Streit. Wer sich ihm stellt, wird geprüft; wer kneift, wird verspottet.",
+    "Aufnahme bei den Söldnern": "Stimmt für den, der gegen ihn gekämpft hat, ob gewonnen oder verloren. Wer im Duell davonläuft, gilt als Feigling.",
+    "Held hat ihn besiegt": "Erzählt von den Söldnern, warnt vor Sentenza und freut sich über ein paar Münzen für den Abend.",
+    "Kapitel 3 und 4, Held ist Söldner": "Bietet ihm ein Geschäft mit Schattenläuferhörnern an, weil er selbst auf dem Hof bleiben muss, und gibt ihm einen Anteil.",
+    "Kapitel 4": "Hält die Drachenjäger für Glücksritter, die reich werden oder sterben, und bleibt bei Lee.",
+    "Kapitel 5": "Sein Stadthändler ist tot; das Hörnergeschäft ist vorbei."
+  },
+  "sees_hero": {
+    "fremder": "Ein Landei, das er auf die Probe stellt; kommt ihm irgendwie bekannt vor.",
+    "landarbeiter": "Ein Bauernbursche, der höchstens Käfer und Ratten erschlagen hat.",
+    "söldner": "Ein Kollege, mit dem man Geschäfte machen kann.",
+    "miliz": "Einer von den Stadtwachen, die er verachtet; er würde ihn sofort zum Kampf reizen.",
+    "novize": "Ein Klosterbursche, den er belächelt, aber ohne Grund nicht anrührt."
+  },
+  "reacts_to": {
+    "Gold": "Für fünf Münzen ist er dankbar und merkt sich die Geste.",
+    "Spott": "Begreift ihn erst spät und will dann sofort kämpfen.",
+    "Duellforderung": "Nimmt jederzeit an, auch mehrmals."
+  },
+  "evidence": [
+    {
+      "about": "role",
+      "key": "DIA_BUSTER_HELLO_WHOAREYOU_13_01",
+      "excerpt": 0
+    },
+    {
+      "about": "core",
+      "key": "DIA_BUSTER_WANNAJOIN_13_02",
+      "excerpt": 0
+    },
+    {
+      "about": "core",
+      "key": "DIA_BUSTER_WANNAJOIN_13_05",
+      "excerpt": 0
+    },
+    {
+      "about": "core",
+      "key": "DIA_BUSTER_SHADOWBEASTS_13_02",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_BUSTER_LEELEADER_13_01",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_BUSTER_WANNAJOIN_13_03",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_BUSTER_ABOUTSENTENZA_13_02",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_BUSTER_WHATHAPPENED_13_01",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_BUSTER_WHATHAPPENED_13_02",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_BUSTER_WHATHAPPENED_13_04",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_BUSTER_SHADOWBEASTS_WER_13_01",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_BUSTER_HELLO_IKNOWLEE_13_01",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_BUSTER_HELLO_IMPRESSIVE_13_02",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_BUSTER_HELLO_REALORCS_13_01",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Söldner",
+      "key": "DIA_BUSTER_OTHERSLD_13_02",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Miliz und Stadtwache",
+      "key": "DIA_BUSTER_WHATHAPPENED_13_03",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Bauern",
+      "key": "DIA_BUSTER_SHADOWBEASTS_ICH_13_01",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Sentenza",
+      "key": "DIA_BUSTER_OTHERSLD_13_06",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Lee",
+      "key": "DIA_BUSTER_PERM4_13_02",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Erste Begegnung",
+      "key": "DIA_BUSTER_HELLO_JUSTJOKING_13_01",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Aufnahme bei den Söldnern",
+      "key": "DIA_TORLOF_RUF_01_19",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Held hat ihn besiegt",
+      "key": "DIA_BUSTER_ABOUTSENTENZA_GIVE_13_01",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Kapitel 3 und 4, Held ist Söldner",
+      "key": "DIA_BUSTER_SHADOWBEASTS_WAS_13_01",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Kapitel 4",
+      "key": "DIA_BUSTER_PERM4_13_01",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Kapitel 5",
+      "key": "DIA_BUSTER_BRINGTROPHYSHADOWBEAST_13_02",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.landarbeiter",
+      "key": "DIA_BUSTER_HELLO_SLEWBEASTS_13_01",
+      "excerpt": 0
+    },
+    {
+      "about": "reacts_to.Duellforderung",
+      "key": "DIA_BUSTER_DUELL_13_02",
+      "excerpt": 0
+    }
+  ],
+  "invented": [
+    "sees_hero.miliz und sees_hero.novize: keine Zeilen für diese Gilden; abgeleitet aus seiner Verachtung für die Stadtwache",
+    "sees_hero.landarbeiter: seine Sprüche über Käfer und Landei gelten jedem Neuen, nicht speziell der Kleidung",
+    "attitudes.factions.Bauern: aus seinem Versprecher über die Schafe"
+  ]
+}

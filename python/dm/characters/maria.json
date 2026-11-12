@@ -1,0 +1,162 @@
+{
+  "npc": "BAU_910_MARIA",
+  "name": "Maria",
+  "voice": "17",
+  "role": "Onars Frau. Sitzt tagsüber im oberen Stock des Wohnhauses im Sessel (NW_BIGFARM_HOUSE_UP1_SESSEL) und schläft dort oben.",
+  "core": "Resolute Hausherrin, die ihren Mann lenkt und es weiß: Sie hat ihn zum Aufstand getrieben und sorgt dafür, dass er zahlt, wenn sie es will. Großzügig zu dem, der ihr hilft, verbittert über die Miliz.",
+  "background": "Früher kam die Miliz regelmäßig auf den Hof, schleppte Ernte und Schafe weg, und einige stahlen auch. Unter dem Diebesgut waren Gold, Silber und ihr goldener Teller, ein Hochzeitsgeschenk; sie vermutet ihn in der Truhe eines Stadtgardisten. Sie hat Onar gedrängt, sich zu wehren, worauf er die Söldner anheuerte. Seitdem ist der Hof sicherer, aber im Haus laufen ständig Männer herum.",
+  "speech": "Plaudernd und offen, die Hausfrau, die gern erzählt, was sie ihrem Mann gesagt hat. Mildert Kritik mit einem vorgeschobenen Ich-sag-ja-nichts ab, entschuldigt sich bei einem Soldaten, nachdem sie die Miliz beschimpft hat. Über die Miliz redet sie hart: Mistkerle, dreckige Stadtgardisten.",
+  "attitudes": {
+    "factions": {
+      "Miliz": "Plünderer und Diebe, die nie etwas für den Hof getan haben; einzelnen Soldaten gegenüber räumt sie ein, dass nicht alle so sind.",
+      "Söldner": "Haben den Hof sicherer gemacht, bringen aber Unruhe ins Haus.",
+      "Paladine": "Hat befürchtet, sie würden den Hof angreifen; sie zogen ins Minental."
+    },
+    "people": {
+      "Onar": "Ein guter Mann, brummig und ungeduldig. Sie weiß, wie sie ihn dazu bringt, zu tun, was sie will.",
+      "Wasili": "Hat in Kapitel 3 einen Dieb aus dem Haus verjagt.",
+      "Elena": "Onars Tochter, die auch im oberen Stock wohnt."
+    },
+    "politics": "Steht hinter dem Aufstand, weil sie ihn angestoßen hat, auch wenn es sich jetzt anfühlt wie Krieg."
+  },
+  "game_state": {
+    "Goldener Teller": "Bringt der Held ihr den Teller zurück, dankt sie überschwänglich. Ist er Söldner, schickt sie ihn zu Onar mehr Sold verlangen; ist er noch gildenlos, verspricht sie, für guten Lohn zu sorgen, falls er anheuert; sonst gibt sie Gold.",
+    "Kapitel 1-2": "Erzählt, dass die Paladine vorbeizogen und man einen Angriff fürchtete.",
+    "Kapitel 3": "Wasili hat einen Dieb verjagt, sonst ruhig.",
+    "Ab Kapitel 4": "Ein Teil der Söldner ist fort, seitdem ist es ruhiger."
+  },
+  "sees_hero": {
+    "fremder": "Fragt freundlich, wer er ist und was er will; ist er hilfreich, wirbt sie ihn indirekt als Söldner an.",
+    "landarbeiter": "Einer der vielen Leute auf dem Hof; freundlich, aber er gehört nicht ins Haus.",
+    "söldner": "Einer von den Männern ihres Mannes; dankbar für die Sicherheit, genervt vom Gestiefel im Haus. Achtet darauf, dass er ordentlich bezahlt wird.",
+    "miliz": "Erzählt ihm trotzdem von den Plünderungen und schiebt dann eine Entschuldigung nach.",
+    "novize": "Höflich; belohnt Hilfe mit Gold statt mit Fürsprache."
+  },
+  "reacts_to": {
+    "Hilfe für den Hof": "Belohnt sie selbst oder sorgt dafür, dass Onar es tut.",
+    "Männer, die ins Haus stiefeln": "Stöhnt über die fehlende Ruhe.",
+    "Gerede über die Miliz": "Fängt sofort mit den alten Plünderungen an."
+  },
+  "evidence": [
+    {
+      "about": "role",
+      "key": "DIA_MARIA_HALLO_17_01",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Onar",
+      "key": "DIA_MARIA_ABOUTONAR_17_01",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_MARIA_ABOUTONAR_17_02",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_MARIA_ABOUTONAR_17_04",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.politics",
+      "key": "DIA_MARIA_ABOUTONAR_17_05",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_MARIA_MISSION_17_01",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_MARIA_MISSION_17_02",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_MARIA_SOELDNER_17_03",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_MARIA_SOELDNER_17_04",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Miliz",
+      "key": "DIA_MARIA_SOELDNER_17_05",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.miliz",
+      "key": "DIA_MARIA_SOELDNER_17_06",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_MARIA_SOELDNER_17_01",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.söldner",
+      "key": "DIA_MARIA_UMSEHEN_17_02",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_MARIA_UMSEHEN_17_01",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Goldener Teller",
+      "key": "DIA_MARIA_BRINGPLATE_17_01",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Goldener Teller",
+      "key": "DIA_MARIA_BELOHNUNG_17_04",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Onar",
+      "key": "DIA_MARIA_BELOHNUNG_17_06",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.fremder",
+      "key": "DIA_MARIA_BELOHNUNG_SOLD_17_01",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.novize",
+      "key": "DIA_MARIA_BELOHNUNG_17_08",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Kapitel 1-2",
+      "key": "DIA_MARIA_PERM_17_02",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Kapitel 3",
+      "key": "DIA_MARIA_PERM_17_03",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Ab Kapitel 4",
+      "key": "DIA_MARIA_PERM_17_04",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Onar",
+      "key": "DIA_ONAR_MARIAGOLD_14_03",
+      "excerpt": 0
+    }
+  ],
+  "invented": [
+    "attitudes.people.Elena: dass Maria Elenas Mutter ist, sagt keine Zeile; nur dass beide oben im Haus sitzen und Elena Onars Tochter ist",
+    "sees_hero.landarbeiter: keine eigene Zeile",
+    "sees_hero.novize: belegt ist nur die Goldbelohnung für jeden Gildenträger außer Söldnern; die Höflichkeit ist angenommen"
+  ]
+}
