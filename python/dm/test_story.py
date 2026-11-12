@@ -834,6 +834,8 @@ def test_npc_item():
     assert carried == [("ITMI_COIN", 1)]
     undo()
     assert carried == []
+    s.apply_plan({"reason": "t", "ops": [{"op": "npc_item", "npc": "NOV_A", "instance": "ITMI_COIN"}]})   # the whole path
+    assert carried == [("ITMI_COIN", 1)], carried
     del npc.add_item, npc.remove_item
 
 
@@ -851,6 +853,11 @@ def test_refuse_talk():
     st._refusal_bound.clear()
     st._keep_refusals(state)
     assert fake.dialog.bound == ["PARLAN"]
+    fake.dialog.bound.remove("PARLAN")      # a scene or detach let him go
+    fake.dialog.bind = lambda npc: npc.instance in fake.dialog.bound or fake.dialog.bound.append(npc.instance)
+    st._keep_refusals(state)
+    assert fake.dialog.bound == ["PARLAN"]
+    del fake.dialog.bind
     state["flags"]["forgiven"] = True
     assert st._refusing(state, "PARLAN") is None
     st._keep_refusals(state)

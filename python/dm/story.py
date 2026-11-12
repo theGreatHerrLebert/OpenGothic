@@ -743,7 +743,7 @@ def _keep_refusals(state):
         _refusal_bound.clear()
         _refusal_world = generation
     wanted = {r["npc"] for r in state.get("refusals", {}).values() if _refusing(state, r["npc"])}
-    for name in wanted - _refusal_bound:
+    for name in wanted:   # every time: binding again is harmless, and a scene or detach may have let him go
         npc = gothic.world.find_npc(name)
         if npc is not None:
             gothic.dialog.bind(npc)
@@ -765,6 +765,11 @@ def _check_npc_item(args, state):
     count = args.get("count", 1)
     if not isinstance(count, int) or isinstance(count, bool) or not 1 <= count <= 1000:
         raise PlanError("npc_item count is a whole number from 1 to 1000")
+
+
+def _ready_npc_item(args, plan):
+    """The one who will carry it must be here; its "instance" names the item, not him."""
+    _ready_live({"npc": args.get("npc")}, plan)
 
 
 def _world_npc_item(args):
@@ -857,7 +862,7 @@ def _ready_live(args, plan):
 # the plan is valid. Failing here changes nothing.
 _READY = {"trip": _ready_trip, "send_npc": _ready_live, "relocate_npc": _ready_live, "remove_npc": _ready_live,
           "rename_npc": _ready_live, "attach_dialogue_graph": _ready_live, "attack": _ready_attack,
-          "npc_item": _ready_live}
+          "npc_item": _ready_npc_item}
 # Effects that cannot be undone run after every effect that can, so a failure among the undoable ones still leaves
 # the world untouched. Removal comes last of all.
 _FINAL = {"give_xp", "journal", "trip", "send_npc", "relocate_npc", "attack"}
@@ -1069,7 +1074,8 @@ class Story:
         scene_id, npc = self.active_scene
         self.active_scene = None
         self.scene_opened = False
-        gothic.dialog.unbind(npc)
+        if _refusing(self.state, getattr(npc, "instance", "") or "") is None:
+            gothic.dialog.unbind(npc)   # someone who refuses the hero stays bound for that
         if finished:
             self.apply_plan({"reason": f"Szene beendet: {scene_id}",
                              "ops": [{"op": "finish_scene", "id": scene_id}]})
