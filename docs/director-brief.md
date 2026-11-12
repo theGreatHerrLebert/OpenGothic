@@ -57,6 +57,10 @@ checker refuses a story whose block is missing or empty, and the blind scoring t
 None of this is a rule a checker can hold you to. It is what the player missed in a story that ran without a fault
 and was still not worth playing: return a pouch or keep it, 25 gold, no consequence, nothing underneath.
 
+- **A theme, carried by one thing.** A good side quest turns around one object or idea, and every part of it runs
+  through that: the loaded dice are how the cheat cheats, what the hero plays with, the edge he gains, how he gets
+  caught, the counter he holds up ("isn't that your die?") and what he trades. A story whose central thing only
+  appears in talk has a topic, not a theme. Name the thing first, then let each deed, turn and price go through it.
 - **Layers, because people have reasons.** Keep the simple way open: find the runaway novice, send him home, get
   paid. Underneath, for the player who asks one more question, lies why he acts tough: his father beat him. Nobody
   hands the player that layer, and finding it changes how he sees the person and the choice. The layer lives in the
