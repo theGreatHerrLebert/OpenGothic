@@ -269,7 +269,7 @@ class Player:
             if index is None:
                 return
             self.choice = self.visible[index]
-            checks.transfer(self.choice)
+            checks.transfer(self.choice, dialog.partner())
             chance = self.choice.get("chance")
             won = True
             if isinstance(chance, dict) and random.random() * 100 >= chance["percent"]:

@@ -197,4 +197,18 @@ assert checks.failing([{"type": "npc_has", "npc": "BURNER", "item": "ITMI_GOLD",
 assert checks.failing([{"type": "npc_has", "npc": "BURNER", "item": "ITMI_GOLD", "count": 3}]) is not None
 assert checks.failing([{"type": "npc_has", "npc": "ABSENT", "item": "ITMI_GOLD"}]) is not None
 assert checks.validate({"type": "npc_has", "npc": "BURNER"}) is not None
+# A trade in words is a trade in things: what the hero hands over goes into the partner's pocket, and what the partner
+# gives comes out of it when he carries it.
+import dm.handover as handover_module
+moved = []
+handover_module.take = lambda item, count=1: moved.append(("hero gives", item, count))
+handover_module.give = lambda item, count=1: moved.append(("hero gets", item, count))
+pocket = {"COIN": 1}
+partner = types.SimpleNamespace(item_count=lambda i: pocket.get(i, 0),
+                                add_item=lambda i, n=1: pocket.__setitem__(i, pocket.get(i, 0) + n),
+                                remove_item=lambda i, n=1: pocket.__setitem__(i, pocket[i] - n))
+checks.transfer({"takes": {"item": "DIE"}, "gives": {"item": "COIN"}}, partner)
+assert pocket == {"COIN": 0, "DIE": 1} and moved == [("hero gives", "DIE", 1), ("hero gets", "COIN", 1)], (pocket, moved)
+checks.transfer({"gives": {"item": "ITMI_GOLD", "count": 20}}, partner)   # he has none: given as before
+assert pocket.get("ITMI_GOLD", 0) == 0 and moved[-1] == ("hero gets", "ITMI_GOLD", 20)
 print("checks ok")

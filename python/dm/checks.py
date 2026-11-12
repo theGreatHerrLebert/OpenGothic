@@ -160,13 +160,23 @@ def can_pay(choice):
     return takes is None or _holds({"type": "has_item", "item": takes["item"], "count": takes.get("count", 1)})
 
 
-def transfer(choice):
+def transfer(choice, partner=None):
+    """What the hero hands over goes into the pocket of the one he talks to, and what that one gives him comes out of
+    his pocket when he carries it, so a trade in words is a trade in things: it can be stolen back afterwards."""
     from dm import handover
     takes, gives = choice.get("takes"), choice.get("gives")
+    if partner is None and hasattr(gothic, "dialog"):
+        partner = gothic.dialog.partner()
+    pockets = partner is not None and hasattr(partner, "item_count") and hasattr(partner, "add_item")
     if takes:
         handover.take(takes["item"], takes.get("count", 1))
+        if pockets:
+            partner.add_item(takes["item"], takes.get("count", 1))
     if gives:
-        handover.give(gives["item"], gives.get("count", 1))
+        count = gives.get("count", 1)
+        if pockets and partner.item_count(gives["item"]) >= count:
+            partner.remove_item(gives["item"], count)
+        handover.give(gives["item"], count)
 
 
 def _holds(check):
