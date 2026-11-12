@@ -199,10 +199,14 @@ def special_graph(voice, rng, instance="", guard=False, profile=None, drinking=F
 
 
 def special_for(npc):
-    """The trip dialogue for this NPC while a trip is strong, a waiting line after a blackout, else None."""
+    """The trip dialogue for this NPC while a trip runs, a waiting line after a blackout, else None.
+
+    Only two kinds of conversation ask: any, once the trip is strong (the engine hands them over), and a story's own,
+    at any strength. So people with a story to tell meet a tripping hero as such from the first draw to the landing,
+    and he cannot finish their quest high; everyone else talks normally while the trip is mild."""
     if _current is None:
         return after_graph(npc)
-    if _current.black is not None or _current.envelope.intensity <= BLOCK_ABOVE:
+    if _current.black is not None or _current.envelope.over:
         return None
     return special_graph(npc.voice, _current.rng, getattr(npc, "instance", "") or "", is_guard(npc),
                          getattr(_current, "profile", None), is_drinking(npc), getattr(npc, "name", "") or "")

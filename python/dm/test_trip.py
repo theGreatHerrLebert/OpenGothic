@@ -443,7 +443,11 @@ pablo = types.SimpleNamespace(voice=4, instance="MIL_319_PABLO", guild=2)
 assert trip.special_for(pablo)["nodes"]["a"]["line"] in trip.SPECIAL_GUARDS["openers"]
 assert not trip.is_guard(types.SimpleNamespace(voice=4, guild=3))
 trip._current.envelope.intensity = 0.2
-assert trip.special_for(npc) is None                                  # not while the trip is still mild
+assert trip.special_for(npc) is not None    # a story's own conversation is the trip's from the first draw (only a
+                                            # story's asks while mild: the engine hands others over only when strong)
+trip._current.envelope.over = True
+assert trip.special_for(npc) is None                                  # landed: everyone talks normally again
+trip._current.envelope.over = False
 trip._end(fake)
 
 # A loaded save ends the trip at once.
