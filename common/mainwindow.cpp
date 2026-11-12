@@ -1,4 +1,5 @@
 #include "mainwindow.h"
+#include "graphics/sky/galaxy.h"
 #include "gamemusic.h"
 
 #include "script/pythonvm.h"
@@ -138,6 +139,7 @@ MainWindow::~MainWindow() {
   GameMusic::inst().stopMusic();
   Gothic::inst().cancelLoading();
   device.waitIdle();
+  Galaxy::inst().releaseAll();   // a static: its images must go while the device still exists
   takeWidget(&dialogs);
   takeWidget(&inventory);
   Gothic::inst().setDialogMenu(nullptr);

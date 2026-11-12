@@ -41,3 +41,8 @@ const Texture2d& Galaxy::texture(size_t slot) const {
     return tex[slot];
   return Resources::fallbackBlack();
   }
+
+void Galaxy::releaseAll() {
+  for(auto& t:tex)
+    t = Texture2d();
+  }
