@@ -597,12 +597,19 @@ trip.SKY_DIR = _pl.Path(_tf.mkdtemp())
 for name in ("milkyway.jpg", "cosmic_cliffs.jpg", "pillars.jpg"):
     (trip.SKY_DIR / name).write_bytes(b"")
 assert trip.sky_amount(0.0) == 0.0 and trip.sky_amount(1.0) == 1.0 and 0 < trip.sky_amount(0.45) < 1
-trip.set_sky(g, "ice", 1.0, 10.0, glow=0.3)
-amount, gain, tint, grade, spin, glow, spots = shown[-1]
-assert amount == 1.0 and tint == trip.GALAXIES["ice"]["tint"] and spin == 10.0 * trip.SKY_SPIN and glow == 0.3
-assert loads == [(0, "milkyway.jpg"), (1, "cosmic_cliffs.jpg"), (2, "pillars.jpg")] and all(s[3] > 0 for s in spots)
-trip.set_sky(g, "ice", 0.5, 11.0)
+trip.set_sky(g, "hot", 1.0, 10.0, glow=0.3)
+amount, gain, tint, grade, spin, glow, spots, aurora, secs, moon = shown[-1]
+assert amount == 1.0 and tint == trip.GALAXIES["hot"]["tint"] and spin == 10.0 * trip.SKY_SPIN and glow == 0.3
+assert loads == [(0, "milkyway.jpg"), (1, "pillars.jpg"), (2, "cosmic_cliffs.jpg")] and all(s[3] > 0 for s in spots)
+assert aurora == 0.0 and secs == 10.0 and moon == 0.0
+trip.set_sky(g, "hot", 0.5, 11.0)
 assert len(loads) == 3                                          # loaded once
+trip.set_sky(g, "ice", 1.0, 11.5)                               # Nordmar: northern lights, no nebulae
+assert shown[-1][7] == 1.0 and shown[-1][6] == [] and shown[-1][9] == 0.0   # no moon before the peak
+trip.set_sky(g, "ice", 1.0, 12.0, peak=1.0)
+assert shown[-1][9] == 1.0                                      # the blood moon at the peak of the war chant
+trip.set_sky(g, "hot", 1.0, 12.0, peak=1.0)
+assert shown[-1][9] == 0.0                                      # only Nordmar's
 trip.set_sky(g, "sleeper", 1.0, 12.0)                           # Stephan's Quintet is missing here: that nebula off
 assert shown[-1][6][0][3] == 0.0 and shown[-1][6][1][3] > 0
 trip.set_sky(g, None, 1.0, 13.0)

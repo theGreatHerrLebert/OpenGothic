@@ -248,7 +248,9 @@ SKY_FROM, SKY_TO = 0.2, 0.7     # intensity at which the sky starts to open, and
 SKY_SPIN = 0.006                # radians a second
 SKY_GAIN = 1.0
 GALAXIES = {
-    "ice": {"tint": (0.55, 0.80, 1.00), "grade": 0.70, "nebulae": ("cosmic_cliffs.jpg", "pillars.jpg")},
+    # Nordmar: the ice-blue Milky Way with the northern lights in front, instead of nebulae, and at the peak of the
+    # war chant a blood-red moon.
+    "ice": {"tint": (0.55, 0.80, 1.00), "grade": 0.70, "nebulae": (), "aurora": 1.0, "blood_moon": True},
     "hot": {"tint": (1.00, 0.50, 0.15), "grade": 0.75, "nebulae": ("pillars.jpg", "cosmic_cliffs.jpg")},
     "sleeper": {"tint": (0.75, 0.65, 1.00), "grade": 0.30, "nebulae": ("stephans_quintet.jpg", "pillars.jpg")},
     "neon": {"tint": (1.00, 0.45, 1.00), "grade": 0.50, "nebulae": ("cosmic_cliffs.jpg", "stephans_quintet.jpg")},
@@ -276,8 +278,9 @@ def _load_sky(gothic, slot, name):
     return True
 
 
-def set_sky(gothic, kind, intensity, seconds, glow=0.0):
-    """Shows the trip's galaxy at this intensity, or the game's own sky when there is none."""
+def set_sky(gothic, kind, intensity, seconds, glow=0.0, peak=0.0):
+    """Shows the trip's galaxy at this intensity, or the game's own sky when there is none. peak (0..1) is how far
+    the trip's highest stage has opened, for what rises only then (the blood moon)."""
     if not hasattr(gothic, "sky"):
         return
     cfg = GALAXIES.get(kind)
@@ -287,7 +290,8 @@ def set_sky(gothic, kind, intensity, seconds, glow=0.0):
     spots = [spot if _load_sky(gothic, i + 1, name) else (0.0, 0.0, 0.0, 0.0)
              for i, (name, spot) in enumerate(zip(cfg["nebulae"], NEBULA_SPOTS))]
     gothic.sky.galaxy(sky_amount(intensity), SKY_GAIN, cfg["tint"], cfg["grade"], seconds * SKY_SPIN,
-                      min(1.0, glow), spots)
+                      min(1.0, glow), spots, cfg.get("aurora", 0.0), seconds,
+                      peak * sky_amount(intensity) if cfg.get("blood_moon") else 0.0)
 
 
 FADE_BLACK = 3.5    # seconds to black
@@ -606,13 +610,12 @@ class Trip:
         if self.visuals_read is None or now - self.visuals_read >= 1.0:
             self.visuals = visuals_on()          # the off switch works at once, also during a running trip
             self.visuals_read = now
-        opened = None
-        if LOOKS[self.style].get("at_peak"):
-            # This look's second stage waits for the peak phase, then fades in over PEAK_OPEN seconds.
-            if self.peak_at is None and self.envelope.index >= self.peak_phase:
-                self.peak_at = now
-            x = 0.0 if self.peak_at is None else min(1.0, (now - self.peak_at) / PEAK_OPEN)
-            opened = x * x * (3 - 2 * x)
+        # The peak phase opens over PEAK_OPEN seconds: a look's second stage may wait for it, and the sky's moon does.
+        if self.peak_at is None and self.envelope.index >= self.peak_phase:
+            self.peak_at = now
+        x = 0.0 if self.peak_at is None else min(1.0, (now - self.peak_at) / PEAK_OPEN)
+        peak_open = x * x * (3 - 2 * x)
+        opened = peak_open if LOOKS[self.style].get("at_peak") else None
         fx = look(self.envelope.intensity, elapsed, beat, drums, self.style, opened)
         if not self.visuals:
             fx = look(0.0, elapsed, style=self.style)   # music and thoughts only: nothing on screen changes
@@ -625,7 +628,8 @@ class Trip:
         gothic.trip.set(fx["fov"], fx["speed"], fx["tint"], fx["time"], fx["shake"], fx["post"], fx["edges"],
                         fx["tracers"], (self.bass, self.mid, self.treble), fx["zoom"], fx["look"], fx["eye"],
                         fx["afterglow"])
-        set_sky(gothic, PROFILE_GALAXY.get(getattr(self, "profile", None)), fx["post"], elapsed, self.swell)
+        set_sky(gothic, PROFILE_GALAXY.get(getattr(self, "profile", None)), fx["post"], elapsed, self.swell,
+                peak_open if self.visuals else 0.0)
         if self.black is None:
             self._think(gothic, now)
         music_back = not self.track or (self.music_end is not None and now - self.music_end >= FADE_OUT)
