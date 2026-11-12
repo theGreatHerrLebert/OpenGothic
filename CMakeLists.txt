@@ -193,6 +193,14 @@ if(NOT MSVC)
   set_source_files_properties(
     common/script/pythonvm.cpp
     common/script/pybindings.cpp
+    common/script/py_player.cpp
+    common/script/py_npc.cpp
+    common/script/py_world.cpp
+    common/script/py_effects.cpp
+    common/script/py_resources.cpp
+    common/script/py_dialog.cpp
+    common/script/py_runtime.cpp
+    common/script/py_daedalus.cpp
     PROPERTIES COMPILE_FLAGS
     "-Wno-error -Wno-conversion -Wno-deprecated-declarations -Wno-unused-parameter -Wno-shadow")
 endif()
