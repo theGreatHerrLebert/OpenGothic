@@ -12,6 +12,7 @@
 #include "camera.h"
 #include "gothic.h"
 #include "game/globaleffects.h"
+#include "world/objects/npc.h"
 #include "resources.h"
 #include "utils/string_frm.h"
 
@@ -724,6 +725,10 @@ void Renderer::draw(Tempest::Attachment& result, Encoder<CommandBuffer>& cmd, ui
     } else {
     cmd.setDebugMarker("Fog");
     drawFog(cmd, wview);
+    // Snow and rain after the fog, which only knows the surface behind a flake: each fogs itself at its own depth.
+    cmd.setFramebuffer({{sceneLinear, Tempest::Preserve, Tempest::Preserve}}, {zbuffer, Tempest::Readonly});
+    cmd.setDebugMarker("Precipitation");
+    drawPrecipitation(cmd, wview);
     }
 
   // During a trip the tonemapped frame goes to an image of its own, which the trip pass then draws over `result`.
@@ -899,6 +904,44 @@ void Renderer::drawCMAA2(Tempest::Attachment& result, Tempest::Encoder<Tempest::
   cmd.setPushData(&p, sizeof(p));
   cmd.setPipeline(shaders.cmaa2DeferredColorApply2x2);
   cmd.drawIndirect(cmaa2.indirectBuffer, 3*sizeof(uint32_t));
+  }
+
+void Renderer::drawPrecipitation(Tempest::Encoder<Tempest::CommandBuffer>& cmd, const WorldView& wview) {
+  // docs/plan-weather.md: world-anchored procedural particles, none indoors.
+  auto* world = Gothic::inst().world();
+  if(world==nullptr || sky.quality==PathTrace)
+    return;
+  const auto& w = world->globalFx()->weatherState();
+  if(w.kind==GlobalEffects::Precipitation::None || w.intensity<0.001f)
+    return;
+
+  bool inside = false;
+  if(auto* pl = Gothic::inst().player())
+    inside = !world->roomAt(pl->position()).empty();
+  weatherShelter = std::clamp(weatherShelter + (inside ? 0.05f : -0.05f), 0.f, 1.f);
+  const float amount = w.intensity*(1.f-weatherShelter);
+  if(amount<0.001f)
+    return;
+
+  const bool   rain  = w.kind==GlobalEffects::Precipitation::Rain;
+  const size_t count = size_t(float(rain ? 30000 : 24000)*amount);
+  struct Push {
+    Tempest::Vec2 wind;
+    float         time      = 0;
+    float         intensity = 0;
+    uint32_t      kind      = 0;
+    } push;
+  push.wind      = Tempest::Vec2(w.windX*100.f, w.windZ*100.f);   // m/s to cm/s
+  push.time      = float(world->tickCount()%(10000*1000))/1000.f;  // kept small for float precision
+  push.intensity = amount;
+  push.kind      = rain ? 2 : 1;
+
+  auto& scene = wview.sceneGlobals();
+  cmd.setBinding(0, scene.uboGlobal[SceneGlobals::V_Main]);
+  cmd.setBinding(1, sky.fogLut3D, Sampler::bilinear(ClampMode::ClampToEdge));
+  cmd.setPushData(push);
+  cmd.setPipeline(shaders.precipitation);
+  cmd.draw(nullptr, 0, 6, 0, count);
   }
 
 void Renderer::drawFog(Tempest::Encoder<Tempest::CommandBuffer>& cmd, const WorldView& wview) {

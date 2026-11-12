@@ -158,6 +158,22 @@ void Shaders::compileShaders() noexcept {
   }
 
   {
+  // Snow and rain in the world (docs/plan-weather.md): tested against depth, never writing it, premultiplied.
+  RenderState state;
+  state.setCullFaceMode (RenderState::CullMode::NoCull);
+  state.setBlendSource  (RenderState::BlendMode::One);
+  state.setBlendDest    (RenderState::BlendMode::OneMinusSrcAlpha);
+  state.setZTestMode    (RenderState::ZTestMode::Less);
+  state.setZWriteEnabled(false);
+
+  auto sh = GothicShader::get("precipitation.vert.sprv");
+  auto vs = device.shader(sh.data,sh.len);
+  sh      = GothicShader::get("precipitation.frag.sprv");
+  auto fs = device.shader(sh.data,sh.len);
+  precipitation = device.pipeline(Triangles, state, vs, fs);
+  }
+
+  {
   RenderState state;
   state.setCullFaceMode (RenderState::CullMode::Front);
   state.setBlendSource  (RenderState::BlendMode::One);
