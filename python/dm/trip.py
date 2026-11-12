@@ -116,6 +116,9 @@ SLEEPER_LANDINGS = ["Es ist vorbei. Ich glaub, es ist vorbei.", "Nie wieder Guru
 POOLS = {"mindcap": (THOUGHT_POOLS, LANDINGS), "ember": (DESERT_POOLS, DESERT_LANDINGS),
          "sleeper": (SLEEPER_POOLS, SLEEPER_LANDINGS)}
 
+# Said when Escape is pressed during a trip (the menu waits; a second Escape soon after opens it anyway).
+ESCAPES = ["Ich glaube, im Moment sollte ich mich auf das Hier und Jetzt konzentrieren.",
+           "Weglaufen? Vor mir selbst? Keine gute Idee.", "Ausruhen kann ich mich später. Jetzt … das hier."]
 # Said instead when the hero tries to talk to someone while the trip is too strong for it; never twice in a row.
 REFUSALS = ["Nicht jetzt … sein Gesicht zerfließt.", "Mit dem red ich jetzt besser nicht.", "Der hat … drei Augen.",
             "Nee. Der guckt so komisch.", "Später. Wenn er wieder normal aussieht."]
@@ -342,7 +345,7 @@ def thought_lines(thoughts=None):
     else:
         ups = [line for pools, _ in POOLS.values() for _, pool in pools for line in pool]
     wakes = [line for blackout in BLACKOUTS.values() for line in blackout["wake"]]
-    return (ups + [line for _, landings in POOLS.values() for line in landings] + REFUSALS + wakes
+    return (ups + [line for _, landings in POOLS.values() for line in landings] + REFUSALS + ESCAPES + wakes
             + SPECIAL_ANSWERS + NORTH_ANSWERS + DESERT_ANSWERS + SLEEPER_ANSWERS + [SPECIAL_LAST])
 
 
@@ -576,7 +579,10 @@ class Trip:
             self.refused_at = now
             self.last_refusal = self.rng.choice([r for r in REFUSALS if r != self.last_refusal])
             self.queue.insert(0, self.last_refusal)
-        refusing = self.queue and self.queue[0] in REFUSALS
+        escapes = gothic.trip.take_escapes() if hasattr(gothic.trip, "take_escapes") else 0
+        if escapes and not (self.queue and self.queue[0] in ESCAPES):
+            self.queue.insert(0, self.rng.choice(ESCAPES))   # he answers the menu he was about to open
+        refusing = self.queue and (self.queue[0] in REFUSALS or self.queue[0] in ESCAPES)
         if self.queue and (refusing or now >= self.quiet_until):
             length = say(gothic, self.queue[0])
             if length is not None:

@@ -680,3 +680,15 @@ assert trip.saving_blocked()
 trip._after = None
 assert not trip.saving_blocked()
 print("save block ok")
+
+# Escape during a trip: the hero answers it at once, in his trip voice.
+said.clear()
+esc = {"n": 0}
+fake.trip.take_escapes = lambda: esc.update(n=0) or 1 if esc["n"] else 0
+calm = trip.Trip([(30.0, 0.5, 0.2, 0, 0)], None, thoughts=[(0.99, "nie")])
+calm.tick(fake, 0.0)
+esc["n"] = 1
+calm.tick(fake, 0.1)
+assert said and said[-1] in trip.ESCAPES
+assert set(trip.ESCAPES) <= set(trip.thought_lines())
+print("escape ok")
