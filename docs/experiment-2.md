@@ -73,3 +73,15 @@ the effect looks large, not as a decision. The experiment 1 author prompt was no
 from its setup; both arms get it word for word, differing only in which brief and design rules they are pointed to.
 Authors do not run the checker themselves: errors from it are passed back for the one repair, warnings are not,
 because the current checker warns about a story without a deed and would tell arm A about the rule.
+
+## Note, 2026-11-12, during play
+
+One field added to the scoring form and to the in-game rating (Alt+5), at the user's request after playing the
+Kriegskraut story, where he could not tell for a moment whether Bjarne was part of the original game:
+
+| Field | Values |
+|---|---|
+| Like the original | yes / no: could this have been in the original game, with no seam to see? |
+
+It is not part of the deciding rules above, which were fixed before generation; read it alongside them. Stories
+scored before this note have no value for it.

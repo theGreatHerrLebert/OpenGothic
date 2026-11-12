@@ -29,10 +29,11 @@ assert text.startswith("„Die eine Flasche“")
 assert menu.press("3") == (None, None)                      # yes/no question ignores a 3
 assert menu.press("2")[0] == feedback.ASK_INTEREST
 assert menu.press("4")[0] == feedback.ASK_DEED
-text, entry = menu.press("1")
+assert menu.press("1")[0] == feedback.ASK_ORIGINAL
+text, entry = menu.press("2")
 assert text == feedback.RATED
 assert entry == {"kind": "rating", "story": "Die eine Flasche", "worth": "no", "interest": 4, "deed": "yes",
-                 "played": True}
+                 "original": "no", "played": True}
 
 menu.press("feedback")
 menu.press("5", "X")
@@ -40,7 +41,7 @@ assert menu.press("feedback") == ("", None) and menu.state == "closed"   # Alt+F
 assert menu.press("1") == (None, None)
 
 # The panel never shows story text beyond the title.
-for fixed in (feedback.MAIN, feedback.ASK_WORTH, feedback.ASK_INTEREST, feedback.ASK_DEED):
+for fixed in (feedback.MAIN, feedback.ASK_WORTH, feedback.ASK_INTEREST, feedback.ASK_DEED, feedback.ASK_ORIGINAL):
     assert "Flasche" not in fixed
 
 # Which story is current: internal log entries do not count.

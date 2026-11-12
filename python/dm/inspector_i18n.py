@@ -42,7 +42,8 @@ ENGLISH = [
     ('" von "+DATA.facts.length+" Tatsachen"', '" of "+DATA.facts.length+" facts"'), ('DATA.facts.length+" Tatsachen"', 'DATA.facts.length+" facts"'), ('"unlesbar"', '"unreadable"'), ('"Keine Figur passt."', '"No sheet matches."'), ('"Keine Figur ausgewählt."', '"No sheet selected."'),
     ('"Die Figuren konnten nicht geladen werden. Läuft der Inspektor noch?"', '"Could not load the sheets. Is the inspector server still running?"'),
     # experiment
-    ('"Die Geschichten konnten nicht geladen werden."', '"Could not load the stories."'), ('"Fehler"', '"Defects"'), ('"Wert zu spielen?"', '"Worth playing?"'), ('"Zählt eine Tat?"', '"Does a deed matter?"'),
+    ('"Die Geschichten konnten nicht geladen werden."', '"Could not load the stories."'), ('"Fehler"', '"Defects"'), ('"Wert zu spielen?"', '"Worth playing?"'), ('"Zählt eine Tat?"', '"Does a deed matter?"'), ('"Wie aus dem Original?"', '"Like the original?"'),
+    ('"Wie aus dem Original: Hätte das im Originalspiel stehen können, ohne dass man die Naht sieht?"', '"Like the original: could this have been in the original game, with no seam to see?"'),
     ('"Zählt eine Tat: Ändert etwas, das der Spieler tut statt sagt, was er erfährt oder wie es endet?"', '"A deed matters: does something the player does, not says, change what they learn or how it ends?"'), ('"Ja"', '"Yes"'), ('"Nein"', '"No"'), ('"Interesse"', '"Interest"'),
     ('"Fehler: was stimmt nicht, und welche Regel bricht es?"', '"Defects: what is wrong, and which rule does it break?"'), ('"Nächste Geschichte"', '"Next story"'), ('"Nächste ohne Urteil"', '"Next unjudged"'),
     ('"Tasten: Y oder N, 1 bis 5, Pfeile links und rechts, U für die nächste ohne Urteil."', '"Keys: Y or N, 1 to 5, left and right arrows, U for the next unjudged."'), ('"Die Geschichte wurde seit dieser Bewertung geändert."', '"This story has changed since it was scored."'),

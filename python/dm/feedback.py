@@ -27,6 +27,7 @@ MAIN = "\n".join(["Rückmeldung"] + [f"Alt+{k}  {TAG_LABELS[t]}" for k, t in TAG
 ASK_WORTH = "Lohnt es sich, sie zu spielen?\nAlt+1  ja\nAlt+2  nein\nAlt+F  abbrechen"
 ASK_INTEREST = "Wie spannend, 1 bis 5?\nAlt+1 … Alt+5\nAlt+F  abbrechen"
 ASK_DEED = "Hat etwas gezählt, das du getan\nund nicht gesagt hast?\nAlt+1  ja\nAlt+2  nein\nAlt+F  abbrechen"
+ASK_ORIGINAL = "Hätte das im Originalspiel\nstehen können?\nAlt+1  ja\nAlt+2  nein\nAlt+F  abbrechen"
 NO_STORY = "Keine Geschichte läuft."
 SAVED = "Vermerkt."
 RATED = "Bewertet. Danke."
@@ -68,6 +69,10 @@ class Menu:
             return ASK_DEED, None
         elif self.state == "deed" and key in ("1", "2"):
             self.rating["deed"] = "yes" if key == "1" else "no"
+            self.state = "original"
+            return ASK_ORIGINAL, None
+        elif self.state == "original" and key in ("1", "2"):
+            self.rating["original"] = "yes" if key == "1" else "no"
             self.state = "closed"
             entry = {"kind": "rating", **self.rating, "played": True}
             self.rating = {}

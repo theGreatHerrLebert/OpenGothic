@@ -649,11 +649,14 @@ def _clean_score(request):
     """Only known stories and known fields reach the scores file."""
     if request.get("id") not in {_blind_id(p.stem) for p in _story_paths()}:
         return "unknown story", None
-    score = {k: request[k] for k in ("worth", "interest", "defects", "deed", "rev") if request.get(k) not in (None, "")}
+    score = {k: request[k] for k in ("worth", "interest", "defects", "deed", "original", "rev")
+             if request.get(k) not in (None, "")}
     if score.get("worth", "yes") not in ("yes", "no"):
         return "bad verdict", None
     if score.get("deed", "yes") not in ("yes", "no"):   # experiment 2: does a deed matter
         return "bad deed verdict", None
+    if score.get("original", "yes") not in ("yes", "no"):   # could it have been in the original game
+        return "bad original verdict", None
     if score.get("interest", 1) not in (1, 2, 3, 4, 5):
         return "bad interest", None
     if len(str(score.get("defects", ""))) > MAX_TEXT:
