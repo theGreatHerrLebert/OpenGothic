@@ -69,3 +69,19 @@ with tempfile.TemporaryDirectory() as d:
         assert looks.model(g, *bad) == "", bad
     assert looks.model(types.SimpleNamespace(resources=types.SimpleNamespace()), "flower.obj") == ""   # older engine
 print("looks tests passed")
+
+# Mondaloe from an exported aloe: drawn up and slender, a blossom on top in its own material.
+from dm import models  # noqa: E402
+with tempfile.TemporaryDirectory() as d:
+    d = pathlib.Path(d)
+    src = d / "aloe.obj"
+    src.write_text("mtllib aloe.mtl\nv -2 0 0\nv 2 0 0\nv 0 10 0\nvt 0 0\nvt 1 0\nvt 0 1\nvn 0 0 1\nvn 0 0 1\nvn 0 0 1\n"
+                   "usemtl m0\nf 1/1/1 2/2/2 3/3/3\n", encoding="utf-8")
+    (d / "aloe.mtl").write_text("newmtl m0\nmap_Kd aloe_0.png\n", encoding="utf-8")
+    out = models.mondaloe(src, d, petals=5)
+    v, vt, vn, rest = models.read_obj(out.read_text(encoding="utf-8"))
+    assert max(p[1] for p in v[:3]) > 10                                    # drawn up
+    assert sum(1 for line in rest if line.startswith("f ")) == 1 + 5 * 7     # the aloe's face, 5 petals both sides + heart
+    assert "usemtl bloom" in rest and "map_Kd mondaloe_bloom.png" in (d / "mondaloe.mtl").read_text(encoding="utf-8")
+    assert (d / "mondaloe_bloom.png").read_bytes().startswith(b"\x89PNG")
+print("mondaloe ok")
