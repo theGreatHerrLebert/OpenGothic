@@ -43,6 +43,8 @@ ENGLISH = [
     ('"Die Figuren konnten nicht geladen werden. Läuft der Inspektor noch?"', '"Could not load the sheets. Is the inspector server still running?"'),
     # experiment
     ('"Die Geschichten konnten nicht geladen werden."', '"Could not load the stories."'), ('"Fehler"', '"Defects"'), ('"Wert zu spielen?"', '"Worth playing?"'), ('"Zählt eine Tat?"', '"Does a deed matter?"'),
+    ('"Satz "+sentence[key]', '"Sentence "+sentence[key]'), ('" · Rede, "+speech[key].length+" Sätze"', '" · speech, "+speech[key].length+" sentences"'),
+    ('"▶ ganze Rede"', '"▶ whole speech"'), ('"Läuft "+i+"/"+urls.length', '"Playing "+i+"/"+urls.length'),
     ('"Abgebrochen. Kommt die Aufnahme doch noch, steht sie bei den Takes."', '"Cancelled. If the recording still arrives, it will be among the takes."'),
     ('"Nicht mehr warten; eine Aufnahme, die noch kommt, erscheint später bei den Takes."', '"Stop waiting; a recording still on its way will appear among the takes."'), ('"Wie aus dem Original?"', '"Like the original?"'),
     ('"Wie aus dem Original: Hätte das im Originalspiel stehen können, ohne dass man die Naht sieht?"', '"Like the original: could this have been in the original game, with no seam to see?"'),
