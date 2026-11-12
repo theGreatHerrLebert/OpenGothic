@@ -1038,6 +1038,12 @@ RECOGNISE = [
                                    "Darf ich vielleicht … nein. Lieber nicht. Oder doch?"], "Lieber nicht, Ignaz."),
     ("DJG_705_ANGAR_NW", None, "04", ["Diesen Rauch kenne ich. So rochen die Nächte der Gurus.",
                                       "Du hast gesehen, was Y'Berion sah. Behalte es für dich."], "Ich weiß, was er sah."),
+    # the city's alchemist knows what is in each blend, and sells something for the morning after
+    ("VLK_417_CONSTANTINO", None, "10", ["Zeig mal her. Hm. Schwefel, Sumpfkraut und … das ist doch Feuernessel.",
+                                         "Wenn du schon Zeug rauchst, das du nicht verstehst, dann komm wenigstens zu "
+                                         "einem, der weiß, was er mischt.",
+                                         "Ich hätte da übrigens was gegen Kopfschmerzen. Kostet aber."],
+     "Ich komm drauf zurück."),
     # where nobody would expect it: Ulthar of the high council, strictest of the Fire Mages, who was young once too
     ("KDF_502_ULTHAR", None, "05", ["Diese Ringe. Und das Amulett. Komm näher.",
                                      "Ja. Das ist es. Nordrauch, Wüstenrauch, Mondrauch.",
@@ -1058,7 +1064,8 @@ REMARKS_BY_NAME = {
     "VLK_409_ZURIS": ("14", ["Ich verkauf dir den Tabak. Was du draus machst, will ich gar nicht wissen."]),
     "VLK_469_HALVOR": ("06", ["Lass dich mit den Ringen bloß nicht von der Miliz erwischen."]),
     # and where nobody would expect it
-    "VLK_417_CONSTANTINO": ("10", ["Hmpf. Drei Rauche, und keiner davon aus meiner Werkstatt."]),
+    "VLK_417_CONSTANTINO": ("10", ["Hmpf. Drei Rauche, und keiner davon aus meiner Werkstatt.",
+                                   "Drei Rauche. Und dann wundert man sich über Kopfschmerzen."]),
     "MIL_311_ANDRE": ("08", ["Ich weiß, was diese Ringe bedeuten. Und ich weiß, dass ich nichts weiß. Weiter."]),
 }
 REMARKS_CITIZEN = ["Ist das nicht der, von dem der Ausrufer erzählt hat?", "Riechst du das? Sumpf, Schnee und Wüste."]
