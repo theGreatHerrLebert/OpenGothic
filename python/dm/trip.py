@@ -779,8 +779,17 @@ _after = None
 
 
 def remember_after(gothic, lines, now):
+    """Lines people have for the hero after a trip, each until its own "for" seconds have passed (AFTER_FOR unless
+    it says). Added to those still waiting in this world, so a blackout's farewells and the crier's news both keep."""
     global _after
-    _after = [[dict(line) for line in lines], now + AFTER_FOR, gothic.world.generation] if lines else None
+    fresh = [dict(line, until=now + line.get("for", AFTER_FOR), ready=now + line.get("wait", 0.0)) for line in lines]
+    if not fresh:
+        return
+    if _after is not None and _after[2] == gothic.world.generation:
+        _after[0].extend(fresh)
+        _after[1] = max(_after[1], max(line["until"] for line in fresh))
+    else:
+        _after = [fresh, max(line["until"] for line in fresh), gothic.world.generation]
 
 
 def _forget_after(gothic, same_world):
@@ -813,6 +822,10 @@ def tick_after(gothic, now):
     if not lines or now > until or gothic.world.generation != generation:
         _forget_after(gothic, gothic.world.generation == generation)
         return
+    for line in list(lines):
+        if now > line.get("until", until) and not line.get("next"):
+            _release(gothic, line)          # too late for this one; a sermon begun is still preached to the end
+            lines.remove(line)
     talking = gothic.dialog.partner() is not None
     for line in list(lines):
         if line.get("taken") and not talking:  # unbinding the partner would close the conversation he is in
@@ -861,8 +874,9 @@ def _preach(gothic, line, here, now):
     if npc is None:
         _after[0].remove(line)
         return False
-    if line.get("next", 0) == 0 and sum((a - b) ** 2 for a, b in zip(here, npc.position)) > line["near"] ** 2:
-        return False                            # not begun until he is near; once begun, it is preached to the end
+    if line.get("next", 0) == 0 and (now < line.get("ready", 0.0)
+                                     or sum((a - b) ** 2 for a, b in zip(here, npc.position)) > line["near"] ** 2):
+        return False                            # not begun until ready and near; once begun, it is preached to the end
     _hush(npc, line)
     if now < line.get("quiet_until", 0.0):
         return False
@@ -916,6 +930,32 @@ def after_graph(npc):
                 "line": line["line"],
                 "choices": [{"text": line.get("reply", "…"), "ends": True}]}}}
     return None
+
+
+# The town crier (VLK_406, voice 04) reads what the city saw of the hero's night, once, the next time the hero passes
+# him, but not before two minutes have passed (he stands some 16 m from the pipes): his own reading waits (he
+# announces in ZS_ANNOUNCE_HEROLD, only in his START routine) and comes back after.
+HEROLD = {"npc": "VLK_406_HEROLD", "voice": "04", "near": 2000.0, "for": 3 * 3600.0, "wait": 120.0,
+          "hush": "ZS_ANNOUNCE_HEROLD", "resume": "START"}
+HEROLD_OPEN = "Hört, Bürger von Khorinis! Eine Bekanntmachung der Stadtwache!"
+HEROLD_CLOSE = "Wer etwas weiß, melde sich bei der Miliz. Gezeichnet, die Stadtwache von Khorinis."
+HEROLD_NEWS = {
+    "north": ["Im Hafenviertel wurde ein Mann gesehen, der mit erhobener Faust gegen Orks anbrüllte, die nicht da "
+              "waren.",
+              "Er rief nach den Clans des Nordens und behauptete, es schneie. Es hat nicht geschneit."],
+    "desert": ["Am Hafen kroch ein Fremder auf allen vieren und behauptete, er sei ein Skorpion. Zuletzt gesehen im "
+               "Freudenhaus.",
+               "Die Miliz erinnert daran: Das Stechen von Bürgern ist verboten. Auch mit dem Finger."],
+    "sleeper": ["Im Hafen hat jemand den Schläfer angerufen. Laut. Mehrmals.",
+                "Der Schläfer ist fort und bleibt es. Wer ihn dennoch ruft, zahlt der Stadt Strafe für Ruhestörung."],
+    "other": ["Am Hafen wurde ein Mann gesehen, der mit den Farben an der Wand gesprochen hat.",
+              "Die Wände von Khorinis antworten nicht. Bitte lasst sie in Ruhe."],
+}
+
+
+def herold_lines(region):
+    """The crier's announcement after a trip of this region, as a waiting sermon."""
+    return dict(HEROLD, sermon=[HEROLD_OPEN] + HEROLD_NEWS[region] + [HEROLD_CLOSE])
 
 
 # Aftercare: after every trip, Abuyin (who fills the pipes) has a new topic in his own menu, beside his usual ones:
@@ -984,6 +1024,7 @@ def topic(key):
 def after_lines():
     """Every line said after a blackout, by voice, for voicing: the speakers' and the hero's replies."""
     said = [line for b in BLACKOUTS.values() for line in b.get("after", [])]
+    said += [herold_lines(region) for region in HEROLD_NEWS]
     care = [(AFTERCARE_VOICE, AFTERCARE_OPEN), (AFTERCARE_VOICE, AFTERCARE_SKY), (AFTERCARE_VOICE, AFTERCARE_CLOSE),
             (AFTERCARE_VOICE, RESERVED_LINE),
             (HERO_VOICE, AFTERCARE_TITLE), (HERO_VOICE, AFTERCARE_LAST)]
@@ -1020,6 +1061,9 @@ def _tick(_dt):
             if _current.generation == gothic.world.generation:
                 # Only a trip that ran its course here: one cut off by a load never happened in the loaded save.
                 _aftercare = (PROFILE_REGION.get(getattr(_current, "profile", None), "other"), gothic.world.generation)
+                if _after is not None:   # a crier's earlier news gives way to tonight's
+                    _after[0][:] = [line for line in _after[0] if line.get("npc") != HEROLD["npc"] or line.get("next")]
+                remember_after(gothic, [herold_lines(_aftercare[0])], time.monotonic())
             _end(gothic)
     except RuntimeError:
         _end(gothic)                # no world while loading

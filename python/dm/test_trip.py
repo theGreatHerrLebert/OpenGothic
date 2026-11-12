@@ -341,6 +341,7 @@ fake.world.find_npc = lambda name: people.get(name)
 dialog.partner = lambda: None
 pitched = {"DIA_BORKA_TROUBLE"}
 fake.player = types.SimpleNamespace(position=(5000.0, 0.0, 0.0), heard=lambda info: info in pitched)
+trip._after = None
 trip.remember_after(fake, trip.BLACKOUTS["skorpion_goa"]["after"], 0.0)
 def walk(at, now):
     fake.player.position = at
@@ -357,6 +358,7 @@ walk((4000.0, 0.0, 0.0), 4.0)
 assert len(said) == 3 and said[2].startswith("Mein Auftrag")    # Borka at the door
 walk((4000.0, 0.0, 0.0), 5.0)
 assert trip._after is None                                      # all said: forgotten
+trip._after = None
 trip.remember_after(fake, trip.BLACKOUTS["skorpion_goa"]["after"], 0.0)
 walk((100.0, 0.0, 0.0), trip.AFTER_FOR + 1)
 assert len(said) == 3 and trip._after is None                   # too late: forgotten
@@ -364,6 +366,7 @@ pitched.clear()                                                 # never pitched 
 binds = []
 dialog.bind = lambda npc: binds.append(("bind", npc))
 dialog.unbind = lambda npc=None: binds.append(("unbind", npc))
+trip._after = None
 trip.remember_after(fake, trip.BLACKOUTS["skorpion_goa"]["after"], 0.0)
 walk((4000.0, 0.0, 0.0), 1.0)
 assert len(said) == 3 and binds == [("bind", people["VLK_434_BORKA"])]  # his conversation is ours, not narrated
@@ -387,6 +390,7 @@ walk((4000.0, 0.0, 0.0), 2.0)
 assert binds[-1] == ("unbind", people["VLK_434_BORKA"])         # his own conversations back afterwards
 pitched.clear()
 assert trip.special_for(types.SimpleNamespace(instance="VLK_434_BORKA", voice=11)) is None   # once
+trip._after = None
 trip.remember_after(fake, trip.BLACKOUTS["skorpion_goa"]["after"], 0.0)
 walk((4000.0, 0.0, 0.0), 1.0)
 walk((4000.0, 0.0, 0.0), trip.AFTER_FOR + 1)
@@ -394,6 +398,7 @@ assert binds[-1] == ("unbind", people["VLK_434_BORKA"]) and trip._after is None 
 assert ("15", "Schon gut, ich geh ja schon.") in trip.after_lines()
 assert trip.BLACKOUTS["skorpion_goa"]["after"][2].get("bound") is None   # the shared config is never touched
 del people["VLK_434_BORKA"]                                     # someone gone from the world is dropped
+trip._after = None
 trip.remember_after(fake, trip.BLACKOUTS["skorpion_goa"]["after"], 0.0)
 walk((9000.0, 0.0, 0.0), 1.0)
 assert [line["npc"] for line in trip._after[0]] == ["VLK_435_NADJA", "VLK_433_BROMOR"]
@@ -524,6 +529,7 @@ while night.tick(fake, now):
     assert now < 60, "the blackout never ended"
 assert moves == [(10.0, 20.0, 30.0)] and times == [(6, 0)]
 assert said[-1] in trip.BLACKOUTS["anrufung"]["wake"]
+trip._after = None                                               # a fresh morning: nothing else waiting
 trip.remember_after(fake, trip.BLACKOUTS["anrufung"]["after"], now)
 trip._current = None
 trip.tick_after(fake, now + 0.1)
@@ -545,6 +551,7 @@ vatras.in_state = lambda state: state == "ZS_PREACH_VATRAS"
 vatras.stand_here = lambda: hushed.append("stand")
 fake.daedalus = types.SimpleNamespace(call=lambda name, npc, routine: routines.append((name, npc, routine)))
 said.clear()
+trip._after = None
 trip.remember_after(fake, [trip.BLACKOUTS["anrufung"]["after"][1]], 0.0)
 fake.player.position = (0.0, 0.0, 0.0)                          # 90 m away
 trip.tick_after(fake, 1.0)
@@ -564,6 +571,7 @@ assert routines == [("B_STARTOTHERROUTINE", vatras, "START")] and hushed == ["st
 # In another routine (not preaching) there is nothing to hush and nothing to give back.
 vatras.in_state = lambda state: False
 hushed.clear(); routines.clear(); said.clear()
+trip._after = None
 trip.remember_after(fake, [trip.BLACKOUTS["anrufung"]["after"][1]], 0.0)
 fake.player.position = (0.0, 0.0, 8000.0)
 t = 1.0
@@ -574,6 +582,7 @@ assert said == sermon and hushed == [] and routines == []
 # Forgotten mid-sermon (too late), he still gets his routine back.
 vatras.in_state = lambda state: state == "ZS_PREACH_VATRAS"
 said.clear()
+trip._after = None
 trip.remember_after(fake, [trip.BLACKOUTS["anrufung"]["after"][1]], 0.0)
 trip.tick_after(fake, 1.0)
 trip.tick_after(fake, trip.AFTER_FOR + 1)
@@ -716,3 +725,33 @@ trip.start("skorpion_goa", None)
 assert len(falls) == 1                                           # the desert does not
 trip._current = None
 print("bjarne and snow ok")
+
+# The crier: after a trip that ran its course, one announcement of the trip's region, ready after a wait, read in his
+# voice as a sermon when the hero passes; a later trip's news replaces one not yet read.
+trip._after = None
+crier = types.SimpleNamespace(position=(0.0, 0.0, 0.0), in_state=lambda st: False, instance="VLK_406_HEROLD")
+gw = types.SimpleNamespace(generation=9, find_npc=lambda n: crier if n == "VLK_406_HEROLD" else None)
+sys.modules["gothic"].world = gw
+sys.modules["gothic"].player = types.SimpleNamespace(position=(0.0, 0.0, 100.0))
+trip._aftercare = None
+trip._current = types.SimpleNamespace(generation=9, tick=lambda g, now: False, profile="skorpion_goa")
+trip._tick(0.0)
+waiting = [l for l in trip._after[0] if l["npc"] == "VLK_406_HEROLD"]
+assert len(waiting) == 1 and waiting[0]["sermon"][1] == trip.HEROLD_NEWS["desert"][0]
+trip._current = types.SimpleNamespace(generation=9, tick=lambda g, now: False, profile="kriegsgesang")
+trip._tick(0.0)
+waiting = [l for l in trip._after[0] if l["npc"] == "VLK_406_HEROLD"]
+assert len(waiting) == 1 and waiting[0]["sermon"][1] == trip.HEROLD_NEWS["north"][0]   # tonight's news only
+said.clear()
+g2 = types.SimpleNamespace(world=gw, player=sys.modules["gothic"].player, dialog=dialog, daedalus=types.SimpleNamespace(call=lambda *a: None))
+dialog.partner = lambda: None
+start = waiting[0]["ready"] - 1
+trip.tick_after(g2, start)
+assert said == []                                               # not before the wait
+t = waiting[0]["ready"]
+while trip._after is not None and t < waiting[0]["ready"] + 400:
+    trip.tick_after(g2, t)
+    t += 0.5
+assert said == waiting[0]["sermon"]
+assert all((trip.HEROLD["voice"], text) in trip.after_lines() for text in trip.herold_lines("sleeper")["sermon"])
+print("crier ok")
