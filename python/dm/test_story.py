@@ -613,6 +613,19 @@ def test_items_of_our_own():
     defined.clear()
     s.rebind()
     assert defined and defined[0][0] == carrier
+    rejected(s, [{"op": "define_item", "item": "Y", "like": "ITPL_A", "name": "Y", "carrier": "ITPL_A"}], "carrier")
+    rejected(s, [{"op": "define_item", "item": "Y", "like": "ITPL_A", "name": "Y", "carrier": carrier}], "carrier")
+    rejected(s, [{"op": "define_item", "item": "Mondaloe", "like": "ITPL_A", "name": "M",
+                  "carrier": st.ITEM_CARRIERS[3]}], "already has")
+    order = []
+    fake.world.define_item = lambda *a: order.append("define")
+    real_give = st.OPS["give_item"]
+    st.OPS["give_item"] = (real_give[0], real_give[1], lambda args: order.append("give"))
+    s2 = st.Story()
+    s2.apply_plan({"reason": "r", "ops": [{"op": "give_item", "instance": "Z"},
+                                          {"op": "define_item", "item": "Z", "like": "ITPL_A", "name": "Z"}]})
+    assert order == ["define", "give"]                   # defined first, so what is given is the story's own
+    st.OPS["give_item"] = real_give
     rejected(s, [{"op": "define_item", "item": "X", "like": "NOV_A", "name": "X"}], "not an item")
     rejected(s, [{"op": "define_item", "item": "X", "like": "ITPL_A", "name": ""}], "name")
     rejected(s, [{"op": "define_item", "item": "X", "like": "ITPL_A", "name": "X", "rows": [["a", "b"]]}], "rows")

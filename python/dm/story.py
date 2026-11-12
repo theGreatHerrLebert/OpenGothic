@@ -608,8 +608,13 @@ class Story:
                     free = [c for c in ITEM_CARRIERS if c not in used]
                     if not free:
                         raise PlanError("no carrier left for another item of the story's own")
-                    known[item] = op.get("carrier") or free[0]
-                    used.add(known[item])
+                    wanted = (op.get("carrier") or free[0]).upper()
+                    if wanted not in free:   # only a free one of the pool: never a real item, never shared
+                        raise PlanError(f"carrier not free: {wanted}")
+                    known[item] = wanted
+                    used.add(wanted)
+                elif op.get("carrier") and op["carrier"].upper() != known[item]:
+                    raise PlanError(f"{item} already has its carrier: {known[item]}")
         if not known:
             return ops
 
@@ -654,7 +659,8 @@ class Story:
         # State may have moved on since the plan was queued.
         plan = dict(plan, ops=self.resolve_items(plan["ops"]))
         self.validate(plan["ops"])
-        ordered = sorted(plan["ops"], key=lambda op: op["op"] in _LAST)
+        # Definitions first, so an item the plan gives or places is made as the story's own; removals last.
+        ordered = sorted(plan["ops"], key=lambda op: 0 if op["op"] == "define_item" else 2 if op["op"] in _LAST else 1)
         undo = []
         try:
             for op in ordered:
