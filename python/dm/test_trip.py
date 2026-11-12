@@ -692,3 +692,23 @@ calm.tick(fake, 0.1)
 assert said and said[-1] in trip.ESCAPES
 assert set(trip.ESCAPES) <= set(trip.thought_lines())
 print("escape ok")
+
+# Bjarne speaks as the witness while he is Bjarne; the same citizen elsewhere is a stranger.
+import random as _r2  # noqa: E402
+g = trip.special_graph(1, _r2.Random(4), "VLK_454_BUERGER", name="Bjarne", profile="kriegsgesang")
+assert g["nodes"]["a"]["line"] in trip.SPECIAL_BY_NAME[("VLK_454_BUERGER", "Bjarne")]["openers"]
+g = trip.special_graph(1, _r2.Random(4), "VLK_454_BUERGER", name="Bürger")
+assert g["nodes"]["a"]["line"] in trip.SPECIAL_OPENERS
+# The north brings its snow.
+falls = []
+sys.modules["dm.weather"] = types.SimpleNamespace(snow=lambda **k: falls.append(k))
+import dm as _dm  # noqa: E402
+_dm.weather = sys.modules["dm.weather"]
+trip._current = None
+trip.start("kriegsgesang", None)
+assert falls and falls[-1]["rise"] > 0
+trip._current = None
+trip.start("skorpion_goa", None)
+assert len(falls) == 1                                           # the desert does not
+trip._current = None
+print("bjarne and snow ok")

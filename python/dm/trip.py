@@ -166,6 +166,16 @@ SPECIAL_DRINKERS = {"openers": ["Ich glaube, du solltest dich vom Bier lieber fe
                     "closers": ["Trink Wasser. Viel Wasser.", "Das Fass läuft nicht weg. Du hoffentlich schon.",
                                 "Komm wieder, wenn du nur noch eins davon bist: durstig oder benebelt."]}
 # People with their own reason to notice: whoever filled the pipe knows exactly what is going on.
+# Bjarne (story 3's renamed citizen) smokes the war blend for his dead brother, and in the north one never smokes it
+# alone: the second man bears witness. He speaks to the hero as that witness, only while he is Bjarne, so the same
+# citizen in a game without the story stays a stranger. The brother goes unnamed: saves keep the story's older text.
+SPECIAL_BY_NAME = {
+    ("VLK_454_BUERGER", "Bjarne"): {
+        "openers": ["Du hast gezogen. Gut. Siehst du sie? Die Alten, am Feuer?",
+                    "Halt dich gerade. Die Trommeln schlagen für dich. Und für meinen Bruder."],
+        "closers": ["Ich bezeug's. Du hast für ihn gezogen. Jetzt lauf.",
+                    "Lauf, solang die Trommeln schlagen. Reden kannst du morgen."]},
+}
 SPECIAL_PEOPLE = {
     "VLK_456_ABUYIN": {"openers": ["Ich hab's dir ja gesagt. Ich hab's dir doch gesagt!",
                                    "Ich hab's dir ja gesagt, mein Freund. Langsam ziehen, hab ich gesagt."],
@@ -174,11 +184,12 @@ SPECIAL_PEOPLE = {
 }
 
 
-def special_graph(voice, rng, instance="", guard=False, profile=None, drinking=False):
+def special_graph(voice, rng, instance="", guard=False, profile=None, drinking=False, name=""):
     """A short dialogue for an NPC of this voice number: it notices, the hero babbles (of the trip's own region, if it
     has one), it sends him off."""
     answers = rng.sample(SPECIAL_ANSWERS + PROFILE_ANSWERS.get(profile, []), 3)
-    own = SPECIAL_PEOPLE.get(instance.upper(), SPECIAL_DRINKERS if drinking else SPECIAL_GUARDS if guard else {})
+    own = (SPECIAL_BY_NAME.get((instance.upper(), name)) or SPECIAL_PEOPLE.get(instance.upper())
+           or (SPECIAL_DRINKERS if drinking else SPECIAL_GUARDS if guard else {}))
     return {"voice": f"{int(voice):02d}", "start": "a", "nodes": {
         "a": {"line": rng.choice(own.get("openers", SPECIAL_OPENERS)),
               "choices": [{"text": text, "goto": "z", "delivery": DELIVERY, "repeat": True}  # babble never runs out
@@ -194,7 +205,7 @@ def special_for(npc):
     if _current.black is not None or _current.envelope.intensity <= BLOCK_ABOVE:
         return None
     return special_graph(npc.voice, _current.rng, getattr(npc, "instance", "") or "", is_guard(npc),
-                         getattr(_current, "profile", None), is_drinking(npc))
+                         getattr(_current, "profile", None), is_drinking(npc), getattr(npc, "name", "") or "")
 
 
 def is_drinking(npc):
@@ -703,6 +714,7 @@ class Trip:
 
 
 _current = None
+SNOW_WITH = {"nordmar", "kriegsgesang"}   # trips that bring their own snowfall
 
 
 def start(profile="mindcap", track=None, seconds=None, thoughts=None):
@@ -720,6 +732,11 @@ def start(profile="mindcap", track=None, seconds=None, thoughts=None):
     _current = Trip(phases, track, [tuple(t) for t in thoughts] if thoughts else None,
                     style=PROFILE_LOOK.get(profile, "mindcap"), blackout=BLACKOUTS.get(profile))
     _current.profile = profile
+    if profile in SNOW_WITH:
+        # The north brings its weather: snow thickening over the first third, held, clearing before the landing.
+        total = sum(phase[0] for phase in phases)
+        from dm import weather
+        weather.snow(rise=total * 0.3, hold=total * 0.45, fall=total * 0.2)
     return True
 
 

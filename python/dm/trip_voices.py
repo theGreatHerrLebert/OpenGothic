@@ -70,7 +70,7 @@ SPECIAL_VOICES = ["01", "03", "04", "05", "06", "07", "08", "09", "10", "11", "1
 GUARD_VOICES = ["01", "03", "04", "05", "06", "07", "08", "09", "11", "12", "13"]
 
 # The voice number of each person in trip.SPECIAL_PEOPLE.
-SPECIAL_PEOPLE_VOICES = {"VLK_456_ABUYIN": "13"}
+SPECIAL_PEOPLE_VOICES = {"VLK_456_ABUYIN": "13", "VLK_454_BUERGER": "01"}
 
 
 # Who speaks each trip voice file's lines, for the story library's "Trip-Stimmen" page.
@@ -124,6 +124,9 @@ def main(stories):
                        for name, own in trip.SPECIAL_PEOPLE.items()})
     guard_lines = trip.SPECIAL_GUARDS["openers"] + trip.SPECIAL_GUARDS["closers"]
     all_graphs.update({f"trip__guard_{v}": {"voice": v, "narration": guard_lines} for v in GUARD_VOICES})
+    for (instance, _name), own in trip.SPECIAL_BY_NAME.items():
+        all_graphs[f"trip__special_{instance.lower()}"] = {"voice": SPECIAL_PEOPLE_VOICES[instance],
+                                                           "narration": own["openers"] + own["closers"]}
     for voice, line in trip.after_lines():
         all_graphs.setdefault(f"trip__after_{voice}", {"voice": voice, "narration": []})["narration"].append(line)
     graphs.write_text(json.dumps(all_graphs, ensure_ascii=False, indent=1), encoding="utf-8")
