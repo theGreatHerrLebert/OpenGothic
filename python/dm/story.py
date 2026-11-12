@@ -713,6 +713,8 @@ class Story:
             visible.setdefault(topic["npc"], [])
             if self._conditions(topic):
                 visible[topic["npc"]].append((topic_id, topic["title"]))
+        for instance, topics in __import__("dm.trip").trip.extra_topics(gothic).items():
+            visible.setdefault(instance, []).extend(topics)   # a trip's topics beside the story's own
         for instance, topics in visible.items():
             npc = gothic.world.find_npc(instance)
             if npc is None:
@@ -724,6 +726,8 @@ class Story:
 
     def topic(self, key):
         """A topic's data if it may be played right now, or None: its conditions are checked again on choosing."""
+        if key.startswith("trip:"):
+            return __import__("dm.trip").trip.topic(key)
         topic = self.state.get("topics", {}).get(key)
         return topic if topic is not None and self._conditions(topic) else None
 

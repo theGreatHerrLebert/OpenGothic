@@ -874,15 +874,81 @@ def after_graph(npc):
     return None
 
 
+# Aftercare: after every trip, Abuyin (who fills the pipes) has a new topic in his own menu, beside his usual ones:
+# he asks how the journey was, the hero tells, region by region. Once per trip, and gone after a load.
+AFTERCARE_NPC = "VLK_456_ABUYIN"
+AFTERCARE_VOICE = "13"
+AFTERCARE_TOPIC = "trip:aftercare"
+AFTERCARE_TITLE = "Wegen dem Kraut von vorhin …"
+PROFILE_REGION = {"nordmar": "north", "kriegsgesang": "north", "skorpion": "desert", "skorpion_goa": "desert",
+                  "anrufung": "sleeper"}
+AFTERCARE = {
+    "north": {"tell": ["Ich hab die Trommeln der Clans gehört.", "Kalt. Und laut. Und wunderschön."],
+              "ask": "Die Clans des Nordens rauchen das vor der Schlacht. Hast du gekämpft?",
+              "fight": ["Nur gegen einen Baum. Der Baum hat gewonnen.", "Ich glaub, ich hab einen Schneemann besiegt."],
+              "sky": ["Grüne Lichter am Himmel. Und ein Mond, rot wie Blut."]},
+    "desert": {"tell": ["Heiß. Ich war ein Skorpion. Glaub ich.", "Ich hab Dünen gesehen, wo keine sind."],
+               "ask": "Der Skorpion aus dem Süden sticht jeden, der ihn unterschätzt. Hat er dich gestochen?",
+               "fight": ["Mitten ins Herz.", "Nein. Ich hab zurückgestochen."],
+               "sky": ["Er hat gebrannt. Der ganze Himmel."]},
+    "sleeper": {"tell": ["Ich hab gebetet. Und etwas hat zurückgesehen.", "Ich hab den Schläfer gesehen."],
+                "ask": "Den Schläfer? Mein Freund … manche Dinge sollte man nicht rufen. Hat er dir geantwortet?",
+                "fight": ["Er hat mich angesehen. Das hat gereicht.",
+                          "Ich bin bei Vatras aufgewacht. Das war Antwort genug."],
+                "sky": ["Er war voller Sterne. Und voller Augen."]},
+    "other": {"tell": ["Bunt. Sehr, sehr bunt.", "Die Wände haben geatmet."],
+              "ask": "So ist es beim ersten Mal. Hast du dich verloren?",
+              "fight": ["Nur ein bisschen.", "Ich weiß nicht mal mehr, wo ich angefangen hab."],
+              "sky": ["Ich hab bis ans Ende der Welt gesehen."]},
+}
+AFTERCARE_OPEN = "Ah, mein Freund! Du lebst noch. Erzähl, wie war die Reise?"
+AFTERCARE_SKY = "Und der Himmel? Man sagt, er öffnet sich, wenn das Kraut gut ist."
+AFTERCARE_CLOSE = "Gut, gut. Komm wieder, wenn du bereit bist. Und nimm beim nächsten Mal kleinere Züge."
+AFTERCARE_LAST = "Mach ich."
+_aftercare = None   # (region, world generation) of the last trip, until talked about
+
+
+def aftercare_graph(region):
+    """Abuyin's questions about a trip, and the hero's answers to choose from."""
+    talk = AFTERCARE[region]
+    return {"voice": AFTERCARE_VOICE, "start": "a", "nodes": {
+        "a": {"line": AFTERCARE_OPEN, "choices": [{"text": t, "goto": "b"} for t in talk["tell"]]},
+        "b": {"line": talk["ask"], "choices": [{"text": t, "goto": "c"} for t in talk["fight"]]},
+        "c": {"line": AFTERCARE_SKY, "choices": [{"text": t, "goto": "d"} for t in talk["sky"]]},
+        "d": {"line": AFTERCARE_CLOSE, "choices": [{"text": AFTERCARE_LAST, "ends": True}]}}}
+
+
+def extra_topics(gothic):
+    """Topics the trips add to people's own menus, as {npc: [(key, title)]}; every npc listed, empty when none, so a
+    topic talked about disappears again."""
+    shown = _aftercare is not None and _aftercare[1] == gothic.world.generation
+    return {AFTERCARE_NPC: [(AFTERCARE_TOPIC, AFTERCARE_TITLE)] if shown else []}
+
+
+def topic(key):
+    """A trip topic's data when it is chosen, taken once; None if there is none (any more)."""
+    global _aftercare
+    if key != AFTERCARE_TOPIC or _aftercare is None:
+        return None
+    region = _aftercare[0]
+    _aftercare = None
+    return {"title": AFTERCARE_TITLE, "graph": aftercare_graph(region)}
+
+
 def after_lines():
     """Every line said after a blackout, by voice, for voicing: the speakers' and the hero's replies."""
     said = [line for b in BLACKOUTS.values() for line in b.get("after", [])]
-    return ([(line["voice"], line["line"]) for line in said if "line" in line]
+    care = [(AFTERCARE_VOICE, AFTERCARE_OPEN), (AFTERCARE_VOICE, AFTERCARE_SKY), (AFTERCARE_VOICE, AFTERCARE_CLOSE),
+            (HERO_VOICE, AFTERCARE_TITLE), (HERO_VOICE, AFTERCARE_LAST)]
+    for talk in AFTERCARE.values():
+        care += [(AFTERCARE_VOICE, talk["ask"])] + [(HERO_VOICE, t) for t in talk["tell"] + talk["fight"] + talk["sky"]]
+    return (care + [(line["voice"], line["line"]) for line in said if "line" in line]
             + [(line["voice"], text) for line in said for text in line.get("sermon", [])]
             + [(HERO_VOICE, line["reply"]) for line in said if line.get("reply")])
 
 
 def _tick(_dt):
+    global _aftercare
     import gothic
     if _current is None:
         try:
@@ -892,6 +958,7 @@ def _tick(_dt):
         return
     try:
         if not _current.tick(gothic, time.monotonic()):
+            _aftercare = (PROFILE_REGION.get(getattr(_current, "profile", None), "other"), gothic.world.generation)
             _end(gothic)
     except RuntimeError:
         _end(gothic)                # no world while loading

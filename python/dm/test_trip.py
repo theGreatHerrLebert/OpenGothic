@@ -621,3 +621,25 @@ assert shown[-1] == "clear"                                     # no panorama: t
 trip.set_sky(types.SimpleNamespace(), "hot", 1.0, 15.0)         # an engine without a sky: nothing happens
 assert set(trip.PROFILE_GALAXY.values()) <= set(trip.GALAXIES)
 print("galaxy ok")
+
+# Aftercare: after a trip, Abuyin has a topic of his own about it, region by region; taken once, gone after a load.
+trip._aftercare = None
+w = types.SimpleNamespace(world=types.SimpleNamespace(generation=5))
+assert trip.extra_topics(w) == {trip.AFTERCARE_NPC: []}         # listed empty: a topic talked about disappears
+trip._aftercare = ("north", 5)
+assert trip.extra_topics(w) == {trip.AFTERCARE_NPC: [(trip.AFTERCARE_TOPIC, trip.AFTERCARE_TITLE)]}
+w.world.generation = 6
+assert trip.extra_topics(w)[trip.AFTERCARE_NPC] == []           # another save: not this trip's
+w.world.generation = 5
+care = trip.topic(trip.AFTERCARE_TOPIC)
+assert care["title"] == trip.AFTERCARE_TITLE and _graph.validate(care["graph"]) is None
+nodes = care["graph"]["nodes"]
+assert nodes["b"]["line"] == trip.AFTERCARE["north"]["ask"] and "Blut" in nodes["c"]["choices"][0]["text"]
+assert nodes["d"]["choices"][0]["ends"] and care["graph"]["voice"] == "13"
+assert trip.topic(trip.AFTERCARE_TOPIC) is None and trip.extra_topics(w)[trip.AFTERCARE_NPC] == []   # once
+assert trip.topic("trip:other") is None
+for region in trip.AFTERCARE:
+    assert _graph.validate(trip.aftercare_graph(region)) is None
+assert set(trip.PROFILE_REGION.values()) <= set(trip.AFTERCARE)
+assert (trip.HERO_VOICE, trip.AFTERCARE_TITLE) in trip.after_lines()
+print("aftercare ok")
