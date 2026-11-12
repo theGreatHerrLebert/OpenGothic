@@ -83,6 +83,16 @@ with tempfile.TemporaryDirectory() as d:
     job = b.queue({"kind": "spare", "lines": [list(line)]}, urgent=False)
     urgent = b.queue({"kind": "resample", "lines": [list(line)]})
     assert sorted(p.stem for p in b.JOBS.glob("*.json")) == [urgent, job]   # the user's request goes first
+    # every generated line is brightened before it is levelled
+    order = []
+    real_brighten, real_level = b.brighten, b.level_match
+    b.brighten = lambda path: order.append("brighten")
+    b.level_match = lambda path, ref: order.append("level")
+    assert b._publish(lambda text, reference, target: (target.write_bytes(b"x"), True)[1], "x", "05",
+                      b.takes_dir(*line) / "8.wav")
+    assert order == ["brighten", "level"]
+    b.brighten, b.level_match = real_brighten, real_level
+    (b.takes_dir(*line) / "8.wav").unlink()
     # a take appears only when it is complete; a failed one leaves nothing behind
     failing = lambda text, reference, target: (target.write_bytes(b"half"), False)[1]
     assert not b._publish(failing, "x", "05", b.takes_dir(*line) / "9.wav")
