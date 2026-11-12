@@ -4407,6 +4407,23 @@ void Npc::standAtRoutine(uint32_t callback, std::string_view point) {
   clearState(true);
   }
 
+void Npc::holdRoutine(uint32_t callback, std::string_view point) {
+  if(!routineHeld) {
+    heldRoutines = routines;
+    routineHeld  = true;
+    }
+  standAtRoutine(callback, point);
+  }
+
+void Npc::releaseRoutine() {
+  if(!routineHeld)
+    return;
+  routines     = std::move(heldRoutines);
+  heldRoutines.clear();
+  routineHeld  = false;
+  clearState(true);   // back into his own routine from here
+  }
+
 void Npc::addRoutine(gtime s, gtime e, uint32_t callback, std::string_view point) {
   auto wp = world().findPoint(point,false);
 

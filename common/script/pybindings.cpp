@@ -770,17 +770,23 @@ PYBIND11_EMBEDDED_MODULE(gothic, m) {
              if(best==nullptr)
                return py::none();
              best->setReserved(on);
+             if(!on) {
+               if(best->evicted!=nullptr) {
+                 best->evicted->releaseRoutine();   // his own routine back, exactly as it was
+                 best->evicted = nullptr;
+                 }
+               return py::str("");
+               }
              auto* user = best->currentUser();
-             if(on && user!=nullptr && !user->isPlayer()) {
+             if(user!=nullptr && !user->isPlayer()) {
                user->aiPush(AiQueue::aiUseMob(scheme, -1));   // stands up, as at the end of his own smoke
-               // ... and steps clear of it, so the hero can get to it: the waypoint nearest a spot a few steps
-               // further away, on his side.
+               // ... and waits out the reservation on a bench nearby: his routine is held, not just interrupted,
+               // or it sends him straight back to his spot. Without a free bench he stands a few steps away.
                auto  bp  = best->position();
                auto  up  = user->position();
                float dx  = up.x-bp.x, dz = up.z-bp.z;
                float len = std::max(std::sqrt(dx*dx + dz*dz), 1.f);
                auto  to  = Tempest::Vec3(up.x + dx/len*250.f, up.y, up.z + dz/len*250.f);
-               // Clear of the object, and not where someone already stands (Canthar ended up inside Bjarne).
                std::vector<Tempest::Vec3> others;
                for(uint32_t n=0; n<w->npcCount(); ++n)
                  if(auto* o = w->npcById(n); o!=nullptr && o!=user)
@@ -797,11 +803,21 @@ PYBIND11_EMBEDDED_MODULE(gothic, m) {
                    }
                  return true;
                  };
-               // Best a bench nearby, where he can wait out the evening; else a free spot a few steps away.
-               if(w->availableMob(*user, "BENCH")!=nullptr)
-                 user->aiPush(AiQueue::aiUseMob("BENCH", 1));
-               else if(auto* wp = w->findWayPoint(to, clear))
-                 user->aiPush(AiQueue::aiGoToPoint(*wp));
+               auto& script = w->script();
+               const size_t sit   = script.findSymbolIndex("ZS_SIT_BENCH");
+               const size_t stand = script.findSymbolIndex("ZS_STAND_ARMSCROSSED");
+               const WayPoint* wp = nullptr;
+               size_t          fn = stand;
+               if(auto* bench = w->availableMob(*user, "BENCH"); bench!=nullptr && sit!=size_t(-1)) {
+                 wp = w->findWayPoint(bench->position());
+                 fn = sit;
+                 }
+               if(wp==nullptr)
+                 wp = w->findWayPoint(to, clear);
+               if(wp!=nullptr && fn!=size_t(-1)) {
+                 user->holdRoutine(uint32_t(fn), wp->name);
+                 best->evicted = user;
+                 }
                if(auto* sym = w->script().getVm().find_symbol_by_index(uint32_t(user->handle().symbol_index())))
                  return py::str(sym->name());
                return py::str("?");

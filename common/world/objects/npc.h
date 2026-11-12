@@ -317,6 +317,11 @@ class Npc final {
 
     void      addRoutine(gtime s, gtime e, uint32_t callback, std::string_view point);
     void      standAtRoutine(uint32_t callback, std::string_view point);
+    // A routine for a while (a smoker made to wait on a bench while his pipe is kept for the hero): the own one is
+    // kept and comes back exactly with releaseRoutine. Not saved: the story refuses saving while one is held.
+    void      holdRoutine(uint32_t callback, std::string_view point);
+    void      releaseRoutine();
+    bool      isRoutineHeld() const { return routineHeld; }
     void      excRoutine(size_t callback);
     void      multSpeed(float s);
 
@@ -611,6 +616,8 @@ class Npc final {
     AiQueue                        aiQueue;
     AiQueue                        aiQueueOverlay;
     std::vector<Routine>           routines;
+    std::vector<Routine>           heldRoutines;
+    bool                           routineHeld = false;
 
     Interactive*                   currentInteract=nullptr;
     Npc*                           currentOther   =nullptr;
