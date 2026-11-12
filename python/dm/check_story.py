@@ -59,16 +59,16 @@ def deeds(data):
     return found
 
 
-SIGNIFICANCE = ("from_play", "stakes", "choice", "changes")
+SIGNIFICANCE = ("theme", "from_play", "stakes", "choice", "changes")
 
 
 def significance_problems(block):
     """Why the story matters, as the director brief asks: every answer present and more than a word or two."""
     if block is None:
-        return ["no significance: say why this story matters (from_play, stakes, choice, changes); "
+        return ["no significance: say why this story matters (theme, from_play, stakes, choice, changes); "
                 "see 'Why this story' in docs/director-brief.md"]
     if not isinstance(block, dict):
-        return ["significance must be an object with from_play, stakes, choice and changes"]
+        return ["significance must be an object with theme, from_play, stakes, choice and changes"]
     return [f"significance.{key} is missing or too short to say anything" for key in SIGNIFICANCE
             if not isinstance(block.get(key), str) or len(block[key].split()) < 4]
 

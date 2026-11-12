@@ -42,6 +42,8 @@ Read `docs/quest-design.md` first. It holds the rules for quests and characters.
 A valid story is not yet a good one. Three herbs for a farmer is playable and nobody cares. Every story file carries
 a `significance` block, written before anything else, each answer one or two plain sentences:
 
+- `theme`: the one thing the story turns around, and how every part runs through it ("Loaded dice: how the cheat
+  cheats, what the hero plays with, how he is caught and what he trades"). See "Good to play".
 - `from_play`: which of the player's own deeds this story grows out of (the theft he got away with, the pipe he
   smoked, the guard he knocked down). A story that could happen to any hero is weaker than one that could only
   happen to this one.
@@ -97,6 +99,26 @@ and was still not worth playing: return a pouch or keep it, 25 gold, no conseque
   win and a loss, `repeat` to play again); a loaded die in his pocket can open a choice that always wins, and winning
   too often can make someone suspicious. With `dice` the throw is played out for all to see: the dice rattle, a
   moment passes and both throws show on screen; `{"dice": {"hero": 6}}` is the loaded throw.
+
+## A story that works: the smoking blends
+
+The first series played end to end, and still the best, is three stories around forbidden smoking blends in the city,
+built over many sessions with the player. Do not copy its premise; learn why it works.
+
+- **One thing carries it.** Each story is a blend: Bjarne's war herb, smoked for a dead brother; Kasim's herb from
+  Ishtar, smoked at noon beside a pipe that stays cold by day; Ignaz's forbidden guru herb, smoked at night. The hero
+  gathers the ingredients, mixes or earns it, smokes it, lives through it (a trip of its own, with music, a changed
+  sky and thoughts), and is asked about it afterwards. Every deed, risk and reward goes through the blend.
+- **It grows out of the hero's own play,** one step at a time: he smoked once at Abuyin's, so the northman beside the
+  fortune teller notices him; he survived the first, so only he sees the cold pipe; he survived two, so the forbidden
+  third is the step too far.
+- **People with one layer each:** a northman smoking for his dead brother, a desert man guarding a secret from
+  Ishtar, an alchemist reading a forbidden page by night. The others (guards, a bouncer, Abuyin) are plain and react
+  by consistent rules.
+- **The world notices.** Guards comment on a hero who is high, a bouncer turns him away the next night, Abuyin cares
+  for him when he wakes, and people in other towns recognise the set he wears.
+- **The reward is standing and a set:** two rings and an amulet that belong together, a ceremony, a reputation.
+- **Surprise and humour come from the deed, not from a twist:** waking up at a shrine with no memory of the way there.
 
 ## Rules for a story
 
