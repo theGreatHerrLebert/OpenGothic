@@ -762,7 +762,7 @@ PYBIND11_EMBEDDED_MODULE(gothic, m) {
       .def("define_item",
            [](const PyWorld&, const std::string& carrier, const std::string& like, const std::string& name,
               const std::string& description, std::vector<std::tuple<std::string,int32_t>> rows, int32_t value,
-              const std::string& visual) {
+              const std::string& visual, int32_t damage) {
              auto* w = requireWorld();
              auto& vm = w->script().getVm();
              auto* c  = vm.find_symbol_by_name(upper(carrier));
@@ -779,12 +779,13 @@ PYBIND11_EMBEDDED_MODULE(gothic, m) {
                }
              def.value  = value;
              def.visual = visual;
+             def.damage = damage;
              w->script().defineItem(c->index(), std::move(def));
              return true;
              },
            py::arg("carrier"), py::arg("like"), py::arg("name"), py::arg("description") = "",
            py::arg("rows") = std::vector<std::tuple<std::string,int32_t>>{}, py::arg("value") = -1,
-           py::arg("visual") = "",
+           py::arg("visual") = "", py::arg("damage") = 0,
            "Make every new item of the carrier instance like the item 'like', with its own name, description and "
            "inventory rows (label, number). The story defines it again after a load.")
       .def("reserve_object",

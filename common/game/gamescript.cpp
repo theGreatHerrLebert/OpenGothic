@@ -564,9 +564,29 @@ void GameScript::initializeInstanceItem(const std::shared_ptr<zenkit::IItem>& it
   // ... and its own name and texts
   d.name        = def->second.name;
   d.description = def->second.description.empty() ? def->second.name : def->second.description;
+  // Its own lines go into the rows the base leaves empty; the base's rows (a weapon's damage, strength, value)
+  // stay where the game put them.
+  size_t row = 1;   // the first row sits under the title and stays blank
   for(size_t i=0; i<zenkit::IItem::text_count; ++i) {
-    d.text[i]  = def->second.text[i];
-    d.count[i] = def->second.count[i];
+    if(def->second.text[i].empty())
+      continue;
+    while(row<zenkit::IItem::text_count && !d.text[row].empty())
+      ++row;
+    if(row>=zenkit::IItem::text_count)
+      break;
+    d.text[row]  = def->second.text[i];
+    d.count[row] = def->second.count[i];
+    ++row;
+    }
+  if(def->second.damage!=0) {
+    const int32_t was = d.damage_total;
+    d.damage_total += def->second.damage;
+    for(auto& dmg:d.damage)
+      if(dmg>0)
+        dmg += def->second.damage;
+    for(size_t i=0; i<zenkit::IItem::text_count; ++i)
+      if(d.count[i]==was && !d.text[i].empty())
+        d.count[i] = d.damage_total;   // the row that shows the damage shows the new one
     }
   if(def->second.value>=0)
     d.value = def->second.value;

@@ -424,6 +424,9 @@ def _check_define_item(args, state):
     look = args.get("look")
     if look is not None:
         _check_look(look)
+    damage = args.get("damage", 0)
+    if not isinstance(damage, int) or isinstance(damage, bool) or not 0 <= damage <= 10:
+        raise PlanError("define_item damage is a whole number from 0 to 10, added to the base's")
     rows = args.get("rows", [])
     if not isinstance(rows, list) or len(rows) > 5 or not all(
             isinstance(r, list) and len(r) == 2 and isinstance(r[0], str) and isinstance(r[1], int) for r in rows):
@@ -434,7 +437,7 @@ def _fold_define_item(args, state):
     state.setdefault("items", {})[args["item"].upper()] = {
         "carrier": args["carrier"], "like": args["like"], "name": args["name"],
         "description": args.get("description", ""), "rows": args.get("rows", []), "value": args.get("value", -1),
-        "look": args.get("look")}
+        "look": args.get("look"), "damage": args.get("damage", 0)}
 
 
 def _define_in_world(entry):
@@ -455,13 +458,13 @@ def _define_in_world(entry):
         except (OSError, RuntimeError, ValueError):
             visual = ""             # no look of its own, then: the base item's
     gothic.world.define_item(entry["carrier"], entry["like"], entry["name"], entry["description"],
-                             [tuple(r) for r in entry["rows"]], entry["value"], visual)
+                             [tuple(r) for r in entry["rows"]], entry["value"], visual, entry.get("damage", 0))
 
 
 def _world_define_item(args):
     _define_in_world({"carrier": args["carrier"], "like": args["like"], "name": args["name"],
                       "description": args.get("description", ""), "rows": args.get("rows", []),
-                      "value": args.get("value", -1), "look": args.get("look")})
+                      "value": args.get("value", -1), "look": args.get("look"), "damage": args.get("damage", 0)})
     return None
 
 
