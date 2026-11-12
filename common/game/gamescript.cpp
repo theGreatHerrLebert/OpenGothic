@@ -564,8 +564,12 @@ void GameScript::initializeInstanceItem(const std::shared_ptr<zenkit::IItem>& it
   // ... and its own name and texts
   d.name        = def->second.name;
   d.description = def->second.description.empty() ? def->second.name : def->second.description;
-  // Its own lines go into the rows the base leaves empty; the base's rows (a weapon's damage, strength, value)
-  // stay where the game put them.
+  // The base's rows (a weapon's damage, strength, value; a ring's bonus) first, as the game wrote them; its own
+  // lines then go into the rows the base leaves empty.
+  for(size_t i=0; i<zenkit::IItem::text_count; ++i) {
+    d.text[i]  = b.text[i];
+    d.count[i] = b.count[i];
+    }
   size_t row = 1;   // the first row sits under the title and stays blank
   for(size_t i=0; i<zenkit::IItem::text_count; ++i) {
     if(def->second.text[i].empty())
