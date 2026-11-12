@@ -515,7 +515,21 @@ def _world_define_item(args):
     _define_in_world({"carrier": args["carrier"], "like": args["like"], "name": args["name"],
                       "description": args.get("description", ""), "rows": args.get("rows", []),
                       "value": args.get("value", -1), "look": args.get("look"), "damage": args.get("damage", 0)})
+    _renew_carried(args["carrier"])
     return None
+
+
+def _renew_carried(carrier):
+    """A definition reaches only copies made after it: the hero's own copies are made again, so an item whose look a
+    story changed looks new in his hands too."""
+    items = getattr(gothic.player, "items", None)
+    if not items or not hasattr(gothic.player, "remove_item"):
+        return
+    mine = [i for i in items if i["instance"].upper() == carrier.upper()]
+    count = sum(i["count"] for i in mine)
+    if count and not any(i.get("equipped") for i in mine):   # a weapon in his hand is not taken out of it
+        gothic.player.remove_item(carrier, count)
+        gothic.player.give_item(carrier, count)
 
 
 def _check_spawn(args, state):
