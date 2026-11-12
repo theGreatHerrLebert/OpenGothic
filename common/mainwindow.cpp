@@ -579,6 +579,17 @@ void MainWindow::keyUpEvent(KeyEvent &event) {
   auto mapping = keycodec.mapping(event);
 
   std::string_view menuEv;
+  if(act==KeyCodec::Escape && Gothic::inst().dmBlockSave && Gothic::inst().world()!=nullptr) {
+    // During a trip the first Escape is the hero's to answer; a second within a few seconds opens the menu.
+    auto& g   = Gothic::inst();
+    auto  now = Application::tickCount();
+    if(g.dmEscapeAt==0 || now-g.dmEscapeAt>3000) {
+      g.dmEscapeAt = now;
+      g.dmEscapeRefused++;
+      return;
+      }
+    g.dmEscapeAt = 0;
+    }
   if(act==KeyCodec::Escape)
     menuEv = Gothic::inst().menuMain();
   else if(act==KeyCodec::Log)

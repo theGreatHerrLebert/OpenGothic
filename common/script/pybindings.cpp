@@ -818,6 +818,8 @@ PYBIND11_EMBEDDED_MODULE(gothic, m) {
            "post (0..1) runs the trip shader over the finished frame: glowing edges, tracers, colour; "
            "bands are the music's bass, mid and treble, smoothed.");
   trip.def("clear", []() { requireWorld()->globalFx()->setTrip(GlobalEffects::Trip()); });
+  trip.def("take_escapes", []() { auto n = Gothic::inst().dmEscapeRefused; Gothic::inst().dmEscapeRefused = 0; return n; },
+           "How often Escape was held back since the last call (while saving is refused).");
   trip.def("block_save", [](bool on) { Gothic::inst().dmBlockSave = on; }, py::arg("on"),
            "While on, saving is refused as it is during a conversation, quick save included.");
 

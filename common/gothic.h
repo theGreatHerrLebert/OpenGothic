@@ -216,6 +216,10 @@ class Gothic final {
     // While set (during a trip and what it sets in motion), saving is refused the way it is during a conversation:
     // a save would keep half a trip and none of what ends it.
     bool        dmBlockSave   = false;
+    // While saving is refused, the first Escape is too: the hero says why, and Python counts it. A second Escape soon
+    // after opens the menu as always, so the game can always be left.
+    uint32_t    dmEscapeRefused = 0;
+    uint64_t    dmEscapeAt      = 0;
 
     // DM hotkeys pressed since Python last asked, oldest first. Filled on the UI thread, drained from a world tick.
     void                     pushDmKey(std::string key) { std::lock_guard<std::mutex> g(dmKeysSync); dmKeys.push_back(std::move(key)); }
