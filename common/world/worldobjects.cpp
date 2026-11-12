@@ -934,6 +934,20 @@ void WorldObjects::sendPassivePerc(Npc &self, Npc &other, Npc* victim, Item* itm
   sndPerc.push_back(m);
   }
 
+void WorldObjects::recordStoryPickup(Npc& self, Item& itm) {
+  const auto pl = owner.player();
+  if(pl==nullptr)
+    return;
+  PerceptionMsg r;
+  r.what   = PERC_ASSESSTHEFT;
+  r.pos    = self.position();
+  r.self   = &self;
+  r.other  = &self;
+  r.victim = &self;
+  r.item   = itm.handle().symbol_index();
+  recordPerception(r,*pl);
+  }
+
 void WorldObjects::sendImmediatePerc(Npc& self, Npc& other, Npc& victim, Item* itm, int32_t perc) {
   const auto pl = owner.player();
   if(pl==nullptr)

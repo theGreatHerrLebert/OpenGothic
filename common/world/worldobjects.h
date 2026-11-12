@@ -135,6 +135,9 @@ class WorldObjects final {
     void           setMobRoutine(gtime time, std::string_view scheme, int32_t state);
 
     void           sendPassivePerc  (Npc& self, Npc& other, Npc* victim, Item* itm, int32_t perc);
+    // A pickup told to the story only: a story's own item is no theft, so no NPC perceives it, but the story's rules
+    // may wait for it (a flower picked by moonlight).
+    void           recordStoryPickup(Npc& self, Item& itm);
     void           sendImmediatePerc(Npc& self, Npc& other, Npc& victim, Item* itm, int32_t perc);
 
     struct PerceptionRecord final {

@@ -3482,6 +3482,8 @@ Item* Npc::takeItem(Item& item) {
   it = addItem(std::move(ptr));
   if(isPlayer() && it!=nullptr && !storyItem)
     owner.sendPassivePerc(*this,*this,*it,PERC_ASSESSTHEFT);
+  else if(isPlayer() && it!=nullptr)
+    owner.recordStoryPickup(*this,*it);   // no theft for anyone, but the story hears it
 
   implAniWait(uint64_t(sq->totalTime()));
   return it;
