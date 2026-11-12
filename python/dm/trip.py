@@ -778,6 +778,11 @@ def tick_after(gothic, now):
             if npc is not None:
                 gothic.dialog.bind(npc)         # his conversation becomes this line, whoever starts it
                 line["bound"] = True
+    for line in lines:
+        if line.get("sermon") and line.get("next", 0) > 0:
+            npc = gothic.world.find_npc(line["npc"])
+            if npc is not None:
+                _hush(npc, line)                # every tick once begun, also while a sentence is playing
     if gothic.dialog.partner() is not None or gothic.dialog.narrating():
         return
     here = gothic.player.position
@@ -810,15 +815,13 @@ def _preach(gothic, line, here, now):
         return False
     if line.get("next", 0) == 0 and sum((a - b) ** 2 for a, b in zip(here, npc.position)) > line["near"] ** 2:
         return False                            # not begun until he is near; once begun, it is preached to the end
+    _hush(npc, line)
     if now < line.get("quiet_until", 0.0):
         return False
     if line.get("next", 0) >= len(line["sermon"]):
         _after[0].remove(line)
         _unhush(gothic, npc, line)
         return False
-    if line.get("next", 0) == 0 and line.get("hush") and npc.in_state(line["hush"]):
-        npc.stand_here()                        # his own sermon waits while he gives this one
-        line["hushed"] = True
     from dm import voices
     text = line["sermon"][line.get("next", 0)]
     wav, ms = voices.lookup(line["voice"], text)
@@ -827,6 +830,14 @@ def _preach(gothic, line, here, now):
     line["next"] = line.get("next", 0) + 1
     line["quiet_until"] = now + (ms or max(2500, len(text) * 70)) / 1000.0 + SERMON_GAP
     return True
+
+
+def _hush(npc, line):
+    """Puts the preacher's own sermon on hold: he stands while he gives ours (also if he only reaches his spot once
+    ours has begun)."""
+    if line.get("hush") and not line.get("hushed") and npc.in_state(line["hush"]):
+        npc.stand_here()
+        line["hushed"] = True
 
 
 def _unhush(gothic, npc, line):
