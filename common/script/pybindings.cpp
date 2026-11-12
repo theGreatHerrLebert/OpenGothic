@@ -780,10 +780,22 @@ PYBIND11_EMBEDDED_MODULE(gothic, m) {
                float dx  = up.x-bp.x, dz = up.z-bp.z;
                float len = std::max(std::sqrt(dx*dx + dz*dz), 1.f);
                auto  to  = Tempest::Vec3(up.x + dx/len*250.f, up.y, up.z + dz/len*250.f);
-               auto clear = [bp](const WayPoint& wp) {
+               // Clear of the object, and not where someone already stands (Canthar ended up inside Bjarne).
+               std::vector<Tempest::Vec3> others;
+               for(uint32_t n=0; n<w->npcCount(); ++n)
+                 if(auto* o = w->npcById(n); o!=nullptr && o!=user)
+                   others.push_back(o->position());
+               auto clear = [bp,&others](const WayPoint& wp) {
                  auto  q  = wp.position();
                  float wx = q.x-bp.x, wz = q.z-bp.z;
-                 return wx*wx + wz*wz > 150.f*150.f;
+                 if(wx*wx + wz*wz <= 150.f*150.f || wp.isLocked())
+                   return false;
+                 for(auto& o:others) {
+                   float ox = q.x-o.x, oz = q.z-o.z;
+                   if(ox*ox + oz*oz < 90.f*90.f)
+                     return false;
+                   }
+                 return true;
                  };
                if(auto* wp = w->findWayPoint(to, clear))
                  user->aiPush(AiQueue::aiGoToPoint(*wp));
