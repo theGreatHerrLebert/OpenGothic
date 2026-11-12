@@ -81,6 +81,9 @@ What a story can notice and test today:
   can instead name a model of the story's own, `{"model": "flower.obj", "texture": "flower.png"}`: an OBJ file and
   its PNG texture in `dm_runtime/assets/models` (y up, 1 unit = 1 cm, origin where it stands; `"scale": 100` for a
   model made in metres). Use it only for what the story truly needs.
+- **One sentence per node.** A character says one or two sentences in a node; a longer speech is a chain of nodes
+  linked by `returns`, each voiced and re-recorded on its own. `python/dm/split_lines.py` breaks long lines up this
+  way before voicing; it leaves lines with variants or an "again" text whole.
 - **Rewards.** `give_item` for a thing, `give_xp` (`{"op": "give_xp", "amount": 150}`) for experience, through the
   game's own reward with its message and sound. Keep to the game's scale for chapter one: 50 for an errand, 100 for a
   task with some risk, 150 to 200 for a quest of several steps or a fight. A first level needs 500, so never more than
