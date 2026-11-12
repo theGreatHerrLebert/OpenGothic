@@ -80,6 +80,14 @@ Marks a scene done without playing it.
 {"op": "finish_scene", "id": "warning"}
 ```
 
+### `refuse_talk`
+
+Someone stops talking to the hero: every conversation with him, his own topics and trade included, is one line of refusal and the hero's reply, until the flag in unless is set or the story ends. Not on people the main quest needs.
+
+```json
+{"op": "refuse_talk", "id": "snitch", "npc": "BAU_919_BAUER", "voice": "07", "line": "Mit dir red ich nicht mehr, du Petze.", "reply": "Dann eben nicht.", "unless": "forgiven"}
+```
+
 ### `narrate`
 
 A line from off-screen, queued until no conversation runs.

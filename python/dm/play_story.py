@@ -64,7 +64,7 @@ def namespaced(ops, prefix):
 # Operations whose NPC belongs to a story's cast: if one of them dies, the story cannot go on as written.
 CAST_FIELDS = {"attach_dialogue_graph": "npc", "add_scene": "npc", "add_topic": "npc", "send_npc": "instance",
                "rename_npc": "instance", "spawn_npc": "instance", "relocate_npc": "instance", "return_npc": "instance",
-               "attack": "npc", "npc_item": "npc"}
+               "attack": "npc", "npc_item": "npc", "refuse_talk": "npc"}
 
 
 def closures(story, prefix):
@@ -111,6 +111,11 @@ def voice_graphs(story, prefix):
             if isinstance(op, dict):
                 if op.get("op") == "add_topic" and isinstance(op.get("title"), str) and op["title"] not in titles:
                     titles.append(op["title"])
+                if op.get("op") == "refuse_talk" and isinstance(op.get("line"), str):
+                    graphs[f"{prefix}__refuse_{op.get('id')}"] = {"voice": str(op.get("voice")), "narration": [op["line"]]}
+                    reply = op.get("reply") or "Schon gut."
+                    if reply not in titles:
+                        titles.append(reply)
                 walk(op.get("ops"))
     walk(story.get("plan"))
     if titles:

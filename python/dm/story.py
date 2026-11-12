@@ -326,6 +326,9 @@ def _hooks(name):
 
 
 def special_for(npc):
+    refusal = _refusing(_story.state, getattr(npc, "instance", "") or "")
+    if refusal is not None:
+        return _refusal_graph(refusal)
     for hook in _hooks("special_for"):
         graph = hook(npc)
         if graph is not None:
@@ -696,6 +699,62 @@ def _check_nothing(args, state):
     _require(args, "reason")
 
 
+def _check_refuse(args, state):
+    """Someone stops talking to the hero: every conversation with him, his own topics and trade included, is one line
+    of refusal, until a flag is set or the story ends."""
+    _require(args, "id", "npc", "line", "voice")
+    _npc_instance(args["npc"])
+    if args["id"] in state.setdefault("refusals", {}):
+        raise PlanError(f"refusal already added: {args['id']}")
+    if not isinstance(args["line"], str) or not args["line"].strip():
+        raise PlanError("refuse_talk needs a line")
+
+
+def _fold_refuse(args, state):
+    state.setdefault("refusals", {})[args["id"]] = {
+        "npc": args["npc"].upper(), "line": args["line"], "reply": args.get("reply") or "Schon gut.",
+        "voice": str(args["voice"]), "unless": args.get("unless")}
+
+
+def _refusing(state, npc_instance):
+    """The refusal that holds for this NPC right now, or None."""
+    for refusal_id, refusal in state.get("refusals", {}).items():
+        if refusal["npc"] == npc_instance.upper() and not ended(state, refusal_id) \
+                and not (refusal.get("unless") and state["flags"].get(refusal["unless"])):
+            return refusal
+    return None
+
+
+def _refusal_graph(refusal):
+    return {"start": "a", "voice": refusal["voice"],
+            "nodes": {"a": {"line": refusal["line"], "choices": [{"text": refusal["reply"], "ends": True}]}}}
+
+
+_refusal_bound = set()   # NPCs bound only so that they can refuse; not saved, so a load binds them again
+_refusal_world = None
+
+
+def _keep_refusals(state):
+    """Binds whoever refuses the hero, so the game hands his conversations here, and lets go once he talks again,
+    unless a story conversation of his keeps him bound."""
+    global _refusal_world
+    generation = getattr(gothic.world, "generation", None)
+    if generation != _refusal_world:   # a loaded or new world has nobody bound yet
+        _refusal_bound.clear()
+        _refusal_world = generation
+    wanted = {r["npc"] for r in state.get("refusals", {}).values() if _refusing(state, r["npc"])}
+    for name in wanted - _refusal_bound:
+        npc = gothic.world.find_npc(name)
+        if npc is not None:
+            gothic.dialog.bind(npc)
+            _refusal_bound.add(name)
+    for name in _refusal_bound - wanted:
+        npc = gothic.world.find_npc(name)
+        if npc is not None and name not in state.get("graphs", {}):
+            gothic.dialog.unbind(npc)
+        _refusal_bound.discard(name)
+
+
 def _check_npc_item(args, state):
     """An item someone really carries: it can be traded, stolen or looted from him when he is down, and the story
     sees where it is with the npc_has check."""
@@ -782,6 +841,7 @@ OPS = {
     "attack": (_check_attack, _noop, _world_attack),
     "retry_rule": (_check_fire_rule, _fold_retry_rule, None),
     "npc_item": (_check_npc_item, _noop, _world_npc_item),
+    "refuse_talk": (_check_refuse, _fold_refuse, None),
 }
 
 def _ready_live(args, plan):
@@ -1284,6 +1344,7 @@ def _tick(dt):
         return  # no active world while loading
     try:
         _story.on_tick()
+        _keep_refusals(_story.state)
         _player.on_tick()
     except Exception as err:
         # A bug, not a loading screen: say so once per kind of failure instead of hiding it, and keep ticking.
