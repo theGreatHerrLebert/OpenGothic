@@ -23,6 +23,11 @@ details.truth{margin:0 0 28px;max-width:72ch;border-left:2px solid var(--ember);
 .person{border-top:1px solid var(--line);padding:12px 0}.person summary{cursor:pointer}.person[open] summary{margin-bottom:12px}.conv{margin:0 0 30px}.convhead{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:baseline;margin-bottom:6px}
 .cond{font:12.5px var(--mono);color:var(--soft);margin:0 0 12px;overflow-wrap:anywhere}
 .node{background:var(--paper);border:1px solid var(--line);border-radius:4px;padding:14px 16px;margin-bottom:10px}
+.dock{position:fixed;left:0;right:0;bottom:0;display:grid;gap:6px;padding:10px 18px 12px;background:#1a110a;border-top:2px solid var(--ember);z-index:30;color:#e8d9b5}.dock[hidden]{display:none}
+.dock .dline{display:flex;gap:12px;align-items:baseline;min-width:0}.dock .dwho{font-weight:700;color:#d8b878;white-space:nowrap}.dock .dtext{flex:1;font:19px/1.35 var(--body);min-width:0}
+.dock .dctl{display:flex;flex-wrap:wrap;gap:6px;align-items:center}.dock button.v{color:#e8d9b5;border-color:#6b5333}.dock button.v.a{border-color:var(--ok)}.dock button.v.r{border-color:var(--bad)}.dock .meta{color:#bfae8a}
+.dock select{background:#1e140c;color:#e8d9b5;border:1px solid #6b5333}body.listening{padding-bottom:150px}
+.node.current,li.c.current{outline:3px solid var(--ember);outline-offset:2px}
 .node.sentence{margin:-6px 0 10px 28px;border-left:3px solid var(--line);padding:8px 14px}.node.sentence .nid{color:var(--soft)}
 .node.approved{border-color:var(--ok)}.node.rejected{border-color:var(--bad)}
 .nid{font:500 12px var(--mono);color:var(--ember)}
@@ -75,7 +80,7 @@ textarea{width:100%;box-sizing:border-box;margin-top:8px;font:14px/1.4 var(--bod
 <section style="margin:0 0 34px"><h2>Wie es sich entfalten kann</h2><p class="lead" style="margin:6px 0 10px">Gespräche sind rot, Tatsachen hellbraun, wesentliche Tatsachen orange und echte Folgen grün. Ein durchgezogener Pfeil heißt: Ein Gespräch lehrt eine Tatsache. Ein dicker Pfeil: Eine Tatsache startet eine Szene oder löst etwas aus. Ein gepunkteter Pfeil öffnet eine Zeile des Helden, ein gekreuzter schließt eine Szene endgültig.</p><div id="graphbox" style="height:560px;overflow:hidden;background:var(--paper);border:1px solid var(--line);border-radius:4px"><pre class="mermaid">
 %%GRAPH%%
 </pre></div><p class="meta" style="margin:6px 0">Scrollen oder die Knöpfe zum Zoomen, ziehen zum Bewegen. Ein Klick auf ein Gespräch springt dorthin, ein Klick auf eine Tatsache zeigt ihre Herkunft.</p><div class="panel" id="info" hidden></div></section>
-<div class="tools" role="search"><input id="find" type="search" placeholder="Zeilen, Tatsachen, Sprecher suchen" aria-label="Zeilen, Tatsachen, Sprecher suchen"><select id="show" aria-label="Filter"><option value="">Alle Zeilen</option><option value="open">Unbewertet</option><option value="rejected">Abgelehnt</option><option value="silent">Ohne Aufnahme</option></select><select id="who" aria-label="Sprecher"><option value="">Alle Sprecher</option></select><span class="meta" id="found" role="status"></span></div>
+<div class="tools" role="search"><button class="v" type="button" id="listen" title="Hörmodus: eine Zeile nach der anderen hören und bewerten (L)">Hörmodus</button><input id="find" type="search" placeholder="Zeilen, Tatsachen, Sprecher suchen" aria-label="Zeilen, Tatsachen, Sprecher suchen"><select id="show" aria-label="Filter"><option value="">Alle Zeilen</option><option value="open">Unbewertet</option><option value="rejected">Abgelehnt</option><option value="silent">Ohne Aufnahme</option></select><select id="who" aria-label="Sprecher"><option value="">Alle Sprecher</option></select><span class="meta" id="found" role="status"></span></div>
 <div class="grid"><div id="convs"><p class="meta" id="loading">Lade deine Bewertungen …</p></div>
 <aside class="rail">
 <div class="panel"><div class="label">Gespräche</div><div class="jump" id="jump" style="margin-top:8px"></div></div>
@@ -84,6 +89,17 @@ textarea{width:100%;box-sizing:border-box;margin-top:8px;font:14px/1.4 var(--bod
 <div class="panel"><div class="label">Folgen</div><ul class="rules" id="rules" style="margin-top:8px"></ul></div>
 </aside></div>
 <p class="save" id="save" role="status"></p>
+<div class="dock" id="dock" role="region" aria-label="Hörmodus" hidden>
+ <div class="dline"><span class="dwho" id="dWho"></span><span class="dtext" id="dText"></span><span class="meta" id="dPos"></span></div>
+ <div class="dctl">
+  <button class="v" type="button" id="dPrev" title="Vorige Zeile (J)">◀ J</button><button class="v" type="button" id="dPlay" title="Abspielen oder anhalten (Leertaste)">▶ Leertaste</button><button class="v" type="button" id="dNext" title="Nächste Zeile (K)">K ▶</button>
+  <button class="v a" type="button" id="dOk" title="Text und Stimme annehmen, weiter (A)">Annehmen · A</button><button class="v r" type="button" id="dNo" title="Stimme ablehnen, weiter (R)">Stimme ablehnen · R</button>
+  <button class="v" type="button" id="dNew" title="Neue Aufnahme dieser Zeile (N)">Neu sprechen · N</button><button class="v" type="button" id="dOpen" title="Zur nächsten unbewerteten Zeile (U)">Unbewertet · U</button>
+  <label class="meta"><input type="checkbox" id="dRun"> Durchhören</label><label class="meta">Tempo <select id="dRate"><option>1</option><option>1.25</option><option>1.5</option></select></label>
+  <button class="v" type="button" id="dHelp" title="Tasten (?)">?</button><button class="v" type="button" id="dClose" title="Hörmodus beenden (L oder Esc)">✕</button>
+ </div>
+ <p class="meta" id="dKeys" hidden>Leertaste abspielen/anhalten · J/K zurück/weiter · A annehmen und weiter · R Stimme ablehnen und weiter · N neu sprechen · U nächste unbewertete · L oder Esc beenden</p>
+</div>
 </main>
 <script src="/vendor/mermaid.min.js"></script>
 <script src="/vendor/svg-pan-zoom.min.js"></script>
@@ -127,7 +143,7 @@ function renderConvs(){seenLines=new Map();const host=$("#convs");host.textConte
     one, numbered, each still with its own controls; nodes are otherwise in their own order. */
  const next={},cont=new Set();Object.entries(c.nodes).forEach(([k,n])=>{if(n.chain&&n.returns&&c.nodes[n.returns]){next[k]=n.returns;cont.add(n.returns)}});
  const order=[],sentence={},speech={};Object.keys(c.nodes).forEach(k=>{if(cont.has(k))return;const run=[k];while(next[run[run.length-1]])run.push(next[run[run.length-1]]);run.forEach((x,i)=>{order.push(x);sentence[x]=i+1});if(run.length>1)speech[k]=run});
- order.forEach(key=>{const n=c.nodes[key];const id=c.id+"__"+key;const r=reviews[id];const box=el("article","node"+(cont.has(key)?" sentence":"")+(r?(r.verdict==="approve"?" approved":" rejected"):""));
+ order.forEach(key=>{const n=c.nodes[key];const id=c.id+"__"+key;const r=reviews[id];const box=el("article","node"+(cont.has(key)?" sentence":"")+(r?(r.verdict==="approve"?" approved":" rejected"):""));box.dataset.rid=id;box.dataset.who=c.speaker;
   const top=el("div","");top.style.cssText="display:flex;gap:8px;align-items:baseline;flex-wrap:wrap";
   if(cont.has(key))top.append(el("span","nid","Satz "+sentence[key]));
   else{top.append(el("span","nid",(key===c.start?key+" · Anfang":key)+(speech[key]?" · Rede, "+speech[key].length+" Sätze":"")));
@@ -137,7 +153,7 @@ function renderConvs(){seenLines=new Map();const host=$("#convs");host.textConte
   const rev=el("div","review");const dupN=firstSeen(n.audio||n.line,c.speaker+" · "+key);if(dupN)rev.append(playButton(n.audio),el("span","meta","gleiche Zeile wie "+dupN+", dort bewertet"));else rev.append(playButton(n.audio),bothButton(id,!!n.audio),el("span","label","Text"),reviewControls(id),voiceRow(n.audio,id+"__voice"));box.append(rev);const rb=reasonBox(id);if(rb)box.append(rb);const rv=reasonBox(id+"__voice");if(rv)box.append(rv);if(n.again){const ag=el("div","review");ag.append(playButton(n.audioAgain),bothButton(id+"__again",!!n.audioAgain),el("span","label","Spätere Zeile"),reviewControls(id+"__again"),voiceRow(n.audioAgain,id+"__again__voice"));box.append(ag);[id+"__again",id+"__again__voice"].forEach(x=>{const r=reasonBox(x);if(r)box.append(r)})}
   (n.variants||[]).forEach((v,i)=>{const vid=id+"__v"+i,when=Array.isArray(v.when)?v.when.join(" + "):v.when;box.append(textLine("p","again","Wenn "+when+": ",v.line,vid));
    const vr=el("div","review");vr.append(playButton(v.audio),bothButton(vid,!!v.audio),el("span","label","Variante"),reviewControls(vid),voiceRow(v.audio,vid+"__voice"));box.append(vr);[vid,vid+"__voice"].forEach(x=>{const r=reasonBox(x);if(r)box.append(r)})});
-  const ul=el("ul","ch");n.choices.forEach((ch,i)=>{const cid=id+"__c"+i;const li=el("li","c"+(visible(ch)?"":" hidden"));const left=el("div");left.style.minWidth="0";left.append(textLine("div","ct","Held: ",ch.text,cid));
+  const ul=el("ul","ch");n.choices.forEach((ch,i)=>{const cid=id+"__c"+i;const li=el("li","c"+(visible(ch)?"":" hidden"));if(ch.text!=="Zurück."){li.dataset.rid=cid;li.dataset.who="Held"}const left=el("div");left.style.minWidth="0";left.append(textLine("div","ct","Held: ",ch.text,cid));
    const m=[];m.push(ch.ends?"endet":"→ "+ch.goto);if(ch.requires)m.push("braucht "+ch.requires.join(" oder "));if(ch.unless)m.push("außer "+ch.unless);if(!visible(ch))m.push("gerade verborgen");left.append(el("div","meta",m.join(" · ")));const ctl=el("div","review");ctl.style.marginTop="0";const silent=ch.text==="Zurück.";const dupC=silent?null:firstSeen(ch.audio||ch.text,c.speaker+" · "+key);if(dupC)ctl.append(playButton(ch.audio),el("span","meta","gleiche Zeile wie "+dupC+", dort bewertet"));else if(silent)ctl.append(el("span","meta","stumm, geht zurück"));else ctl.append(playButton(ch.audio),bothButton(cid,!!ch.audio),el("span","label","Text"),reviewControls(cid),voiceRow(ch.audio,cid+"__voice"));li.append(left,ctl);[cid,cid+"__voice"].forEach(x=>{const rc=reasonBox(x,"reason");if(rc)li.append(rc)});ul.append(li)});box.append(ul);if(n.returns&&!n.chain)box.append(el("p","meta","Dann zurück zu den Fragen in "+n.returns));s.append(box)});grp.d.append(s)});
  Object.entries(groups).forEach(([sp,g])=>{const ids=DATA.convs.filter(c=>c.speaker===sp).map(c=>c.id+"__");const vs=Object.entries(reviews).filter(([k])=>ids.some(p=>k.startsWith(p))).map(([,v])=>v);const rej=vs.filter(v=>v.verdict==="reject").length;g.prog.textContent=vs.length+" bewertet"+(rej?" · "+rej+" abgelehnt":"")});applyFilters()}
 function filters(){return{q:$("#find").value.trim().toLowerCase(),show:$("#show").value,who:$("#who").value}}
@@ -251,4 +267,37 @@ async function saveLine(id,text){const voice=id+"__voice";
  catch(e){busy.delete(voice);renderAll();$("#save").textContent="Nicht gespeichert: "+(e.message||e)}}
 renderVoices();
 drawGraph().catch(e=>{$("#save").textContent="Graph-Fehler: "+(e.message||e)});
+
+/* Hörmodus: the page's lines in order (speeches sentence by sentence, then the hero's answers), one at a time, with
+   the controls in a dock and on the keyboard. Playing never approves anything. */
+const L={on:false,list:[],i:0,audio:null};
+function lQueue(){return [...document.querySelectorAll("[data-rid]")].filter(e=>!e.closest("[hidden]")).map(e=>({id:e.dataset.rid,who:e.dataset.who,el:e}))}
+function lText(id){const parts=id.split("__"),c=DATA.convs.find(x=>x.id===parts[0]),n=c&&c.nodes[parts[1]],w=parts[2]||"";if(!n)return "";if(!w)return n.line;if(w[0]==="c")return (n.choices[+w.slice(1)]||{}).text||"";return ""}
+function lRated(id){const t=reviews[id],v=reviews[id+"__voice"];return !!(t&&(!audioOf(id)||v))}
+function lShow(){const x=L.list[L.i];if(!x)return;document.querySelectorAll(".current").forEach(e=>e.classList.remove("current"));
+ const e=document.querySelector('[data-rid="'+CSS.escape(x.id)+'"]');if(e){e.classList.add("current");e.scrollIntoView({block:"center",behavior:"smooth"})}
+ $("#dWho").textContent=x.who+":";$("#dText").textContent=lText(x.id);const done=L.list.filter(y=>lRated(y.id)).length;
+ const r=reviews[x.id+"__voice"]||reviews[x.id];$("#dPos").textContent=(L.i+1)+"/"+L.list.length+" · "+done+" bewertet"+(r?" · diese: "+(r.verdict==="approve"?"angenommen":"abgelehnt"):"")}
+function lPlay(){const x=L.list[L.i];if(!x)return;if(L.audio){L.audio.pause();L.audio=null}if(player)player.pause();const url=audioOf(x.id);
+ if(!url){$("#dPlay").textContent="▶ Leertaste";if($("#dRun").checked)setTimeout(()=>lGo(1,true),900);return}
+ L.audio=new Audio(url);L.audio.playbackRate=Number($("#dRate").value);$("#dPlay").textContent="❚❚ Leertaste";
+ L.audio.onended=()=>{$("#dPlay").textContent="▶ Leertaste";if($("#dRun").checked)setTimeout(()=>lGo(1,true),350)};L.audio.play().catch(()=>{$("#dPlay").textContent="▶ Leertaste"})}
+function lToggle(){if(L.audio&&!L.audio.paused){L.audio.pause();$("#dPlay").textContent="▶ Leertaste"}else if(L.audio&&L.audio.currentTime>0&&!L.audio.ended){L.audio.play();$("#dPlay").textContent="❚❚ Leertaste"}else lPlay()}
+function lGo(step,auto){const i=Math.min(L.list.length-1,Math.max(0,L.i+step));if(i===L.i&&step){if(auto)$("#dRun").checked=false;return}L.i=i;lShow();lPlay()}
+function lOpen(){const from=L.i+1;let j=L.list.findIndex((x,k)=>k>=from&&!lRated(x.id));if(j<0)j=L.list.findIndex(x=>!lRated(x.id));if(j<0){$("#dPos").textContent="Alles bewertet.";return}L.i=j;lShow();lPlay()}
+async function lVerdict(ok){const x=L.list[L.i];if(!x)return;const hasAudio=!!audioOf(x.id);
+ if(ok){const ids=hasAudio?[x.id,x.id+"__voice"]:[x.id];if(!ids.every(i=>reviews[i]&&reviews[i].verdict==="approve"))await approveBoth(ids)}
+ else if(hasAudio)await setVerdict(x.id+"__voice","reject");
+ L.list=lQueue();lGo(1)}
+function lStart(){L.list=lQueue();if(!L.list.length)return;L.on=true;document.body.classList.add("listening");$("#dock").hidden=false;
+ const first=L.list.findIndex(x=>!lRated(x.id));L.i=first<0?0:first;lShow();lPlay()}
+function lStop(){L.on=false;if(L.audio)L.audio.pause();L.audio=null;$("#dock").hidden=true;document.body.classList.remove("listening");document.querySelectorAll(".current").forEach(e=>e.classList.remove("current"))}
+$("#listen").onclick=()=>L.on?lStop():lStart();$("#dPrev").onclick=()=>lGo(-1);$("#dNext").onclick=()=>lGo(1);$("#dPlay").onclick=lToggle;
+$("#dOk").onclick=()=>lVerdict(true);$("#dNo").onclick=()=>lVerdict(false);$("#dOpen").onclick=lOpen;$("#dClose").onclick=lStop;
+$("#dNew").onclick=()=>{const x=L.list[L.i];if(x&&audioOf(x.id))resample(x.id+"__voice")};$("#dHelp").onclick=()=>{$("#dKeys").hidden=!$("#dKeys").hidden};
+$("#dRate").onchange=()=>{if(L.audio)L.audio.playbackRate=Number($("#dRate").value)};
+addEventListener("keydown",e=>{if(e.metaKey||e.ctrlKey||e.altKey||/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName))return;
+ const k=e.key.toLowerCase();if(!L.on){if(k==="l"){e.preventDefault();lStart()}return}
+ const act={" ":lToggle,"j":()=>lGo(-1),"k":()=>lGo(1),"a":()=>lVerdict(true),"r":()=>lVerdict(false),"u":lOpen,"l":lStop,"escape":lStop,
+  "n":()=>$("#dNew").click(),"?":()=>$("#dHelp").click()}[k];if(act){e.preventDefault();e.stopImmediatePropagation();act()}},true);
 </script>
