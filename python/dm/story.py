@@ -682,9 +682,22 @@ def _fold_end(args, state):
 
 
 def ended(state, item_id):
-    """Whether the story an id belongs to has ended: its rules, scenes and topics are retired."""
+    """Whether the story an id belongs to has ended, or the id was retired by itself: its rules, scenes and topics are
+    retired."""
+    if item_id in state.get("retired", ()):
+        return True
     story = state.get("stories", {}).get(story_of(item_id))
     return story is not None and story["ended"] is not None
+
+
+def _check_retire(args, state):
+    _require(args, "id")
+
+
+def _fold_retire(args, state):
+    retired = state.setdefault("retired", [])
+    if args["id"] not in retired:
+        retired.append(args["id"])
 
 
 def _check_flag(args, state):
@@ -847,6 +860,7 @@ OPS = {
     "retry_rule": (_check_fire_rule, _fold_retry_rule, None),
     "npc_item": (_check_npc_item, _noop, _world_npc_item),
     "refuse_talk": (_check_refuse, _fold_refuse, None),
+    "retire": (_check_retire, _fold_retire, None),
 }
 
 def _ready_live(args, plan):

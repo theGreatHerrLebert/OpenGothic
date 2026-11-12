@@ -260,6 +260,14 @@ Marks a rule broken, so a load does not try it again.
 {"op": "fail_rule", "id": "slain", "error": "no such waypoint"}
 ```
 
+### `retire`
+
+Retires one rule, scene, topic or refusal by its id, as if its story had ended (for tests and repairs).
+
+```json
+{"op": "retire", "id": "test_dice"}
+```
+
 ### `retry_rule`
 
 Lets a broken rule try again, after the cause was fixed.

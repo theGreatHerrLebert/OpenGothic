@@ -887,6 +887,9 @@ def test_refuse_talk():
     st._keep_refusals(state)
     assert fake.dialog.bound == ["PARLAN"]
     del fake.dialog.bind
+    st._fold_retire({"id": "snitch"}, state)
+    assert st._refusing(state, "PARLAN") is None and st.ended(state, "snitch")
+    state["retired"].remove("snitch")
     state["flags"]["forgiven"] = True
     assert st._refusing(state, "PARLAN") is None
     st._keep_refusals(state)

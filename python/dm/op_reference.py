@@ -52,6 +52,8 @@ OPS = {
     "perceive": ("runtime", "Marks that a rule's deed happened.", {"op": "perceive", "id": "slain"}),
     "fail_rule": ("runtime", "Marks a rule broken, so a load does not try it again.",
                   {"op": "fail_rule", "id": "slain", "error": "no such waypoint"}),
+    "retire": ("runtime", "Retires one rule, scene, topic or refusal by its id, as if its story had ended (for tests and repairs).",
+               {"op": "retire", "id": "test_dice"}),
     "retry_rule": ("runtime", "Lets a broken rule try again, after the cause was fixed.", {"op": "retry_rule", "id": "slain"}),
     # People and creatures
     "spawn_npc": ("People", "Brings an existing character into the world at a waypoint.",
