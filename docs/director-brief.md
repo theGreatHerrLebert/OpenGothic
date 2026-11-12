@@ -91,7 +91,8 @@ and was still not worth playing: return a pouch or keep it, 25 gold, no conseque
   its best part on the table. A game, a trick or a tool the story introduces is something the player will want to try,
   and turn against its owner. A choice with `chance` is a gamble decided when it is chosen (a stake with `takes`, a
   win and a loss, `repeat` to play again); a loaded die in his pocket can open a choice that always wins, and winning
-  too often can make someone suspicious.
+  too often can make someone suspicious. With `dice` the throw is played out for all to see: the dice rattle, a
+  moment passes and both throws show on screen; `{"dice": {"hero": 6}}` is the loaded throw.
 
 ## Rules for a story
 

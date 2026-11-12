@@ -186,6 +186,35 @@ def test_gamble():
             player.on_tick()
         assert heard in d.lines, (roll, d.lines)
     graphs.random.random = original
+    # Dice for all to see: the eyes match the outcome, and a loaded throw always wins.
+    for _ in range(50):
+        mine, theirs = graphs.dice_eyes(True)
+        assert mine > theirs
+        mine, theirs = graphs.dice_eyes(False)
+        assert mine <= theirs
+        assert graphs.dice_eyes(True, 6)[0] == 6 and graphs.dice_eyes(True, 6)[1] < 6
+    thrown = {"start": "a", "nodes": {
+        "a": {"line": "Würfeln?", "choices": [{"text": "Mit meinem Glückswürfel.", "goto": "won", "dice": {"hero": 6}},
+                                               {"text": "Nein.", "ends": True}]},
+        "won": {"line": "Schon wieder eine Sechs?", "returns": "a", "choices": []}}}
+    assert graphs.validate(thrown) is None
+    assert "1 to 6" in graphs.validate({"start": "a", "nodes": {"a": {"line": "x", "choices": [
+        {"text": "y", "goto": "a", "dice": {"hero": 7}}, {"text": "z", "ends": True}]}}})
+    shown = []
+    fake.print_screen = lambda text, x=-1, y=-1, **kw: shown.append(text)
+    seconds, graphs.DICE_SECONDS = graphs.DICE_SECONDS, 0
+    d = fake.dialog
+    d.reset()
+    player = graphs.Player(lambda: {"NOV_B": thrown}, lambda n: None)
+    d.who, d.opened, d.open = Npc("NOV_B"), True, True
+    for _ in range(3):
+        player.on_tick()
+    d.selection = 0
+    for _ in range(8):
+        player.on_tick()
+    graphs.DICE_SECONDS = seconds
+    del fake.print_screen
+    assert shown and shown[0].startswith("Du: 6") and "Schon wieder eine Sechs?" in d.lines, (shown, d.lines)
 
 
 def test_returns_to_menu():

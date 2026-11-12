@@ -37,6 +37,16 @@ void bindOverlay(py::module_& m) {
         py::arg("seconds") = 2,
         "Show a line on screen like the PrintScreen extern: x and y in percent of the screen, -1 centres.");
 
+  m.def("play_sound",
+        [](const std::string& name) { Gothic::inst().emitGlobalSound(upper(name)); },
+        py::arg("name"), "Play one of the game's sound effects (an SFX instance or WAV name), as Snd_Play does.");
+  m.def("play_sound_file",
+        [](const std::string& path) {
+          Tempest::Sound snd(path);
+          Gothic::inst().emitGlobalSound(snd);
+          },
+        py::arg("path"), "Play a WAV file of our own from disk, heard everywhere.");
+
   m.def("take_keys",
         []() { return Gothic::inst().takeDmKeys(); },
         "DM hotkeys pressed since the last call, oldest first: 'feedback' for Alt+F, '1' to '5' for Alt+1 to Alt+5.");

@@ -21,13 +21,40 @@ at least one unconditional choice, so a conversation can always continue.
 A choice with "chance" is a gamble decided when it is chosen: {"text": "Würfeln wir.", "goto": "won",
 "chance": {"percent": 40, "else": "lost"}} goes to "won" in 40 of 100 tries and to "lost" otherwise. Combine it with
 "takes" for a stake and "repeat" to let the hero play again.
+
+A choice with "dice" is thrown for all to see: after the hero's line the dice rattle, a moment passes and the eyes
+show on screen, matching the outcome (the hero's higher when he wins; a tie goes to the house). {"dice": {}} with
+"chance" decides by chance; {"dice": {"hero": 6}} without it is a loaded throw that always wins.
 """
 
+import pathlib
 import random
+import time
 
 import gothic
 
 from dm import checks, voices
+
+
+DICE_SOUND = pathlib.Path(__file__).resolve().parent.parent / "dm_runtime" / "assets" / "sounds" / "wuerfel.wav"
+DICE_SECONDS = 1.6    # the rattle, before the eyes show
+
+
+def dice_eyes(won, hero=None):
+    """Two throws that tell the outcome: the hero's higher when he won, else the other's at least as high."""
+    if won:
+        mine = hero or random.randint(2, 6)
+        return mine, random.randint(1, mine - 1) if mine > 1 else 1
+    mine = hero or random.randint(1, 6)
+    return mine, random.randint(mine, 6)
+
+
+def _play_dice_sound():
+    if DICE_SOUND.is_file() and hasattr(gothic, "play_sound_file"):
+        try:
+            gothic.play_sound_file(str(DICE_SOUND))
+        except RuntimeError:
+            pass
 
 
 def choice_targets(choice):
@@ -61,6 +88,13 @@ def validate(graph):
         for choice in choices:
             if not choice.get("text"):
                 return f"choice has no text: {key}"
+            if "dice" in choice:
+                dice = choice["dice"]
+                hero = dice.get("hero") if isinstance(dice, dict) else None
+                if not isinstance(dice, dict) or (hero is not None and (not isinstance(hero, int) or not 1 <= hero <= 6)):
+                    return f"dice is an object, with hero a throw from 1 to 6: {key}"
+                if hero == 1 and "chance" not in choice:
+                    return f"a loaded throw of 1 cannot win: {key}"
             if "chance" in choice:
                 chance = choice["chance"]
                 percent = chance.get("percent") if isinstance(chance, dict) else None
@@ -106,6 +140,7 @@ class Player:
     def __init__(self, get_graphs, on_flag, get_flags=dict, get_topic=lambda key: None, get_special=lambda npc: None):
         self.get_graphs = get_graphs
         self.get_special = get_special   # a graph that takes over any conversation while it applies (the trip dialogue)
+        self.dice = None                 # the eyes of a throw in progress, shown once the dice have rattled
         self.on_flag = on_flag
         self.get_flags = get_flags
         self.get_topic = get_topic
@@ -236,8 +271,12 @@ class Player:
             self.choice = self.visible[index]
             checks.transfer(self.choice)
             chance = self.choice.get("chance")
+            won = True
             if isinstance(chance, dict) and random.random() * 100 >= chance["percent"]:
                 self.choice = dict(self.choice, goto=chance["else"])   # the throw went against him
+                won = False
+            if isinstance(self.choice.get("dice"), dict):
+                self.dice = dice_eyes(won, self.choice["dice"].get("hero"))
             is_question = self.choice.get("goto") and self.choice["goto"] not in self.path
             if is_question and not self.choice.get("repeat"):
                 self.on_flag(self._asked_flag(self.choice))
@@ -257,5 +296,17 @@ class Player:
                     else:
                         dialog.close()
                     self.stage = "idle"
+                elif getattr(self, "dice", None):
+                    _play_dice_sound()
+                    self.dice_at = time.monotonic() + DICE_SECONDS
+                    self.stage = "dice"
                 else:
                     self._enter(self.choice["goto"])
+        elif self.stage == "dice":
+            if time.monotonic() >= self.dice_at:
+                partner = dialog.partner()
+                name = getattr(partner, "display_name", "") or "Er"
+                mine, theirs = self.dice
+                gothic.print_screen(f"Du: {mine}  ·  {name}: {theirs}", -1, 30, seconds=4)
+                self.dice = None
+                self._enter(self.choice["goto"])
