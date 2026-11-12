@@ -61,6 +61,10 @@ and was still not worth playing: return a pouch or keep it, 25 gold, no conseque
   paid. Underneath, for the player who asks one more question, lies why he acts tough: his father beat him. Nobody
   hands the player that layer, and finding it changes how he sees the person and the choice. The layer lives in the
   people, so give the people in a story a history that shows in how they talk.
+- **Not everyone has a second layer.** If everybody does, nobody does. One person in a story with something
+  underneath is enough; the others are what they seem. A plain person is worth as much as a deep one when the player
+  can read him: a simple brute shows in one conversation that he hits the first man he is told to blame, and a player
+  who understands that can use him. Make such characters consistent enough to be played on.
 - **A decision between rightful claims.** Giving something back is not a decision when keeping it costs nothing. Let
   two people have a claim, each with a cost: the widow who says he is better off dead but pays with his sickle, the
   grieving brother who will pay nothing because it goes to a debt.
