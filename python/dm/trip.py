@@ -50,6 +50,10 @@ PROFILES = {
     "skorpion_goa": [(25.0, 0.08, 0.010, 0.0, 0.0), (35.0, 0.35, 0.006, 0.02, 0.02), (5.0, 0.95, 0.050, 0.0, 0.0),
                      (55.0, 0.80, 0.008, 0.12, 0.05), (50.0, 0.90, 0.006, 0.10, 0.04), (65.0, 1.00, 0.010, 0.06, 0.05),
                      (30.0, 0.00, 0.006, 0.0, 0.0)],
+    # The Invocation (Y'Berion's forbidden blend): a long moonlit prayer, the call rising, the vision at the peak,
+    # and a collapse into a blackout. Provisional until its own track is cut to it.
+    "anrufung": [(40.0, 0.25, 0.006, 0.0, 0.0), (40.0, 0.45, 0.005, 0.03, 0.02), (50.0, 0.75, 0.006, 0.05, 0.02),
+                 (45.0, 1.00, 0.010, 0.04, 0.03), (25.0, 0.00, 0.008, 0.0, 0.0)],
 }
 
 # How each trip looks. Mindcap: neon edges and long tracers in pink, violet and green. Ember (Solaris's Emberheart):
@@ -61,8 +65,10 @@ PROFILES = {
 LOOKS = {"mindcap": {"look": 0, "edges": 1.0, "tracers": 1.0, "pools": "mindcap"},
          "ember": {"look": 1, "edges": 0.35, "tracers": 0.35, "pools": "ember"},
          "ember_eye": {"look": 1, "edges": 0.35, "tracers": 0.35, "pools": "ember", "eye": True, "at_peak": True},
-         "ember_glow": {"look": 1, "edges": 0.35, "tracers": 0.0, "pools": "ember", "afterglow": True}}
-PROFILE_LOOK = {"skorpion": "ember_glow", "skorpion_goa": "ember_eye"}
+         "ember_glow": {"look": 1, "edges": 0.35, "tracers": 0.0, "pools": "ember", "afterglow": True},
+         # The Invocation: moonlit watercolour, patterns growing from edges, and the vision (a negative) at the peak.
+         "invocation": {"look": 2, "edges": 0.15, "tracers": 0.5, "pools": "sleeper", "eye": True, "at_peak": True}}
+PROFILE_LOOK = {"skorpion": "ember_glow", "skorpion_goa": "ember_eye", "anrufung": "invocation"}
 OPEN_FROM, OPEN_TO = 0.55, 0.9
 PEAK_OPEN = 6.0   # seconds over which a stage that waits for the peak fades in once the peak phase begins
 
@@ -94,7 +100,20 @@ DESERT_POOLS = [
 ]
 DESERT_LANDINGS = ["Wasser. Ich brauch Wasser.", "Uff. Die Hitze lässt nach.", "Nie wieder Skorpion. Ehrlich.",
                    "Mein Kopf glüht noch …"]
-POOLS = {"mindcap": (THOUGHT_POOLS, LANDINGS), "ember": (DESERT_POOLS, DESERT_LANDINGS)}
+# The Sleeper's thoughts, for the Invocation: a prayer in the night, a call, and what the Gurus saw.
+SLEEPER_POOLS = [
+    (0.25, ["Der Mond … der ist so nah.", "Alles ist so still. So friedlich.", "Ich sollte beten. Zu wem eigentlich?",
+            "Das Licht ist ganz silbern."]),
+    (0.5, ["Da ruft jemand. Ganz leise.", "Erwache …", "Die Muster … die waren vorher nicht da.",
+           "Die Wände haben Gesichter."]),
+    (0.75, ["Er ruft mich. Der Schläfer.", "Ich seh … die Barriere. Sie leuchtet.", "Die Stimmen beten mit mir.",
+            "Er sieht mich. Er sieht mich an."]),
+    (0.95, ["Das ist kein Gott …", "Seine Augen … sie brennen!", "Y'Berion, was hast du gesehen?",
+            "Er erwacht. Er erwacht!"]),
+]
+SLEEPER_LANDINGS = ["Es ist vorbei. Ich glaub, es ist vorbei.", "Nie wieder Gurukraut.", "Der Schläfer … schläft. Gut so."]
+POOLS = {"mindcap": (THOUGHT_POOLS, LANDINGS), "ember": (DESERT_POOLS, DESERT_LANDINGS),
+         "sleeper": (SLEEPER_POOLS, SLEEPER_LANDINGS)}
 
 # Said instead when the hero tries to talk to someone while the trip is too strong for it; never twice in a row.
 REFUSALS = ["Nicht jetzt … sein Gesicht zerfließt.", "Mit dem red ich jetzt besser nicht.", "Der hat … drei Augen.",
@@ -120,8 +139,9 @@ NORTH_ANSWERS = ["Hörst du auch die Trommeln?", "Ich muss nach Nordmar. Die Cla
                  "Wo geht's hier nach Nordmar?", "Riechst du das? Schnee. Und Feuer."]
 DESERT_ANSWERS = ["Ich bin ein Skorpion. Glaub ich.", "Der Sand … überall ist Sand.",
                   "Hast du meine Karawane gesehen?"]
+SLEEPER_ANSWERS = ["Erwache!", "Der Schläfer ruft mich.", "Hast du den Mond gesehen? Er hat Augen."]
 PROFILE_ANSWERS = {"nordmar": NORTH_ANSWERS, "kriegsgesang": NORTH_ANSWERS,
-                   "skorpion": DESERT_ANSWERS, "skorpion_goa": DESERT_ANSWERS}
+                   "skorpion": DESERT_ANSWERS, "skorpion_goa": DESERT_ANSWERS, "anrufung": SLEEPER_ANSWERS}
 SPECIAL_CLOSERS = ["Geh nach Hause und schlaf deinen Rausch aus.", "Mit dir red ich, wenn du wieder klar bist.",
                    "Verschwinde, bevor dich die Miliz so sieht."]
 SPECIAL_LAST = "Na gut …"
@@ -195,6 +215,14 @@ BLACKOUTS = {
                     "reply": "Schon gut, ich geh ja schon.",
                     "line": "Mein Auftrag ist es, hier Kundschaft reinzubringen. Aber dich … dich sehe ich lieber "
                             "wieder gehen."}]},
+    # Y'Berion collapsed at the Invocation; the hero comes to in Adanos's temple, where Vatras prays at night and
+    # preaches outside from five. No bed: he wakes on his feet before the altar. Vatras's first conversation is this.
+    "anrufung": {"waypoint": "NW_CITY_MERCHANT_TEMPLE_IN", "hour": 6,
+                 "wake": ["Wo bin ich … ein Tempel?", "Adanos? Warum ausgerechnet Adanos?",
+                          "Mein Kopf … und warum knie ich hier?"],
+                 "after": [{"npc": "VLK_439_VATRAS", "voice": "05", "converse": True,
+                            "line": "Was auch immer du heute Nacht angebetet hast, mein Sohn: Adanos war es nicht.",
+                            "reply": "Ich … hab nur was geraucht."}]},
 }
 AFTER_NEAR = 500.0    # how close (cm) the hero passes someone before they speak up
 AFTER_FOR = 900.0     # seconds after waking that the house still remembers him
@@ -231,7 +259,7 @@ def thought_lines(thoughts=None):
         ups = [line for pools, _ in POOLS.values() for _, pool in pools for line in pool]
     wakes = [line for blackout in BLACKOUTS.values() for line in blackout["wake"]]
     return (ups + [line for _, landings in POOLS.values() for line in landings] + REFUSALS + wakes
-            + SPECIAL_ANSWERS + NORTH_ANSWERS + DESERT_ANSWERS + [SPECIAL_LAST])
+            + SPECIAL_ANSWERS + NORTH_ANSWERS + DESERT_ANSWERS + SLEEPER_ANSWERS + [SPECIAL_LAST])
 
 
 def draw_thoughts(rng, style="mindcap"):
@@ -289,7 +317,7 @@ def look(intensity, seconds, pulse=0.0, drums=0.0, style="mindcap", opened=None)
     stands, drums (0..1) how much drum is playing. The view does not wobble; it draws in gently on the beat. Nothing
     flashes. Everything scales with intensity, so a sober hero sees nothing. Pure, to tune and test."""
     hue = (seconds / 20.0) % 1.0   # a slow turn of colour: a full circle every twenty seconds
-    r, g, b = _hue(hue, DESERT if LOOKS[style]["look"] == 1 else PALETTE)
+    r, g, b = _hue(hue, {1: DESERT, 2: MOON}.get(LOOKS[style]["look"], PALETTE))
     if opened is None:
         x = min(1.0, max(0.0, (intensity - OPEN_FROM) / (OPEN_TO - OPEN_FROM)))
         opened = x * x * (3 - 2 * x)   # the second stage opens smoothly once the heat has hit
@@ -349,6 +377,8 @@ PINK, VIOLET, GREEN = (1.00, 0.27, 1.00), (0.55, 0.25, 1.00), (0.30, 1.00, 0.45)
 PALETTE = (PINK, VIOLET, GREEN, VIOLET)
 # Emberheart's desert, as in shader/trip/trip.frag: pale sand, gold, deep ochre, amber.
 DESERT = ((1.00, 0.91, 0.63), (1.00, 0.80, 0.33), (0.87, 0.60, 0.20), (1.00, 0.67, 0.27))
+# The Invocation's night, as in the shader: moonlight silver, the swamp's green, violet, a cold blue.
+MOON = ((0.80, 0.86, 1.00), (0.40, 0.90, 0.50), (0.58, 0.34, 0.96), (0.40, 0.55, 1.00))
 
 
 def _vivid_mix(a, b, f):
@@ -548,12 +578,16 @@ class Trip:
                 gothic.dialog.trip_talk(False)
                 if gothic.dialog.is_open():
                     gothic.dialog.close()                  # nobody talks through a blackout: the partner stays behind
-                gothic.player.set_position(*cfg["bed"])
+                gothic.player.set_position(*(cfg["bed"] if "bed" in cfg
+                                             else gothic.world.waypoint_position(cfg["waypoint"])))
                 gothic.world.set_time(cfg["hour"], 0)      # the next morning; NPCs go back to their routines
                 return dict(look(0.0, elapsed, style=self.style), tint=(0.0, 0.0, 0.0, 1.0))
             return dict(fx, tint=(0.0, 0.0, 0.0, alpha))
         sober = look(0.0, elapsed, style=self.style)
         if b["stage"] == "dark":
+            if "scheme" not in cfg:
+                b.setdefault("lying", True)                # no bed: he comes to on his feet
+                b.setdefault("lay_at", now)
             if not b.get("lying") and since >= SETTLE:
                 b["lying"] = gothic.player.use_object(cfg["scheme"], 1, quiet=True)
                 if b["lying"]:
@@ -659,7 +693,8 @@ def tick_after(gothic, now):
             lines.remove(line)
 
     for line in list(lines):
-        if line.get("instead_of") and not line.get("bound") and not gothic.player.heard(line["instead_of"]):
+        takes_over = line.get("converse") or (line.get("instead_of") and not gothic.player.heard(line["instead_of"]))
+        if takes_over and not line.get("bound"):
             npc = gothic.world.find_npc(line["npc"])
             if npc is not None:
                 gothic.dialog.bind(npc)         # his conversation becomes this line, whoever starts it
@@ -694,7 +729,7 @@ def after_graph(npc):
             # stop the hero with the pitch, before the next tick could say otherwise.
             try:
                 import gothic
-                for info in [line["instead_of"]] + line.get("also_heard", []):
+                for info in ([line["instead_of"]] if line.get("instead_of") else []) + line.get("also_heard", []):
                     gothic.player.mark_heard(info)  # after that night he is no stranger to pitch to
             except (ImportError, AttributeError, ValueError, RuntimeError):
                 pass                            # an older game build: he pitches once more, nothing worse

@@ -484,3 +484,47 @@ for _ in range(int(25 * 60)):
     env.step()
 assert env.intensity > 0.75
 print("trip ok")
+
+# The Invocation: its own look (2), the moonlit tint, the vision opens at the peak like the eye, its own thoughts.
+fx = trip.look(0.8, 10.0, style="invocation", opened=0.5)
+assert fx["look"] == 2 and fx["eye"] == 0.5 and fx["afterglow"] == 0.0
+assert trip.PROFILE_LOOK["anrufung"] == "invocation" and trip.LOOKS["invocation"]["at_peak"]
+inv = trip.Trip(trip.PROFILES["anrufung"], None, style="invocation", rng=_random.Random(2))
+assert all(text in [t for _, pool in trip.SLEEPER_POOLS for t in pool] for _, text in inv.thoughts)
+assert set(trip.SLEEPER_ANSWERS) <= set(trip.thought_lines())
+
+# Its blackout has no bed: he wakes on his feet at a waypoint, and Vatras's first conversation is his line.
+moves, times, said_before = [], [], len(said)
+fake.player = types.SimpleNamespace(set_position=lambda *p: moves.append(p), position=(0.0, 0.0, 0.0),
+                                    use_object=lambda *a, **k: (_ for _ in ()).throw(AssertionError("no bed")),
+                                    heard=lambda info: False)
+fake.world.set_time = lambda h, m: times.append((h, m))
+fake.world.waypoint_position = lambda wp: {"NW_CITY_MERCHANT_TEMPLE_IN": (10.0, 20.0, 30.0)}[wp]
+dialog.is_open = lambda: False
+dialog.partner = lambda: None
+binds.clear()
+vatras = types.SimpleNamespace(position=(0.0, 0.0, 9000.0), instance="VLK_439_VATRAS", voice=5)
+people.clear()
+people["VLK_439_VATRAS"] = vatras
+night = trip.Trip([(3.0, 1.0, 0.2, 0, 0), (3.0, 0.0, 0.01, 0, 0)], None, style="invocation",
+                  blackout=trip.BLACKOUTS["anrufung"])
+now = 0.0
+while night.tick(fake, now):
+    now += 0.05
+    assert now < 60, "the blackout never ended"
+assert moves == [(10.0, 20.0, 30.0)] and times == [(6, 0)]
+assert said[-1] in trip.BLACKOUTS["anrufung"]["wake"]
+trip.remember_after(fake, trip.BLACKOUTS["anrufung"]["after"], now)
+trip._current = None
+trip.tick_after(fake, now + 0.1)
+assert binds == [("bind", vatras)]                              # far away, yet his conversation is already the line
+g = trip.special_for(vatras)
+assert g["voice"] == "05" and g["nodes"]["a"]["line"].startswith("Was auch immer")
+assert g["nodes"]["a"]["choices"][0]["text"] == "Ich … hab nur was geraucht."
+trip.tick_after(fake, now + 0.2)
+assert binds[-1] == ("unbind", vatras)                          # his own conversations back
+trip.tick_after(fake, now + 0.3)
+assert trip._after is None
+assert ("05", trip.BLACKOUTS["anrufung"]["after"][0]["line"]) in trip.after_lines()
+fake.player = None
+print("invocation ok")
