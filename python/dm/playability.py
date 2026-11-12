@@ -738,6 +738,7 @@ class Story:
         self.name, self.title = name, story.get("title", name)
         self.data = story
         self.containers = []    # dicts: kind, id, npc, requires, unless, checks, on, graph, ops, parent, extra
+        self.initial_flags = set()   # flags the plan sets the moment it is submitted (top-level set_flag)
         self.placed = []        # (item, waypoint, container)
         self.given = []         # (item, count, container)
         self.renamed = []       # (npc, name)
@@ -768,6 +769,8 @@ class Story:
                     self._role(on[field], "deed")
             if op.get("unseen_by_near"):
                 self._role(op["unseen_by_near"], "watcher")
+        elif kind == "set_flag" and parent is None and op.get("value", True) and op.get("name"):
+            self.initial_flags.add(op["name"])
         elif kind == "place_item":
             self.placed.append((op.get("instance", "").upper(), op.get("waypoint"), parent))
         elif kind == "give_item":
@@ -1265,7 +1268,7 @@ class Audit:
         promised = s.endings()
 
         def fixpoint(real):
-            flags, active, failing = set(), set(), {}
+            flags, active, failing = set(s.initial_flags), set(), {}
             items = {name for name, _, parent in s.placed + s.given if parent is None}
             changed = True
             while changed:
@@ -1275,6 +1278,10 @@ class Audit:
                     if parent is not None and id(parent) not in active:
                         continue
                     if not all(f in flags for f in c["requires"]):
+                        continue
+                    # "unless" can only be ordered in time by playing; what the runtime provably never allows is
+                    # excluded: a guard on its own requirement, or on a flag set from the start.
+                    if any(u in c["requires"] or u in s.initial_flags for u in c["unless"]):
                         continue
                     reasons = []
                     if real:
@@ -1322,9 +1329,15 @@ class Audit:
                                 changed = True
                         if node.get("returns"):
                             todo.append(node["returns"])
+                        node_sets = set(_list(node.get("sets")))
                         for choice in node.get("choices", []):
                             required = choice.get("requires")
                             if required and not any(f in flags for f in required):
+                                continue
+                            # The node's own flags are set before its choices show, so a choice barred by one of
+                            # them never appears; nor one barred by its own requirement or a flag set from the start.
+                            barred = _list(choice.get("unless"))
+                            if any(u in (required or []) or u in node_sets or u in s.initial_flags for u in barred):
                                 continue
                             if real:
                                 bad = [self.gate(ch, c.get("npc"), items) for ch in choice.get("checks") or []]

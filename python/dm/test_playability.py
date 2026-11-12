@@ -202,3 +202,16 @@ assert any("flag met is also set by other0" in c and "scene x" in c for c in sha
 assert "**Verdict: blocked**" in pa.markdown(bad) and "### 5. Objects" in pa.markdown(filled)
 json.dumps(pa.summary(bad))
 print("ok")
+
+# endings: a flag the plan sets at once counts from the start; an "unless" the runtime never lets pass bars the way
+seeded = audit([{"op": "set_flag", "name": "ready", "value": True}, ending("ready")])
+assert seeded["endings"]["endings"][0]["status"] == "reachable", seeded["endings"]
+contradiction = audit([
+    {"op": "add_rule", "id": "sets_ready", "when": [], "ops": [{"op": "set_flag", "name": "ready", "value": True}]},
+    {"op": "add_rule", "id": "end_x", "when": ["ready"], "unless": "ready",
+     "ops": [{"op": "journal", "topic": "T", "status": 2}]}])
+assert contradiction["endings"]["endings"][0]["status"] != "reachable", contradiction["endings"]
+self_barred = audit([{"op": "add_topic", "id": "t", "npc": "VLK_1_SMITH", "title": "?",
+                      "graph": graph({"text": "Go.", "goto": "b", "unless": "seen"}, sets="seen")}, ending("done")])
+assert self_barred["endings"]["endings"][0]["status"] != "reachable", self_barred["endings"]
+print("ending guards ok")
