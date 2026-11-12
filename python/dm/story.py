@@ -809,8 +809,10 @@ def _check_weather(args, state):
     if args["kind"] not in WEATHER_KINDS:
         raise PlanError("weather kind is snow, rain or clear")
     for key, low, high in (("intensity", 0, 1), ("fade", 0, 3600), ("cover", 0, 1), ("cover_seconds", 0, 86400)):
-        value = args.get(key)
-        if value is not None and (isinstance(value, bool) or not isinstance(value, (int, float)) or not low <= value <= high):
+        if key not in args:
+            continue   # left out: its default; written out, it must be a number
+        value = args[key]
+        if isinstance(value, bool) or not isinstance(value, (int, float)) or not low <= value <= high:
             raise PlanError(f"weather {key} is a number from {low} to {high}")
     wind = args.get("wind", [0, 0])
     if not (isinstance(wind, list) and len(wind) == 2 and all(isinstance(v, (int, float)) and abs(v) <= 30 for v in wind)):
@@ -818,8 +820,9 @@ def _check_weather(args, state):
 
 
 def _fold_weather(args, state):
+    before = state.get("weather") or {}
     state["weather"] = {"kind": args["kind"], "intensity": args.get("intensity", 1.0), "wind": list(args.get("wind", [0, 0])),
-                        "cover": args.get("cover")}
+                        "cover": args.get("cover", before.get("cover"))}   # snow already lying stays unless set
 
 
 def _world_weather(args, fade=None):

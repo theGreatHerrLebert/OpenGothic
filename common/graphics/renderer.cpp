@@ -938,7 +938,10 @@ void Renderer::drawPrecipitation(Tempest::Encoder<Tempest::CommandBuffer>& cmd, 
 
   auto& scene = wview.sceneGlobals();
   cmd.setBinding(0, scene.uboGlobal[SceneGlobals::V_Main]);
-  cmd.setBinding(1, sky.fogLut3D, Sampler::bilinear(ClampMode::ClampToEdge));
+  // The low-quality fog LUT holds light and transmittance together; the volumetric modes keep them in the
+  // multiple-scattering LUT (fog.frag), which is the one with transmittance in alpha there.
+  const bool lowFog = (sky.quality==None || sky.quality==VolumetricLQ);
+  cmd.setBinding(1, lowFog ? sky.fogLut3D : sky.fogLut3DMs, Sampler::bilinear(ClampMode::ClampToEdge));
   cmd.setPushData(push);
   cmd.setPipeline(shaders.precipitation);
   cmd.draw(nullptr, 0, 6, 0, count);

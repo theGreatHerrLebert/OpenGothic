@@ -927,6 +927,10 @@ def test_weather():
     s.apply_plan({"reason": "t", "ops": [{"op": "weather", "kind": "snow", "intensity": 0.7, "fade": 30, "cover": 0.5}]})
     assert calls == [("set", "snow", 0.7, 30, (0, 0)), ("cover", 0.5, 600)], calls
     assert s.state["weather"]["kind"] == "snow"
+    rejected(s, [{"op": "weather", "kind": "rain", "intensity": None}], "intensity")
+    s.apply_plan({"reason": "t", "ops": [{"op": "weather", "kind": "rain", "intensity": 0.3}]})
+    assert s.state["weather"]["cover"] == 0.5   # the snow lying stays when a later op leaves cover out
+    s.apply_plan({"reason": "t", "ops": [{"op": "weather", "kind": "snow", "intensity": 0.7}]})
     calls.clear()
     s.rebind()
     assert calls[0] == ("set", "snow", 0.7, 0, (0, 0)) and calls[1] == ("cover", 0.5, 0), calls
