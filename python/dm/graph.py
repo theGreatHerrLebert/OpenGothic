@@ -186,7 +186,9 @@ class Player:
                 self.on_flag(flag)
 
     def _asked_flag(self, choice):
-        return f"asked:{self.partner}:{choice['text']}"
+        # Per story: a later story may give someone the same question, and the hero has not asked it there yet.
+        story = (self.graph or {}).get("story")
+        return f"asked:{story}:{self.partner}:{choice['text']}" if story else f"asked:{self.partner}:{choice['text']}"
 
     def _visible_choices(self):
         flags = self.get_flags()

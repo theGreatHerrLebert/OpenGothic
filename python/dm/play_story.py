@@ -57,6 +57,8 @@ def namespaced(ops, prefix):
                 out[key] = walk(item)
         if value.get("op") == "end_story":
             out["story"] = prefix   # an author ends his own story, by an ending rule, without knowing its number
+        if "nodes" in value and "start" in value:
+            out["story"] = prefix   # a conversation knows its story: what the hero asked in another story stays there
         return out
     return [walk(op, True) for op in ops]
 

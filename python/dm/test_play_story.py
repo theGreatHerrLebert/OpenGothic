@@ -47,3 +47,8 @@ print("voice graphs ok")
 ended = play_story.namespaced([{"op": "add_rule", "id": "won", "when": [], "ops": [{"op": "end_story", "outcome": "won"}]}], "story_9")
 assert ended[0]["ops"][0] == {"op": "end_story", "outcome": "won", "story": "story_9"}, ended
 print("own ending ok")
+
+# A conversation carries its story, so questions asked in one story stay asked only there.
+plan = [{"op": "attach_dialogue_graph", "npc": "X", "graph": {"start": "a", "nodes": {"a": {"line": "l", "choices": []}}}}]
+assert play_story.namespaced(plan, "story_8")[0]["graph"]["story"] == "story_8"
+print("graph story ok")
