@@ -93,12 +93,24 @@ def recent_events(path=None, count=RECENT_EVENTS):
     except OSError:
         return []
     events = []
-    for line in lines[-count:]:
+    on_branch = _branch_filter()
+    for line in lines:
         try:
-            events.append(json.loads(line))
+            event = json.loads(line)
         except ValueError:
-            pass
-    return events
+            continue
+        if on_branch(event):
+            events.append(event)
+    return events[-count:]
+
+
+def _branch_filter():
+    """Only events of the game played now, when the observer runs; everything outside the game."""
+    import sys
+    observer = sys.modules.get("dm.observer")
+    if observer is None or getattr(observer._observer, "timeline", None) is None:
+        return lambda event: True
+    return observer.branch_filter()
 
 
 # Log entries the story layer writes for itself, rather than a story the game master submitted.

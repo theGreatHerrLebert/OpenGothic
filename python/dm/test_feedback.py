@@ -60,7 +60,7 @@ with tempfile.TemporaryDirectory() as d:
     events = d / "events.jsonl"
     events.write_text("".join(json.dumps({"seq": i}) + "\n" for i in range(30)) + "{half\n")
     recent = feedback.recent_events(events, 5)
-    assert [e["seq"] for e in recent] == [26, 27, 28, 29]   # a torn last line is skipped
+    assert [e["seq"] for e in recent] == [25, 26, 27, 28, 29]   # a torn last line is skipped, not counted
     assert feedback.recent_events(d / "missing.jsonl") == []
     assert feedback.recent_events(events, 100)[0]["seq"] == 0   # a short file keeps its first line
 
@@ -79,7 +79,7 @@ with tempfile.TemporaryDirectory() as d:
     found = feedback.context(fake, story_module)
     assert found["story"] == "Die eine Flasche" and found["conversation"] == "NOV_610_NOVIZE"
     assert found["node"] == "c" and found["line"] == "Was willst du?" and found["hour"] == 14
-    assert [e["seq"] for e in found["events"]] == list(range(21, 30))   # last 10 lines, torn one skipped
+    assert [e["seq"] for e in found["events"]] == list(range(20, 30))   # last 10 events, torn line skipped
 
     # Outside a conversation there is no line to blame.
     fake.dialog.partner = lambda: None

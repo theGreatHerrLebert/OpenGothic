@@ -9,11 +9,17 @@ point, not something the player just did.
     obs.recent(20)
 
 Events are appended to python/dm_runtime/events.jsonl.
+
+Timelines: loading an older save throws away what happened since, but the log keeps it. So every event carries the
+timeline it happened in ("tl"). A save remembers its timeline and how far it had got; loading it starts a new
+timeline branching off there. recent() and branch_filter() give only what happened on the way to the game being
+played now, so an author never builds on a deed the player has undone.
 """
 
 import collections
 import json
 import pathlib
+import uuid
 
 import gothic
 
@@ -25,6 +31,22 @@ NEAR_COOLDOWN_POLLS = 300 # an NPC must be out of range this long to count again
 
 RUNTIME_DIR = pathlib.Path(__file__).resolve().parent.parent / "dm_runtime"
 LOG_PATH = RUNTIME_DIR / "events.jsonl"
+TIMELINES_PATH = RUNTIME_DIR / "timelines.json"   # {timeline: {"parent": timeline or None, "at": seq or None}}
+SAVES_DIR = RUNTIME_DIR / "saves"                 # <slot>.timeline.json: the timeline a save belongs to, and where
+
+
+def _read_json(path, default):
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return default
+
+
+def _write_json(path, value):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp = path.with_suffix(".tmp")
+    tmp.write_text(json.dumps(value), encoding="utf-8")
+    tmp.replace(path)
 
 
 def place_of(waypoint):
@@ -58,11 +80,60 @@ class Observer:
         self.elapsed = 0
         self.generation = None
         self.base = None
+        self.timeline = None
+
+    # ---- timelines ----
+
+    def _begin_timeline(self, parent=None, at=None):
+        """A new timeline, branching off parent after event seq at, or a fresh one (a new game, an unknown save)."""
+        self.timeline = uuid.uuid4().hex[:12]
+        known = _read_json(TIMELINES_PATH, {})
+        known[self.timeline] = {"parent": parent, "at": at}
+        _write_json(TIMELINES_PATH, known)
+
+    def on_save(self, slot):
+        if self.timeline is None:
+            self._begin_timeline()
+        self._flush_items()
+        _write_json(SAVES_DIR / f"{slot}.timeline.json", {"timeline": self.timeline, "seq": self.seq})
+
+    def on_load(self, slot):
+        """The game goes back to a save: what happened after it, in any timeline, is no longer this game's past."""
+        mark = _read_json(SAVES_DIR / f"{slot}.timeline.json", None)
+        if mark is None:
+            self._begin_timeline()          # a save from before timelines: its past is unknown, not wrong
+        else:
+            self._begin_timeline(mark["timeline"], mark["seq"])
+
+    def on_new_game(self):
+        self._begin_timeline()
+
+    def branch(self):
+        """{timeline: the last seq of it that leads here (None: all of it)} for the game played now."""
+        if self.timeline is None:
+            return {}
+        known = _read_json(TIMELINES_PATH, {})
+        chain, current, limit = {}, self.timeline, None
+        while current is not None and current not in chain:
+            chain[current] = limit
+            entry = known.get(current) or {}
+            current, limit = entry.get("parent"), entry.get("at")
+        return chain
+
+    def on_branch(self, event, chain=None):
+        chain = self.branch() if chain is None else chain
+        tl = event.get("tl")
+        if tl not in chain:
+            return False   # another timeline, or an event from before timelines were kept
+        limit = chain[tl]
+        return limit is None or event.get("seq", 0) <= limit
 
     def _emit(self, kind, **data):
+        if self.timeline is None:
+            self._begin_timeline()
         self.seq += 1
         hour, minute = gothic.world.time
-        event = {"seq": self.seq, "day": gothic.world.day, "hour": hour,
+        event = {"seq": self.seq, "tl": self.timeline, "day": gothic.world.day, "hour": hour,
                  "minute": minute, "type": kind, **data}
         self.events.append(event)
         RUNTIME_DIR.mkdir(exist_ok=True)
@@ -195,12 +266,27 @@ def _dispatch(dt):
     _observer.on_tick(dt)
 
 
+def _module():
+    return __import__("dm.observer").observer
+
+
 def start():
     """Begin observing. Safe to call repeatedly and after gothic.reload."""
     if not getattr(gothic, "_dm_observer_registered", False):
-        gothic.on_tick(lambda dt: __import__("dm.observer").observer._dispatch(dt))
+        gothic.on_tick(lambda dt: _module()._dispatch(dt))
+        gothic._save_callbacks.append(lambda slot: _module()._observer.on_save(slot))
+        gothic._load_callbacks.append(lambda slot: _module()._observer.on_load(slot))
+        gothic._new_game_callbacks.append(lambda world: _module()._observer.on_new_game())
         gothic._dm_observer_registered = True
 
 
 def recent(n=20):
-    return list(_observer.events)[-n:]
+    """The last n events of the game played now: none from a timeline a load has left behind."""
+    chain = _observer.branch()
+    return [e for e in _observer.events if _observer.on_branch(e, chain)][-n:]
+
+
+def branch_filter():
+    """A test for events read from the log: True for those on the way to the game played now."""
+    chain = _observer.branch()
+    return lambda event: _observer.on_branch(event, chain)

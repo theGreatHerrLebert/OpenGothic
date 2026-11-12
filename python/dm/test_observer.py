@@ -132,3 +132,34 @@ def test():
 
 test()
 print("observer tests passed")
+
+# Timelines: a reload leaves behind what happened after the save, and an author never sees it.
+o.TIMELINES_PATH, o.SAVES_DIR = tmp / "timelines.json", tmp / "saves"
+ob = o.Observer()
+o._observer = ob
+ob.on_new_game()
+step(gen=10)
+step(room="KITCHEN")                  # before the save: part of the game
+ob.on_save("slot1")
+step(room="")
+step(room="CELLAR")                   # after the save: thrown away by the reload below
+cellar = [e for e in ob.events if e.get("room") == "CELLAR"]
+assert cellar and ob.on_branch(cellar[0])
+ob.on_load("slot1")
+step(gen=11)
+step(room="TOWER")                    # the new timeline
+rooms = [e.get("room") for e in o.recent(50) if e["type"] == "room_entered"]
+assert "KITCHEN" in rooms and "TOWER" in rooms and "CELLAR" not in rooms, rooms
+keep = o.branch_filter()
+assert not keep(cellar[0]) and keep([e for e in ob.events if e.get("room") == "KITCHEN"][0])
+# A save made in the new timeline, loaded later, still leads back through the first one.
+ob.on_save("slot2")
+step(room="")
+step(room="ATTIC")
+ob.on_load("slot2")
+rooms = [e.get("room") for e in o.recent(50) if e["type"] == "room_entered"]
+assert rooms[:2] == ["KITCHEN", "TOWER"] and "ATTIC" not in rooms and "CELLAR" not in rooms, rooms
+# A save from before timelines starts a fresh one: its past is unknown, so nothing old is shown.
+ob.on_load("never_saved")
+assert o.recent(50) == []
+print("timeline tests passed")
