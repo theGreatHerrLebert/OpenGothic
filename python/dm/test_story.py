@@ -772,7 +772,7 @@ def test_attack():
     rejected(s, [{"op": "attack", "npc": "PARLAN"}], "cannot be taken over")
     rejected(s, [{"op": "attack", "npc": "NOV_A", "target": "NOV_A"}], "himself")
     called = []
-    fake.daedalus.call = lambda name, *args: called.append((name, *args))
+    fake.daedalus.call = lambda name, *args, **kw: called.append((name, *args))
     st._world_attack({"npc": "NOV_A", "target": "NOV_B"})
     assert called == [("B_ATTACK", fake.world.npcs["NOV_A"], fake.world.npcs["NOV_B"], -1, 1)], called
     st._world_attack({"npc": "NOV_A"})

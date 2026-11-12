@@ -16,11 +16,42 @@ void bindDaedalus(py::module_& m) {
 
   daedalus.def(
       "call",
-      [](const std::string& name, py::args args) -> py::object {
+      [](const std::string& name, py::args args, py::kwargs kwargs) -> py::object {
         auto& vm  = requireWorld()->script().getVm();
         auto* sym = vm.find_symbol_by_name(name);
         if(sym == nullptr)
           throw std::runtime_error("Daedalus symbol not found: " + name);
+
+        // self= and other= set the script globals for this one call, as a dialogue or perception would: functions
+        // such as B_Attack start AI states that read them. Both are put back afterwards.
+        auto instanceOf = [](py::handle v) -> std::shared_ptr<zenkit::DaedalusInstance> {
+          if(py::isinstance<PyPlayer>(v)) {
+            auto* p = Gothic::inst().player();
+            if(p == nullptr)
+              throw std::runtime_error("no active player to pass as Daedalus instance");
+            return std::static_pointer_cast<zenkit::DaedalusInstance>(p->handlePtr());
+            }
+          auto pyn = py::cast<PyNpc>(v);
+          Npc* n   = pyn.locate() ? pyn.ptr : nullptr;
+          if(n == nullptr)
+            throw std::runtime_error("npc no longer exists");
+          return std::static_pointer_cast<zenkit::DaedalusInstance>(n->handlePtr());
+          };
+        struct Restore {
+          zenkit::DaedalusSymbol*                   sym = nullptr;
+          std::shared_ptr<zenkit::DaedalusInstance> prev;
+          ~Restore() { if(sym != nullptr) sym->set_instance(prev); }
+          } restoreSelf, restoreOther;
+        if(kwargs.contains("self")) {
+          auto inst = instanceOf(kwargs["self"]);
+          restoreSelf.sym = vm.global_self(); restoreSelf.prev = restoreSelf.sym->get_instance();
+          restoreSelf.sym->set_instance(inst);
+          }
+        if(kwargs.contains("other")) {
+          auto inst = instanceOf(kwargs["other"]);
+          restoreOther.sym = vm.global_other(); restoreOther.prev = restoreOther.sym->get_instance();
+          restoreOther.sym->set_instance(inst);
+          }
 
         for(auto handle : args) {
           py::object v = py::reinterpret_borrow<py::object>(handle);
@@ -69,8 +100,9 @@ void bindDaedalus(py::module_& m) {
           default:                               return py::none();
           }
         },
-      "Call a Daedalus function by name. Args must be int, float, bool or "
-      "str. Return value (if any) comes back as the matching Python type.");
+      "Call a Daedalus function by name. Args must be int, float, bool, str, "
+      "gothic.Player or gothic.Npc; self= and other= set those globals for the "
+      "call. Return value (if any) comes back as the matching Python type.");
 
   daedalus.def(
       "get",

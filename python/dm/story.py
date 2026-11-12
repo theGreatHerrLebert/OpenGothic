@@ -694,7 +694,8 @@ def _world_attack(args):
     npc = _live_npc(_npc_instance(args["npc"]))
     target = str(args.get("target", "PLAYER")).upper()
     other = gothic.player if target == "PLAYER" else _live_npc(target)
-    gothic.daedalus.call("B_ATTACK", npc, other, gothic.daedalus.get("AR_NONE"), 1)
+    # B_Attack starts ZS_Attack, which reads the globals self and other, as when a dialogue ends in a fight.
+    gothic.daedalus.call("B_ATTACK", npc, other, gothic.daedalus.get("AR_NONE"), 1, self=npc, other=other)
     return None
 
 
