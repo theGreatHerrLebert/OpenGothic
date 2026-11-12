@@ -53,6 +53,9 @@ class GlobalEffects {
       float          spin   = 0;           // radians around the pole: the sky turning
       float          glow   = 0;           // a swell, 0..1, from the music
       Tempest::Vec4  nebula[2] = {};       // per nebula slot: yaw, pitch, size across (radians), strength
+      float          aurora = 0;           // northern lights over it, 0..1
+      float          time   = 0;           // seconds, for the aurora's drift
+      float          moon   = 0;           // a blood-red moon rising, 0..1
       };
     void          setGalaxy(const Galaxy& g) { galaxy = g; }
     const Galaxy& galaxyState() const { return galaxy; }

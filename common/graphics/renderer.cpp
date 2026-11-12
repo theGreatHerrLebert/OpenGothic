@@ -1975,7 +1975,7 @@ void Renderer::drawSky(Encoder<CommandBuffer>& cmd, const WorldView& wview) {
   cmd.setBinding(11, gx.texture(1), Sampler::trillinear(ClampMode::ClampToEdge));
   cmd.setBinding(12, gx.texture(2), Sampler::trillinear(ClampMode::ClampToEdge));
   struct PushGalaxy {
-    Vec4 main, tint, neb0, neb1;
+    Vec4 main, tint, neb0, neb1, aurora;
     } gp;
   if(auto* world = Gothic::inst().world()) {
     const auto& g = world->globalFx()->galaxyState();
@@ -1983,6 +1983,7 @@ void Renderer::drawSky(Encoder<CommandBuffer>& cmd, const WorldView& wview) {
     gp.tint = Vec4(g.tint.x, g.tint.y, g.tint.z, g.glow);
     gp.neb0 = g.nebula[0];
     gp.neb1 = g.nebula[1];
+    gp.aurora = Vec4(g.aurora, g.time, g.moon, 0);
     }
   cmd.setPushData(&gp, sizeof(gp));
   cmd.setPipeline(skyShader);

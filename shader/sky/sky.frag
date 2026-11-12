@@ -33,6 +33,7 @@ layout(push_constant, std140) uniform PushGalaxy {
   vec4 tint;   // rgb the grading colour, w a glow from the music
   vec4 neb0;   // yaw, pitch, size across (radians), strength
   vec4 neb1;
+  vec4 aurora; // x strength of the northern lights, y seconds, z a blood-red moon
   } galaxy;
 
 layout(location = 0) out vec4 outColor;
@@ -140,6 +141,57 @@ vec3 galaxyNebula(sampler2D tex, vec4 p, vec3 d) {
   return galaxyLinear(texture(tex, uv).rgb)*mask*p.w;
   }
 
+// Northern lights: curtains of light hanging over the sky. Each layer is the same ribbon seen at a slightly
+// different height, so the curtain gets depth and hangs down; fine vertical rays run through it. Green at the lower
+// edge, turquoise and violet above; the music's glow lets it flare, gently, like a breath.
+vec3 aurora(vec3 view, float strength, float t, float glow) {
+  if(strength<=0.001 || view.y<=0.02)
+    return vec3(0.0);
+  vec3 col = vec3(0.0);
+  for(int i=0; i<6; ++i) {
+    float h    = 1.0 + float(i)*0.09;
+    vec2  q    = view.xz/(view.y + 0.12)*h;
+    float drift = t*0.05;
+    float band = q.y*0.55 + sin(q.x*0.55 + drift*2.0 + float(i)*0.15)*0.9 + sin(q.x*1.7 - drift*3.1)*0.3 - 0.6;
+    float ribbon = exp(-band*band*3.0);
+    float rays = 0.55 + 0.45*sin(q.x*22.0 + sin(q.x*2.3 + t*0.4)*3.0 + float(i)*0.6);
+    float fade = 1.0 - float(i)/6.0;
+    vec3  tone = mix(vec3(0.15, 1.00, 0.45), mix(vec3(0.10, 0.85, 0.90), vec3(0.60, 0.30, 1.00), fade < 0.5 ? 1.0 - fade*2.0 : 0.0),
+                     1.0 - fade);
+    col += tone*ribbon*rays*fade;
+    }
+  float sky = smoothstep(0.02, 0.25, view.y)*(1.0 - smoothstep(0.85, 1.0, view.y)*0.5);
+  return col*sky*strength*0.45*(1.0 + glow*0.8);
+  }
+
+float moonHash(vec2 p) {
+  return fract(sin(dot(p, vec2(127.1, 311.7)))*43758.5453);
+  }
+
+float moonNoise(vec2 p) {
+  vec2 i = floor(p), f = fract(p);
+  f = f*f*(3.0 - 2.0*f);
+  return mix(mix(moonHash(i), moonHash(i + vec2(1, 0)), f.x), mix(moonHash(i + vec2(0, 1)), moonHash(i + vec2(1, 1)), f.x), f.y);
+  }
+
+// A blood-red moon, large and low over the war: a disk with dark seas and craters, and a red haze around it.
+vec3 bloodMoon(vec3 view, float m) {
+  if(m<=0.001)
+    return vec3(0.0);
+  const vec3  dir    = normalize(vec3(0.62, 0.42, -0.66));
+  const float radius = 0.085;   // radians: about four times the real moon
+  float a = acos(clamp(dot(view, dir), -1.0, 1.0));
+  vec3  right = normalize(cross(vec3(0.0, 1.0, 0.0), dir));
+  vec3  up    = cross(dir, right);
+  vec2  q     = vec2(dot(view, right), dot(view, up))/max(dot(view, dir), 1e-3)/tan(radius);
+  float disk  = 1.0 - smoothstep(0.97, 1.0, length(q));
+  float seas  = moonNoise(q*2.2 + 3.0)*0.6 + moonNoise(q*5.0)*0.3 + moonNoise(q*13.0)*0.1;
+  float limb  = sqrt(max(1.0 - dot(q, q), 0.0));
+  vec3  face  = mix(vec3(0.45, 0.04, 0.02), vec3(1.00, 0.25, 0.10), smoothstep(0.35, 0.75, seas))*(0.55 + 0.45*limb);
+  float haze  = exp(-max(a - radius, 0.0)*18.0)*0.55 + exp(-max(a - radius, 0.0)*5.0)*0.15;
+  return (face*disk*1.4 + vec3(0.8, 0.08, 0.03)*haze*(1.0 - disk))*m;
+  }
+
 vec3 galaxySky(vec3 view) {
   vec3  d = galaxyFrame(view);
   float u = atan(d.x, -d.z)/(2.0*3.14159265) + 0.5;
@@ -151,7 +203,10 @@ vec3 galaxySky(vec3 view) {
   float L = dot(c, vec3(0.2126, 0.7152, 0.0722));
   vec3  graded = galaxy.tint.rgb*L*2.2 + vec3(pow(L, 2.0))*1.5;
   c = mix(c, graded, galaxy.main.z);
-  return c*galaxy.main.y*(1.0 + galaxy.tint.w*0.6);
+  c = c*galaxy.main.y*(1.0 + galaxy.tint.w*0.6);
+  c += aurora(view, galaxy.aurora.x, galaxy.aurora.y, galaxy.tint.w);
+  float m = galaxy.aurora.z;
+  return mix(c, c*vec3(1.0, 0.55, 0.5), m*0.5) + bloodMoon(view, m);   // under a blood moon the sky reddens too
   }
 
 void main() {
