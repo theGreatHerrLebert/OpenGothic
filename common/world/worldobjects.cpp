@@ -1006,8 +1006,10 @@ void WorldObjects::recordPerception(const PerceptionMsg& msg, Npc& pl) {
   PerceptionRecord record;
   record.kind  = kind;
   record.actor = perceptionName(*actor,pl);
-  if(target!=nullptr)
-    record.target = perceptionName(*target,pl);
+  if(target!=nullptr) {
+    record.target     = perceptionName(*target,pl);
+    record.targetName = std::string(target->displayName());
+    }
   if(msg.item!=size_t(-1))
     if(auto* sym = owner.script().findSymbol(msg.item))
       record.item = sym->name();

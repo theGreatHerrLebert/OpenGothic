@@ -142,6 +142,7 @@ class WorldObjects final {
 
     struct PerceptionRecord final {
       std::string              kind, actor, target, item;
+      std::string              targetName;           // the target's display name: tells one wolf from another
       int32_t                  spell = -1;
       std::vector<std::string> seenBy;
       std::string              object;               // a used object's own name in the world, often empty

@@ -221,6 +221,19 @@ struct PyNpc {
 
   int32_t attribute(const std::string& name) const { return fetch()->attribute(attributeOf(name)); }
 
+  std::string bodyMesh() const { return fetch()->bodyMesh(); }
+
+  void addItem(const std::string& instance, int32_t count) {
+    auto*  n  = fetch();
+    auto*  w  = requireWorld();
+    size_t id = 0;
+    if(count<1 || count>100000)
+      throw std::invalid_argument("count out of range");
+    if(instanceClass(*w, upper(instance), id)!="C_ITEM")
+      throw std::invalid_argument("not an item instance: " + instance);
+    n->addItem(id, size_t(count));
+    }
+
   void setAttribute(const std::string& name, int32_t value) {
     if(value<0 || value>100000)
       throw std::invalid_argument("attribute value out of range");
@@ -689,6 +702,9 @@ PYBIND11_EMBEDDED_MODULE(gothic, m) {
       .def("attribute", &PyNpc::attribute, py::arg("name"),
            "hp, hp_max, mana, mana_max, strength or dexterity.")
       .def("set_attribute", &PyNpc::setAttribute, py::arg("name"), py::arg("value"))
+      .def_property_readonly("body_mesh", &PyNpc::bodyMesh, "The body mesh the game set (Wol_Body for a wolf).")
+      .def("add_item", &PyNpc::addItem, py::arg("instance"), py::arg("count") = 1,
+           "Put items into the NPC's inventory, to be looted.")
       .def_property("level", &PyNpc::level, &PyNpc::setLevel,
                     "The NPC's level; the hero's experience for a kill follows it.")
       .def("set_body_texture", &PyNpc::setBodyTexture, py::arg("variant"),
@@ -748,6 +764,7 @@ PYBIND11_EMBEDDED_MODULE(gothic, m) {
                d["kind"]    = r.kind;
                d["actor"]   = r.actor;
                d["target"]  = r.target;
+               d["target_name"] = r.targetName;
                d["item"]    = r.item;
                d["spell"]   = r.spell;
                d["seen_by"] = r.seenBy;

@@ -1219,6 +1219,8 @@ static std::string upperName(std::string_view s) {
 void Resources::registerTexture(std::string_view name, std::string_view path) {
   std::lock_guard<std::recursive_mutex> g(inst->sync);
   inst->customTextures[upperName(name)] = std::string(path);
+  inst->texCache.erase(upperName(name));   // a lookup before registration (a creature drawn during a load) cached a miss
+  inst->texCache.erase(std::string(name));
   }
 
 bool Resources::registerMeshVariant(std::string_view alias, std::string_view base,
@@ -1288,6 +1290,25 @@ bool Resources::registerMeshFile(std::string_view alias, std::string_view objPat
 
 std::vector<std::string> Resources::meshTextures(std::string_view mesh) {
   std::lock_guard<std::recursive_mutex> g(inst->sync);
+  if(FileExt::hasExt(mesh,"ASC") || FileExt::hasExt(mesh,"MDM")) {
+    // A creature's or a body's skinned mesh.
+    std::string mdm(mesh);
+    FileExt::exchangeExt(mdm,"ASC","MDM");
+    std::vector<std::string> out;
+    const auto* entry = Resources::vdfsIndex().find(mdm);
+    if(entry==nullptr)
+      return out;
+    zenkit::ModelMesh zmdm;
+    auto reader = entry->open_read();
+    zmdm.load(reader.get());
+    for(auto& skin:zmdm.meshes)
+      for(auto& sub:skin.mesh.sub_meshes)
+        out.push_back(sub.mat.texture);
+    for(auto& [_,att]:zmdm.attachments)
+      for(auto& sub:att.sub_meshes)
+        out.push_back(sub.mat.texture);
+    return out;
+    }
   std::string mrm(mesh);
   FileExt::exchangeExt(mrm,"3DS","MRM");
   std::vector<std::string> out;
