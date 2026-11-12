@@ -604,6 +604,7 @@ def test_items_of_our_own():
     s.apply_plan({"reason": "r", "ops": plan})
     assert s.state["items"]["MONDALOE"]["carrier"] == carrier, s.state.get("items")
     assert defined and defined[0][:3] == (carrier, "ITPL_SAGITTA_HERB_MIS", "Mondaloe"), defined
+    rejected(s, [{"op": "define_item", "item": "X", "like": "ITPL_A", "name": "X", "look": {"tint": [1, 1]}}], "tint")
     # a later plan of the same game names the item and gets the same carrier; a second item gets the next one
     again = s.resolve_items([{"op": "give_item", "instance": "Mondaloe"},
                              {"op": "define_item", "item": "Nachtkerze", "like": "ITPL_SAGITTA_HERB_MIS", "name": "N"}])

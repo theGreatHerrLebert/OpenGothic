@@ -72,6 +72,12 @@ What a story can notice and test today:
   unconscious and others, and the evening's own: smoking at the water pipes, standing drinking at a barrel),
   `npc_dead`, `hour`, `has_item`, `wears`, `obsessed`. A topic only open while someone sits smoking talks the way
   people talk after work, as Hakon does about the dagger he holds in pawn.
+- **Things of the story's own.** `define_item` makes an item the game does not have, like an existing one in look
+  and use but with its own name and inventory lines: `{"op": "define_item", "item": "MONDALOE", "like":
+  "ITPL_SAGITTA_HERB_MIS", "name": "Mondaloe", "rows": [["Öffnet sich nur im Mondlicht.", 0]], "look": {"tint":
+  [0.78, 0.86, 1.0], "strength": 0.85}}`. From then on the story names it by its id wherever it would name an item
+  (to place, give, take, check or notice it), and it never counts as the item it was made like. `look` recolours the
+  base item's model towards the tint, so it is told apart at a glance. Use it only for what the story truly needs.
 - **Rewards.** `give_item` for a thing, `give_xp` (`{"op": "give_xp", "amount": 150}`) for experience, through the
   game's own reward with its message and sound. Keep to the game's scale for chapter one: 50 for an errand, 100 for a
   task with some risk, 150 to 200 for a quest of several steps or a fight. A first level needs 500, so never more than

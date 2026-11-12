@@ -399,6 +399,10 @@ def _check_define_item(args, state):
         raise PlanError(f"not an item instance: {args['like']}")
     if not isinstance(args["name"], str) or not args["name"].strip():
         raise PlanError("define_item needs a name")
+    look = args.get("look")
+    if look is not None and not (isinstance(look, dict) and isinstance(look.get("tint"), list) and len(look["tint"]) == 3
+                                 and all(isinstance(v, (int, float)) and 0 <= v <= 2 for v in look["tint"])):
+        raise PlanError("define_item look needs a tint of three numbers from 0 to 2")
     rows = args.get("rows", [])
     if not isinstance(rows, list) or len(rows) > 5 or not all(
             isinstance(r, list) and len(r) == 2 and isinstance(r[0], str) and isinstance(r[1], int) for r in rows):
@@ -408,19 +412,28 @@ def _check_define_item(args, state):
 def _fold_define_item(args, state):
     state.setdefault("items", {})[args["item"].upper()] = {
         "carrier": args["carrier"], "like": args["like"], "name": args["name"],
-        "description": args.get("description", ""), "rows": args.get("rows", []), "value": args.get("value", -1)}
+        "description": args.get("description", ""), "rows": args.get("rows", []), "value": args.get("value", -1),
+        "look": args.get("look")}
 
 
 def _define_in_world(entry):
-    if hasattr(gothic.world, "define_item"):
-        gothic.world.define_item(entry["carrier"], entry["like"], entry["name"], entry["description"],
-                                 [tuple(r) for r in entry["rows"]], entry["value"])
+    if not hasattr(gothic.world, "define_item"):
+        return
+    visual = ""
+    if entry.get("look") and hasattr(gothic.world, "item_visual"):
+        from dm import looks
+        try:
+            visual = looks.variant(gothic, gothic.world.item_visual(entry["like"]), entry["look"])
+        except (OSError, RuntimeError, ValueError):
+            visual = ""             # no look of its own, then: the base item's
+    gothic.world.define_item(entry["carrier"], entry["like"], entry["name"], entry["description"],
+                             [tuple(r) for r in entry["rows"]], entry["value"], visual)
 
 
 def _world_define_item(args):
     _define_in_world({"carrier": args["carrier"], "like": args["like"], "name": args["name"],
                       "description": args.get("description", ""), "rows": args.get("rows", []),
-                      "value": args.get("value", -1)})
+                      "value": args.get("value", -1), "look": args.get("look")})
     return None
 
 
