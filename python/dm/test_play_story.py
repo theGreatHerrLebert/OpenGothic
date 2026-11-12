@@ -52,3 +52,8 @@ print("own ending ok")
 plan = [{"op": "attach_dialogue_graph", "npc": "X", "graph": {"start": "a", "nodes": {"a": {"line": "l", "choices": []}}}}]
 assert play_story.namespaced(plan, "story_8")[0]["graph"]["story"] == "story_8"
 print("graph story ok")
+
+# Lines from off-screen are voiced with the story.
+told = play_story.voice_graphs({"plan": [{"op": "add_rule", "id": "r", "ops": [{"op": "narrate", "text": "Ein Wolf heult."}]}]}, "story_9")
+assert told["story_9__NARRATE_10"] == {"voice": "10", "narration": ["Ein Wolf heult."]}, told
+print("narration voiced ok")

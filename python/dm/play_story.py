@@ -106,13 +106,15 @@ def voice_graphs(story, prefix):
     """Every line a story speaks, as graphs for bake_voices.py: its conversations, and the titles of its topics, which
     the hero says when he picks one and which live in the plan, not in a conversation."""
     graphs = {f"{prefix}__{key}": graph for key, graph in story.get("conversations", {}).items()}
-    titles = []
+    titles, narration = [], {}
 
     def walk(ops):
         for op in ops or []:
             if isinstance(op, dict):
                 if op.get("op") == "add_topic" and isinstance(op.get("title"), str) and op["title"] not in titles:
                     titles.append(op["title"])
+                if op.get("op") == "narrate" and isinstance(op.get("text"), str):
+                    narration.setdefault(str(op.get("voice") or "10"), []).append(op["text"])
                 if op.get("op") == "refuse_talk" and isinstance(op.get("line"), str):
                     graphs[f"{prefix}__refuse_{op.get('id')}"] = {
                         "voice": str(op.get("voice")),
@@ -124,6 +126,8 @@ def voice_graphs(story, prefix):
     walk(story.get("plan"))
     if titles:
         graphs[f"{prefix}__TOPIC_TITLES"] = {"voice": "15", "narration": titles}   # the hero's voice
+    for voice, lines in narration.items():   # lines from off-screen, by voice (the narrator unless one is given)
+        graphs[f"{prefix}__NARRATE_{voice}"] = {"voice": voice, "narration": lines}
     return graphs
 
 

@@ -92,7 +92,7 @@ This fork embeds CPython (pybind11, `common/script/`) and adds an AI game master
 `docs/ai-game-master.md`, then `docs/plan-automatic-dm.md`. `docs/einrichtung.md` is the German setup guide.
 
 - **Stories** are typed operations (`story.py`), dialogue graphs (`graph.py`), live conditions (`checks.py`) and player
-  perceptions (`perceptions.py`). `docs/director-brief.md` and `docs/quest-design.md` are the rules for writing them;
+  perceptions (`perceptions.py`). `docs/director-brief.md` and `docs/quest-design.md` are the rules for writing them, `docs/story-reference.md` how;
   `stories/tilo.py` is the reference story.
 - **Rule kit:** `quest_mine.py`, `quest_graph.py` and `tools/world_dump.cpp` extract the original game's mechanics;
   `docs/rule-kit.md` records what was found and what the story layer can use.

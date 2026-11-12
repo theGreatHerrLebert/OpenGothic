@@ -1,16 +1,16 @@
 # Quest and character design
 
-Lessons from playing and revising Der Fall Tilo. Each rule exists because breaking it
-visibly hurt the story. The Director follows these along with `director-brief.md`.
-`python/dm/stories/tilo.py` is the reference example.
+Lessons from playing and revising stories, starting with Der Fall Tilo. Each rule exists because breaking it
+visibly hurt a story. The Director follows these along with `director-brief.md`, whose smoking series is the
+example of a story that works; `docs/story-reference.md` says how each part is built.
 
 ## The quest
 
 **Structure**
 - Build the frame first: who did what, why, and where they are now. Check every line against it.
 - Give the player a before. Someone met in ordinary life is missed when they vanish.
-- Entangle the reasons. A choice should betray someone: reward against friendship, justice
-  against mercy. An ending that costs nothing is not a decision.
+- Entangle the reasons. A choice should cost something: reward against friendship, justice
+  against mercy, a sure thing against a hinted one. An ending that costs nothing is not a decision.
 - Consequences must happen: reward, changed attitudes, a secret delivered, people gone.
 - Each ending and reward should be weighed in the game's economy. Equal options stay equal.
 
@@ -19,8 +19,8 @@ visibly hurt the story. The Director follows these along with `director-brief.md
 
 **Information**
 - The player needs to learn that something happened, what it was, and why.
-- Reach important facts through different approaches: asking someone who knows, tricking
-  someone who would not tell, confronting the culprit, or finding evidence.
+- Where the story is big enough, reach important facts through different approaches: asking someone who knows,
+  tricking someone who would not tell, confronting the culprit, or finding evidence.
 - At least one approach is a deed: taking, reading, sneaking, striking, casting, or being in the right place at the
   right hour. A story that can only be talked through wastes the game it is in.
 - An approach can close another. Revealing your interest burns the later deception.
@@ -32,9 +32,9 @@ visibly hurt the story. The Director follows these along with `director-brief.md
 **The world must stay physically true**
 - Changes happen where the player cannot see them. A person never vanishes in front of them.
 - Time passes through sleep as well as waiting; a night that was slept through still happened.
-- People and items belong on real waypoints and on the ground, never loose coordinates.
+- People and items stand on real, reachable ground: a waypoint, or a position beside a known spot such as a door.
 - A character's body matches the truth: someone who left his robe behind does not wear one.
-- Clues never get the player in trouble for finding them.
+- Clues never get the player in trouble for finding them the plain way; a risk he chooses knowingly is his.
 - People who live or work next to someone have something to say about them, even if little.
 - People stay reachable while the matter concerns them, and return to normal afterwards.
 

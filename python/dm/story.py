@@ -362,7 +362,7 @@ def _check_narrate(args, state):
 
 def _world_narrate(args):
     """Queued, not played: it waits until no conversation or other line is running. A save drops what is queued."""
-    line = {"text": args["text"], "voice": args.get("voice")}
+    line = {"text": args["text"], "voice": args.get("voice") or "10"}   # the narrator, unless the story names one
     _narration.append(line)
     return lambda: line in _narration and _narration.remove(line)
 

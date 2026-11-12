@@ -8,7 +8,7 @@ the story, and reports what the player would have to guess.
 
     python3 python/dm/discoverability.py <story.json>            the findings
     python3 python/dm/discoverability.py <story.json> --dossier  the story as the player meets it, for a naive-player
-                                                                  agent (docs/director-brief.md, "Discoverability")
+                                                                  agent (docs/story-reference.md, "The file and its checks")
 
 The text search is a heuristic: a name in a line counts as a pointer, so it can be fooled by a name said in passing.
 It finds what is missing reliably and what is present only plausibly. Findings are warnings, never errors.

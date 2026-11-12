@@ -243,7 +243,7 @@ def lint(data):
                 if STAGE_DIRECTION.search(text):
                     errors.append(f"{name}.{key}: stage direction would be read aloud: {text[:50]}")
     if not deeds(data):
-        warnings.append("no deed: every way through this story is talking; see 'Deeds, not only words' in "
+        warnings.append("no deed: every way through this story is talking; see 'Let the player make the plan' in "
                         "docs/director-brief.md")
     return errors, warnings
 
@@ -334,7 +334,7 @@ def check(path, names_path):
         closures = []
     if not closures:
         warnings.append("no closure: the story cannot end quietly if it is never finished (a timeout with story_age, "
-                        "a chapter change); see 'Endings' in docs/director-brief.md")
+                        "a chapter change); see 'Endings' in docs/story-reference.md")
     elif not any("story_age" in json.dumps(c) for c in closures):
         warnings.append("no timeout: no closure waits on story_age, so an unfinished story waits for ever")
     scratch = story.Story()
