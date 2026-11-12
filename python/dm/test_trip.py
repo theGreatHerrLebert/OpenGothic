@@ -755,3 +755,12 @@ while trip._after is not None and t < waiting[0]["ready"] + 400:
 assert said == waiting[0]["sermon"]
 assert all((trip.HEROLD["voice"], text) in trip.after_lines() for text in trip.herold_lines("sleeper")["sermon"])
 print("crier ok")
+
+# No saving while someone waits on a bench for the pipe the hero was given: a save would keep him there.
+trip._current, trip._after = None, None
+sys.modules["dm.story"] = types.SimpleNamespace(_story=types.SimpleNamespace(evicted={("SMOKE", 1.0, 2.0): "CANTHAR"}))
+assert trip.saving_blocked()
+sys.modules["dm.story"]._story.evicted = {}
+assert not trip.saving_blocked()
+del sys.modules["dm.story"]
+print("bench save block ok")

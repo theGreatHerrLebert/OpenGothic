@@ -1036,9 +1036,12 @@ def after_lines():
 
 
 def saving_blocked():
-    """While a trip runs, or a preacher's own sermon is on hold for the morning's: a save would keep half of it."""
+    """While a trip runs, a preacher's own sermon is on hold for the morning's, or someone waits on a bench for the
+    pipe the hero was given: a save would keep half of it, or keep him there."""
     held = _after is not None and any(line.get("hushed") for line in _after[0])
-    return _current is not None or held
+    story = getattr(sys.modules.get("dm.story"), "_story", None)
+    waiting = bool(getattr(story, "evicted", None))
+    return _current is not None or held or waiting
 
 
 def _block_save(gothic):

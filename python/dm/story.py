@@ -540,6 +540,7 @@ class Story:
         self.topics_generation = None
         self.topics_shown = {}
         self.reserved = {}   # (scheme, x, z) of objects kept for the hero -> world generation it was set in
+        self.evicted = {}    # the same key -> who had to make way, his routine held until it is given back
 
     def validate(self, ops):
         """Raise PlanError unless the whole plan is acceptable."""
@@ -736,12 +737,14 @@ class Story:
         generation = gothic.world.generation
         for key in list(self.reserved):
             if key not in wanted or self.reserved[key] != generation:
+                self.evicted.pop(key, None)
                 if self.reserved.pop(key) == generation:
-                    gothic.world.reserve_object(*key, on=False)
+                    gothic.world.reserve_object(*key, on=False)   # and whoever made way gets his routine back
         for key in wanted - set(self.reserved):
             evicted = gothic.world.reserve_object(*key, on=True)
             self.reserved[key] = generation
             if evicted:
+                self.evicted[key] = evicted
                 trip = __import__("dm.trip").trip
                 abuyin = gothic.world.find_npc(trip.AFTERCARE_NPC)
                 here = gothic.player.position

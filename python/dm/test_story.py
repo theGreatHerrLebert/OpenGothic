@@ -616,9 +616,10 @@ def test_waited_for_pipe_is_reserved():
     assert st._narration[-1]["voice"] == "13"            # and Abuyin tells him why
     s._tick_reservations()
     assert len(calls) == 1                               # once
+    assert s.evicted == {("SMOKE", 6741.0, 2972.0): "BJARNE"}   # he waits on a bench, his routine held
     s.state["rules"]["smoke"]["fired"] = True
     s._tick_reservations()
-    assert calls[-1] == ("SMOKE", 6741.0, 2972.0, False) and s.reserved == {}   # smoked: given back
+    assert calls[-1] == ("SMOKE", 6741.0, 2972.0, False) and s.reserved == {} and s.evicted == {}   # given back
     del fake.world.reserve_object, fake.world.find_npc
     st._narration.clear()
 
