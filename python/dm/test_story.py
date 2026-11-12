@@ -189,6 +189,29 @@ def test_handed_over_but_nothing_to_play():
     assert not d.open and player.stage == "idle"
 
 
+def test_return_to_a_split_menu():
+    # A menu broken into sentences: coming back to it shows its choices without speaking it again.
+    from dm import split_lines
+    graph = {"start": "a", "nodes": {
+        "a": {"line": "Das ist der erste lange Satz hier. Das ist der zweite lange Satz dort.",
+              "choices": [{"text": "Frage", "goto": "b"}, {"text": "Tschüss", "ends": True}]},
+        "b": {"line": "Antwort.", "returns": "a", "choices": []}}}
+    split_lines.split_graph(graph)
+    d = fake.dialog
+    d.reset()
+    player = graphs.Player(lambda: {"NOV_B": graph}, lambda n: None)
+    d.who, d.opened, d.open = Npc("NOV_B"), True, True
+    for _ in range(6):
+        player.on_tick()
+    assert d.lines == ["Das ist der erste lange Satz hier.", "Das ist der zweite lange Satz dort."], d.lines
+    assert d.choices == ["Frage", "Tschüss"]
+    d.selection = 0
+    for _ in range(8):
+        player.on_tick()
+    assert d.lines[2:] == ["Frage", "Antwort."], d.lines        # and back to the menu, nothing said again
+    assert d.choices == ["Frage", "Tschüss"] and player.stage == "choose"   # the menu again (no flag store here)
+
+
 def test_questions_are_asked_once():
     graph = {"start": "a", "nodes": {
         "a": {"line": "Menü.", "choices": [
@@ -780,7 +803,7 @@ def test_topics_extend_an_npc():
     assert fake.dialog.topics["PARLAN"] == [("legend", "Kennst du die Kriegsmischung?")]
 
 
-for test in (test_items_of_our_own, test_item_with_a_model_of_its_own, test_give_xp, test_waited_for_pipe_is_reserved, test_handed_over_but_nothing_to_play, test_topics_extend_an_npc, test_trip_operation, test_rule_contents_are_checked_when_submitted, test_graph_validation, test_validation, test_apply_and_rollback, test_return_npc, test_conditional_choices, test_returns_to_menu, test_questions_are_asked_once, test_variant_line, test_again_line, test_scene_and_rule, test_rule_fires_on_perception, test_narration_waits_for_quiet, test_drawing_a_weapon_is_perceived,
+for test in (test_return_to_a_split_menu, test_items_of_our_own, test_item_with_a_model_of_its_own, test_give_xp, test_waited_for_pipe_is_reserved, test_handed_over_but_nothing_to_play, test_topics_extend_an_npc, test_trip_operation, test_rule_contents_are_checked_when_submitted, test_graph_validation, test_validation, test_apply_and_rollback, test_return_npc, test_conditional_choices, test_returns_to_menu, test_questions_are_asked_once, test_variant_line, test_again_line, test_scene_and_rule, test_rule_fires_on_perception, test_narration_waits_for_quiet, test_drawing_a_weapon_is_perceived,
              test_queue_waits_for_safe_point, test_save_load_does_not_reapply_world,
              test_player):
     test()

@@ -102,8 +102,14 @@ class Player:
     def _enter(self, key):
         self.node = self.graph["nodes"][key]
         if key in self.path:
-            # Stepping back to something already said only shows its choices.
+            # Stepping back to something already said only shows its choices. A speech broken into sentences
+            # (split_lines: "chain" nodes) is passed through silently to the sentence that holds them.
             del self.path[self.path.index(key) + 1:]
+            while self.node.get("chain") and self.node.get("returns") in self.graph["nodes"]:
+                key = self.node["returns"]
+                self.node = self.graph["nodes"][key]
+                if key not in self.path:
+                    self.path.append(key)
             self.stage = "offer"
             return
         self.path.append(key)

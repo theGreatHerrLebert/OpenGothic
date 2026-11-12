@@ -23,6 +23,7 @@ assert sl.split_graph(graph) == 2
 n = graph["nodes"]
 assert n["a"]["line"] == "Das ist der erste lange Satz hier." and n["a"]["sets"] == ["met"] and n["a"]["choices"] == []
 assert n["a"]["returns"] == "a_2" and n["a_2"]["returns"] == "a_3"
+assert n["a"]["chain"] and n["a_2"]["chain"] and "chain" not in n["a_3"]
 assert n["a_3"]["choices"] == [{"text": "Ja?", "goto": "b"}] and "sets" not in n["a_3"]   # choices at the end
 assert n["b"]["returns"] == "b_2" and n["b_2"]["returns"] == "a"                     # its own returns at the end
 assert "c_2" not in n                                                                  # variants: left whole

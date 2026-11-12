@@ -59,6 +59,20 @@ def plain_name(name, suffix):
             and pathlib.PurePath(name).name == name and name not in (".", ".."))
 
 
+def _referenced(path, keyword):
+    """The existing files a .obj or .mtl names after `keyword` (mtllib, map_Kd), next to it."""
+    found = []
+    for line in path.read_text(encoding="utf-8", errors="replace").splitlines():
+        words = line.split()
+        if words and words[0] == keyword and len(words) > 1:
+            candidate = path.parent / " ".join(words[1:])
+            if not candidate.is_file():
+                candidate = path.parent / words[-1]
+            if candidate.is_file():
+                found.append(candidate)
+    return found
+
+
 def model(gothic, file, texture="", scale=1.0):
     """The name of a mesh read from the OBJ `file` in models_dir(), drawn with the PNG `texture` from there (or, with
     none, with the images of its MTL file, else plain white), registered with the engine, or "" when the engine or a
@@ -73,6 +87,12 @@ def model(gothic, file, texture="", scale=1.0):
         return ""
     digest = hashlib.sha1(obj.read_bytes())
     digest.update(png.read_bytes() if png is not None else b"")
+    if png is None:
+        # Drawn with its MTL's images: they are part of what it looks like, so part of its name.
+        for mtl in _referenced(obj, "mtllib"):
+            digest.update(mtl.read_bytes())
+            for image in _referenced(mtl, "map_Kd"):
+                digest.update(image.read_bytes())
     digest.update(json.dumps(float(scale)).encode("utf-8"))
     key = digest.hexdigest()[:10]
     own = ""
