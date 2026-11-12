@@ -3485,8 +3485,11 @@ Item* Npc::takeItem(Item& item) {
     return nullptr;
 
   const bool storyItem = ptr!=nullptr && ptr->isStoryItem();
+  // What the hero dropped himself is marked as his (dropItem): taking it back up is no theft, wherever it lies.
+  const bool ownDrop   = ptr!=nullptr && hnpc!=nullptr && ptr->handle().owner!=0 &&
+                         ptr->handle().owner==int32_t(hnpc->symbol_index());
   it = addItem(std::move(ptr));
-  if(isPlayer() && it!=nullptr && !storyItem)
+  if(isPlayer() && it!=nullptr && !storyItem && !ownDrop)
     owner.sendPassivePerc(*this,*this,*it,PERC_ASSESSTHEFT);
   else if(isPlayer() && it!=nullptr)
     owner.recordStoryPickup(*this,*it);   // no theft for anyone, but the story hears it
