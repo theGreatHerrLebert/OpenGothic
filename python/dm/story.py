@@ -563,9 +563,10 @@ def _fold_detach(args, state):
 
 def _world_detach(args):
     npc = gothic.world.find_npc(args["npc"])
-    if npc is not None:
-        gothic.dialog.unbind(npc)
-    return None
+    if npc is None:
+        return None
+    gothic.dialog.unbind(npc)
+    return lambda: gothic.dialog.bind(npc)
 
 
 def _check_send(args, state):
@@ -631,8 +632,9 @@ OPS = {
 }
 
 def _ready_live(args, plan):
-    """Someone an effect moves or removes must be in the world when the plan runs, unless the plan brings him."""
-    name = args["instance"].upper()
+    """Someone an effect moves, renames, removes or talks through must be in the world when the plan runs, unless the
+    plan brings him."""
+    name = str(args.get("instance") or args.get("npc") or "").upper()
     brought = {str(op.get("instance", "")).upper() for op in plan if op.get("op") in ("spawn_npc", "return_npc")}
     if name not in brought and gothic.world.find_npc(name) is None:
         raise NotReady(f"not in the world right now: {name}")
@@ -640,10 +642,11 @@ def _ready_live(args, plan):
 
 # Checked against the live game just before a plan runs, before any effect: what could make an effect fail although
 # the plan is valid. Failing here changes nothing.
-_READY = {"trip": _ready_trip, "send_npc": _ready_live, "relocate_npc": _ready_live, "remove_npc": _ready_live}
+_READY = {"trip": _ready_trip, "send_npc": _ready_live, "relocate_npc": _ready_live, "remove_npc": _ready_live,
+          "rename_npc": _ready_live, "attach_dialogue_graph": _ready_live}
 # Effects that cannot be undone run after every effect that can, so a failure among the undoable ones still leaves
 # the world untouched. Removal comes last of all.
-_FINAL = {"give_xp", "journal", "trip", "send_npc", "relocate_npc", "detach_dialogue_graph"}
+_FINAL = {"give_xp", "journal", "trip", "send_npc", "relocate_npc"}
 _LAST = {"remove_npc"}
 
 
@@ -733,11 +736,13 @@ class Story:
         those fails, the log records exactly the part that happened and PartlyApplied is raised."""
         # State may have moved on since the plan was queued.
         plan = dict(plan, ops=self.resolve_items(plan["ops"]))
-        self.validate(plan["ops"])
+        # Readiness before validation: validation also finds someone missing, but as a broken plan, and a rule that
+        # waits for him to come back must wait, not fail.
         for op in plan["ops"]:
-            ready = _READY.get(op["op"])
+            ready = _READY.get(op.get("op")) if isinstance(op, dict) else None
             if ready is not None:
                 ready(op, plan["ops"])
+        self.validate(plan["ops"])
         # Definitions first, so an item the plan gives or places is made as the story's own; then what can be undone,
         # then what cannot, removals last. The sort is stable, so the plan's own order holds within each phase.
         ordered = sorted(plan["ops"], key=_phase)

@@ -914,6 +914,26 @@ def test_plans_are_all_or_nothing_where_the_game_allows():
         except (st.NotReady, st.PlanError):
             pass
 
+        # A rule waiting for someone who is not in the world waits; it does not fail for good.
+        s = st.Story()
+        s.apply_plan({"reason": "r", "ops": [{"op": "add_rule", "id": "away", "when": [],
+                                             "ops": [{"op": "rename_npc", "instance": "NOV_B", "display_name": "X"}]}]})
+        gone = fake.world.npcs.pop("NOV_B")
+        gone.display_name = "Novize"
+        s._tick_rules()
+        assert not s.state["rules"]["away"].get("failed") and not s.state["rules"]["away"]["fired"]
+        fake.world.npcs["NOV_B"] = gone
+        s._tick_rules()
+        assert s.state["rules"]["away"]["fired"] and gone.display_name == "X"
+
+        # Replacing someone's dialogue keeps detach before attach, so he is bound at the end.
+        fake.dialog.bound.clear()
+        s = st.Story()
+        s.apply_plan({"reason": "r", "ops": [{"op": "attach_dialogue_graph", "npc": "NOV_B", "graph": GOOD}]})
+        s.apply_plan({"reason": "r", "ops": [{"op": "detach_dialogue_graph", "npc": "NOV_B"},
+                                             {"op": "attach_dialogue_graph", "npc": "NOV_B", "graph": GOOD}]})
+        assert fake.dialog.bound == ["NOV_B"] and "NOV_B" in s.state["graphs"]
+
         # A broken rule fails once, and the failure survives a save and load.
         fake.world.place_item = broken_place
         s = st.Story()
