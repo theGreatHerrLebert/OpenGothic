@@ -531,6 +531,45 @@ void GameScript::initializeInstanceItem(const std::shared_ptr<zenkit::IItem>& it
     }
 
   vm.init_instance(item, sym);
+
+  auto def = itemDefinitions.find(instance);
+  if(def==itemDefinitions.end())
+    return;
+  auto* baseSym = vm.find_symbol_by_index(uint32_t(def->second.base));
+  if(baseSym==nullptr)
+    return;
+  // Made like the base item, field by field: the carrier keeps its own symbol, so it stacks and counts apart.
+  auto base = std::make_shared<zenkit::IItem>();
+  vm.init_instance(base, baseSym);
+  auto& d = *item;
+  auto& b = *base;
+  d.name_id = b.name_id; d.hp = b.hp; d.hp_max = b.hp_max; d.main_flag = b.main_flag; d.flags = b.flags;
+  d.weight = b.weight; d.value = b.value; d.damage_type = b.damage_type; d.damage_total = b.damage_total;
+  std::copy(std::begin(b.damage), std::end(b.damage), std::begin(d.damage));
+  d.wear = b.wear;
+  std::copy(std::begin(b.protection), std::end(b.protection), std::begin(d.protection));
+  d.nutrition = b.nutrition;
+  std::copy(std::begin(b.cond_atr), std::end(b.cond_atr), std::begin(d.cond_atr));
+  std::copy(std::begin(b.cond_value), std::end(b.cond_value), std::begin(d.cond_value));
+  std::copy(std::begin(b.change_atr), std::end(b.change_atr), std::begin(d.change_atr));
+  std::copy(std::begin(b.change_value), std::end(b.change_value), std::begin(d.change_value));
+  d.magic = b.magic; d.on_equip = b.on_equip; d.on_unequip = b.on_unequip;
+  std::copy(std::begin(b.on_state), std::end(b.on_state), std::begin(d.on_state));
+  d.owner = b.owner; d.owner_guild = b.owner_guild; d.disguise_guild = b.disguise_guild;
+  d.visual = b.visual; d.visual_change = b.visual_change; d.effect = b.effect; d.visual_skin = b.visual_skin;
+  d.scheme_name = b.scheme_name; d.material = b.material; d.munition = b.munition; d.spell = b.spell;
+  d.range = b.range; d.mag_circle = b.mag_circle;
+  d.inv_zbias = b.inv_zbias; d.inv_rot_x = b.inv_rot_x; d.inv_rot_y = b.inv_rot_y; d.inv_rot_z = b.inv_rot_z;
+  d.inv_animate = b.inv_animate;
+  // ... and its own name and texts
+  d.name        = def->second.name;
+  d.description = def->second.description.empty() ? def->second.name : def->second.description;
+  for(size_t i=0; i<zenkit::IItem::text_count; ++i) {
+    d.text[i]  = def->second.text[i];
+    d.count[i] = def->second.count[i];
+    }
+  if(def->second.value>=0)
+    d.value = def->second.value;
   }
 
 void GameScript::saveQuests(Serialize &fout) {

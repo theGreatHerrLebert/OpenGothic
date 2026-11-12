@@ -747,6 +747,31 @@ PYBIND11_EMBEDDED_MODULE(gothic, m) {
              return out;
              },
            py::arg("radius"), "Usable objects (beds, benches, pipes, anvils ...) within radius of the hero.")
+      .def("define_item",
+           [](const PyWorld&, const std::string& carrier, const std::string& like, const std::string& name,
+              const std::string& description, std::vector<std::tuple<std::string,int32_t>> rows, int32_t value) {
+             auto* w = requireWorld();
+             auto& vm = w->script().getVm();
+             auto* c  = vm.find_symbol_by_name(upper(carrier));
+             auto* b  = vm.find_symbol_by_name(upper(like));
+             if(c==nullptr || b==nullptr)
+               return false;
+             GameScript::ItemDefinition def;
+             def.base        = b->index();
+             def.name        = toEngine(name);
+             def.description = toEngine(description);
+             for(size_t i=0; i<rows.size() && i+1<zenkit::IItem::text_count; ++i) {
+               def.text[i+1]  = toEngine(std::get<0>(rows[i]));   // the first row sits under the title, kept blank
+               def.count[i+1] = std::get<1>(rows[i]);
+               }
+             def.value = value;
+             w->script().defineItem(c->index(), std::move(def));
+             return true;
+             },
+           py::arg("carrier"), py::arg("like"), py::arg("name"), py::arg("description") = "",
+           py::arg("rows") = std::vector<std::tuple<std::string,int32_t>>{}, py::arg("value") = -1,
+           "Make every new item of the carrier instance like the item 'like', with its own name, description and "
+           "inventory rows (label, number). The story defines it again after a load.")
       .def("reserve_object",
            [](const PyWorld&, const std::string& scheme, float x, float z, float radius, bool on) -> py::object {
              // The object of this scheme nearest (x, z) within radius, kept for the hero or given back. An NPC

@@ -6,6 +6,8 @@
 
 #include <memory>
 #include <set>
+#include <unordered_map>
+#include <array>
 #include <random>
 
 #include <Tempest/Matrix4x4>
@@ -66,6 +68,19 @@ class GameScript final {
 
     void         initializeInstanceNpc(const std::shared_ptr<zenkit::INpc>& npc, size_t instance);
     void         initializeInstanceItem(const std::shared_ptr<zenkit::IItem>& item, size_t instance);
+
+    // An item of the story's own, carried by a game item nothing uses: made like the base item (look, kind, use),
+    // with its own name and texts. Kept per session; the story defines it again after every load. Items already made
+    // keep their fields in the save.
+    struct ItemDefinition {
+      size_t                     base = size_t(-1);
+      std::string                name, description;
+      std::array<std::string,6>  text  = {};
+      std::array<int32_t,6>      count = {};
+      int32_t                    value = -1;   // -1: the base item's
+      };
+    void         defineItem(size_t carrier, ItemDefinition def) { itemDefinitions[carrier] = std::move(def); }
+    void         clearItemDefinitions() { itemDefinitions.clear(); }
     void         resetVarPointers();
 
     void         initDialogs();
@@ -471,6 +486,7 @@ class GameScript final {
     uint64_t                                                    svmBarrier=0;
 
     std::set<std::pair<size_t,size_t>>                          dlgKnownInfos;
+    std::unordered_map<size_t,ItemDefinition>                   itemDefinitions;
     std::vector<std::shared_ptr<zenkit::IInfo>>                 dialogsInfo;
     zenkit::CutsceneLibrary                                     dialogs;
     std::unordered_map<size_t,AiState>                          aiStates;
