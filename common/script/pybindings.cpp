@@ -969,6 +969,16 @@ PYBIND11_EMBEDDED_MODULE(gothic, m) {
             return true;
             }, py::arg("alias"), py::arg("base"), py::arg("textures"),
           "A mesh name that is the game mesh 'base' drawn with some textures swapped: {game texture: own name}.");
+  res.def("register_mesh_file",
+          [](const std::string& alias, const std::string& path, const std::string& texture, float scale) {
+            if(!Resources::registerMeshFile(alias, path, texture, scale))
+              return false;
+            if(auto* w = Gothic::inst().world())
+              w->refreshItemVisuals(alias);   // items loaded before it was registered are drawn now
+            return true;
+            }, py::arg("alias"), py::arg("path"), py::arg("texture") = "", py::arg("scale") = 1.f,
+          "A mesh name (DM_....3DS) that is the Wavefront OBJ file 'path': y up, model facing -z, 1 unit = 'scale' cm, "
+          "origin where it stands; drawn with the registered texture 'texture', or with its MTL file's images.");
 
   py::module_ sky = m.def_submodule("sky", "A galaxy in place of the sky: images loaded once, shown as strongly as set.");
   sky.def("load", [](int slot, const std::string& path) { return ::Galaxy::inst().load(size_t(std::max(slot, 0)), path); },

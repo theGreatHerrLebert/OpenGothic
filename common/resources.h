@@ -9,6 +9,7 @@
 #include <zenkit/world/VobTree.hh>
 
 #include <tuple>
+#include <memory>
 #include <string_view>
 #include <map>
 
@@ -25,6 +26,10 @@ class Animation;
 class AttachBinder;
 class PfxEmitterMesh;
 class GthFont;
+
+namespace zenkit {
+class MultiResolutionMesh;
+}
 
 namespace Dx8 {
 class DirectMusic;
@@ -113,6 +118,11 @@ class Resources final {
     static void                      registerTexture(std::string_view name, std::string_view path);
     static bool                      registerMeshVariant(std::string_view alias, std::string_view base,
                                                          const std::map<std::string,std::string>& textures);
+    // A mesh of the story's own from a Wavefront OBJ file (see graphics/mesh/objmesh.h for the axes and units it
+    // expects), drawn with the registered texture 'texture', or, when that is empty, with the map_Kd images of its MTL
+    // file. The file is read here, so a broken one is refused at once.
+    static bool                      registerMeshFile(std::string_view alias, std::string_view objPath,
+                                                      std::string_view texture, float scale = 1.f);
     static std::vector<std::string>  meshTextures(std::string_view mesh);
     static bool                      exportTexture(std::string_view name, std::string_view path,
                                                    const float tint[3] = nullptr, float strength = 0.f,
@@ -266,6 +276,8 @@ class Resources final {
     std::unordered_map<std::string,std::string>                       customTextures;
     struct MeshVariant { std::string base; std::map<std::string,std::string> textures; };
     std::unordered_map<std::string,MeshVariant>                       meshVariants;
+    struct MeshFile { std::string path, texture; float scale = 1.f; std::shared_ptr<const zenkit::MultiResolutionMesh> mesh; };
+    std::unordered_map<std::string,MeshFile>                          meshFiles;
     std::unordered_map<DecalK,std::unique_ptr<ProtoMesh>,Hash>        decalMeshCache;
     std::unordered_map<std::string,std::unique_ptr<Skeleton>>         skeletonCache;
     std::unordered_map<std::string,std::unique_ptr<Animation>>        animCache;

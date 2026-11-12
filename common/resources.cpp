@@ -24,6 +24,7 @@
 #include "graphics/mesh/submesh/packedmesh.h"
 #include "graphics/mesh/skeleton.h"
 #include "graphics/mesh/protomesh.h"
+#include "graphics/mesh/objmesh.h"
 #include "graphics/mesh/animation.h"
 #include "graphics/mesh/attachbinder.h"
 #include "graphics/material.h"
@@ -461,6 +462,12 @@ ProtoMesh* Resources::implLoadMesh(std::string_view name) {
   }
 
 std::unique_ptr<ProtoMesh> Resources::implLoadMeshMain(std::string name) {
+  if(auto f = meshFiles.find(upperName(name)); f!=meshFiles.end()) {
+    // A story's own mesh, read from its OBJ file when registered.
+    PackedMesh packed(*f->second.mesh,PackedMesh::PK_Visual);
+    return std::unique_ptr<ProtoMesh>{new ProtoMesh(std::move(packed),name)};
+    }
+
   if(auto v = meshVariants.find(upperName(name)); v!=meshVariants.end()) {
     // A game mesh with some of its textures swapped for a story's own.
     std::string base = v->second.base;
@@ -1222,8 +1229,57 @@ bool Resources::registerMeshVariant(std::string_view alias, std::string_view bas
   v.base = std::string(base);
   for(auto& [from,to]:textures)
     v.textures[upperName(from)] = to;
+  if(auto prev = inst->meshVariants.find(upperName(alias));
+     prev!=inst->meshVariants.end() && prev->second.base==v.base && prev->second.textures==v.textures)
+    return true;   // the same again (a story defining its items after a load): the mesh in use stays
   inst->meshVariants[upperName(alias)] = std::move(v);
   inst->aniMeshCache.erase(std::string(alias));
+  return true;
+  }
+
+bool Resources::registerMeshFile(std::string_view alias, std::string_view objPath, std::string_view texture,
+                                 float scale) {
+  std::lock_guard<std::recursive_mutex> g(inst->sync);
+  const std::string key = upperName(alias);
+  if(auto prev = inst->meshFiles.find(key); prev!=inst->meshFiles.end() && prev->second.path==objPath &&
+     prev->second.texture==texture && prev->second.scale==scale)
+    return true;   // the same again: the mesh in use stays
+
+  if(!(scale>0.f)) {
+    Log::e("unable to load mesh file \"", objPath, "\": scale must be above zero");
+    return false;
+    }
+  auto mesh = std::make_shared<zenkit::MultiResolutionMesh>();
+  std::vector<ObjMesh::SubInfo> info;
+  std::string err;
+  if(!ObjMesh::load(std::string(objPath), scale, *mesh, info, err)) {
+    Log::e("unable to load mesh file \"", objPath, "\": ", err);
+    return false;
+    }
+
+  // Images named in its MTL file are registered under names of the alias's own: DM_X.3DS -> DM_X_0.TGA, ...
+  std::string stem = key;
+  if(auto dot = stem.rfind('.'); dot!=std::string::npos)
+    stem.resize(dot);
+  for(size_t i=0; i<mesh->sub_meshes.size(); ++i) {
+    auto& mat = mesh->sub_meshes[i].mat;
+    if(!texture.empty()) {
+      mat.texture = std::string(texture);
+      }
+    else if(!info[i].texFile.empty()) {
+      mat.texture = stem + "_" + std::to_string(i) + ".TGA";
+      inst->customTextures[mat.texture] = info[i].texFile;
+      }
+    }
+
+  MeshFile f;
+  f.path    = std::string(objPath);
+  f.texture = std::string(texture);
+  f.scale   = scale;
+  f.mesh    = std::move(mesh);
+  inst->meshFiles[key] = std::move(f);
+  inst->aniMeshCache.erase(std::string(alias));
+  inst->aniMeshCache.erase(key);
   return true;
   }
 
