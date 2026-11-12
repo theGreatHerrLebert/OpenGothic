@@ -1,0 +1,42 @@
+{
+  "npc": "BAU_971_BAUER",
+  "name": "Bauer",
+  "voice": "13",
+  "role": "Gast in Orlans Taverne \"Zur toten Harpie\". Steht Tag und Nacht plaudernd im Schankraum (NW_TAVERNE_IN_05), zusammen mit einem zweiten Gast (BAU_972). Hat keine eigenen Themen; angesprochen sagt er zufällig eine von drei Neuigkeitenzeilen, die alle Außenbewohner mit Stimme 13 teilen (DIA_OUT_1_STANDARD_13_…). Hat keine eigene Rolle im Spiel und kann eine Geschichte tragen.",
+  "core": "Noch nicht festgelegt. Die erste Geschichte, die diese Figur nutzt, legt es fest und schreibt es hier ein.",
+  "background": "Kein Bauer eines bestimmten Hofs, sondern ein Mann von außerhalb (Gilde der Außenbewohner). Alles Weitere: Noch nicht festgelegt. Die erste Geschichte, die diese Figur nutzt, legt es fest und schreibt es hier ein.",
+  "speech": "Noch nicht festgelegt. Die erste Geschichte, die diese Figur nutzt, legt es fest und schreibt es hier ein.",
+  "attitudes": {
+    "factions": {
+      "Orks": "Rücken näher; bisher hielt man sie sich vom Hals, aber es werden mehr.",
+      "Miliz": "Hilft nicht, kommt nur, um Ernte und Vieh zu holen."
+    },
+    "people": {
+      "Orlan": "Der Wirt, in dessen Schänke er seine Tage verbringt."
+    },
+    "politics": "Hält Onar für verrückt, sich ausgerechnet jetzt, mit den Paladinen im Land, mit der Stadt anzulegen."
+  },
+  "game_state": {},
+  "sees_hero": {},
+  "reacts_to": {},
+  "evidence": [
+    {
+      "about": "attitudes.factions.Orks",
+      "key": "DIA_OUT_1_STANDARD_13_00",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Miliz",
+      "key": "DIA_OUT_1_STANDARD_13_01",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.politics",
+      "key": "DIA_OUT_1_STANDARD_13_02",
+      "excerpt": 0
+    }
+  ],
+  "invented": [
+    "Alles außer Rolle, Ort und den Haltungen aus seinen Zufallszeilen: die Figur hat nur eine Neuigkeitenzeile aus drei."
+  ]
+}

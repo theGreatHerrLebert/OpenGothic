@@ -1,0 +1,329 @@
+[
+  {
+    "from": "BAU_970_ORLAN",
+    "rel": "serves",
+    "to": "GIL_KDW",
+    "note": "Hält für die Wassermagier einen Teleportstein unter Verschluss und gehört zu ihrem Ring.",
+    "evidence": [
+      "DIA_ADDON_ORLAN_TELEPORTSTEIN_05_02",
+      "DIA_ADDON_ORLAN_RANGER_AQUA_05_01"
+    ]
+  },
+  {
+    "from": "BAU_970_ORLAN",
+    "rel": "protects",
+    "to": "VLK_449_LARES",
+    "note": "Bietet seinen Ringbrüdern Unterschlupf und Zimmer; Lares nennt die Schänke sicher.",
+    "evidence": [
+      "DIA_ADDON_LARES_GETRANGERARMOR_LEARN_09_06",
+      "DIA_ADDON_ORLAN_HOTELZIMMER_05_00"
+    ]
+  },
+  {
+    "from": "BAU_970_ORLAN",
+    "rel": "fears",
+    "to": "Teleportsteine",
+    "note": "Geht ohne Zusage eines Wassermagiers nicht in ihre Nähe.",
+    "evidence": [
+      "DIA_ADDON_ORLAN_TELEPORTSTEIN_05_01"
+    ]
+  },
+  {
+    "from": "BAU_970_ORLAN",
+    "rel": "respects",
+    "to": "GIL_PAL",
+    "note": "Schmeichelt Paladinen und lässt sie umsonst wohnen.",
+    "evidence": [
+      "DIA_ORLAN_HOTELZIMMER_05_01",
+      "DIA_ORLAN_TRADE_05_01"
+    ]
+  },
+  {
+    "from": "BAU_970_ORLAN",
+    "rel": "respects",
+    "to": "GIL_KDF",
+    "note": "Nimmt einem Feuermagier kein Geld ab.",
+    "evidence": [
+      "DIA_ORLAN_HOTELZIMMER_05_02"
+    ]
+  },
+  {
+    "from": "BAU_970_ORLAN",
+    "rel": "trades_with",
+    "to": "KDF_508_GORAX",
+    "note": "Bezieht Klosterwein und versucht, den Preis zu drücken.",
+    "evidence": [
+      "DIA_GORAX_AUFGABE2_14_02",
+      "DIA_ORLAN_WEIN_05_02"
+    ]
+  },
+  {
+    "from": "BAU_970_ORLAN",
+    "rel": "despises",
+    "to": "PIR_1300_ADDON_GREG_NW",
+    "note": "Ein übler Mieter, der kaum zahlte und verschwand.",
+    "evidence": [
+      "DIA_ADDON_ORLAN_GREG_05_04"
+    ]
+  },
+  {
+    "from": "PIR_1300_ADDON_GREG_NW",
+    "rel": "despises",
+    "to": "BAU_970_ORLAN",
+    "note": "Hält den Wirt für dämlich und geizig.",
+    "evidence": [
+      "DIA_ADDON_GREG_NW_WAS_ORLAN_01_01"
+    ]
+  },
+  {
+    "from": "BAU_970_ORLAN",
+    "rel": "fears",
+    "to": "GIL_DMT",
+    "note": "Die schwarzen Gestalten vertreiben ihm die Gäste.",
+    "evidence": [
+      "DIA_ORLAN_PERM_05_03"
+    ],
+    "since": "chapter 3"
+  },
+  {
+    "from": "BAU_970_ORLAN",
+    "rel": "protects",
+    "to": "BAU_973_RUKHAR",
+    "note": "Duldet sein Wettspiel im Haus und passt dabei auf, dass nichts nach außen dringt.",
+    "evidence": [
+      "DIA_ORLAN_EINGEBROCKT_05_00",
+      "DIA_ORLAN_EINGEBROCKT_05_02"
+    ]
+  },
+  {
+    "from": "BAU_973_RUKHAR",
+    "rel": "knows",
+    "to": "BAU_970_ORLAN",
+    "note": "Nennt ihn spöttisch den alten Zausel und findet sein Bier mittelmäßig, trinkt aber täglich bei ihm.",
+    "evidence": [
+      "DIA_RUKHAR_WETTKAMPF_12_03",
+      "DIA_RUKHAR_HALLO_12_01"
+    ]
+  },
+  {
+    "from": "BAU_973_RUKHAR",
+    "rel": "rivals",
+    "to": "BAU_942_RANDOLPH",
+    "note": "Sein Lieblingsgegner beim Wettsaufen, den er mit Schnaps im Bier besiegt.",
+    "evidence": [
+      "DIA_RUKHAR_RANDOLPHWILL_12_03",
+      "DIA_RANDOLPH_GEGENWEN_06_01"
+    ]
+  },
+  {
+    "from": "BAU_942_RANDOLPH",
+    "rel": "suspects",
+    "to": "BAU_973_RUKHAR",
+    "note": "Vermutet zu Recht, dass Rukhar ihm Wacholder ins Bier kippt.",
+    "evidence": [
+      "DIA_RANDOLPH_GEGENWEN_06_02",
+      "DIA_RANDOLPH_GEGENWEN_06_03"
+    ]
+  },
+  {
+    "from": "BAU_942_RANDOLPH",
+    "rel": "owes",
+    "to": "HERO",
+    "note": "Schuldet dem Helden das geliehene Wettgeld.",
+    "evidence": [
+      "DIA_RANDOLPH_ICHGEBEDIRGELD_06_01"
+    ]
+  },
+  {
+    "from": "BAU_973_RUKHAR",
+    "rel": "despises",
+    "to": "HERO",
+    "note": "Nach seiner Niederlage sinnt er auf Rache.",
+    "evidence": [
+      "DIA_RUKHAR_HAENSELN_12_02"
+    ],
+    "since": "after MIS_RUKHAR_WETTKAMPF"
+  },
+  {
+    "from": "BAU_973_RUKHAR",
+    "rel": "despises",
+    "to": "BAU_900_ONAR",
+    "note": "Ist ihm vom Feld davongelaufen und will niemandes Knecht mehr sein.",
+    "evidence": [
+      "DIA_RUKHAR_WASMACHSTDU_12_02",
+      "DIA_RUKHAR_WASMACHSTDU_12_03"
+    ]
+  },
+  {
+    "from": "BAU_942_RANDOLPH",
+    "rel": "works_for",
+    "to": "BAU_940_AKIL",
+    "note": "Landarbeiter auf Akils Hof, seit keine Schiffe mehr kommen.",
+    "evidence": [
+      "DIA_RANDOLPH_GESCHICHTE_06_03"
+    ]
+  },
+  {
+    "from": "BAU_942_RANDOLPH",
+    "rel": "protects",
+    "to": "BAU_940_AKIL",
+    "note": "Steht Wache, solange Alvares und Engardo den Hof bedrohen.",
+    "evidence": [
+      "DIA_RANDOLPH_SCHWERELUFT_06_03"
+    ]
+  },
+  {
+    "from": "BAU_942_RANDOLPH",
+    "rel": "fears",
+    "to": "SLD_840_ALVARES",
+    "note": "Alvares ist immer dreister geworden.",
+    "evidence": [
+      "DIA_RANDOLPH_HALLO_06_02",
+      "DIA_RANDOLPH_SCHWERELUFT_06_01"
+    ]
+  },
+  {
+    "from": "BAU_942_RANDOLPH",
+    "rel": "drinks_with",
+    "to": "BAU_970_ORLAN",
+    "note": "Stammgast, der sich die Schänke nicht mehr leisten kann.",
+    "evidence": [
+      "DIA_RANDOLPH_TAVERNE_06_02",
+      "DIA_AKIL_GEGEND_TAVERNE_13_01"
+    ]
+  },
+  {
+    "from": "BAU_942_RANDOLPH",
+    "rel": "trades_with",
+    "to": "BAU_980_SAGITTA",
+    "note": "Bekommt von ihr sein Mittel gegen die Trinkfolgen.",
+    "evidence": [
+      "DIA_RANDOLPH_PERM_06_06",
+      "DIA_SAGITTA_HEALRANDOLPH_17_01"
+    ],
+    "since": "chapter 4"
+  },
+  {
+    "from": "BAU_942_RANDOLPH",
+    "rel": "trades_with",
+    "to": "VLK_410_BALTRAM",
+    "note": "Gibt Baltrams Lieferung heraus, wenn Akil und Kati tot sind.",
+    "evidence": [
+      "DIA_RANDOLPH_BALTRAM_06_01"
+    ]
+  },
+  {
+    "from": "VLK_4303_ADDON_EROL",
+    "rel": "trades_with",
+    "to": "VLK_439_VATRAS",
+    "note": "Verkauft einem Wassermagier der Stadt Steintafeln und hat ihm drei versprochen.",
+    "evidence": [
+      "DIA_ADDON_EROL_WHAT_WAS_10_01",
+      "DIA_ADDON_EROL_STONEPLATES_10_14"
+    ]
+  },
+  {
+    "from": "VLK_4303_ADDON_EROL",
+    "rel": "despises",
+    "to": "GIL_BDT",
+    "note": "Banditen haben seinen Wagen geplündert und seine Gehilfen getötet.",
+    "evidence": [
+      "DIA_ADDON_EROL_HALLO_10_02",
+      "DIA_ADDON_EROL_WHAT_10_01"
+    ]
+  },
+  {
+    "from": "VLK_4303_ADDON_EROL",
+    "rel": "trades_with",
+    "to": "GIL_SLD",
+    "note": "Söldner sind gute Kunden und bewachen gegen Bezahlung sein Haus.",
+    "evidence": [
+      "DIA_ADDON_EROL_SLD_10_04"
+    ]
+  },
+  {
+    "from": "VLK_4303_ADDON_EROL",
+    "rel": "despises",
+    "to": "Stadtobere",
+    "note": "Hält die Herren im oberen Viertel für korrupt.",
+    "evidence": [
+      "DIA_ADDON_EROL_BUERGER_10_01"
+    ]
+  },
+  {
+    "from": "VLK_4303_ADDON_EROL",
+    "rel": "knows",
+    "to": "BAU_970_ORLAN",
+    "note": "Kennt die Taverne als Wegmarke; ob die beiden sich näher kennen, ist offen.",
+    "evidence": [
+      "DIA_ADDON_EROL_FERNANDOSWEAPONS_BENGAR_10_01"
+    ]
+  },
+  {
+    "from": "BAU_971_BAUER",
+    "rel": "drinks_with",
+    "to": "BAU_972_BAUER",
+    "note": "Die beiden stehen Tag und Nacht zusammen im Schankraum.",
+    "evidence": [
+      "DIA_OUT_1_STANDARD_13_00",
+      "DIA_OUT_7_STANDARD_07_00"
+    ]
+  },
+  {
+    "from": "BAU_971_BAUER",
+    "rel": "despises",
+    "to": "GIL_MIL",
+    "note": "Die Miliz holt nur Ernte und Vieh.",
+    "evidence": [
+      "DIA_OUT_1_STANDARD_13_01"
+    ]
+  },
+  {
+    "from": "BAU_972_BAUER",
+    "rel": "fears",
+    "to": "GIL_PAL",
+    "note": "Zahlt der Stadt ihren Anteil aus Angst vor den Paladinen.",
+    "evidence": [
+      "DIA_OUT_7_STANDARD_07_01"
+    ]
+  },
+  {
+    "from": "BAU_974_BAUER",
+    "rel": "despises",
+    "to": "BAU_900_ONAR",
+    "note": "Lässt sich vom fetten Onar so wenig einspannen wie vom König.",
+    "evidence": [
+      "DIA_OUT_1_STANDARD_01_02"
+    ]
+  },
+  {
+    "from": "BAU_974_BAUER",
+    "rel": "fears",
+    "to": "GIL_BDT",
+    "note": "Banditen plagen ihn, seit die Barriere weg ist.",
+    "evidence": [
+      "DIA_OUT_1_STANDARD_01_00"
+    ]
+  },
+  {
+    "from": "BAU_974_BAUER",
+    "rel": "serves",
+    "to": "BAU_970_ORLAN",
+    "note": "Spielt für Orlans Gäste die Laute, vielleicht gegen freies Bier.",
+    "invented": true
+  },
+  {
+    "from": "BAU_971_BAUER",
+    "rel": "knows",
+    "to": "BAU_973_RUKHAR",
+    "note": "Hat Rukhars Wettsaufen oft genug gesehen, um zu wissen, dass er nie verliert.",
+    "invented": true
+  },
+  {
+    "from": "BAU_972_BAUER",
+    "rel": "owes",
+    "to": "BAU_970_ORLAN",
+    "note": "Lässt bei Orlan anschreiben.",
+    "invented": true
+  }
+]

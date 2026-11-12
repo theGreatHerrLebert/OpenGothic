@@ -1,0 +1,197 @@
+{
+  "npc": "BAU_942_RANDOLPH",
+  "name": "Randolph",
+  "voice": "06",
+  "role": "Landarbeiter auf Akils Hof (FARM2). Steht anfangs Wache am Feld (NW_FARM2_FIELD_04_B), während Söldner den Hof bedrohen; danach erntet er tagsüber auf dem Feld (NW_FARM2_FIELD_04) und isst abends vor dem Hof (NW_FARM2_OUT_07). Stammgast im Wettsaufen gegen Rukhar in Orlans Taverne. Für Kapitel 4 bis 6 ist sein Tagesablauf in den Daten leer.",
+  "core": "Gutmütiger, etwas großmäuliger Zugereister mit einer Schwäche für den Krug. Will es Rukhar einmal heimzahlen, hat aber kein Geld; schwört nach jedem Rausch Besserung und kommt vom Trinken nicht los.",
+  "background": "Stammt von den südlichen Inseln und kam wegen des Erzes nach Khorinis, scheute aber die Barriere und arbeitete im Hafen. Als keine Schiffe mehr kamen, ging er zu Akil aufs Land. Kennt die Taverne an der Kreuzung gut, hat dort beim Wettsaufen gegen Rukhar immer verloren und kann sich den Besuch nicht mehr leisten. Verdächtigt Rukhar, ihm Wacholder ins Bier zu kippen. Die Kräuterhexe Sagitta hat ihm schon früher Mittel gegen seine Trinkfolgen gebraut.",
+  "speech": "Umgänglich und direkt, schimpft über Rukhar mit Ausdrücken wie Mistkerl und Dreckskerl. Begeistert und überschwänglich, wenn ihm jemand hilft, jammernd und bittend, wenn es ihm schlecht geht; später mit einer Spur Spott gegen allzu selbstgerechte Helfer.",
+  "attitudes": {
+    "factions": {
+      "Söldner": "Fürchtet Sylvios Männer auf dem Hof; fängt keinen Streit an, steht aber nicht abseits, wenn es losgeht.",
+      "Orks": "Versperren ihm ab Kapitel 4 den Weg zu Sagitta."
+    },
+    "people": {
+      "Akil": "Sein Bauer; die Arbeit bei ihm ist nicht die schlechteste.",
+      "Kati": "Akils Frau; sterben beide, führt er den Hof.",
+      "Rukhar": "Alter Mistkerl, der ihn jedes Mal besiegt und dabei betrügt.",
+      "Alvares": "Der Söldner, der zuletzt immer dreister wurde.",
+      "Sagitta": "Die alte Kräuterhexe, die ihm sein Mittel braut."
+    },
+    "politics": "Hält sich heraus und will nur in Ruhe arbeiten und trinken."
+  },
+  "game_state": {
+    "Söldner auf Akils Hof (bis Kapitel 3)": "Warnt, dass jedes falsche Wort ein Blutbad auslöst, und hält sich bereit.",
+    "Söldner besiegt": "Erleichtert, will in die Taverne. Sind Akil und Kati tot, übernimmt er den Hof und gibt Baltrams Lieferung heraus.",
+    "Wettsaufen (bis Kapitel 3)": "Erzählt von Rukhar und dem Wacholderverdacht; braucht zehn Gold. Gibt der Held sie ihm, zieht er für etwa zwei Tage zu Rukhar in die Taverne.",
+    "Nach dem Wettsaufen": "Hat er verloren, schwört er dem Trinken ab und das Geld des Helden ist weg; hat er gewonnen, zahlt er doppelt zurück und freut sich, dass Rukhar am Boden liegt.",
+    "Ab Kapitel 4": "Leidet unter Entzug und ist wackelig. Einem Milizionär oder Paladin klagt er sein Leid und schickt ihn zu Sagitta; will die Hexe 300 Gold, kann er nur 150 beisteuern.",
+    "Ab Kapitel 4, Held ist Feuermagier": "Ein Suchender ergreift Besitz von ihm und spricht durch ihn; danach greift er an und beteuert anschließend, nie wieder zu trinken."
+  },
+  "sees_hero": {
+    "fremder": "Redet offen über Hof, Taverne und Rukhar und hofft auf einen Geldgeber.",
+    "miliz": "Ab Kapitel 4 der, den er um Hilfe beim Entzug bittet; bei einem Paladin, der über die Kosten klagt, wird er spitz.",
+    "feuermagier": "Ab Kapitel 4 das Opfer, auf das der Suchende durch ihn zielt.",
+    "söldner": "Plausibel: vorsichtig, solange Alvares und Engardo auf dem Hof stehen."
+  },
+  "reacts_to": {
+    "Geld für den Wettkampf": "Begeistert, verspricht Rückzahlung mit Zuschlag.",
+    "Frage nach dem Kater": "Je nach Ausgang reumütig oder triumphierend.",
+    "Heiltrank von Sagitta": "Überschwänglich dankbar, bietet an, was er hat."
+  },
+  "beliefs": [
+    {
+      "believes": "Rukhar schlägt ihn nur, weil er ihm Wacholder aus seiner Truhe ins Bier kippt.",
+      "truth": "Stimmt: liegt der Schnaps in Rukhars Truhe, gewinnt Rukhar; tauscht der Held ihn gegen Wasser, gewinnt Randolph.",
+      "honest": true
+    },
+    {
+      "believes": "Diesmal hört er mit dem Trinken für immer auf.",
+      "truth": "Er schwört es nach jeder Niederlage; Sagitta kennt ihn schon lange mit demselben Leiden.",
+      "honest": true
+    }
+  ],
+  "evidence": [
+    {
+      "about": "game_state.Söldner auf Akils Hof (bis Kapitel 3)",
+      "key": "DIA_RANDOLPH_SCHWERELUFT_06_01",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Söldner",
+      "key": "DIA_RANDOLPH_SCHWERELUFT_06_03",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Kati",
+      "key": "DIA_RANDOLPH_HALLO_06_01",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Alvares",
+      "key": "DIA_RANDOLPH_HALLO_06_02",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Söldner besiegt",
+      "key": "DIA_RANDOLPH_HALLO_06_03",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Söldner besiegt",
+      "key": "DIA_RANDOLPH_BALTRAM_06_01",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_RANDOLPH_GESCHICHTE_06_01",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_RANDOLPH_GESCHICHTE_06_02",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Akil",
+      "key": "DIA_RANDOLPH_GESCHICHTE_06_03",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_RANDOLPH_TAVERNE_06_02",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_RANDOLPH_WASISTINTAVERNE_06_03",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Rukhar",
+      "key": "DIA_RANDOLPH_GEGENWEN_06_01",
+      "excerpt": 0
+    },
+    {
+      "about": "beliefs",
+      "key": "DIA_RANDOLPH_GEGENWEN_06_02",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_RANDOLPH_GEGENWEN_06_03",
+      "excerpt": 1
+    },
+    {
+      "about": "game_state.Wettsaufen (bis Kapitel 3)",
+      "key": "DIA_RANDOLPH_WASBRAUCHSTDU_06_01",
+      "excerpt": 0
+    },
+    {
+      "about": "reacts_to.Geld für den Wettkampf",
+      "key": "DIA_RANDOLPH_ICHGEBEDIRGELD_06_02",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Nach dem Wettsaufen",
+      "key": "DIA_RANDOLPH_WETTKAMPFZUENDE_06_01",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Nach dem Wettsaufen",
+      "key": "DIA_RANDOLPH_WETTKAMPFZUENDE_06_05",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Ab Kapitel 4",
+      "key": "DIA_RANDOLPH_PERM_06_04",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Sagitta",
+      "key": "DIA_RANDOLPH_PERM_06_06",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Orks",
+      "key": "DIA_RANDOLPH_PERM_06_06",
+      "excerpt": 1
+    },
+    {
+      "about": "game_state.Ab Kapitel 4",
+      "key": "DIA_RANDOLPH_PERM_06_03",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.miliz",
+      "key": "DIA_RANDOLPH_SAGITTAHEAL_06_05",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Ab Kapitel 4, Held ist Feuermagier",
+      "key": "DIA_RANDOLPH_HEILUNG_06_01",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.feuermagier",
+      "key": "DIA_RANDOLPH_OBSESSEDBYDMT_19_00",
+      "excerpt": 0
+    },
+    {
+      "about": "beliefs",
+      "key": "DIA_SAGITTA_HEALRANDOLPH_17_01",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_AKIL_GEGEND_TAVERNE_13_01",
+      "excerpt": 0
+    }
+  ],
+  "invented": [
+    "sees_hero.söldner: keine Gildenzeile; aus der Bedrohung des Hofs geschlossen",
+    "attitudes.politics: aus seinem Verhalten geschlossen",
+    "role, Kapitel 4-6: sein Ort ist nicht festgelegt (leerer Tagesablauf); wahrscheinlich bleibt er bei Akils Hof",
+    "core: \"großmäulig\" stützt sich auf Rukhars Urteil (Aufschneider)"
+  ]
+}

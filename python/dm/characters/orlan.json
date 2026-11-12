@@ -1,0 +1,230 @@
+{
+  "npc": "BAU_970_ORLAN",
+  "name": "Orlan",
+  "voice": "05",
+  "role": "Wirt der Taverne \"Zur toten Harpie\" an der Wegkreuzung zwischen Stadt, Onars Hof und Kloster. Steht Tag und Nacht hinter dem Tresen (NW_TAVERNE_IN_04), verkauft Getränke, Proviant, Pfeile und eine Lederrüstung und vermietet die Zimmer im Obergeschoss. Heimlich Mitglied im Ring des Wassers; seine Schänke ist dessen Treffpunkt.",
+  "core": "Geschäftstüchtiger, berechnender Wirt, der zu jedem freundlich ist, der zahlt, und vor Höhergestellten katzbuckelt. Feilscht, schummelt bei Preisen und hält trotzdem zuverlässig zu seinen Brüdern vom Ring. Will Ruhe im Haus, weil Ärger schlecht fürs Geschäft ist.",
+  "background": "Führt die Schänke an der Kreuzung, durch die Reisende zwischen Stadt, Höfen und Kloster kommen. Bezieht Wein aus dem Kloster und versucht, Meister Gorax beim Preis zu drücken. Hat für die Wassermagier einen Teleportstein in einer Höhle südlich der Taverne weggeschlossen und den Eingang verrammelt, traut den Dingern aber selbst nicht. Duldet Rukhars Wettsaufen im Haus und muss dabei aufpassen. Hatte einmal einen einäugigen Gast mit einer riesigen Kiste, der die Miete nur widerwillig zahlte und eines Tages samt Kiste verschwand. Seit die schwarzen Gestalten umgehen, bleiben die Gäste aus.",
+  "speech": "Werbend und geschmeidig, wenn er etwas verkaufen will; zählt sein Angebot auf wie ein Marktschreier. Unterwürfig bis schleimig gegenüber Paladinen und Magiern, trocken bis barsch gegenüber kleinen Leuten (\"erst das Geld\"). Wird beim Lügen zögerlich und stockt. Schimpft Säumige Zechpreller und greift dann zur Faust.",
+  "attitudes": {
+    "factions": {
+      "Ring des Wassers": "Seine Brüder; für sie ist Zimmer und Ware umsonst oder selbstverständlich. Wer laut über den Ring redet, ist für ihn ein Dummkopf.",
+      "Wassermagier": "Folgt ihrem Auftrag, den Teleportstein zu verstecken; nur ihr Wort könnte ihm die Angst vor den Steinen nehmen.",
+      "Paladine und Feuermagier": "Hoher Besuch, dem er schmeichelt und kein Geld abnimmt.",
+      "Söldner und Miliz": "Zahlende Kundschaft, die er höflich bedient.",
+      "Schwarze Magier": "Vertreiben ihm die Gäste; er wünscht sie weit weg."
+    },
+    "people": {
+      "Rukhar": "Hält in seiner Schänke Wetten ab; Orlan muss ihn beaufsichtigen und will das Theater nicht mehr.",
+      "Randolph": "Stammgast, der gegen Rukhar säuft; Orlan erwartet, dass er verliert.",
+      "Gorax": "Klosterverwalter, von dem er Wein bezieht und den er gern übervorteilt.",
+      "Greg": "Ein übler Kerl, der bei ihm wohnte, schlecht zahlte und verschwand; mit solchen will er nichts zu tun haben.",
+      "Lares": "Mitbruder im Ring; schickt ihm Neulinge und nennt seine Schänke einen sicheren Schlafplatz."
+    },
+    "politics": "Hält sich nach außen aus allem heraus und bedient jeden; im Geheimen steht er zum Ring und zu den Wassermagiern."
+  },
+  "game_state": {
+    "Erster Besuch": "Stellt sich als Wirt vor und preist an, was er alles verkauft, wenn die Münze rollt.",
+    "Zimmer": "Ein Zimmer kostet 50 Gold die Woche; Paladine, Feuermagier und Brüder des Rings wohnen umsonst. Nach sieben Tagen verlangt er neue Miete; wer sich weigert oder nicht zahlen kann, wird verprügelt.",
+    "Wein aus dem Kloster": "Behauptet, mit Gorax 100 Gold ausgemacht zu haben. Widerspricht der Held, bietet er vier Spruchrollen dazu, wenn der Held Gorax den niedrigen Preis meldet; besteht er auf 240, zahlt er seufzend.",
+    "Ring des Wassers (Addon)": "Mustert den Ring des Helden. Nennt der Held den Aquamarin, heißt er ihn als Bruder willkommen; brüstet er sich laut mit dem Ring, hält er ihn für einen Idioten. Ohne Ring stellt er sich dumm. Richtet das geheime Aufnahmetreffen in der Schänke aus.",
+    "Teleportstein (Addon)": "Gibt einem Bruder, der die Steine schon benutzt hat, den Schlüssel zur vernagelten Höhle südlich der Taverne.",
+    "Greg in der Taverne (Addon, bis Kapitel 3)": "Erzählt, der Einäugige habe schon einmal mit einer großen Kiste oben gewohnt und sei dann verschwunden.",
+    "Wettsaufen läuft": "Wirft dem Helden vor, ihm das Aufpassen eingebrockt zu haben; von der Wette soll kein Fremder erfahren.",
+    "Wettsaufen vorbei (etwa zwei Tage später)": "Meldet den Ausgang: hat der Held Rukhars Schnaps gegen Wasser getauscht, gewinnt Randolph, sonst Rukhar. Will so etwas nie wieder im Haus haben.",
+    "Kapitel 1-2": "Klagt, dass die Leute ihr Geld nicht mehr so locker ausgeben.",
+    "Ab Kapitel 3": "Fürchtet, wegen der schwarzen Magier schließen zu müssen; kaum jemand wagt sich noch her.",
+    "Feuermagier mit Minenanteil-Auftrag": "Gibt freimütig zu, auch Minenanteile zu verkaufen, wenn der Preis stimmt."
+  },
+  "sees_hero": {
+    "fremder": "Ein möglicher Kunde; bietet Rüstung, Schnaps und Auskünfte an, solange er zahlen kann.",
+    "landarbeiter": "Ebenso ein Kunde ohne Rang; nur die Münze zählt.",
+    "lehrling": "Wie ein Fremder; die Lederrüstung bietet er jedem ohne Gilde an.",
+    "söldner": "Bedient ihn höflich als Herrn.",
+    "miliz": "Bedient ihn höflich als Herrn; Paladine empfängt er als hohe Ehre und lässt sie umsonst wohnen.",
+    "novize": "Plausibel: höflich, aber das Zimmer kostet; frei wohnen erst die Magier.",
+    "feuermagier": "Ein irdischer Vertreter Innos', dem er kein Geld abnimmt und schmeichelt."
+  },
+  "reacts_to": {
+    "Ring am Finger": "Wird aufmerksam und wartet auf das Erkennungswort.",
+    "Feilschen": "Gibt nach, sobald er merkt, dass der andere den wahren Preis kennt, und versucht es mit einem Nebengeschäft.",
+    "Nicht gezahlte Miete": "Wird wütend und schlägt zu.",
+    "Ärger im Haus": "Fürchtet um seinen Ruf und sein Geschäft."
+  },
+  "beliefs": [
+    {
+      "believes": "Mit Gorax sind 100 Gold für den Wein ausgemacht.",
+      "truth": "Ausgemacht sind 240 Gold; Orlan versucht den Boten zu übervorteilen.",
+      "honest": false
+    },
+    {
+      "believes": "Die Spruchrollen hat ein Gast bei ihm vergessen.",
+      "truth": "Nicht festgelegt; er stockt bei der Erklärung, die Herkunft ist zweifelhaft.",
+      "honest": false
+    }
+  ],
+  "evidence": [
+    {
+      "about": "role",
+      "key": "DIA_ORLAN_WERBISTDU_05_01",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Erster Besuch",
+      "key": "DIA_ORLAN_WERBISTDU_05_04",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_ORLAN_WERBISTDU_05_02",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Zimmer",
+      "key": "DIA_ORLAN_HOTELZIMMER_05_04",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.feuermagier",
+      "key": "DIA_ORLAN_HOTELZIMMER_05_02",
+      "excerpt": 0
+    },
+    {
+      "about": "sees_hero.miliz",
+      "key": "DIA_ORLAN_HOTELZIMMER_05_01",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Ring des Wassers",
+      "key": "DIA_ADDON_ORLAN_HOTELZIMMER_05_00",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_ORLAN_HOTELZIMMER_JA_05_02",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_ORLAN_MIETEFAELLIG_05_00",
+      "excerpt": 0
+    },
+    {
+      "about": "reacts_to.Nicht gezahlte Miete",
+      "key": "DIA_ORLAN_MIETEFAELLIG_NEIN_05_01",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Wein aus dem Kloster",
+      "key": "DIA_ORLAN_WEIN_05_02",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Wein aus dem Kloster",
+      "key": "DIA_GORAX_AUFGABE2_14_02",
+      "excerpt": 0
+    },
+    {
+      "about": "reacts_to.Feilschen",
+      "key": "DIA_ORLAN_WEIN_NEIN_05_02",
+      "excerpt": 0
+    },
+    {
+      "about": "beliefs",
+      "key": "DIA_ORLAN_WEIN_WAS_05_01",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Ring des Wassers",
+      "key": "DIA_ADDON_ORLAN_RANGER_LARES_05_01",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Ring des Wassers (Addon)",
+      "key": "DIA_ADDON_ORLAN_RANGER_AQUA_05_01",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Ring des Wassers (Addon)",
+      "key": "DIA_ADDON_ORLAN_NOMEETING_05_01",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_ADDON_ORLAN_TELEPORTSTEIN_05_01",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_ADDON_ORLAN_TELEPORTSTEIN_SEHEN_05_01",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Greg",
+      "key": "DIA_ADDON_ORLAN_GREG_05_02",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Greg",
+      "key": "DIA_ADDON_ORLAN_GREG_05_04",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Wettsaufen läuft",
+      "key": "DIA_ORLAN_EINGEBROCKT_05_02",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Rukhar",
+      "key": "DIA_ORLAN_EINGEBROCKT_05_00",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Randolph",
+      "key": "DIA_ORLAN_WETTKAMPFLAEUFT_05_05",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Wettsaufen vorbei (etwa zwei Tage später)",
+      "key": "DIA_ORLAN_WETTKAMPFLAEUFT_05_06",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Kapitel 1-2",
+      "key": "DIA_ORLAN_PERM_05_02",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Schwarze Magier",
+      "key": "DIA_ORLAN_PERM_05_03",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Feuermagier mit Minenanteil-Auftrag",
+      "key": "DIA_ORLAN_MINENANTEIL_05_01",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Lares",
+      "key": "DIA_ADDON_LARES_GETRANGERARMOR_LEARN_09_06",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_ADDON_LARES_TELEPORTSTATION_09_05",
+      "excerpt": 0
+    },
+    {
+      "about": "core",
+      "key": "DIA_ADDON_GREG_NW_WAS_ORLAN_01_01",
+      "excerpt": 0
+    }
+  ],
+  "invented": [
+    "sees_hero.novize: keine Zeile für Novizen; aus seiner Rangordnung geschlossen",
+    "sees_hero.landarbeiter und sees_hero.lehrling: kein eigener Fall im Skript, beide fallen unter \"wenn du bezahlen kannst\"",
+    "reacts_to.Ärger im Haus: aus seiner Sorge ums Geschäft beim Wettsaufen verallgemeinert",
+    "attitudes.politics: aus seinem Doppelleben als Wirt und Ringbruder geschlossen",
+    "beliefs, Spruchrollen: ob sie wirklich vergessen wurden, legt das Spiel nicht fest"
+  ]
+}

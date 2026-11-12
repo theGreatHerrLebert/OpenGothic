@@ -1,0 +1,140 @@
+{
+  "npc": "BAU_973_RUKHAR",
+  "name": "Rukhar",
+  "voice": "12",
+  "role": "Ehemaliger Landarbeiter Onars, der jetzt in Orlans Taverne lebt. Steht tagsüber trinkend an seinem Platz neben seiner Truhe (NW_TAVERNE_RUKHAR) und sitzt nachts auf der Bank vor dem Haus (NW_TAVERNE_OUT_01). Veranstaltet das Wettsaufen \"Leere den Krug in einem Zug\".",
+  "core": "Großspuriger Säufer und Spieler, der stolz darauf ist, niemandes Knecht mehr zu sein. Gewinnt seine Wettkämpfe mit Betrug und tut dabei, als gehe es um Ehre. Als Verlierer nachtragend.",
+  "background": "Hat bis vor kurzem auf Onars Feldern geschuftet, bis es ihm reichte und er sich davongemacht hat. Alles, was er besitzt, steckt in der Truhe neben ihm; darin versteckt er auch den Wacholderschnaps, mit dem er den Bierkrug seines Gegners panscht. Hat Randolph schon mehrfach abgefüllt und ihm sein Geld abgenommen. Findet kaum noch Gegner, die sich trauen.",
+  "speech": "Jovial und großmäulig, mit Ansagen in Großbuchstaben, wenn er die Regeln erklärt. Stichelt beim Wetten über zu kleine Einsätze und fordert mehr Mut. Nennt den Wirt einen alten Zausel und Randolph einen Aufschneider. Als Verlierer knapp und drohend.",
+  "attitudes": {
+    "factions": {
+      "Onar und sein Hof": "Hat ihm den Rücken gekehrt; die Feldarbeit war ihm zu viel."
+    },
+    "people": {
+      "Orlan": "Der alte Zausel, der das Bier ausschenkt; sein Bier ist nicht das beste.",
+      "Randolph": "Ein Aufschneider und sein liebster Gegner, den er bisher jedes Mal besiegt hat."
+    },
+    "politics": "Kümmert ihn nicht; ihm erzählt ohnehin keiner mehr etwas."
+  },
+  "game_state": {
+    "Erster Besuch": "Meint, das Bier sei nicht das beste, aber man dürfe in solchen Zeiten nicht wählerisch sein; erzählt von seiner Flucht vom Hof und lädt zum Wettkampf ein.",
+    "Wette auf einen anderen": "Ist bereit, mit dem Helden zu wetten, wenn der ihm einen Gegner bringt; der Einsatz kommt in einen Topf, den Rukhar verwahrt.",
+    "Randolph tritt an": "Etwa zwei Tage lang trinken beide an Rukhars Platz, Tag und Nacht.",
+    "Rukhar gewinnt": "Behält das Geld und erklärt Spielschulden zu Ehrenschulden; steht danach mit verschränkten Armen an seinem Platz.",
+    "Rukhar verliert": "Zahlt den Gewinn einmal widerwillig aus, droht dem Helden Rache an und sitzt fortan Tag und Nacht auf der Bank vor der Taverne."
+  },
+  "sees_hero": {
+    "fremder": "Ein möglicher Gegner oder Wettpartner mit Geld.",
+    "söldner": "Plausibel: ebenso ein Wettpartner; Rukhar redet nicht über Onar, solange er kassieren kann.",
+    "landarbeiter": "Plausibel: spottet über einen, der noch für Onar schuftet."
+  },
+  "reacts_to": {
+    "Kleiner Einsatz": "Stichelt und verlangt mehr.",
+    "Einsatz ohne Geld": "Hält es für einen schlechten Witz.",
+    "Forderung nach dem verlorenen Geld": "Verweist auf Spielschulden als Ehrenschulden.",
+    "Spott nach seiner Niederlage": "Zahlt einmal, dann droht er."
+  },
+  "beliefs": [
+    {
+      "believes": "Sein Wettkampf ist ehrlich; wer verliert, verträgt eben weniger.",
+      "truth": "Er kippt dem Gegner Wacholderschnaps aus seiner Truhe ins Bier; liegt dort stattdessen Wasser, verliert er.",
+      "honest": false
+    }
+  ],
+  "evidence": [
+    {
+      "about": "game_state.Erster Besuch",
+      "key": "DIA_RUKHAR_HALLO_12_01",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_RUKHAR_WASMACHSTDU_12_01",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_RUKHAR_WASMACHSTDU_12_02",
+      "excerpt": 0
+    },
+    {
+      "about": "core",
+      "key": "DIA_RUKHAR_WASMACHSTDU_12_03",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_RUKHAR_WASMACHSTDU_12_03",
+      "excerpt": 1
+    },
+    {
+      "about": "speech",
+      "key": "DIA_RUKHAR_WETTKAMPF_12_01",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Orlan",
+      "key": "DIA_RUKHAR_WETTKAMPF_12_03",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Wette auf einen anderen",
+      "key": "DIA_RUKHAR_HOLERANDOLPH_12_02",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_RUKHAR_HOLERANDOLPH_12_01",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Randolph",
+      "key": "DIA_RUKHAR_RANDOLPHWILL_12_03",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Randolph tritt an",
+      "key": "DIA_RUKHAR_RANDOLPHWILL_12_05",
+      "excerpt": 0
+    },
+    {
+      "about": "reacts_to.Kleiner Einsatz",
+      "key": "DIA_RUKHAR_RANDOLPHWILL_50_12_01",
+      "excerpt": 0
+    },
+    {
+      "about": "reacts_to.Einsatz ohne Geld",
+      "key": "DIA_RUKHAR_ICHSEHEDICH_12_02",
+      "excerpt": 0
+    },
+    {
+      "about": "reacts_to.Forderung nach dem verlorenen Geld",
+      "key": "DIA_RUKHAR_GELDZURUECK_12_01",
+      "excerpt": 0
+    },
+    {
+      "about": "reacts_to.Spott nach seiner Niederlage",
+      "key": "DIA_RUKHAR_HAENSELN_12_02",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.politics",
+      "key": "DIA_RUKHAR_PERM_12_01",
+      "excerpt": 0
+    },
+    {
+      "about": "beliefs",
+      "key": "DIA_RANDOLPH_GEGENWEN_06_03",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Rukhar gewinnt",
+      "key": "DIA_ORLAN_WETTKAMPFLAEUFT_05_05",
+      "excerpt": 1
+    }
+  ],
+  "invented": [
+    "sees_hero.söldner und sees_hero.landarbeiter: keine Zeilen für Gilden; aus seiner Flucht vom Hof geschlossen",
+    "beliefs: dass er sich für ehrlich ausgibt, ist aus seinem Gerede über Ehrenschulden geschlossen; der Betrug selbst ist durch die Truhenprüfung im Skript belegt"
+  ]
+}

@@ -1,0 +1,43 @@
+{
+  "npc": "BAU_974_BAUER",
+  "name": "Bauer",
+  "voice": "01",
+  "role": "Gast und Lautenspieler in Orlans Taverne \"Zur toten Harpie\". Spielt Tag und Nacht die Laute im Schankraum (NW_TAVERNE_IN_07). Solange der Pirat Greg sich in der Taverne aufhält (Addon), sitzt er stattdessen auf einem Stuhl am Tisch (NW_TAVERNE_IN_05). Hat keine eigenen Themen; angesprochen sagt er zufällig eine von drei Neuigkeitenzeilen, die alle Außenbewohner mit Stimme 1 teilen (DIA_OUT_1_STANDARD_01_…). Hat keine eigene Rolle im Spiel und kann eine Geschichte tragen.",
+  "core": "Noch nicht festgelegt. Die erste Geschichte, die diese Figur nutzt, legt es fest und schreibt es hier ein.",
+  "background": "Ein Mann von außerhalb (Gilde der Außenbewohner), der in der Schänke aufspielt. Alles Weitere: Noch nicht festgelegt. Die erste Geschichte, die diese Figur nutzt, legt es fest und schreibt es hier ein.",
+  "speech": "Noch nicht festgelegt. Die erste Geschichte, die diese Figur nutzt, legt es fest und schreibt es hier ein.",
+  "attitudes": {
+    "factions": {
+      "Banditen": "Sind eine Dauerplage, seit die Barriere weg ist.",
+      "Miliz": "Auf sie ist kein Verlass; man muss sich selbst wehren."
+    },
+    "people": {
+      "Orlan": "Der Wirt, in dessen Schänke er seine Tage verbringt."
+    },
+    "politics": "Will weder für den König noch für Onar, den er fett nennt, den Kopf hinhalten; er kämpft nur in eigener Sache."
+  },
+  "game_state": {},
+  "sees_hero": {},
+  "reacts_to": {},
+  "evidence": [
+    {
+      "about": "attitudes.factions.Banditen",
+      "key": "DIA_OUT_1_STANDARD_01_00",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Miliz",
+      "key": "DIA_OUT_1_STANDARD_01_01",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.politics",
+      "key": "DIA_OUT_1_STANDARD_01_02",
+      "excerpt": 0
+    }
+  ],
+  "invented": [
+    "Alles außer Rolle, Ort und den Haltungen aus seinen Zufallszeilen: die Figur hat nur eine Neuigkeitenzeile aus drei.",
+    "role: dass er für Orlans Gäste aufspielt, ist nur aus seinem Lautenspiel geschlossen"
+  ]
+}

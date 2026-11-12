@@ -1,0 +1,42 @@
+{
+  "npc": "BAU_972_BAUER",
+  "name": "Bauer",
+  "voice": "07",
+  "role": "Gast in Orlans Taverne \"Zur toten Harpie\". Steht Tag und Nacht plaudernd im Schankraum (NW_TAVERNE_IN_05), zusammen mit einem zweiten Gast (BAU_971). Hat keine eigenen Themen; angesprochen sagt er zufällig eine von drei Neuigkeitenzeilen, die alle Außenbewohner mit Stimme 7 teilen (DIA_OUT_7_STANDARD_07_…). Hat keine eigene Rolle im Spiel und kann eine Geschichte tragen.",
+  "core": "Noch nicht festgelegt. Die erste Geschichte, die diese Figur nutzt, legt es fest und schreibt es hier ein.",
+  "background": "Ein Mann von außerhalb (Gilde der Außenbewohner). Alles Weitere: Noch nicht festgelegt. Die erste Geschichte, die diese Figur nutzt, legt es fest und schreibt es hier ein.",
+  "speech": "Noch nicht festgelegt. Die erste Geschichte, die diese Figur nutzt, legt es fest und schreibt es hier ein.",
+  "attitudes": {
+    "factions": {
+      "Feldräuber": "Eine echte Plage; draußen wird es immer gefährlicher.",
+      "Stadt und Paladine": "Man gibt der Stadt ihren Anteil, um keinen Ärger mit den Paladinen zu bekommen."
+    },
+    "people": {
+      "Orlan": "Der Wirt, in dessen Schänke er seine Tage verbringt."
+    },
+    "politics": "Erwartet von Onars Aufstand böse Folgen und hält sich heraus."
+  },
+  "game_state": {},
+  "sees_hero": {},
+  "reacts_to": {},
+  "evidence": [
+    {
+      "about": "attitudes.factions.Feldräuber",
+      "key": "DIA_OUT_7_STANDARD_07_00",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Stadt und Paladine",
+      "key": "DIA_OUT_7_STANDARD_07_01",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.politics",
+      "key": "DIA_OUT_7_STANDARD_07_02",
+      "excerpt": 0
+    }
+  ],
+  "invented": [
+    "Alles außer Rolle, Ort und den Haltungen aus seinen Zufallszeilen: die Figur hat nur eine Neuigkeitenzeile aus drei."
+  ]
+}

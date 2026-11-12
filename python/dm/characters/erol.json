@@ -1,0 +1,164 @@
+{
+  "npc": "VLK_4303_ADDON_EROL",
+  "name": "Erol",
+  "voice": "10",
+  "role": "Fahrender Händler. Sitzt nach einem Banditenüberfall auf einer Bank am Weg von der Taverne zum Wald (NW_TAVERN_TO_FOREST_03), Tag und Nacht. Hat er seine Steintafeln zurück, geht er heim in seine Hütte zwischen Taverne und Onars Hof (NW_BIGFARM_HUT_IN_01), sitzt dort tagsüber und schläft dort; handelt dann wieder und lehrt Stärke.",
+  "core": "Zäher, stolzer alter Händler mit harter Rechten, dem sein guter Ruf über alles geht. Wütend über die Banditen, verbittert über die Stadtoberen, aber großzügig zu dem, der ihm hilft.",
+  "background": "Hatte früher großen Einfluss im reichen Oberviertel der Stadt, kehrte der Stadt aber den Rücken. Sammelt Steintafeln aus alten Grabbauten und Höhlen, vor allem im Nordosten der Insel, und verkauft sie einem Wassermagier in der Stadt, der sie studieren will. Banditen von der Brücke nahe der Taverne sprangen auf seinen Karren, töteten seine Gehilfen und raubten alles; er schlug sich frei, verstauchte sich aber den Knöchel. Drei Tafeln hat er dem Magier versprochen und geht nicht ohne sie heim. Weiß von einer großen Waffenlieferung aus der Stadt an die Banditen. Zahlt Söldnern dafür, sein Haus zu bewachen, und verkauft ihnen Waren.",
+  "speech": "Aufgebracht und derb über die Räuber (Saubande, Mistkerle), väterlich-knapp zum Helden (\"mein Junge\", \"Bursche\"). Erklärt Handgriffe anschaulich und lacht dabei. Spricht viel von seinem guten Ruf.",
+  "attitudes": {
+    "factions": {
+      "Banditen": "Eine Saubande, die man ausräuchern sollte; sie lauern auf der Brücke und plündern jeden.",
+      "Stadtobere": "Korrupte Schweine im oberen Viertel.",
+      "Söldner": "Lassen ihn in Ruhe, solange er sie nicht stört; gute Kunden, die er als Hauswache bezahlt.",
+      "Wassermagier": "Sein Abnehmer für Steintafeln; ihm gegenüber will er Wort halten."
+    },
+    "people": {
+      "Orlan": "Der Wirt der Taverne in der Inselmitte, die er als Wegmarke nennt."
+    },
+    "politics": "Hat mit der Stadt gebrochen und lebt lieber unter Söldnern als unter Stadtherren."
+  },
+  "game_state": {
+    "Überfall (Addon)": "Sitzt verletzt am Weg, zeigt auf seinen zerstörten Karren unter der Brücke. Der übrige Kram ist ihm gleich; er will drei gewöhnliche Steintafeln zurück, magische nimmt der Magier nicht.",
+    "Tafeln zurück": "Zahlt für jede Tafel, geht heim und lädt den Helden ein, mitzukommen; erst dort handelt er wieder.",
+    "Lehrer": "Bietet an, Schlagkraft zu lehren, aber erst, wenn er seine Tafeln hat; der erste Kniff ist umsonst, danach gegen Bezahlung.",
+    "Waffenhändler-Suche (Addon)": "Erzählt von der Waffenlieferung: ein Teil liegt bei den Banditen auf der Brücke, der Rest zog Richtung Weidenplateau bei Bengars Hof und vielleicht zum Pass."
+  },
+  "sees_hero": {
+    "fremder": "Einer, der ihm vielleicht helfen kann; erzählt freimütig vom Überfall.",
+    "söldner": "Plausibel: ein Kunde und möglicher Wächter seines Hauses.",
+    "miliz": "Plausibel: misstrauisch, weil er für die Stadt nichts übrig hat."
+  },
+  "reacts_to": {
+    "Banditen": "Wird wütend und wünscht ihnen Feuer und Rauch.",
+    "Gebrachte Steintafeln": "Dankt, zählt mit und zahlt.",
+    "Frage nach seinem Haus bei den Söldnern": "Findet daran nichts Seltsames."
+  },
+  "evidence": [
+    {
+      "about": "reacts_to.Banditen",
+      "key": "DIA_ADDON_EROL_HALLO_10_02",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_ADDON_EROL_WHAT_10_01",
+      "excerpt": 0
+    },
+    {
+      "about": "core",
+      "key": "DIA_ADDON_EROL_WHAT_10_02",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_ADDON_EROL_WHAT_DEIN_10_02",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_ADDON_EROL_WHAT_WAS_10_01",
+      "excerpt": 0
+    },
+    {
+      "about": "core",
+      "key": "DIA_ADDON_EROL_WHAT_WAS_10_02",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_ADDON_EROL_WHAT_WOHER_10_01",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_ADDON_EROL_WHAT_WOHER_10_03",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_ADDON_EROL_WHAT_NEUE_10_01",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Wassermagier",
+      "key": "DIA_ADDON_EROL_WHAT_KDW_10_01",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Banditen",
+      "key": "DIA_ADDON_EROL_WHAT_WER_10_02",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_ADDON_EROL_WHAT_WER_10_05",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Waffenhändler-Suche (Addon)",
+      "key": "DIA_ADDON_EROL_FERNANDOSWEAPONS_10_01",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Waffenhändler-Suche (Addon)",
+      "key": "DIA_ADDON_EROL_FERNANDOSWEAPONS_10_03",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.people.Orlan",
+      "key": "DIA_ADDON_EROL_FERNANDOSWEAPONS_BENGAR_10_01",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Überfall (Addon)",
+      "key": "DIA_ADDON_EROL_STONEPLATES_10_11",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Tafeln zurück",
+      "key": "DIA_ADDON_EROL_STONEPLATES_10_08",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Stadtobere",
+      "key": "DIA_ADDON_EROL_BUERGER_10_01",
+      "excerpt": 0
+    },
+    {
+      "about": "background",
+      "key": "DIA_ADDON_EROL_BUERGER_10_02",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_ADDON_EROL_BUERGER_10_01",
+      "excerpt": 1
+    },
+    {
+      "about": "game_state.Tafeln zurück",
+      "key": "DIA_ADDON_EROL_PRETRADE_10_01",
+      "excerpt": 0
+    },
+    {
+      "about": "attitudes.factions.Söldner",
+      "key": "DIA_ADDON_EROL_SLD_10_04",
+      "excerpt": 0
+    },
+    {
+      "about": "game_state.Lehrer",
+      "key": "DIA_ADDON_EROL_TEACH_10_02",
+      "excerpt": 0
+    },
+    {
+      "about": "speech",
+      "key": "DIA_ADDON_EROL_TEACH_ADD_10_02",
+      "excerpt": 0
+    }
+  ],
+  "invented": [
+    "sees_hero.söldner und sees_hero.miliz: keine Gildenzeilen; aus seinen Haltungen geschlossen",
+    "attitudes.people.Orlan: belegt ist nur, dass er die Taverne als Wegmarke kennt; ob er Orlan persönlich kennt, ist offen",
+    "core: \"alter\" Händler aus der Zeile geschlossen, dass er noch immer zuschlagen kann"
+  ]
+}

@@ -1,0 +1,281 @@
+{
+  "place": "Taverne zur toten Harpie",
+  "id": "taverne_kreuzung",
+  "waypoints": {
+    "innen": [
+      "NW_TAVERNE_IN_01",
+      "NW_TAVERNE_IN_03",
+      "NW_TAVERNE_IN_04",
+      "NW_TAVERNE_IN_05",
+      "NW_TAVERNE_IN_06",
+      "NW_TAVERNE_IN_07",
+      "NW_TAVERNE_RUKHAR",
+      "NW_TAVERNE_IN_RANGERMEETING",
+      "NW_TAVERNE_IN_RANGERMEETING_LARES",
+      "NW_TAVERNE_DOOR2"
+    ],
+    "vor dem Haus": [
+      "NW_TAVERNE",
+      "NW_TAVERNE_OUT_01",
+      "NW_TAVERNE_GREGSBENCH",
+      "NW_TAVERNE_DEMENTOR",
+      "NW_TAVERNE_03",
+      "NW_TAVERNE_04",
+      "NW_TAVERNE_05",
+      "NW_TAVERNE_06",
+      "NW_TAVERNE_07",
+      "NW_TAVERNE_08",
+      "TAVERNE"
+    ],
+    "Kreuzung und Wege": [
+      "NW_TAVERNE_CROSS",
+      "NW_TAVERNE_01",
+      "NW_TAVERNE_02",
+      "NW_TAVERNE_BIGFARM_04",
+      "NW_TAVERNE_BIGFARM_05",
+      "NW_TAVERN_TO_FOREST_01",
+      "NW_TAVERN_TO_FOREST_03",
+      "NW_FARM2_TO_TAVERN_01",
+      "NW_TAVERNE_2_GRPEASANT_01"
+    ],
+    "in der Nähe": [
+      "NW_TELEPORTSTATION_TAVERNE",
+      "NW_FARM2_TAVERNCAVE1_01",
+      "WP_BIGFARM_TAVERNCAVE2_01",
+      "NW_TAVERNE_TROLLAREA_01"
+    ]
+  },
+  "people": [
+    {
+      "npc": "BAU_970_ORLAN",
+      "hours": "immer",
+      "where": "NW_TAVERNE_IN_04",
+      "activity": "steht hinter dem Tresen; während des Wettsaufens an anderer Stelle im Haus (NW_TAVERNE), beim Ringtreffen am Treffpunkt im Schankraum"
+    },
+    {
+      "npc": "BAU_973_RUKHAR",
+      "hours": "8-22 Uhr",
+      "where": "NW_TAVERNE_RUKHAR",
+      "activity": "trinkt an seinem Platz neben seiner Truhe"
+    },
+    {
+      "npc": "BAU_973_RUKHAR",
+      "hours": "22-8 Uhr",
+      "where": "NW_TAVERNE_OUT_01",
+      "activity": "sitzt auf der Bank vor dem Haus; nach verlorenem Wettsaufen dort rund um die Uhr, nach gewonnenem steht er mit verschränkten Armen an seinem Platz"
+    },
+    {
+      "npc": "BAU_971_BAUER",
+      "hours": "immer",
+      "where": "NW_TAVERNE_IN_05",
+      "activity": "plaudert mit BAU_972"
+    },
+    {
+      "npc": "BAU_972_BAUER",
+      "hours": "immer",
+      "where": "NW_TAVERNE_IN_05",
+      "activity": "plaudert mit BAU_971"
+    },
+    {
+      "npc": "BAU_974_BAUER",
+      "hours": "immer",
+      "where": "NW_TAVERNE_IN_07",
+      "activity": "spielt Laute; solange Greg in der Taverne ist, sitzt er am Tisch (NW_TAVERNE_IN_05)"
+    },
+    {
+      "npc": "BAU_942_RANDOLPH",
+      "hours": "etwa zwei Tage, Tag und Nacht",
+      "where": "NW_TAVERNE_RUKHAR",
+      "activity": "nur während des Wettsaufens: trinkt gegen Rukhar"
+    },
+    {
+      "npc": "VLK_4303_ADDON_EROL",
+      "hours": "immer, bis er seine Tafeln hat",
+      "where": "NW_TAVERN_TO_FOREST_03",
+      "activity": "sitzt verletzt auf einer Bank am Weg zum Wald"
+    },
+    {
+      "npc": "PIR_1300_ADDON_GREG_NW",
+      "hours": "immer, in seiner Tavernenphase (Addon)",
+      "where": "NW_TAVERNE_GREGSBENCH",
+      "activity": "sitzt auf der Bank vor der Taverne"
+    },
+    {
+      "npc": "BDT_1033_FLUECHTLING",
+      "hours": "immer; nicht in den Kartendaten, vermutlich ab Kapitel 3",
+      "where": "NW_TAVERNE_IN_06",
+      "activity": "entflohener Häftling, steht verängstigt im Schankraum"
+    },
+    {
+      "npc": "BDT_1034_FLUECHTLING",
+      "hours": "immer; nicht in den Kartendaten, vermutlich ab Kapitel 3",
+      "where": "NW_TAVERNE_IN_06",
+      "activity": "zweiter Flüchtling, isst im Stehen"
+    },
+    {
+      "npc": "BAU_952_VINO",
+      "hours": "nach seiner Flucht",
+      "where": "NW_TAVERNE_CROSS",
+      "activity": "trinkt tagsüber an der Kreuzung und schläft dort"
+    }
+  ],
+  "power": "Orlan ist Herr im Haus: er hat die Schlüssel zu den Zimmern im Obergeschoss, kassiert die Miete und verprügelt Zechpreller. Rukhar ist Gast, aber der Platz am Fass und sein Wettspiel gehören ihm; Orlan duldet es, solange kein Fremder davon erfährt. Die übrigen Gäste haben nichts zu sagen. Über allem steht für Orlan heimlich der Ring des Wassers: ihm gehorcht er, dessen Brüder wohnen umsonst. Paladine und Magier behandelt er wie Herren, Söldner und Milizen wie gute Kundschaft.",
+  "usually": "Tagsüber trinken ein paar Außenbewohner im Schankraum, einer spielt Laute, Rukhar steht an seinem Fass und sucht Gegner. Reisende auf dem Weg zwischen Stadt, Kloster, Onars Hof und dem Pass ins Minental machen Rast, kaufen Proviant oder mieten ein Zimmer. Nachts sitzt Rukhar draußen auf der Bank, drinnen wird weiter geplaudert und gespielt. Auf den Wegen ringsum lauern Banditen; eine Brücke nahe der Taverne haben sie besetzt. Ab Kapitel 3 verstecken sich Flüchtlinge im Schankraum und schwarze Kuttenträger schrecken die Gäste ab.",
+  "objects": [
+    {
+      "what": "Rukhars Truhe (CHEST_RUKHAR)",
+      "where": "neben NW_TAVERNE_RUKHAR",
+      "note": "offen; darin ein Dolch, etwas Gold und eine Flasche Wacholderschnaps, der Schlüssel zum Wettsaufen"
+    },
+    {
+      "what": "Truhe hinter dem Tresen",
+      "where": "bei NW_TAVERNE_IN_04",
+      "note": "Orlans Vorrat: Gold, Bier, Milch, Wurst, Eintopf"
+    },
+    {
+      "what": "zwei Zimmertüren im Obergeschoss",
+      "where": "über dem Schankraum",
+      "note": "verschlossen, Schlüssel ITKE_ORLAN_HOTELZIMMER von Orlan"
+    },
+    {
+      "what": "zwei verschlossene Truhen im Obergeschoss",
+      "where": "in den Gästezimmern",
+      "note": "mit Dietrich zu öffnen; Käse, Pech, eine Axt und Gold, in der anderen nur eine Münze"
+    },
+    {
+      "what": "offene Truhe oben",
+      "where": "Obergeschoss",
+      "note": "Schnaps, Hammelfleisch, ein Schwert, zwei Dietriche"
+    },
+    {
+      "what": "drei Flaschen Wasser",
+      "where": "Obergeschoss",
+      "note": "lose; damit lässt sich Rukhars Schnaps ersetzen"
+    },
+    {
+      "what": "Aquamarin, ein Sumpfkrautstängel, Heiltrank, goldener Kerzenhalter, Wolfsfelle",
+      "where": "Obergeschoss und Schankraum",
+      "note": "liegen offen herum"
+    },
+    {
+      "what": "Bier, Schnaps, Brot, Käse, Wurst, Eintopf, Wein, Fischsuppe",
+      "where": "auf den Tischen im Schankraum",
+      "note": "frei herumstehend"
+    },
+    {
+      "what": "verschlossene Tür im Erdgeschoss",
+      "where": "Nordseite, nahe NW_TAVERNE_DOOR2",
+      "note": "ohne Schlüssel"
+    },
+    {
+      "what": "Teleportstein",
+      "where": "vernagelte Höhle südlich (NW_TELEPORTSTATION_TAVERNE)",
+      "note": "Orlan hat den Schlüssel"
+    }
+  ],
+  "history": "Die Schänke liegt an der großen Wegkreuzung ungefähr im Herzen der Insel, zwischen der Stadt und Onars Hof; nach Süden geht es zum Weidenplateau und zum Pass ins Minental. Orlan führt sie seit Jahren, bezieht Wein aus dem Kloster und vermietet Zimmer. Der einäugige Pirat Greg hat hier einmal mit einer großen Kiste gewohnt und ist verschwunden. Sie ist das Hauptquartier des Rings des Wassers, der hier neue Mitglieder aufnimmt, und in der Nähe haben die Wassermagier einen Teleportstein gefunden. Ab Kapitel 3 bleiben die Gäste aus, weil schwarze Magier umgehen.",
+  "original_quests": [
+    {
+      "key": "MIS_RUKHAR_WETTKAMPF",
+      "topic": "Leere den Krug in einem Zug",
+      "line": "Der Held wettet über Randolph gegen Rukhar; tauscht er Rukhars Schnaps gegen Wasser, gewinnt Randolph."
+    },
+    {
+      "key": "MIS_GORAXWEIN",
+      "topic": "Die Wein Lieferung.",
+      "line": "Zwölf Flaschen Klosterwein an Orlan liefern, der den Preis drücken will."
+    },
+    {
+      "key": "ORLAN_SCGOTHOTELZIMMER",
+      "topic": "",
+      "line": "Ein Zimmer mieten; die Miete wird jede Woche fällig."
+    },
+    {
+      "key": "MIS_ADDON_LARES_COMETORANGERMEETING",
+      "topic": "Der'Ring des Wassers'",
+      "line": "Geheimes Treffen im Schankraum, bei dem der Held in den Ring aufgenommen wird."
+    },
+    {
+      "key": "",
+      "topic": "Die Teleportsteine",
+      "line": "Orlan gibt den Schlüssel zur Höhle mit dem Teleportstein heraus."
+    },
+    {
+      "key": "MIS_ADDON_EROL_BANDITSTUFF",
+      "topic": "Händlerüberfall",
+      "line": "Erols drei Steintafeln von den Banditen an der Brücke zurückholen."
+    },
+    {
+      "key": "MIS_ADDON_GREG_BRINGMETOTHECITY",
+      "topic": "Der Mann mit der Augenklappe",
+      "line": "Greg wartet eine Weile auf der Bank vor der Taverne."
+    },
+    {
+      "key": "",
+      "topic": "Morgahards Flüchtlinge (Richter)",
+      "line": "Ab Kapitel 3 verstecken sich zwei entflohene Häftlinge in der Taverne und verraten, wohin ihr Anführer ging."
+    }
+  ],
+  "evidence": [
+    {
+      "about": "history",
+      "key": "DIA_ADDON_EROL_FERNANDOSWEAPONS_BENGAR_10_01",
+      "excerpt": 0
+    },
+    {
+      "about": "history",
+      "key": "DIA_ADDON_EROL_FERNANDOSWEAPONS_BENGAR_10_02",
+      "excerpt": 0
+    },
+    {
+      "about": "history",
+      "key": "DIA_ADDON_VATRAS_NOWRANGER_05_13",
+      "excerpt": 0
+    },
+    {
+      "about": "history",
+      "key": "DIA_ADDON_ORLAN_RANGER_AQUA_05_01",
+      "excerpt": 0
+    },
+    {
+      "about": "history",
+      "key": "DIA_ADDON_ORLAN_GREG_05_02",
+      "excerpt": 0
+    },
+    {
+      "about": "history",
+      "key": "DIA_ORLAN_PERM_05_04",
+      "excerpt": 0
+    },
+    {
+      "about": "power",
+      "key": "DIA_ORLAN_EINGEBROCKT_05_02",
+      "excerpt": 1
+    },
+    {
+      "about": "power",
+      "key": "DIA_ORLAN_MIETEFAELLIG_NEIN_05_01",
+      "excerpt": 0
+    },
+    {
+      "about": "usually",
+      "key": "DIA_ADDON_EROL_WHAT_WER_10_01",
+      "excerpt": 0
+    },
+    {
+      "about": "usually",
+      "key": "DIA_BDT_1031_FLUECHTLING_TIP1_MORGAHARD_DROHEN_07_01",
+      "excerpt": 0
+    },
+    {
+      "about": "objects",
+      "key": "DIA_RANDOLPH_GEGENWEN_06_04",
+      "excerpt": 0
+    },
+    {
+      "about": "objects",
+      "key": "DIA_ADDON_LARES_TELEPORTSTATION_09_04",
+      "excerpt": 0
+    }
+  ]
+}
