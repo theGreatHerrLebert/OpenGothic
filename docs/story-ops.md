@@ -244,6 +244,14 @@ Marks a rule broken, so a load does not try it again.
 {"op": "fail_rule", "id": "slain", "error": "no such waypoint"}
 ```
 
+### `retry_rule`
+
+Lets a broken rule try again, after the cause was fixed.
+
+```json
+{"op": "retry_rule", "id": "slain"}
+```
+
 ### `begin_story`
 
 Written by the game when a story starts: its day and cast.

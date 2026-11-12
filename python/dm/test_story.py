@@ -769,7 +769,7 @@ def test_attack():
     s = st.Story()
     s.validate([{"op": "attack", "npc": "NOV_A"}])
     s.validate([{"op": "attack", "npc": "NOV_A", "target": "NOV_B"}])
-    rejected(s, [{"op": "attack", "npc": "PARLAN"}], "cannot be taken over")
+    s.validate([{"op": "attack", "npc": "PARLAN", "target": "NOV_A"}])   # anyone may brawl, scripted dialogue or not
     rejected(s, [{"op": "attack", "npc": "NOV_A", "target": "NOV_A"}], "himself")
     called = []
     fake.daedalus.call = lambda name, *args, **kw: called.append((name, *args))

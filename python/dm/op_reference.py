@@ -47,6 +47,7 @@ OPS = {
     "perceive": ("runtime", "Marks that a rule's deed happened.", {"op": "perceive", "id": "slain"}),
     "fail_rule": ("runtime", "Marks a rule broken, so a load does not try it again.",
                   {"op": "fail_rule", "id": "slain", "error": "no such waypoint"}),
+    "retry_rule": ("runtime", "Lets a broken rule try again, after the cause was fixed.", {"op": "retry_rule", "id": "slain"}),
     # People and creatures
     "spawn_npc": ("People", "Brings an existing character into the world at a waypoint.",
                   {"op": "spawn_npc", "instance": "BAU_901_BAUER", "waypoint": "NW_BIGFARM_SHEEP2_04"}),

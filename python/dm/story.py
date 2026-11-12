@@ -619,6 +619,10 @@ def _fold_fail_rule(args, state):
     state["rules"][args["id"]]["failed"] = args.get("error", True)
 
 
+def _fold_retry_rule(args, state):
+    state["rules"][args["id"]]["failed"] = False
+
+
 def _check_creature(args, state):
     try:
         creatures.check(args, state, ATTACHABLE)
@@ -682,12 +686,13 @@ def _check_attack(args, state):
     """Someone of the story goes for the hero or for another of the story's people with his fists: the game's own
     brawl, which ends when one of them is down, never in a killing."""
     _require(args, "npc")
-    _live_npc(_castable(args["npc"]))
+    # Anyone may brawl, as in the game itself: a fight takes nobody's dialogue over.
+    _live_npc(_npc_instance(args["npc"]))
     target = str(args.get("target", "PLAYER")).upper()
     if target != "PLAYER":
         if target == _npc_instance(args["npc"]):
             raise PlanError("an NPC cannot attack himself")
-        _live_npc(_castable(target))
+        _live_npc(_npc_instance(target))
 
 
 def _world_attack(args):
@@ -742,6 +747,7 @@ OPS = {
     "begin_story": (_check_begin, _fold_begin, None),
     "end_story": (_check_end, _fold_end, None),
     "attack": (_check_attack, _noop, _world_attack),
+    "retry_rule": (_check_fire_rule, _fold_retry_rule, None),
 }
 
 def _ready_live(args, plan):
