@@ -19,9 +19,9 @@ layout(push_constant, std140) uniform PushConstant {
   float pitch;
   float clock;      // seconds, for the snow, which also falls without a trip
   float pulse;      // the beat's contraction now, 0..about 0.05: flakes swell with it
-  float look;       // 0 Mindcap, 1 Emberheart
+  float look;       // 0 Mindcap, 1 Emberheart, 2 the Invocation
   float aspect;     // screen width over height
-  float eye;        // DragonflyEye over the trip, 0..1
+  float eye;        // the second stage, 0..1: DragonflyEye over the ember, the vision (a negative) in the Invocation
   float afterglow;  // Afterglow over the trip, 0..1: bright things burn in and smear (history holds the glow)
   } push;
 
@@ -66,9 +66,30 @@ vec3 desertColor(float h) {
   }
 
 vec3 mindcapColor(float h);
+vec3 moonColor(float h);
+
+bool isEmber()      { return push.look>0.5 && push.look<1.5; }
+bool isInvocation() { return push.look>1.5; }
 
 vec3 hueColor(float h) {
-  return push.look>0.5 ? desertColor(h) : mindcapColor(h);
+  return isInvocation() ? moonColor(h) : isEmber() ? desertColor(h) : mindcapColor(h);
+  }
+
+vec3 moonColor(float h) {
+  // The Invocation's night: moonlight silver, the swamp's green, the Brotherhood's violet, a cold blue.
+  const vec3 silver = vec3(0.80, 0.86, 1.00);
+  const vec3 swamp  = vec3(0.40, 0.90, 0.50);
+  const vec3 violet = vec3(0.58, 0.34, 0.96);
+  const vec3 blue   = vec3(0.40, 0.55, 1.00);
+  h = fract(h)*4.0;
+  float f = smoothstep(0.0, 1.0, fract(h));
+  if(h<1.0)
+    return vividMix(silver, swamp, f);
+  if(h<2.0)
+    return vividMix(swamp, violet, f);
+  if(h<3.0)
+    return vividMix(violet, blue, f);
+  return vividMix(blue, silver, f);
   }
 
 vec3 mindcapColor(float h) {
@@ -289,6 +310,79 @@ vec3 dragonflyEye(vec3 c, vec2 uv, float E, float t) {
   return mix(c, o, E*0.85);   // never all of it: the eye lies over the game, it does not replace it
   }
 
+// --- The Invocation: Y'Berion's night, in three stages ------------------------------------------------------------
+// Prayer (Solaris's Dreamstate): the world dissolves like watercolour in cold moonlight, sharp in the middle and soft
+// towards the edges. The call (Solaris's DreamTarget): spirals, rings and mirrored shapes grow out of the picture's
+// own edges, the faces one starts to see in walls. The vision (after Solaris's Voidlily, without its strobe): at the
+// peak the world tilts into its own negative, the god seen as the demon, and back only as the trip comes down.
+
+float invocationDream(float I) {
+  return smoothstep(0.02, 0.30, I)*(1.0 - 0.45*smoothstep(0.55, 0.95, I));   // strongest while praying
+  }
+
+float invocationCall(float I) {
+  return smoothstep(0.35, 0.75, I);
+  }
+
+// The prayer's pull towards the middle, with a slow wobble; added to the warp.
+vec2 dreamWarp(vec2 uv, float D, float t) {
+  vec2  d    = uv - vec2(0.5);
+  float dist = length(d*vec2(push.aspect, 1.0));
+  vec2  wob  = vec2(sin(uv.y*24.0 + t*1.8), sin(uv.x*18.0 + t*1.5))*0.0025;
+  return (-d*0.035*min(dist/0.5, 1.0) + wob)*D;
+  }
+
+vec3 dreamstate(vec3 c, vec2 suv, vec2 px, float D) {
+  if(D<=0.001)
+    return c;
+  vec2 o = px*2.5;
+  vec3 avg = (texture(sceneImage, clamp(suv + vec2(o.x, 0.0), vec2(0.0), vec2(1.0))).rgb
+            + texture(sceneImage, clamp(suv - vec2(o.x, 0.0), vec2(0.0), vec2(1.0))).rgb
+            + texture(sceneImage, clamp(suv + vec2(0.0, o.y), vec2(0.0), vec2(1.0))).rgb
+            + texture(sceneImage, clamp(suv - vec2(0.0, o.y), vec2(0.0), vec2(1.0))).rgb)*0.25;
+  vec2  d    = suv - vec2(0.5);
+  float edge = smoothstep(0.15, 0.65, length(d*vec2(push.aspect, 1.0)));
+  c = mix(c, avg, min(D*0.6, 0.5)*(0.5 + edge*0.5));   // soft, softer towards the edges
+  float L = lum(c);
+  c = mix(c, vec3(L), D*edge*0.45);                    // the edges lose their colour, the middle keeps it
+  vec3 moon = mix(vec3(0.92, 0.94, 1.00), vec3(0.53, 0.60, 0.80), edge);
+  return mix(c, moon*max(L*1.15, 0.12), D*0.22);       // moonlight: silver in the middle, cold blue outside
+  }
+
+vec3 dreamtarget(vec3 c, vec2 suv, float edgeV, float C, float t) {
+  if(C<=0.001)
+    return c;
+  vec2  d     = (suv - vec2(0.5))*vec2(push.aspect, 1.0);
+  float dist  = length(d)*60.0;
+  float ang   = atan(d.y, d.x);
+  float phase = mod(t*0.12, 3.0);                       // spirals, rings, mirror, and round again
+  float spiral = sin((dist*0.15*6.0 + ang + t*0.6)*3.0)*0.5 + 0.5;
+  float rings  = sin(dist*0.4*3.0 + t*1.5)*0.5 + 0.5;
+  float mirror = (lum(texture(sceneImage, vec2(1.0 - suv.x, suv.y)).rgb) + lum(c))*0.5;
+  float a = phase<1.0 ? spiral : phase<2.0 ? rings  : mirror;
+  float b = phase<1.0 ? rings  : phase<2.0 ? mirror : spiral;
+  float v = mix(a, b, smoothstep(0.0, 1.0, fract(phase)));
+  float hue = t*0.04;
+  float e = smoothstep(0.08, 0.2, edgeV);
+  c = mix(c, moonColor(hue + v*2.0), e*C*0.42);         // the patterns grow along what is already there
+  c = mix(c, moonColor(hue), (1.0 - e)*C*0.05);         // the flat areas drift faintly
+  c = clamp((c - 0.5)*(1.0 + 0.3*C) + 0.5, 0.0, 1.0);
+  return mix(c, vec3(0.27, 0.0, 0.40), C*0.06);
+  }
+
+vec3 vision(vec3 c, float V, float I) {
+  V *= smoothstep(0.45, 0.85, I);                       // it closes as the trip comes down
+  if(V<=0.001)
+    return c;
+  // Through the middle quickly (there every colour is the same grey), and dimmed there, so the crossing reads as
+  // a lid closing rather than a grey screen; the negative is held down a little, a dark world inverted is bright.
+  float s     = V<0.5 ? 0.5 - 0.5*pow(1.0 - V*2.0, 0.35) : 0.5 + 0.5*pow(V*2.0 - 1.0, 0.35);
+  float mush  = clamp(1.0 - abs(s - 0.5)*2.0, 0.0, 1.0);
+  float guard = (1.0 - 0.25*s)*(1.0 - pow(mush, 1.6)*0.72);
+  vec3  inv   = (c + (vec3(1.0) - 2.0*c)*s)*guard;
+  return clamp(inv + vec3(0.16, -0.08, 0.10)*s, 0.0, 1.0);   // and it turns red-violet: the demon's light
+  }
+
 void main() {
   const float I  = push.intensity;
   const float t  = push.time;
@@ -299,7 +393,9 @@ void main() {
   const float amp2 = 0.0012*I*(1.0 + push.mid *0.3);
   vec2 warp = vec2(cos(uv.y*9.0 + t*0.5)*amp1 + sin(uv.x*7.0 + uv.y*5.0 + t*0.9)*amp2,
                    sin(uv.x*8.0 + t*0.4)*amp1 + cos(uv.y*6.0 - uv.x*4.0 + t*0.7)*amp2);
-  if(push.look>0.5) {
+  if(isInvocation())
+    warp += dreamWarp(uv, invocationDream(I), t);
+  if(isEmber()) {
     // Emberheart: heat shimmer in rings from the middle, strongest towards the edges of vision; the bass drives it.
     vec2  d     = (uv - vec2(0.5))*vec2(push.aspect, 1.0);
     float dist  = max(length(d), 1e-4);
@@ -319,7 +415,10 @@ void main() {
                  texture(sceneImage, suv).g,
                  texture(sceneImage, suv - vec2(split, 0.0)).b);
 
-  c = dragonflyEye(c, suv, push.eye, t);
+  if(!isInvocation())
+    c = dragonflyEye(c, suv, push.eye, t);
+  else
+    c = dreamstate(c, suv, px, invocationDream(I));
 
   // Glowing edges: a light Sobel on luminance, sampled a little wide at high resolution so the glow has body.
   vec2  e  = px*max(1.0, 1.0/(px.y*540.0));
@@ -331,21 +430,26 @@ void main() {
   float threshold = max(0.06 - push.treble*0.03, 0.02);
   float glow      = smoothstep(threshold, threshold*2.0, edge)*min(edge*4.0, 1.0)*(0.4 + push.mid*0.35)*I*push.edges;
   c = mix(c, hueColor(t*0.36 + push.mid*0.5 + lum(c)*3.0), clamp(glow, 0.0, 1.0));
+  if(isInvocation())
+    c = dreamtarget(c, suv, edge, invocationCall(I), t);
 
-  if(push.look>0.5) {
+  if(isEmber()) {
     // The ember: a warm wash, stronger with the mids, and no turning hue: heat, not neon.
     c = mix(c, vec3(1.00, 0.53, 0.20), I*0.12*(1.0 + min(push.mid, 1.0)*0.5));
     }
 
   // Saturation and a slowly turning hue: the bass pushes the saturation.
-  float a  = push.look>0.5 ? 0.0 : t*0.24*I + push.mid*0.15;
+  float a  = push.look>0.5 ? 0.0 : t*0.24*I + push.mid*0.15;   // the ember and the moonlit night do not turn
   float ca = cos(a), sa = sin(a);
   vec3  n  = vec3(c.r*(0.667 + ca*0.333) + c.g*(0.333 - ca*0.333 + sa*0.577) + c.b*(0.333 - ca*0.333 - sa*0.577),
                   c.r*(0.333 - ca*0.333 - sa*0.577) + c.g*(0.667 + ca*0.333) + c.b*(0.333 - ca*0.333 + sa*0.577),
                   c.r*(0.333 - ca*0.333 + sa*0.577) + c.g*(0.333 - ca*0.333 - sa*0.577) + c.b*(0.667 + ca*0.333));
   float L   = lum(n);
-  float sat = 1.0 + (0.4 + push.bass*0.2)*I;
+  float sat = 1.0 + (isInvocation() ? 0.12 : 0.4 + push.bass*0.2)*I;
   c = clamp(vec3(L) + (n - vec3(L))*sat, 0.0, 1.0);
+
+  if(isInvocation())
+    c = vision(c, push.eye, I);
 
   c = snowfall(c, uv, warp, push.snow, push.clock, I);
 
