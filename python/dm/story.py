@@ -306,6 +306,38 @@ def _check_give(args, state):
         raise PlanError(f"not an item instance: {args['instance']}")
 
 
+# Extensions: modules that bring their own content into the story layer without the story layer knowing them (the
+# trips register themselves on import). Each may define any of:
+#   TOPIC_PREFIX            topic keys it owns, such as "trip:"
+#   extra_topics(gothic)    {npc instance: [(key, title)]} to show beside the story's own topics
+#   topic(key)              the graph of one of its topics when the hero chooses it, or None
+#   special_for(npc)        a graph that takes over a conversation with this NPC right now, or None
+#   made_way(key, evicted)  someone had to make way at an object kept for the hero (key: scheme, x, z)
+_extensions = []
+
+
+def register(extension):
+    if extension not in _extensions:
+        _extensions.append(extension)
+
+
+def _hooks(name):
+    return [getattr(e, name) for e in _extensions if callable(getattr(e, name, None))]
+
+
+def special_for(npc):
+    for hook in _hooks("special_for"):
+        graph = hook(npc)
+        if graph is not None:
+            return graph
+    return None
+
+
+def narrate_later(text, voice=None):
+    """Queues a line from off-screen, as the narrate operation does, for an extension to use."""
+    _narration.append({"text": text, "voice": voice})
+
+
 WITNESS_RANGE = 1500  # world units; about the range at which the game's own NPCs react
 NARRATOR_GAP_S = 20  # quiet time after each narrator line, so the voice stays a treat
 _narration = collections.deque(maxlen=8)
@@ -994,11 +1026,8 @@ class Story:
             self.reserved[key] = generation
             if evicted:
                 self.evicted[key] = evicted
-                trip = __import__("dm.trip").trip
-                abuyin = gothic.world.find_npc(trip.AFTERCARE_NPC)
-                here = gothic.player.position
-                if abuyin is not None and sum((a - b) ** 2 for a, b in zip(here, abuyin.position)) < 2000 ** 2:
-                    _narration.append({"text": trip.RESERVED_LINE, "voice": trip.AFTERCARE_VOICE})
+                for hook in _hooks("made_way"):
+                    hook(key, evicted)
 
     def _tick_topics(self):
         """Tells the engine which story topics each NPC's menu shows now; only what changed, and all again after a
@@ -1010,8 +1039,9 @@ class Story:
             visible.setdefault(topic["npc"], [])
             if not ended(self.state, topic_id) and self._conditions(self._as_now(topic, topic_id)):
                 visible[topic["npc"]].append((topic_id, topic["title"]))
-        for instance, topics in __import__("dm.trip").trip.extra_topics(gothic).items():
-            visible.setdefault(instance, []).extend(topics)   # a trip's topics beside the story's own
+        for hook in _hooks("extra_topics"):
+            for instance, topics in hook(gothic).items():
+                visible.setdefault(instance, []).extend(topics)   # an extension's topics beside the story's own
         for instance, topics in visible.items():
             npc = gothic.world.find_npc(instance)
             if npc is None:
@@ -1023,8 +1053,10 @@ class Story:
 
     def topic(self, key):
         """A topic's data if it may be played right now, or None: its conditions are checked again on choosing."""
-        if key.startswith("trip:"):
-            return __import__("dm.trip").trip.topic(key)
+        for extension in _extensions:
+            prefix = getattr(extension, "TOPIC_PREFIX", None)
+            if prefix and key.startswith(prefix):
+                return extension.topic(key)
         topic = self.state.get("topics", {}).get(key)
         if topic is None or ended(self.state, key):
             return None
@@ -1167,7 +1199,7 @@ _player = graphs.Player(lambda: _story.graphs_now(),
                         lambda name: _story.player_flag(name),
                         lambda: _story.state["flags"],
                         lambda key: _story.topic(key),
-                        lambda npc: __import__("dm.trip").trip.special_for(npc))
+                        special_for)
 
 
 _reported = set()

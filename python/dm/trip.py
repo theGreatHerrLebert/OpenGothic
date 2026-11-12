@@ -991,6 +991,16 @@ AFTERCARE = {
 AFTERCARE_OPEN = "Ah, mein Freund! Du lebst noch. Erzähl, wie war die Reise?"
 # Said by Abuyin when a pipe he filled for the hero is freed of someone sitting at it (story.py keeps it reserved).
 RESERVED_LINE = "Die Pfeife ist bestellt, Freund. Such dir heute eine andere."
+
+
+def made_way(key, evicted):
+    """Someone got up from a pipe kept for the hero: Abuyin, if he is near, says it was ordered (story.py keeps it)."""
+    import gothic
+    from dm import story
+    abuyin = gothic.world.find_npc(AFTERCARE_NPC)
+    here = gothic.player.position
+    if abuyin is not None and sum((a - b) ** 2 for a, b in zip(here, abuyin.position)) < 2000 ** 2:
+        story.narrate_later(RESERVED_LINE, AFTERCARE_VOICE)
 AFTERCARE_SKY = "Und der Himmel? Man sagt, er öffnet sich, wenn das Kraut gut ist."
 AFTERCARE_CLOSE = "Gut, gut. Komm wieder, wenn du bereit bist. Und nimm beim nächsten Mal kleinere Züge."
 AFTERCARE_LAST = "Mach ich."
@@ -1320,3 +1330,12 @@ def start_ticking():
         return
     gothic.on_tick(lambda dt: sys.modules["dm.trip"]._tick(dt))
     gothic._dm_trip_registered = True
+
+
+# The story layer asks its extensions for topics, conversations and reactions; the trips are one.
+TOPIC_PREFIX = "trip:"
+try:
+    from dm import story as _story_layer
+    _story_layer.register(sys.modules[__name__])
+except ModuleNotFoundError:   # outside the game (a tool or test without the gothic module): no story layer to join
+    pass
