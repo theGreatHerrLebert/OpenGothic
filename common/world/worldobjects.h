@@ -74,6 +74,7 @@ class WorldObjects final {
     Npc&           npc(size_t i)       { return *npcArr[i];    }
 
     size_t         itmCount()    const { return itemArr.size(); }
+    void           refreshItemVisuals(std::string_view visual);
     Item&          itm(size_t i)       { return *itemArr[i];    }
     uint32_t       itmId(const void* ptr) const;
 

@@ -190,6 +190,11 @@ void Item::setPhysicsEnable(World& world) {
   world.invalidateVobIndex();
   }
 
+void Item::refreshVisual() {
+  visual = world.addView(*hitem);
+  visual.setObjMatrix(localTransform());
+  }
+
 void Item::setPhysicsDisable() {
   physic = DynamicWorld::Item();
   world.invalidateVobIndex();

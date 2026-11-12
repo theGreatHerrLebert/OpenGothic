@@ -45,6 +45,8 @@ class Item : public Vob {
     void    setAsEquipped(bool e);
 
     void    setPhysicsEnable (World& w);
+    // Draw it again from its visual's name: a story's own mesh registered only after the item was loaded.
+    void    refreshVisual();
     void    setPhysicsDisable();
     bool    isDynamic() const override;
 

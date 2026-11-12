@@ -962,7 +962,11 @@ PYBIND11_EMBEDDED_MODULE(gothic, m) {
             }, py::arg("name"), py::arg("path"), "A texture name that loads from this image file.");
   res.def("register_mesh_variant",
           [](const std::string& alias, const std::string& base, const std::map<std::string,std::string>& textures) {
-            return Resources::registerMeshVariant(alias, base, textures);
+            if(!Resources::registerMeshVariant(alias, base, textures))
+              return false;
+            if(auto* w = Gothic::inst().world())
+              w->refreshItemVisuals(alias);   // items loaded before it was registered are drawn now
+            return true;
             }, py::arg("alias"), py::arg("base"), py::arg("textures"),
           "A mesh name that is the game mesh 'base' drawn with some textures swapped: {game texture: own name}.");
 

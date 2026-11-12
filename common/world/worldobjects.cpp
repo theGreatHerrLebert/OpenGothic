@@ -1240,3 +1240,13 @@ bool WorldObjects::testObj(T &src, const Npc &pl, const WorldObjects::SearchOpt 
     }
   return false;
   }
+
+void WorldObjects::refreshItemVisuals(std::string_view visual) {
+  for(auto& i:itemArr) {
+    const auto& v = i->handle().visual;
+    if(v.size()==visual.size() && std::equal(v.begin(), v.end(), visual.begin(), [](char a, char b) {
+         return std::toupper(static_cast<unsigned char>(a))==std::toupper(static_cast<unsigned char>(b));
+         }))
+      i->refreshVisual();
+    }
+  }

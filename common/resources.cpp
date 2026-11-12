@@ -452,6 +452,8 @@ ProtoMesh* Resources::implLoadMesh(std::string_view name) {
 
   auto  t   = implLoadMeshMain(cname);
   auto  ret = t.get();
+  if(ret==nullptr && upperName(cname).rfind("DM_",0)==0)
+    return nullptr;   // a story's own mesh not registered yet (a cold load): ask again once it is
   aniMeshCache[cname] = std::move(t);
   if(ret==nullptr)
     Log::e("unable to load mesh \"",cname,"\"");
@@ -1221,6 +1223,7 @@ bool Resources::registerMeshVariant(std::string_view alias, std::string_view bas
   for(auto& [from,to]:textures)
     v.textures[upperName(from)] = to;
   inst->meshVariants[upperName(alias)] = std::move(v);
+  inst->aniMeshCache.erase(std::string(alias));
   return true;
   }
 
