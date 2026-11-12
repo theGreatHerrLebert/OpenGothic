@@ -974,7 +974,9 @@ def _tick(_dt):
         return
     try:
         if not _current.tick(gothic, time.monotonic()):
-            _aftercare = (PROFILE_REGION.get(getattr(_current, "profile", None), "other"), gothic.world.generation)
+            if _current.generation == gothic.world.generation:
+                # Only a trip that ran its course here: one cut off by a load never happened in the loaded save.
+                _aftercare = (PROFILE_REGION.get(getattr(_current, "profile", None), "other"), gothic.world.generation)
             _end(gothic)
     except RuntimeError:
         _end(gothic)                # no world while loading

@@ -648,3 +648,17 @@ for region in trip.AFTERCARE:
 assert set(trip.PROFILE_REGION.values()) <= set(trip.AFTERCARE)
 assert (trip.HERO_VOICE, trip.AFTERCARE_TITLE) in trip.after_lines()
 print("aftercare ok")
+
+# Aftercare only for a trip that ran its course in this world, not one a load cut off.
+sys.modules["gothic"].world = types.SimpleNamespace(generation=7)
+sys.modules["gothic"].music = music
+sys.modules["gothic"].trip = fake.trip
+sys.modules["gothic"].dialog = dialog
+trip._aftercare = None
+trip._current = types.SimpleNamespace(generation=3, tick=lambda g, now: False, profile="kriegsgesang")
+trip._tick(0.0)
+assert trip._aftercare is None and trip._current is None        # cut off by a load: nothing to talk about
+trip._current = types.SimpleNamespace(generation=7, tick=lambda g, now: False, profile="kriegsgesang")
+trip._tick(0.0)
+assert trip._aftercare == ("north", 7)                          # ran its course here
+print("aftercare load ok")
