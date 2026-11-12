@@ -24,3 +24,11 @@ errors, warnings = check_story.lint({**talk_only, "conversations": talk_only["co
 assert any(w.startswith("no deed") for w in warnings)
 assert not any(w.startswith("no deed") for w in check_story.lint(seen)[1])
 print("ok")
+
+
+# A dialogue the plan plays but the conversations do not list escapes the knowledge check, so it is an error.
+extra = {"voice": "13", "start": "a", "nodes": {"a": {"line": "Hm.", "choices": []}}}
+hidden = {"plan": [{"op": "add_topic", "id": "extra", "npc": "VLK_456_ABUYIN", "graph": extra}], "conversations": {}}
+assert check_story.unlisted_graphs(hidden) == ["plan: add_topic extra plays a dialogue missing from conversations"]
+hidden["conversations"]["VLK_456_ABUYIN_EXTRA"] = extra
+assert check_story.unlisted_graphs(hidden) == []

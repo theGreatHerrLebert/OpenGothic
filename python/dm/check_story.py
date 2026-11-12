@@ -110,6 +110,15 @@ def lint(data):
     return errors, warnings
 
 
+def unlisted_graphs(data):
+    """Every dialogue the plan plays must be among the conversations: only those are checked for what people know."""
+    listed = [json.dumps(g, sort_keys=True) for g in data["conversations"].values()]
+    return [f"plan: {op.get('op')} {op.get('id') or op.get('npc')} plays a dialogue missing from conversations"
+            for op in data["plan"]
+            if isinstance(op, dict) and isinstance(op.get("graph"), dict)
+            and json.dumps(op["graph"], sort_keys=True) not in listed]
+
+
 def check(path, names_path):
     names = json.loads(pathlib.Path(names_path).read_text(encoding="utf-8"))
     npcs, items, waypoints = set(names["npcs"]), set(names["items"]), set(names["waypoints"])
@@ -151,6 +160,7 @@ def check(path, names_path):
     if errors:
         return {"ok": False, "errors": errors, "warnings": []}
 
+    errors += unlisted_graphs(data)
     logic_errors, warnings = knowledge.check(data["plot"], data["conversations"])
     errors += logic_errors
     lint_errors, lint_warnings = lint(data)
