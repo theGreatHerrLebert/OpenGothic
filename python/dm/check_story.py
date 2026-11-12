@@ -2,7 +2,8 @@
 
     python3 python/dm/check_story.py <story.json> <world_names.json>
 
-A story file holds "title", "hidden_truth", "plot", "conversations" and "plan", and may hold "requires": checks that
+A story file holds "title", "significance", "hidden_truth", "plot", "conversations" and "plan", and may hold
+"closures" (quiet endings) and "requires": checks that
 must hold in the save before the story starts (see checks.py). Prints a JSON report.
 """
 
@@ -56,6 +57,20 @@ def deeds(data):
     walk(data.get("plan", []), "plan")
     walk(data.get("conversations", {}), "conversations")
     return found
+
+
+SIGNIFICANCE = ("from_play", "stakes", "choice", "changes")
+
+
+def significance_problems(block):
+    """Why the story matters, as the director brief asks: every answer present and more than a word or two."""
+    if block is None:
+        return ["no significance: say why this story matters (from_play, stakes, choice, changes); "
+                "see 'Why this story' in docs/director-brief.md"]
+    if not isinstance(block, dict):
+        return ["significance must be an object with from_play, stakes, choice and changes"]
+    return [f"significance.{key} is missing or too short to say anything" for key in SIGNIFICANCE
+            if not isinstance(block.get(key), str) or len(block[key].split()) < 4]
 
 
 def lint(data):
@@ -185,6 +200,7 @@ def check(path, names_path):
         problem = checks.validate_all(requires)
         if problem:
             errors.append(f"requires: {problem}")
+    errors += significance_problems(data.get("significance"))
     closures = data.get("closures")
     if closures is not None and (not isinstance(closures, list) or not all(isinstance(c, dict) for c in closures)):
         errors.append("closures must be a list of rules")

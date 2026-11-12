@@ -31,10 +31,26 @@ Read `docs/quest-design.md` first. It holds the rules for quests and characters.
    player has been living and what threads are already open.
 2. Decide: advance a thread, start one, or do nothing. Start one only when the
    player's behaviour offers an opening. Use `do_nothing` with a reason otherwise.
-3. Commit the hidden truth first with `commit_fact`, including who knows what. Never
+3. Say why this story matters before writing it (see "Why this story" below).
+4. Commit the hidden truth first with `commit_fact`, including who knows what. Never
    rewrite it later; improvise only how it comes to light.
-4. Write the plot and conversations, and prove them with `check_plot`.
-5. Validate the operations with `validate_plan`, then `submit_plan`.
+5. Write the plot and conversations, and prove them with `check_plot`.
+6. Validate the operations with `validate_plan`, then `submit_plan`.
+
+## Why this story
+
+A valid story is not yet a good one. Three herbs for a farmer is playable and nobody cares. Every story file carries
+a `significance` block, written before anything else, each answer one or two plain sentences:
+
+- `from_play`: which of the player's own deeds this story grows out of (the theft he got away with, the pipe he
+  smoked, the guard he knocked down). A story that could happen to any hero is weaker than one that could only
+  happen to this one.
+- `stakes`: what the hero can gain or lose, in the game's terms (gold, a friend, a guild's regard, his own safety).
+- `choice`: where the player decides something that matters, and what each side costs.
+- `changes`: what is different in the world afterwards, whichever way it went.
+
+Mundane stories are welcome, Gothic is full of them; but even a small one gives the player a reason to care. The
+checker refuses a story whose block is missing or empty, and the blind scoring tests whether it was true.
 
 ## Rules for a story
 

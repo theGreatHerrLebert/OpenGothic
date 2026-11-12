@@ -50,3 +50,10 @@ with tempfile.TemporaryDirectory() as d:
     report = check_story.check({**base, "requires": [{"type": "chapter", "from": 2}]}, str(names))
     assert not any(e.startswith("requires") for e in report["errors"]), report
 print("requires ok")
+
+# Why the story matters: missing or empty is refused, four real answers pass.
+assert check_story.significance_problems(None)[0].startswith("no significance")
+assert check_story.significance_problems({"from_play": "x", "stakes": "a b c d", "choice": "a b c d", "changes": "a b c d"}) == \
+    ["significance.from_play is missing or too short to say anything"]
+assert check_story.significance_problems({k: "one two three four" for k in check_story.SIGNIFICANCE}) == []
+print("significance ok")
