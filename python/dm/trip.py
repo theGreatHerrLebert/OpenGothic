@@ -80,9 +80,9 @@ PEAK_OPEN = 6.0   # seconds over which a stage that waits for the peak fades in 
 THOUGHT_POOLS = [
     (0.25, ["Was ist hier los?", "Irgendwas stimmt hier nicht …", "Hm. Der Boden … der wackelt.",
             "Warum ist alles so … bunt?"]),
-    (0.5, ["Die Wände … die atmen.", "Hörst du das? Das Licht summt.", "Meine Hände … die sind so weit weg.",
+    (0.5, ["Die Wände … die atmen.", "Hörst du das? Das Licht, es ... es summt.", "Meine Hände … die sind so weit weg.",
            "Die Luft schmeckt nach Farben."]),
-    (0.75, ["Die Trommeln … die sind in meinem Kopf.", "Alles dreht sich … und ich mit.",
+    (0.75, ["Die Trommeln … die sind in meinem Kopf.", "Alles dreht sich … und ich dreh mich mit.",
             "Ich glaub, ich kann die Sterne hören.", "Wer hat die Welt so laut gemacht?"]),
     (0.95, ["Die Wände schmelzen …", "Ich bin … riesig. Oder winzig?", "Jetzt seh ich alles. Alles!",
             "Beliar, bist du das?"]),
@@ -119,7 +119,7 @@ POOLS = {"mindcap": (THOUGHT_POOLS, LANDINGS), "ember": (DESERT_POOLS, DESERT_LA
 
 # Said when Escape is pressed during a trip (the menu waits; a second Escape soon after opens it anyway).
 ESCAPES = ["Ich glaube, im Moment sollte ich mich auf das Hier und Jetzt konzentrieren.",
-           "Weglaufen? Vor mir selbst? Keine gute Idee.", "Ausruhen kann ich mich später. Jetzt … das hier."]
+           "Fortlaufen? Vor mir selbst? Keine gute Idee.", "Ausruhen kann ich mich später. Jetzt … das hier."]
 # Said instead when the hero tries to talk to someone while the trip is too strong for it; never twice in a row.
 REFUSALS = ["Nicht jetzt … sein Gesicht zerfließt.", "Mit dem red ich jetzt besser nicht.", "Der hat … drei Augen.",
             "Nee. Der guckt so komisch.", "Später. Wenn er wieder normal aussieht."]
@@ -236,7 +236,7 @@ BLACKOUTS = {
     # An open bed upstairs in the Red Lantern: the one beside it is behind a door the hero cannot open alone.
     "skorpion_goa": {"bed": (2233.0, 97.0, -2556.0), "scheme": "BEDHIGH", "hour": 9,
                      "in_world": "NW_CITY_HABOUR_PUFF_ENTRANCE",   # the Red Lantern exists only in Khorinis
-                     "wake": ["Wo … bin ich?", "Was ist das für ein Bett?", "Riecht nach billigem Parfüm …",
+                     "wake": ["Wo … wo bin ich?", "Was ist das für ein Bett?", "Riecht nach billigem Parfüm …",
                               "Mein Kopf … was ist passiert?"],
          # On the way out, the house has a word for him: each once, as he passes them.
          "after": [{"npc": "VLK_435_NADJA", "voice": "16",
