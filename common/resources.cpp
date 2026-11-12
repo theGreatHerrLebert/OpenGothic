@@ -1219,8 +1219,12 @@ static std::string upperName(std::string_view s) {
 void Resources::registerTexture(std::string_view name, std::string_view path) {
   std::lock_guard<std::recursive_mutex> g(inst->sync);
   inst->customTextures[upperName(name)] = std::string(path);
-  inst->texCache.erase(upperName(name));   // a lookup before registration (a creature drawn during a load) cached a miss
-  inst->texCache.erase(std::string(name));
+  // A lookup before registration (a creature drawn during a load) cached a miss: forget the miss, so the next lookup
+  // finds the story's texture. A texture that loaded stays: meshes on screen draw with it, and freeing it under them
+  // ends the frame (stories register their items' textures again after every load).
+  for(const std::string& key:{upperName(name), std::string(name)})
+    if(auto it = inst->texCache.find(key); it!=inst->texCache.end() && it->second==nullptr)
+      inst->texCache.erase(it);
   }
 
 bool Resources::registerMeshVariant(std::string_view alias, std::string_view base,
