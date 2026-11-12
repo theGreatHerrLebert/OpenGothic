@@ -806,7 +806,7 @@ sys.modules["dm.story"]._story.state["flags"]["trip:erkannt:VLK_449_LARES"] = Tr
 assert trip.extra_topics(gw)["VLK_449_LARES"] == [] and trip.topic("trip:erkannt:VLK_449_LARES") is None   # once
 m = trip.topic(trip.SMOKE_MASTER_TOPIC)["graph"]
 assert m["nodes"]["s0"]["sets"] == [trip.SMOKE_MASTER_FLAG] and _graph.validate(m) is None
-assert (trip.HERO_VOICE, trip.SMOKE_THANKS) in trip.after_lines() and ("04", trip.RECOGNISE[-1][3][0]) in trip.after_lines()
+assert (trip.HERO_VOICE, trip.SMOKE_THANKS) in trip.after_lines() and all((r[2], r[3][0]) in trip.after_lines() for r in trip.RECOGNISE)   # Angar, Pyrokar and all
 del sys.modules["dm.story"]
 trip._aftercare = None
 print("three smokes ok")
