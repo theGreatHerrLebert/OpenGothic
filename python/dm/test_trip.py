@@ -372,7 +372,7 @@ assert trip.special_for(types.SimpleNamespace(instance="VLK_433_BROMOR")) is Non
 sys.modules.setdefault("gothic", types.ModuleType("gothic")).player = fake.player   # the game's own module
 fake.player.mark_heard = lambda info: pitched.add(info)
 g = trip.special_for(types.SimpleNamespace(instance="VLK_434_BORKA", voice=11))
-assert {"DIA_BORKA_TROUBLE", "DIA_BORKA_SECOND_CHANCE"} <= pitched   # heard at once: no pitch as it closes
+assert {"DIA_BORKA_TROUBLE", "DIA_BORKA_SECOND_CHANCE", "DIA_BORKA_PISSOFF"} <= pitched   # heard at once: no pitch as it closes
 assert g["voice"] == "11" and g["nodes"]["a"]["line"].startswith("Mein Auftrag")
 assert g["nodes"]["a"]["choices"] == [{"text": "Schon gut, ich geh ja schon.", "ends": True}]
 sys.modules.setdefault("gothic", types.ModuleType("gothic"))

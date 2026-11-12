@@ -182,7 +182,8 @@ BLACKOUTS = {
                    # Borka would stop him with his pitch to come in; to a guest on his way out he says this instead,
                    # and the hero answers. After that the pitch counts as heard: no stranger any more.
                    {"npc": "VLK_434_BORKA", "voice": "11", "instead_of": "DIA_BORKA_TROUBLE",
-                    "also_heard": ["DIA_BORKA_SECOND_CHANCE"],   # his follow-up pitch, which the first unlocks
+                    # and what he would say to someone still standing at his door: the goodbye is his last word
+                    "also_heard": ["DIA_BORKA_SECOND_CHANCE", "DIA_BORKA_PISSOFF"],
                     "reply": "Schon gut, ich geh ja schon.",
                     "line": "Mein Auftrag ist es, hier Kundschaft reinzubringen. Aber dich … dich sehe ich lieber "
                             "wieder gehen."}]},
