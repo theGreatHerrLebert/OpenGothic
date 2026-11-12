@@ -75,3 +75,10 @@ lost["plan"][0]["graph"] = G("Geh heute Nacht zu Bodo, und zu Gerda. Setz dich a
 assert [f for f in discoverability.findings(lost) if f["level"] == "guess"] == []
 assert any(w.startswith("discoverability: no hook") for w in discoverability.warnings({"plan": lost["plan"][1:]}))
 print("discoverability ok")
+
+# Conversations attached without an id stay apart: one NPC's lines never point to himself, nor mix with another's.
+two = {"plan": [{"op": "attach_dialogue_graph", "npc": "BAU_901_BAUER", "graph": G("Frag Gesa.")},
+                {"op": "attach_dialogue_graph", "npc": "BAU_904_BAUER", "graph": G("Ich bin Gesa.")}]}
+sources = {s for s, _ in discoverability.model(two)["texts"]}
+assert sources == {"attach_dialogue_graph:BAU_901_BAUER", "attach_dialogue_graph:BAU_904_BAUER"}, sources
+print("attached apart ok")

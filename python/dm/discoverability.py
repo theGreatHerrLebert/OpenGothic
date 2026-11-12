@@ -108,7 +108,8 @@ def model(story):
     entries, texts = [], []
     for op in _walk_ops(story.get("plan")):
         kind = op.get("op")
-        source = op.get("id") or kind
+        # Each way in its own source: a conversation attached for good has no id, so it goes by its NPC.
+        source = op.get("id") or (f"{kind}:{str(op.get('npc', '')).upper()}" if op.get("npc") else kind)
         if kind in ("add_topic", "add_scene", "attach_dialogue_graph"):
             npc = str(op.get("npc", "")).upper()
             entries.append({"id": source, "kind": kind, "npc": npc, "title": op.get("title"),
