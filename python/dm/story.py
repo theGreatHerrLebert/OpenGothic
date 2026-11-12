@@ -388,7 +388,9 @@ def _world_xp(args):
 # world placement or trader names them), so it stacks and counts apart from every real item. A carrier, once given,
 # stays with its item for the rest of the game.
 ITEM_CARRIERS = ["ITKE_KEY_01", "ITKE_KEY_02", "ITKE_KEY_03", "ITMI_IECELLOBOW", "ITMI_IEDRUMSTICK",
-                 "ITWR_ADDON_BOOKLP2", "ITWR_ADDON_BOOKLP3", "ITWR_ADDON_BOOKLP5", "ITWR_ADDON_BOOKLP8"]
+                 "ITWR_ADDON_BOOKLP2", "ITWR_ADDON_BOOKLP3", "ITWR_ADDON_BOOKLP5", "ITWR_ADDON_BOOKLP8",
+                 "ITWR_ADDON_BOOKXP250", "ITWR_ADDON_BOOKXP500", "ITWR_ADDON_BOOKXP1000", "ITRI_ADDON_STR_01",
+                 "ITFO_ADDON_FIRESTEW", "ITFO_XPSTEW", "ITFO_CORAGONSBEER", "ITMI_PANFULL", "ITWR_ADDON_PIRATES_01"]
 
 
 def _check_look(look):

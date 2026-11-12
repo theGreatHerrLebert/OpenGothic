@@ -764,3 +764,46 @@ sys.modules["dm.story"]._story.evicted = {}
 assert not trip.saving_blocked()
 del sys.modules["dm.story"]
 print("bench save block ok")
+
+# The three smokes: a piece of the set after each trip's talk with Abuyin (once), Abuyin's ceremony with all three,
+# and those who know recognising the amulet when it is worn.
+class _FakeStory:
+    def __init__(self):
+        self.state = {"items": {}, "flags": {}}
+    def apply_plan(self, plan):
+        for i, op in enumerate(plan["ops"]):
+            self.state["items"][op["item"]] = {"carrier": f"CARRIER_{len(self.state['items'])}"}
+sys.modules["dm.story"] = types.SimpleNamespace(_story=_FakeStory())
+pieces = trip.smoke_set()
+assert set(pieces) == {"north", "desert", "sleeper"} and len(set(pieces.values())) == 3
+assert trip.smoke_set() == pieces                                   # defined once
+inv = []
+gw = types.SimpleNamespace(world=types.SimpleNamespace(generation=1, find_npc=lambda n: types.SimpleNamespace(
+    name={"VLK_454_BUERGER": "Bjarne", "VLK_455_BUERGER": "Bürger"}.get(n, "x"))), player=types.SimpleNamespace(items=inv))
+sys.modules["gothic"].player = gw.player
+trip._aftercare = ("north", 1)
+g = trip.topic(trip.AFTERCARE_TOPIC)["graph"]
+assert g["nodes"]["e"]["choices"][0]["gives"] == {"item": pieces["north"], "count": 1}   # the north's ring
+inv.append({"instance": pieces["north"], "equipped": False})
+trip._aftercare = ("north", 1)
+assert "e" not in trip.topic(trip.AFTERCARE_TOPIC)["graph"]["nodes"]                     # only once
+assert _graph.validate(g) is None
+assert trip.extra_topics(gw)[trip.AFTERCARE_NPC] == []                                   # one piece: no ceremony yet
+inv += [{"instance": pieces["desert"], "equipped": True}, {"instance": pieces["sleeper"], "equipped": False}]
+topics = trip.extra_topics(gw)
+assert (trip.SMOKE_MASTER_TOPIC, trip.SMOKE_MASTER_TITLE) in topics[trip.AFTERCARE_NPC]
+assert topics["VLK_449_LARES"] == []                                                      # amulet not worn
+inv[-1]["equipped"] = True
+topics = trip.extra_topics(gw)
+assert topics["VLK_449_LARES"] == [("trip:erkannt:VLK_449_LARES", trip.RECOGNISE_TITLE)]
+assert topics["VLK_454_BUERGER"] and topics["VLK_455_BUERGER"] == []                      # Bjarne is; Kasim isn't here
+g = trip.topic("trip:erkannt:VLK_449_LARES")["graph"]
+assert g["voice"] == "09" and g["nodes"]["s0"]["sets"] == ["trip:erkannt:VLK_449_LARES"] and _graph.validate(g) is None
+sys.modules["dm.story"]._story.state["flags"]["trip:erkannt:VLK_449_LARES"] = True
+assert trip.extra_topics(gw)["VLK_449_LARES"] == [] and trip.topic("trip:erkannt:VLK_449_LARES") is None   # once
+m = trip.topic(trip.SMOKE_MASTER_TOPIC)["graph"]
+assert m["nodes"]["s0"]["sets"] == [trip.SMOKE_MASTER_FLAG] and _graph.validate(m) is None
+assert (trip.HERO_VOICE, trip.SMOKE_THANKS) in trip.after_lines() and ("04", trip.RECOGNISE[-1][3][0]) in trip.after_lines()
+del sys.modules["dm.story"]
+trip._aftercare = None
+print("three smokes ok")

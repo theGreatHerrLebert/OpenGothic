@@ -994,31 +994,154 @@ AFTERCARE_LAST = "Mach ich."
 _aftercare = None   # (region, world generation) of the last trip, until talked about
 
 
-def aftercare_graph(region):
-    """Abuyin's questions about a trip, and the hero's answers to choose from."""
+# The three smokes: whoever has come through a trip gets a piece of a set from Abuyin at the end of the talk about
+# it, made like the add-on's mana set (two rings and an amulet), so its own equip scripts and set bonus apply.
+SMOKE_SET = {
+    "north": {"item": "RAUCHRING_NORD", "like": "ITRI_ADDON_MANA_01", "name": "Ring des Nordrauchs",
+              "rows": ["Kalt wie Schnee auf der Haut.", "Wer ihn trägt, hört Trommeln."], "tint": [0.6, 0.85, 1.0]},
+    "desert": {"item": "RAUCHRING_SUED", "like": "ITRI_ADDON_MANA_02", "name": "Ring des Wüstenrauchs",
+               "rows": ["Warm, als läge er in der Sonne.", "Ein Skorpion ist eingraviert."], "tint": [1.0, 0.6, 0.25]},
+    "sleeper": {"item": "RAUCHAMULETT", "like": "ITAM_ADDON_MANA", "name": "Amulett des Mondrauchs",
+                "rows": ["Kühl, selbst in der Hand.", "Es schimmert im Mondlicht."], "tint": [0.72, 0.62, 1.0]},
+}
+SMOKE_GIFT = {"north": "Hier. Wer den Rauch des Nordens überstanden hat, soll diesen Ring tragen.",
+              "desert": "Nimm den. Wer den Skorpion übersteht, verdient einen Ring aus dem Süden.",
+              "sleeper": "Und dies hier. Wer den Schläfer gesehen hat und davon erzählen kann, trägt den Mond."}
+SMOKE_THANKS = "Danke, Abuyin."
+SMOKE_MASTER_TOPIC = "trip:dreirauche"
+SMOKE_MASTER_FLAG = "trip:rauchmeister"
+SMOKE_MASTER_TITLE = "Ich hab jetzt alle drei Rauche geschmeckt."
+SMOKE_MASTER = ["Zeig her. Nordrauch, Wüstenrauch, Mondrauch.",
+                "Das hat in ganz Khorinis noch keiner geschafft, seit ich hier sitze.",
+                "Du hast den Krieg der Clans gerochen, den Stich der Wüste gespürt und den Schläfer gesehen.",
+                "Trag die drei zusammen, mein Freund. Wer sie erkennt, weiß, mit wem er raucht."]
+SMOKE_MASTER_LAST = "Ich werd's mir merken."
+# Who knows the smokes, when the hero wears the amulet: once each. (instance, name it must have or None, voice, lines,
+# the hero's answer.) Bjarne and Kasim only while a story has made them so.
+RECOGNISE_TITLE = "Was schaust du so auf mein Amulett?"
+RECOGNISE = [
+    ("VLK_449_LARES", None, "09", ["Das Amulett kenn ich nicht. Aber den Geruch daran.",
+                                   "Im Neuen Lager hätten sie dir dafür Erz gegeben, Junge."], "Ich rauch nicht für Erz."),
+    ("VLK_439_VATRAS", None, "05", ["Dieses Amulett riecht nach drei Nächten, die du besser verschlafen hättest.",
+                                    "Adanos lehrt das Maß, mein Sohn. Vergiss das nicht."], "Ich halte Maß. Meistens."),
+    ("VLK_454_BUERGER", "Bjarne", "01", ["Ha! Der Mann mit den drei Rauchen.",
+                                         "Im Norden gäben sie dir am Feuer den ersten Platz."], "Den nehm ich gern."),
+    ("VLK_455_BUERGER", "Kasim", "08", ["Du trägst den Wüstenrauch an der Hand.",
+                                        "In Ishtar würden sie fragen, wer du bist. Ich frage nicht."], "Besser so."),
+    ("VLK_498_IGNAZ", None, "14", ["Faszinierend! Drei Rauschmittel, drei Artefakte.",
+                                   "Darf ich vielleicht … nein. Lieber nicht. Oder doch?"], "Lieber nicht, Ignaz."),
+    ("DJG_705_ANGAR_NW", None, "04", ["Diesen Rauch kenne ich. So rochen die Nächte der Gurus.",
+                                      "Du hast gesehen, was Y'Berion sah. Behalte es für dich."], "Ich weiß, was er sah."),
+]
+
+
+def _story():
+    return getattr(sys.modules.get("dm.story"), "_story", None)
+
+
+def smoke_set():
+    """The set's carriers by region, defined once per game through the story layer (so they persist with the save
+    and get carriers no other item has), or {} without a story."""
+    story = _story()
+    if story is None:
+        return {}
+    items = story.state.get("items", {})
+    missing = [cfg for cfg in SMOKE_SET.values() if cfg["item"] not in items]
+    if missing:
+        story.apply_plan({"reason": "Die drei Rauche", "ops": [
+            {"op": "define_item", "item": cfg["item"], "like": cfg["like"], "name": cfg["name"],
+             "description": cfg["name"], "rows": [[r, 0] for r in cfg["rows"]],
+             "look": {"tint": cfg["tint"], "strength": 0.65, "brighten": 1.15}} for cfg in missing]})
+        items = story.state.get("items", {})
+    return {region: items[cfg["item"]]["carrier"] for region, cfg in SMOKE_SET.items() if cfg["item"] in items}
+
+
+def _carried(gothic):
+    """{instance: equipped?} of what the hero carries."""
+    player = getattr(gothic, "player", None)
+    return {i["instance"]: i.get("equipped", False) for i in (getattr(player, "items", None) or [])}
+
+
+def _flag(name):
+    story = _story()
+    return bool(story and story.state["flags"].get(name))
+
+
+def aftercare_graph(region, gift=None):
+    """Abuyin's questions about a trip, the hero's answers to choose from, and, if he does not have it yet, the
+    piece of the set that belongs to this smoke (gift: its carrier)."""
     talk = AFTERCARE[region]
-    return {"voice": AFTERCARE_VOICE, "start": "a", "nodes": {
+    last = {"text": AFTERCARE_LAST, "goto": "e"} if gift else {"text": AFTERCARE_LAST, "ends": True}
+    nodes = {
         "a": {"line": AFTERCARE_OPEN, "choices": [{"text": t, "goto": "b"} for t in talk["tell"]]},
         "b": {"line": talk["ask"], "choices": [{"text": t, "goto": "c"} for t in talk["fight"]]},
         "c": {"line": AFTERCARE_SKY, "choices": [{"text": t, "goto": "d"} for t in talk["sky"]]},
-        "d": {"line": AFTERCARE_CLOSE, "choices": [{"text": AFTERCARE_LAST, "ends": True}]}}}
+        "d": {"line": AFTERCARE_CLOSE, "choices": [last]}}
+    if gift:
+        nodes["e"] = {"line": SMOKE_GIFT[region],
+                      "choices": [{"text": SMOKE_THANKS, "ends": True, "gives": {"item": gift, "count": 1}}]}
+    return {"voice": AFTERCARE_VOICE, "start": "a", "nodes": nodes}
+
+
+def _speech(voice, lines, last, sets=None):
+    """A graph of sentences one after another (as split_lines makes them) ending in the hero's one answer."""
+    keys = [f"s{i}" for i in range(len(lines))]
+    nodes = {}
+    for i, key in enumerate(keys):
+        node = {"line": lines[i], "choices": []}
+        if i + 1 < len(keys):
+            node.update(returns=keys[i + 1], chain=True)
+        else:
+            node["choices"] = [{"text": last, "ends": True}]
+        nodes[key] = node
+    if sets:
+        nodes[keys[0]]["sets"] = sets
+    return {"voice": voice, "start": keys[0], "nodes": nodes}
 
 
 def extra_topics(gothic):
     """Topics the trips add to people's own menus, as {npc: [(key, title)]}; every npc listed, empty when none, so a
     topic talked about disappears again."""
-    shown = _aftercare is not None and _aftercare[1] == gothic.world.generation
-    return {AFTERCARE_NPC: [(AFTERCARE_TOPIC, AFTERCARE_TITLE)] if shown else []}
+    out = {AFTERCARE_NPC: []}
+    if _aftercare is not None and _aftercare[1] == gothic.world.generation:
+        out[AFTERCARE_NPC].append((AFTERCARE_TOPIC, AFTERCARE_TITLE))
+    pieces = smoke_set() if _story() is not None else {}
+    if len(pieces) == len(SMOKE_SET):
+        carried = _carried(gothic)
+        if all(c in carried for c in pieces.values()) and not _flag(SMOKE_MASTER_FLAG):
+            out[AFTERCARE_NPC].append((SMOKE_MASTER_TOPIC, SMOKE_MASTER_TITLE))
+        wearing = carried.get(pieces.get("sleeper"), False)
+        for instance, name, _voice, _lines, _last in RECOGNISE:
+            out.setdefault(instance, [])
+            if not wearing or _flag(f"trip:erkannt:{instance}"):
+                continue
+            npc = gothic.world.find_npc(instance)
+            if npc is None or (name and getattr(npc, "name", "") != name):
+                continue
+            out[instance].append((f"trip:erkannt:{instance}", RECOGNISE_TITLE))
+    return out
 
 
 def topic(key):
     """A trip topic's data when it is chosen, taken once; None if there is none (any more)."""
     global _aftercare
-    if key != AFTERCARE_TOPIC or _aftercare is None:
-        return None
-    region = _aftercare[0]
-    _aftercare = None
-    return {"title": AFTERCARE_TITLE, "graph": aftercare_graph(region)}
+    if key == AFTERCARE_TOPIC and _aftercare is not None:
+        region = _aftercare[0]
+        _aftercare = None
+        gift = smoke_set().get(region)
+        if gift:
+            import gothic
+            if gift in _carried(gothic):
+                gift = None             # he has this smoke's piece already
+        return {"title": AFTERCARE_TITLE, "graph": aftercare_graph(region, gift)}
+    if key == SMOKE_MASTER_TOPIC and not _flag(SMOKE_MASTER_FLAG):
+        return {"title": SMOKE_MASTER_TITLE,
+                "graph": _speech(AFTERCARE_VOICE, SMOKE_MASTER, SMOKE_MASTER_LAST, [SMOKE_MASTER_FLAG])}
+    if key.startswith("trip:erkannt:") and not _flag(key):
+        for instance, _name, voice, lines, last in RECOGNISE:
+            if key == f"trip:erkannt:{instance}":
+                return {"title": RECOGNISE_TITLE, "graph": _speech(voice, lines, last, [key])}
+    return None
 
 
 def after_lines():
@@ -1026,7 +1149,12 @@ def after_lines():
     said = [line for b in BLACKOUTS.values() for line in b.get("after", [])]
     said += [herold_lines(region) for region in HEROLD_NEWS]
     care = [(AFTERCARE_VOICE, AFTERCARE_OPEN), (AFTERCARE_VOICE, AFTERCARE_SKY), (AFTERCARE_VOICE, AFTERCARE_CLOSE),
-            (AFTERCARE_VOICE, RESERVED_LINE),
+            (AFTERCARE_VOICE, RESERVED_LINE), (HERO_VOICE, SMOKE_THANKS), (HERO_VOICE, SMOKE_MASTER_TITLE),
+            (HERO_VOICE, SMOKE_MASTER_LAST), (HERO_VOICE, RECOGNISE_TITLE)]
+    care += [(AFTERCARE_VOICE, line) for line in list(SMOKE_GIFT.values()) + SMOKE_MASTER]
+    for _instance, _name, voice, lines, last in RECOGNISE:
+        care += [(voice, line) for line in lines] + [(HERO_VOICE, last)]
+    care += [
             (HERO_VOICE, AFTERCARE_TITLE), (HERO_VOICE, AFTERCARE_LAST)]
     for talk in AFTERCARE.values():
         care += [(AFTERCARE_VOICE, talk["ask"])] + [(HERO_VOICE, t) for t in talk["tell"] + talk["fight"] + talk["sky"]]
