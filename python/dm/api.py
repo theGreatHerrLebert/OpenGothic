@@ -39,6 +39,8 @@ def world():
         "level": gothic.player.level,
         "chapter": gothic.daedalus.get("KAPITEL", 0),
         "quests": {topic: len(entries) for topic, entries in gothic.journal_entries().items()},
+        # Where this snapshot stands in the game's timelines: a story written from it is bound to it (see play).
+        "written_for": {"timeline": observer._observer.timeline, "seq": observer._observer.seq},
         "near": [{"instance": n.instance, "name": n.name, "alive": n.alive}
                  for n in gothic.world.npcs_near(2000)],
         "items": gothic.player.items,
@@ -79,10 +81,29 @@ def submit(reason, ops):
         _reply({"ok": False, "error": str(err)})
 
 
-def play(reason, ops, requires=None, story_id=None, cast=None):
+def _stale(written_for):
+    """Why a story written from a snapshot no longer fits the game played now, or None. The game has gone back to a
+    save from before the snapshot: the deeds the story grew out of may never have happened in this timeline."""
+    if not written_for:
+        return None
+    chain = observer._observer.branch()
+    timeline, seq = written_for.get("timeline"), written_for.get("seq", 0)
+    if timeline not in chain:
+        return "written for another timeline: a save was loaded that does not lead to the moment it was written for"
+    limit = chain[timeline]
+    if limit is not None and seq > limit:
+        return "written for a later moment than the save that was loaded"
+    return None
+
+
+def play(reason, ops, requires=None, story_id=None, cast=None, written_for=None):
     """Start the game master if it is not running yet, then queue a whole story. A story's "requires" checks must
     hold in this game right now (chapter, level, guild, a quest the hero finished, ...), or it is not started."""
     from dm import checks
+    stale = _stale(written_for)
+    if stale:
+        _reply({"ok": False, "error": "stale: " + stale})
+        return
     problem = checks.validate_all(requires)
     if problem:
         _reply({"ok": False, "error": f"bad requirement: {problem}"})

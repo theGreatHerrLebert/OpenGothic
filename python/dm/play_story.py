@@ -102,7 +102,7 @@ def prepare(story, prefix):
     cast whose death ends it. The game adds the day it begins (dm.api.play)."""
     plan = list(story["plan"]) + closures(story, prefix)
     return {"story": prefix, "title": story["title"], "ops": namespaced(plan, prefix), "cast": cast(plan),
-            "requires": story.get("requires") or []}
+            "requires": story.get("requires") or [], "written_for": story.get("written_for")}
 
 
 if __name__ == "__main__":
@@ -111,7 +111,8 @@ if __name__ == "__main__":
     path = pathlib.Path(sys.argv[1])
     story = json.loads(path.read_text(encoding="utf-8"))
     start = prepare(story, path.stem)
-    reply = bridge.call("play", start["title"], start["ops"], start["requires"], start["story"], start["cast"])
+    reply = bridge.call("play", start["title"], start["ops"], start["requires"], start["story"], start["cast"],
+                        start["written_for"])
     if reply.get("error") or reply.get("ok") is False:
         raise SystemExit("not started: " + str(reply.get("error")))
     print(f"„{story['title']}“ is running. Alt+O shows the game master's panel.")

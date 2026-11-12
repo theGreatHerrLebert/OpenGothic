@@ -954,7 +954,8 @@ class Handler(http.server.BaseHTTPRequestHandler):
     def _play_generated(story_id):
         """A generated story, started like play_story does: closures, its own ids, its cast and requirements."""
         start = library.start(story_id)
-        return bridge.call("play", start["title"], start["ops"], start["requires"], start["story"], start["cast"])
+        return bridge.call("play", start["title"], start["ops"], start["requires"], start["story"], start["cast"],
+                           start["written_for"])
 
     def _play(self, request):
         story_id = request.get("id")

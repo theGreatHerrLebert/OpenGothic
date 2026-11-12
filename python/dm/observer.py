@@ -94,7 +94,8 @@ class Observer:
     def on_save(self, slot):
         if self.timeline is None:
             self._begin_timeline()
-        self._flush_items()
+        if self.base is not None:   # a save right after a load, before the first poll, has nothing to flush
+            self._flush_items()
         _write_json(SAVES_DIR / f"{slot}.timeline.json", {"timeline": self.timeline, "seq": self.seq})
 
     def on_load(self, slot):

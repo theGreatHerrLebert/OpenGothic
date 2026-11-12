@@ -132,4 +132,33 @@ with redirect_stdout(out):
     api.submit("r", [{"op": "set_flag", "name": "y", "value": True}])
 lines = [json.loads(line) for line in out.getvalue().strip().splitlines()]
 assert lines[0]["ok"] is False and "unknown operation" in lines[0]["error"] and lines[1] == {"ok": True, "queued": True}
+# A story is bound to the timeline it was written for: the review's sequence. The player steals, a story is written
+# from that moment, he reloads to before the theft: the story no longer fits and is refused.
+from dm import observer  # noqa: E402
+observer.TIMELINES_PATH, observer.SAVES_DIR = st.SAVES_DIR / "timelines.json", st.SAVES_DIR
+ob = observer._observer = observer.Observer()
+fake.world.time, fake.world.day = (12, 0), 3
+ob.on_new_game()
+ob.on_save("before_theft")
+ob.seq += 5                                                          # the theft and what followed
+written_for = {"timeline": ob.timeline, "seq": ob.seq}               # the snapshot the author writes from
+fresh = play_story.prepare(dict(STORY, closures=[]), "story_12")
+st._story = st.Story()
+out = io.StringIO()
+with redirect_stdout(out):
+    api.play(fresh["title"], fresh["ops"], None, fresh["story"], fresh["cast"], written_for)
+assert json.loads(out.getvalue())["ok"], out.getvalue()               # still the same game: it starts
+ob.on_load("before_theft")                                          # back to before the theft
+out = io.StringIO()
+with redirect_stdout(out):
+    api.play(fresh["title"], fresh["ops"], None, "story_13", fresh["cast"], written_for)
+reply = json.loads(out.getvalue())
+assert reply["ok"] is False and reply["error"].startswith("stale"), reply
+ob.on_save("later")                                                 # a save in the new timeline, loaded again
+ob.on_load("later")
+out = io.StringIO()
+with redirect_stdout(out):
+    api.play(fresh["title"], fresh["ops"], None, "story_14", fresh["cast"], {"timeline": ob.branch() and
+                                                                            list(ob.branch())[-1], "seq": 0})
+assert json.loads(out.getvalue())["ok"]                              # a story from before the fork still fits
 print("endings ok")
