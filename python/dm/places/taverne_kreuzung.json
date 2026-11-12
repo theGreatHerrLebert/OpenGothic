@@ -164,7 +164,7 @@
     },
     {
       "what": "verschlossene Tür im Erdgeschoss",
-      "where": "Nordseite, nahe NW_TAVERNE_DOOR2",
+      "where": "Südwestseite, nahe NW_TAVERNE_DOOR2",
       "note": "ohne Schlüssel"
     },
     {
@@ -173,46 +173,38 @@
       "note": "Orlan hat den Schlüssel"
     }
   ],
-  "history": "Die Schänke liegt an der großen Wegkreuzung ungefähr im Herzen der Insel, zwischen der Stadt und Onars Hof; nach Süden geht es zum Weidenplateau und zum Pass ins Minental. Orlan führt sie seit Jahren, bezieht Wein aus dem Kloster und vermietet Zimmer. Der einäugige Pirat Greg hat hier einmal mit einer großen Kiste gewohnt und ist verschwunden. Sie ist das Hauptquartier des Rings des Wassers, der hier neue Mitglieder aufnimmt, und in der Nähe haben die Wassermagier einen Teleportstein gefunden. Ab Kapitel 3 bleiben die Gäste aus, weil schwarze Magier umgehen.",
+  "history": "Die Schänke liegt an der großen Wegkreuzung ungefähr im Herzen der Insel, zwischen der Stadt und Onars Hof; nach Süden geht es zum Weidenplateau und zum Pass ins Minental. Orlan führt sie, bezieht Wein aus dem Kloster und vermietet Zimmer. Der einäugige Pirat Greg hat hier einmal mit einer großen Kiste gewohnt und ist verschwunden. Sie ist das Hauptquartier des Rings des Wassers, der hier neue Mitglieder aufnimmt, und in der Nähe haben die Wassermagier einen Teleportstein gefunden. Ab Kapitel 3 bleiben die Gäste aus, weil schwarze Magier umgehen.",
   "original_quests": [
     {
       "key": "MIS_RUKHAR_WETTKAMPF",
-      "topic": "Leere den Krug in einem Zug",
       "line": "Der Held wettet über Randolph gegen Rukhar; tauscht er Rukhars Schnaps gegen Wasser, gewinnt Randolph."
     },
     {
       "key": "MIS_GORAXWEIN",
-      "topic": "Die Wein Lieferung.",
       "line": "Zwölf Flaschen Klosterwein an Orlan liefern, der den Preis drücken will."
     },
     {
       "key": "ORLAN_SCGOTHOTELZIMMER",
-      "topic": "",
       "line": "Ein Zimmer mieten; die Miete wird jede Woche fällig."
     },
     {
       "key": "MIS_ADDON_LARES_COMETORANGERMEETING",
-      "topic": "Der'Ring des Wassers'",
       "line": "Geheimes Treffen im Schankraum, bei dem der Held in den Ring aufgenommen wird."
     },
     {
       "key": "",
-      "topic": "Die Teleportsteine",
       "line": "Orlan gibt den Schlüssel zur Höhle mit dem Teleportstein heraus."
     },
     {
       "key": "MIS_ADDON_EROL_BANDITSTUFF",
-      "topic": "Händlerüberfall",
       "line": "Erols drei Steintafeln von den Banditen an der Brücke zurückholen."
     },
     {
       "key": "MIS_ADDON_GREG_BRINGMETOTHECITY",
-      "topic": "Der Mann mit der Augenklappe",
       "line": "Greg wartet eine Weile auf der Bank vor der Taverne."
     },
     {
       "key": "",
-      "topic": "Morgahards Flüchtlinge (Richter)",
       "line": "Ab Kapitel 3 verstecken sich zwei entflohene Häftlinge in der Taverne und verraten, wohin ihr Anführer ging."
     }
   ],

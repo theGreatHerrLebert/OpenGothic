@@ -8,7 +8,7 @@
   "speech": "Werbend und geschmeidig, wenn er etwas verkaufen will; zählt sein Angebot auf wie ein Marktschreier. Unterwürfig bis schleimig gegenüber Paladinen und Magiern, trocken bis barsch gegenüber kleinen Leuten (\"erst das Geld\"). Wird beim Lügen zögerlich und stockt. Schimpft Säumige Zechpreller und greift dann zur Faust.",
   "attitudes": {
     "factions": {
-      "Ring des Wassers": "Seine Brüder; für sie ist Zimmer und Ware umsonst oder selbstverständlich. Wer laut über den Ring redet, ist für ihn ein Dummkopf.",
+      "Ring des Wassers": "Seine Brüder; für sie ist das Zimmer umsonst; handeln tut er mit ihnen wie mit jedem. Wer laut über den Ring redet, ist für ihn ein Dummkopf.",
       "Wassermagier": "Folgt ihrem Auftrag, den Teleportstein zu verstecken; nur ihr Wort könnte ihm die Angst vor den Steinen nehmen.",
       "Paladine und Feuermagier": "Hoher Besuch, dem er schmeichelt und kein Geld abnimmt.",
       "Söldner und Miliz": "Zahlende Kundschaft, die er höflich bedient.",
@@ -26,7 +26,7 @@
   "game_state": {
     "Erster Besuch": "Stellt sich als Wirt vor und preist an, was er alles verkauft, wenn die Münze rollt.",
     "Zimmer": "Ein Zimmer kostet 50 Gold die Woche; Paladine, Feuermagier und Brüder des Rings wohnen umsonst. Nach sieben Tagen verlangt er neue Miete; wer sich weigert oder nicht zahlen kann, wird verprügelt.",
-    "Wein aus dem Kloster": "Behauptet, mit Gorax 100 Gold ausgemacht zu haben. Widerspricht der Held, bietet er vier Spruchrollen dazu, wenn der Held Gorax den niedrigen Preis meldet; besteht er auf 240, zahlt er seufzend.",
+    "Wein aus dem Kloster": "Behauptet, mit Gorax 100 Gold ausgemacht zu haben. Widerspricht der Held, bietet er vier Spruchrollen dazu, wenn der Held Gorax erzählt, Orlan habe ihn übers Ohr gehauen; besteht er auf 240, zahlt er seufzend.",
     "Ring des Wassers (Addon)": "Mustert den Ring des Helden. Nennt der Held den Aquamarin, heißt er ihn als Bruder willkommen; brüstet er sich laut mit dem Ring, hält er ihn für einen Idioten. Ohne Ring stellt er sich dumm. Richtet das geheime Aufnahmetreffen in der Schänke aus.",
     "Teleportstein (Addon)": "Gibt einem Bruder, der die Steine schon benutzt hat, den Schlüssel zur vernagelten Höhle südlich der Taverne.",
     "Greg in der Taverne (Addon, bis Kapitel 3)": "Erzählt, der Einäugige habe schon einmal mit einer großen Kiste oben gewohnt und sei dann verschwunden.",

@@ -11,9 +11,9 @@
   },
   {
     "from": "BAU_970_ORLAN",
-    "rel": "protects",
+    "rel": "serves",
     "to": "VLK_449_LARES",
-    "note": "Bietet seinen Ringbrüdern Unterschlupf und Zimmer; Lares nennt die Schänke sicher.",
+    "note": "Gibt seinen Ringbrüdern ein Zimmer; Lares schickt den Helden mit dem Versprechen von Bett und warmer Stube dorthin.",
     "evidence": [
       "DIA_ADDON_LARES_GETRANGERARMOR_LEARN_09_06",
       "DIA_ADDON_ORLAN_HOTELZIMMER_05_00"
@@ -87,9 +87,9 @@
   },
   {
     "from": "BAU_970_ORLAN",
-    "rel": "protects",
+    "rel": "knows",
     "to": "BAU_973_RUKHAR",
-    "note": "Duldet sein Wettspiel im Haus und passt dabei auf, dass nichts nach außen dringt.",
+    "note": "Duldet Rukhars Wettsaufen im Haus und hat dabei widerwillig ein Auge drauf, weil es ums Geschäft geht.",
     "evidence": [
       "DIA_ORLAN_EINGEBROCKT_05_00",
       "DIA_ORLAN_EINGEBROCKT_05_02"
@@ -184,9 +184,9 @@
   },
   {
     "from": "BAU_942_RANDOLPH",
-    "rel": "drinks_with",
+    "rel": "trades_with",
     "to": "BAU_970_ORLAN",
-    "note": "Stammgast, der sich die Schänke nicht mehr leisten kann.",
+    "note": "Stammgast in Orlans Schänke, der sich das Trinken dort kaum noch leisten kann.",
     "evidence": [
       "DIA_RANDOLPH_TAVERNE_06_02",
       "DIA_AKIL_GEGEND_TAVERNE_13_01"
@@ -215,8 +215,8 @@
   {
     "from": "VLK_4303_ADDON_EROL",
     "rel": "trades_with",
-    "to": "VLK_439_VATRAS",
-    "note": "Verkauft einem Wassermagier der Stadt Steintafeln und hat ihm drei versprochen.",
+    "to": "GIL_KDW",
+    "note": "Verkauft einem Wassermagier in der Stadt Steintafeln und hat ihm drei versprochen (wer genau, sagt er nicht).",
     "evidence": [
       "DIA_ADDON_EROL_WHAT_WAS_10_01",
       "DIA_ADDON_EROL_STONEPLATES_10_14"
@@ -254,20 +254,22 @@
     "from": "VLK_4303_ADDON_EROL",
     "rel": "knows",
     "to": "BAU_970_ORLAN",
-    "note": "Kennt die Taverne als Wegmarke; ob die beiden sich näher kennen, ist offen.",
+    "note": "Kennt die Taverne als Wegmarke; dass er Orlan persönlich kennt, ist angenommen.",
     "evidence": [
       "DIA_ADDON_EROL_FERNANDOSWEAPONS_BENGAR_10_01"
-    ]
+    ],
+    "invented": true
   },
   {
     "from": "BAU_971_BAUER",
-    "rel": "drinks_with",
+    "rel": "knows",
     "to": "BAU_972_BAUER",
-    "note": "Die beiden stehen Tag und Nacht zusammen im Schankraum.",
+    "note": "Die beiden stehen Tag und Nacht plaudernd zusammen im Schankraum; mehr legt das Spiel nicht fest.",
     "evidence": [
       "DIA_OUT_1_STANDARD_13_00",
       "DIA_OUT_7_STANDARD_07_00"
-    ]
+    ],
+    "invented": true
   },
   {
     "from": "BAU_971_BAUER",
