@@ -135,6 +135,63 @@ def test_gated_unlock_stays_consistent():
     has(errors, "hero says 'candlesticks' before knowing it")
 
 
+def _weed(truth_known_by=("SLD_810_DAR",), believed=("SLD_803_CIPHER",), claimed=(), truth_taught=True):
+    facts = {
+        "dar_stole": {"text": "Dar hat das Kraut gestohlen.", "essential": True, "known_by": list(truth_known_by)},
+        "bodo_stole": {"text": "Bodo hat es gestohlen.", "false": True, "contradicts": "dar_stole",
+                       "believed_by": list(believed), "claimed_by": list(claimed)}}
+    cipher = {"start": "a", "nodes": {"a": {"line": "Bodo war's.", "teaches": ["bodo_stole"],
+                                            "choices": [{"text": "Hm.", "ends": True}]}}}
+    dar = {"start": "a", "nodes": {"a": {"line": "Ich war's.", "teaches": ["dar_stole"] if truth_taught else [],
+                                         "choices": [{"text": "So.", "ends": True}]}}}
+    return {"start": [], "facts": facts, "items": []}, {"SLD_803_CIPHER": cipher, "SLD_810_DAR": dar}
+
+
+def test_a_believer_may_say_what_is_not_so():
+    plot, convs = _weed()
+    errors, warnings = k.check(plot, convs)
+    assert errors == [], errors
+    assert not any("never find out" in w for w in warnings), warnings
+
+
+def test_only_believers_say_it():
+    plot, convs = _weed(believed=())
+    errors, _ = k.check(plot, convs)
+    has(errors, "SLD_803_CIPHER cannot believe or claim 'bodo_stole'")
+
+
+def test_a_lie_is_never_essential_and_names_its_truth():
+    plot, convs = _weed()
+    plot["facts"]["bodo_stole"]["essential"] = True
+    has(k.check(plot, convs)[0], "a false fact cannot be essential: bodo_stole")
+    plot, convs = _weed()
+    del plot["facts"]["bodo_stole"]["contradicts"]
+    has(k.check(plot, convs)[0], "false fact names no truth")
+    plot, convs = _weed()
+    plot["facts"]["dar_stole"]["believed_by"] = ["X"]
+    has(k.check(plot, convs)[0], "not marked false")
+
+
+def test_misled_for_good_is_warned():
+    plot, convs = _weed(truth_taught=False)
+    plot["facts"]["dar_stole"]["essential"] = False
+    _, warnings = k.check(plot, convs)
+    assert any("never find out that 'bodo_stole' is wrong" in w for w in warnings), warnings
+
+
+def test_a_liar_knows_better():
+    plot, convs = _weed(truth_known_by=(), claimed=("SLD_810_DAR",), believed=())
+    plot["facts"]["dar_stole"]["known_by"] = ["SLD_810_DAR"]
+    convs["SLD_803_CIPHER"]["nodes"]["a"]["teaches"] = []
+    convs["SLD_810_DAR"]["nodes"]["a"]["teaches"] = ["bodo_stole", "dar_stole"]
+    errors, warnings = k.check(plot, convs)
+    assert errors == [] and not any("a believer, not a liar" in w for w in warnings), (errors, warnings)
+    plot["facts"]["dar_stole"]["known_by"] = ["SLD_803_CIPHER"]
+    convs["SLD_810_DAR"]["nodes"]["a"]["teaches"] = ["bodo_stole"]
+    _, warnings = k.check(plot, convs)
+    assert any("a believer, not a liar" in w for w in warnings), warnings
+
+
 for name, fn in list(globals().items()):
     if name.startswith("test_"):
         fn()

@@ -12,6 +12,16 @@ state. Knowledge only grows, so this always terminates.
       "items": [{"ref": "ITEM", "teaches": ["id"], "needs": []}],
     }
 
+A fact can be false: something people believe or claim that is not so. It names the truth it gets wrong, and who
+holds it, honestly or as a lie:
+
+    "bodo_stole": {"text": "Bodo hat das Kraut gestohlen.", "false": True, "contradicts": "dar_stole",
+                   "believed_by": ["SLD_803_CIPHER"], "claimed_by": ["SLD_810_DAR"]}
+
+Only those people (and anyone in known_by, who have heard the claim) may say it. A false fact is never essential:
+the player must not need a lie to finish. If the truth it contradicts can never be learned, the player is misled for
+good, which is allowed but warned about.
+
 Conversation nodes and choices may add "uses" (facts the line refers to) and
 "teaches" (facts it establishes). Choices may be gated by "requires" (any of)
 and "unless". A "topic" fact is conversational context, such as who "er" means,
@@ -47,6 +57,9 @@ def _order_issues(teaches, state, facts):
 def _relevant_facts(plot, conversations):
     """Facts that change what can happen. Tracking only these keeps the search complete and small."""
     relevant = {f for f, info in plot["facts"].items() if info.get("essential")}
+    for f, info in plot["facts"].items():
+        if info.get("false"):   # whether a lie can be learned, and seen through, is part of the check
+            relevant |= {f, info.get("contradicts")} - {None}
     for info in plot["facts"].values():
         relevant |= set(info.get("needs", []))
     for item in plot.get("items", []):
@@ -95,14 +108,49 @@ def _explore(graph, known, facts, relevant=None):
     return issues, snapshots
 
 
+def _holders(info):
+    """Who may say a fact: those who know it, and for a false one also those who believe or claim it."""
+    holders = set(info.get("known_by", []))
+    if info.get("false"):
+        holders |= set(info.get("believed_by", [])) | set(info.get("claimed_by", []))
+    return holders
+
+
 def _speaker_issues(npc, graph, facts):
     issues = set()
     for key, node in graph["nodes"].items():
         for fact in set(node.get("uses", [])) | set(node.get("teaches", [])):
             info = facts.get(fact)
-            if info and not info.get("topic") and npc not in info.get("known_by", []):
-                issues.add(f"{npc} cannot know '{fact}': node {key}")
+            if info and not info.get("topic") and npc not in _holders(info):
+                what = "believe or claim" if info.get("false") else "know"
+                issues.add(f"{npc} cannot {what} '{fact}': node {key}")
     return issues
+
+
+def _belief_issues(facts):
+    """Errors and warnings about false facts, apart from what the search finds."""
+    errors, warnings = set(), []
+    for fact, info in facts.items():
+        if not info.get("false"):
+            if info.get("believed_by") or info.get("claimed_by") or info.get("contradicts"):
+                errors.add(f"'{fact}' has believers or contradicts something but is not marked false")
+            continue
+        if info.get("essential"):
+            errors.add(f"a false fact cannot be essential: {fact}")
+        truth = info.get("contradicts")
+        if truth is None:
+            errors.add(f"false fact names no truth it contradicts: {fact}")
+        elif truth not in facts:
+            errors.add(f"unknown fact: {truth}")
+        elif facts[truth].get("false"):
+            errors.add(f"false fact contradicts another false fact: {fact}")
+        if not info.get("believed_by") and not info.get("claimed_by"):
+            warnings.append(f"nobody believes or claims the false fact: {fact}")
+        if truth in facts:
+            for liar in info.get("claimed_by", []):
+                if liar not in facts[truth].get("known_by", []):
+                    warnings.append(f"{liar} claims '{fact}' but does not know '{truth}': a believer, not a liar")
+    return errors, warnings
 
 
 def _references(plot, conversations):
@@ -157,6 +205,9 @@ def check(plot, conversations):
     cycle = _cycle(facts)
     if cycle:
         return [f"facts depend on each other: {' -> '.join(cycle)}"], []
+    belief_errors, belief_warnings = _belief_issues(facts)
+    if belief_errors:
+        return sorted(belief_errors), belief_warnings
 
     for npc, graph in conversations.items():
         errors |= _speaker_issues(npc, graph, facts)
@@ -202,7 +253,11 @@ def check(plot, conversations):
         for fact in item["teaches"]:
             sources.setdefault(fact, set()).add(item["ref"])
 
-    warnings = ["story too large to check every order"] if truncated else []
+    warnings = (["story too large to check every order"] if truncated else []) + belief_warnings
+    for fact, info in facts.items():
+        if info.get("false") and info.get("contradicts") not in known and fact in known:
+            warnings.append(f"the player can never find out that '{fact}' is wrong ({info['contradicts']} "
+                            "cannot be learned)")
     for fact, info in facts.items():
         if not info.get("essential"):
             continue
