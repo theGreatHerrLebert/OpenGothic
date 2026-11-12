@@ -214,6 +214,9 @@ def test_topic_while_he_smokes():
     s.state["flags"]["told"] = False
     s._tick_topics()
     assert d.topics["NOV_B"] == []                           # after the talk, not smoking: gone
+    d.who, d.open = Npc("NOV_B"), True                       # talking to him when he was not smoking: still gone
+    s._tick_topics()
+    assert d.topics["NOV_B"] == [] and s.topic("t") is None
     st.checks.all_hold = real
 
 

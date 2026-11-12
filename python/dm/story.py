@@ -891,7 +891,7 @@ class Story:
         visible = {}
         for topic_id, topic in self.state.get("topics", {}).items():
             visible.setdefault(topic["npc"], [])
-            if self._conditions(self._as_now(topic)):
+            if self._conditions(self._as_now(topic, topic_id)):
                 visible[topic["npc"]].append((topic_id, topic["title"]))
         for instance, topics in __import__("dm.trip").trip.extra_topics(gothic).items():
             visible.setdefault(instance, []).extend(topics)   # a trip's topics beside the story's own
@@ -911,16 +911,26 @@ class Story:
         topic = self.state.get("topics", {}).get(key)
         if topic is None:
             return None
-        return topic if self._conditions(self._as_now(topic)) else None
+        return topic if self._conditions(self._as_now(topic, key)) else None
 
-    def _as_now(self, topic):
+    def _as_now(self, topic, topic_id=None):
         """A topic's conditions as they stand now. Talking to its NPC puts him in the talk state, so what he was
-        doing when the conversation opened (smoking, drinking) is not asked again while it lasts; everything else is."""
-        partner = gothic.dialog.partner()
-        if partner is None or partner.instance != topic["npc"]:
+        doing (smoking, drinking) is taken as it was the last time he was seen out of a conversation with the hero;
+        everything else is asked now."""
+        own = [c for c in topic.get("checks", []) if c.get("type") == "npc_state" and c.get("npc") == topic["npc"]]
+        if not own:
             return topic
-        return dict(topic, checks=[c for c in topic.get("checks", [])
-                                   if not (c.get("type") == "npc_state" and c.get("npc") == topic["npc"])])
+        partner = gothic.dialog.partner()
+        held = getattr(self, "state_held", None)
+        if held is None:
+            held = self.state_held = {}
+        key = topic_id or id(topic)
+        if partner is None or partner.instance != topic["npc"]:
+            held[key] = checks.all_hold(own)    # what he is doing now, remembered for when he talks
+            return topic
+        if not held.get(key, False):
+            return topic                        # he was not doing it when the talk began: as it is now, not held
+        return dict(topic, checks=[c for c in topic.get("checks", []) if c not in own])
 
     def _take_perceptions(self):
         """A rule hears only what happens while its own conditions hold, and hears it once."""
