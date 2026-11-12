@@ -73,6 +73,14 @@ own = {"plan": [{"op": "define_item", "item": "ITSE_POUCH"}, {"op": "define_item
 assert check_story.ending_warnings(own) == [], check_story.ending_warnings(own)
 print("endings ok")
 
+# An item worth more than the gold traded around it.
+priced = {"plan": [{"op": "define_item", "item": "DIE", "value": 200}],
+          "conversations": {"c": {"nodes": {"a": {"choices": [{"text": "x", "takes": {"item": "ITMI_GOLD", "count": 150}}]}}}}}
+assert any("worth 200" in w and "150" in w for w in check_story.value_warnings(priced)), check_story.value_warnings(priced)
+priced["plan"][0]["value"] = 100
+assert check_story.value_warnings(priced) == []
+print("values ok")
+
 # Discoverability: a topic nobody points to, a night-only topic nobody says is at night, a deed nothing hints at.
 from dm import discoverability  # noqa: E402
 G = lambda *lines: {"start": "a", "nodes": {"a": {"line": lines[0], "choices": [{"text": l, "ends": True} for l in lines[1:]] or [{"text": "Gut.", "ends": True}]}}}

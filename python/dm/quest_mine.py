@@ -174,6 +174,12 @@ def main():
         elif root == "C_ITEM":
             f = fields(program.run(s))
             items[s["name"]] = {k.lower(): unquote(f.get(k)) for k in ("NAME", "VALUE", "ON_STATE[0]", "MAINFLAG") if k in f}
+    # An item's value is usually a constant (VALUE_NUGGET): its number, so a checker can price a story's items.
+    constants = {s["name"]: s["ints"][0] for s in symbols if s["kind"] == dm.T_INT and s.get("ints")}
+    for item in items.values():
+        value = item.get("value")
+        if isinstance(value, str):
+            item["gold"] = int(value) if value.lstrip("-").isdigit() else constants.get(value)
     functions = {s["name"]: program.run(s) for s in symbols
                  if s["kind"] == dm.T_FUNC and s["address"] and s["address"] > 0 and not s["flags"] & 8 and s["name"] not in used
                  and "." not in s["name"]}

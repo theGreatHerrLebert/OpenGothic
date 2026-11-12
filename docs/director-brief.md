@@ -71,7 +71,9 @@ and was still not worth playing: return a pouch or keep it, 25 gold, no conseque
 - **The sure thing against the unknown.** A known reward now, or a thing whose worth someone only hints at: the
   sickle is worth little, but a man says it would mean everything to him and he would trade something good for it.
   Not knowing is the tension, and the unknown side is a hook for a later story.
-- **Stakes that tempt this hero.** Look at what he owns. 25 gold means nothing to a hero with a few hundred; to one
+- **Stakes that tempt this hero.** Look at what he owns. Price the story's own items too: an item without a `value`
+  keeps its base item's (an ore nugget is worth 200), and one worth more than what it is traded against makes keeping
+  and selling it beat every choice; the checker warns. 25 gold means nothing to a hero with a few hundred; to one
   with 35 it is still too little to betray a widow for. Pitch it where keeping it is a real temptation.
 - **The world hits back.** A hero who lets a mercenary take the fall for his own gain should expect that mercenary's
   fist, not a journal line. Consequences follow the consistent rules above: strength answers strength. The `attack`

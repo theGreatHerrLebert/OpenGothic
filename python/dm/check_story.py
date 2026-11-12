@@ -80,6 +80,55 @@ def _all_ops(ops):
             yield from _all_ops(op.get("ops"))
 
 
+def _gold_amounts(value):
+    """Every amount of gold the story moves: choices that take or give it, give_item, checks on it."""
+    if isinstance(value, list):
+        for v in value:
+            yield from _gold_amounts(v)
+    elif isinstance(value, dict):
+        for key in ("takes", "gives"):
+            moved = value.get(key)
+            if isinstance(moved, dict) and str(moved.get("item", "")).upper() == "ITMI_GOLD":
+                yield moved.get("count", 1)
+        if str(value.get("instance", value.get("item", ""))).upper() == "ITMI_GOLD" and \
+                (value.get("op") == "give_item" or value.get("type") == "has_item"):
+            yield value.get("count", 1)
+        for v in value.values():
+            yield from _gold_amounts(v)
+
+
+def value_warnings(data):
+    """An item of the story's own worth more than any gold the story moves: selling it may beat every choice."""
+    amounts = [a for a in _gold_amounts([data.get("plan"), data.get("conversations")]) if isinstance(a, int)]
+    if not amounts:
+        return []
+    top = max(amounts)
+    out = []
+    for op in _all_ops(data.get("plan")):
+        if op.get("op") != "define_item":
+            continue
+        value = op.get("value")
+        inherited = not isinstance(value, int) or value < 0   # no value of its own: the base item's
+        if inherited:
+            value = _game_item_gold(op.get("like", ""))
+        if isinstance(value, int) and value > top:
+            out.append(f"item {op.get('item')}: worth {value} gold" + (f" (from {op.get('like')})" if inherited else "")
+                       + f", more than the {top} the story trades for anything; selling it may beat every choice. "
+                       "Give it a value below what it is traded against, unless that is the point")
+    return out
+
+
+GAME_ITEMS = pathlib.Path(__file__).resolve().parent.parent / "dm_runtime" / "mechanics" / "items.json"
+
+
+def _game_item_gold(instance):
+    """What a game item is worth, from quest_mine's items.json (private), or None without it."""
+    try:
+        return json.loads(GAME_ITEMS.read_text(encoding="utf-8")).get(str(instance).upper(), {}).get("gold")
+    except (OSError, ValueError):
+        return None
+
+
 def ending_warnings(data):
     """Technical weak spots of a story's endings and key items, as the brief's 'Good to play' describes. Warnings only:
     whether a story is good is for the player to say."""
@@ -236,6 +285,7 @@ def check(path, names_path):
     from dm import discoverability
     warnings += discoverability.warnings(data)
     warnings += ending_warnings(data)
+    warnings += value_warnings(data)
     closures = data.get("closures")
     if closures is not None and (not isinstance(closures, list) or not all(isinstance(c, dict) for c in closures)):
         errors.append("closures must be a list of rules")
