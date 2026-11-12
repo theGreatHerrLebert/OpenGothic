@@ -886,7 +886,7 @@ class Story:
         visible = {}
         for topic_id, topic in self.state.get("topics", {}).items():
             visible.setdefault(topic["npc"], [])
-            if self._conditions(topic):
+            if self._conditions(self._as_now(topic)):
                 visible[topic["npc"]].append((topic_id, topic["title"]))
         for instance, topics in __import__("dm.trip").trip.extra_topics(gothic).items():
             visible.setdefault(instance, []).extend(topics)   # a trip's topics beside the story's own
@@ -904,7 +904,18 @@ class Story:
         if key.startswith("trip:"):
             return __import__("dm.trip").trip.topic(key)
         topic = self.state.get("topics", {}).get(key)
-        return topic if topic is not None and self._conditions(topic) else None
+        if topic is None:
+            return None
+        return topic if self._conditions(self._as_now(topic)) else None
+
+    def _as_now(self, topic):
+        """A topic's conditions as they stand now. Talking to its NPC puts him in the talk state, so what he was
+        doing when the conversation opened (smoking, drinking) is not asked again while it lasts; everything else is."""
+        partner = gothic.dialog.partner()
+        if partner is None or partner.instance != topic["npc"]:
+            return topic
+        return dict(topic, checks=[c for c in topic.get("checks", [])
+                                   if not (c.get("type") == "npc_state" and c.get("npc") == topic["npc"])])
 
     def _take_perceptions(self):
         """A rule hears only what happens while its own conditions hold, and hears it once."""

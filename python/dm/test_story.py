@@ -189,6 +189,34 @@ def test_handed_over_but_nothing_to_play():
     assert not d.open and player.stage == "idle"
 
 
+def test_topic_while_he_smokes():
+    # A topic open only while he smokes stays in the menu once he talks (the talk state replaces his smoking), and
+    # can be chosen then; his other conditions still count.
+    s = st.Story()
+    s.state.setdefault("topics", {})["t"] = {"npc": "NOV_B", "title": "Feierabend?", "graph": {}, "requires": [], "unless": ["told"],
+                              "checks": [{"type": "npc_state", "npc": "NOV_B", "state": "ZS_SMOKE_WATERPIPE"}]}
+    smoking = {"on": True}
+    real = st.checks.all_hold
+    st.checks.all_hold = lambda cs: all(not (c.get("type") == "npc_state") or smoking["on"] for c in (cs or []))
+    d = fake.dialog
+    d.reset()
+    s.topics_generation = fake.world.generation
+    s._tick_topics()
+    assert d.topics["NOV_B"] == [("t", "Feierabend?")]
+    d.who, d.open = Npc("NOV_B"), True       # he talks now: no longer smoking
+    smoking["on"] = False
+    s._tick_topics()
+    assert d.topics["NOV_B"] == [("t", "Feierabend?")]       # the open menu keeps it
+    assert s.topic("t") is not None                          # and it can be chosen
+    s.state["flags"]["told"] = True
+    assert s.topic("t") is None                              # his other conditions still count
+    d.reset()
+    s.state["flags"]["told"] = False
+    s._tick_topics()
+    assert d.topics["NOV_B"] == []                           # after the talk, not smoking: gone
+    st.checks.all_hold = real
+
+
 def test_return_to_a_split_menu():
     # A menu broken into sentences: coming back to it shows its choices without speaking it again.
     from dm import split_lines
@@ -803,7 +831,7 @@ def test_topics_extend_an_npc():
     assert fake.dialog.topics["PARLAN"] == [("legend", "Kennst du die Kriegsmischung?")]
 
 
-for test in (test_return_to_a_split_menu, test_items_of_our_own, test_item_with_a_model_of_its_own, test_give_xp, test_waited_for_pipe_is_reserved, test_handed_over_but_nothing_to_play, test_topics_extend_an_npc, test_trip_operation, test_rule_contents_are_checked_when_submitted, test_graph_validation, test_validation, test_apply_and_rollback, test_return_npc, test_conditional_choices, test_returns_to_menu, test_questions_are_asked_once, test_variant_line, test_again_line, test_scene_and_rule, test_rule_fires_on_perception, test_narration_waits_for_quiet, test_drawing_a_weapon_is_perceived,
+for test in (test_topic_while_he_smokes, test_return_to_a_split_menu, test_items_of_our_own, test_item_with_a_model_of_its_own, test_give_xp, test_waited_for_pipe_is_reserved, test_handed_over_but_nothing_to_play, test_topics_extend_an_npc, test_trip_operation, test_rule_contents_are_checked_when_submitted, test_graph_validation, test_validation, test_apply_and_rollback, test_return_npc, test_conditional_choices, test_returns_to_menu, test_questions_are_asked_once, test_variant_line, test_again_line, test_scene_and_rule, test_rule_fires_on_perception, test_narration_waits_for_quiet, test_drawing_a_weapon_is_perceived,
              test_queue_waits_for_safe_point, test_save_load_does_not_reapply_world,
              test_player):
     test()
