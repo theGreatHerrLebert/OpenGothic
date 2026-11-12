@@ -384,6 +384,46 @@ def _world_xp(args):
     return None
 
 
+# Items of a story's own: each is carried by a game item instance nothing in the game uses (no script, dialogue,
+# world placement or trader names them), so it stacks and counts apart from every real item. A carrier, once given,
+# stays with its item for the rest of the game.
+ITEM_CARRIERS = ["ITKE_KEY_01", "ITKE_KEY_02", "ITKE_KEY_03", "ITMI_IECELLOBOW", "ITMI_IEDRUMSTICK",
+                 "ITWR_ADDON_BOOKLP2", "ITWR_ADDON_BOOKLP3", "ITWR_ADDON_BOOKLP5", "ITWR_ADDON_BOOKLP8"]
+
+
+def _check_define_item(args, state):
+    _require(args, "item", "like", "name", "carrier")
+    if not isinstance(args["item"], str) or not args["item"].strip():
+        raise PlanError("define_item needs an item id")
+    if gothic.world.instance_kind(args["like"]) != "item":
+        raise PlanError(f"not an item instance: {args['like']}")
+    if not isinstance(args["name"], str) or not args["name"].strip():
+        raise PlanError("define_item needs a name")
+    rows = args.get("rows", [])
+    if not isinstance(rows, list) or len(rows) > 5 or not all(
+            isinstance(r, list) and len(r) == 2 and isinstance(r[0], str) and isinstance(r[1], int) for r in rows):
+        raise PlanError("define_item rows are up to five [label, number] pairs")
+
+
+def _fold_define_item(args, state):
+    state.setdefault("items", {})[args["item"].upper()] = {
+        "carrier": args["carrier"], "like": args["like"], "name": args["name"],
+        "description": args.get("description", ""), "rows": args.get("rows", []), "value": args.get("value", -1)}
+
+
+def _define_in_world(entry):
+    if hasattr(gothic.world, "define_item"):
+        gothic.world.define_item(entry["carrier"], entry["like"], entry["name"], entry["description"],
+                                 [tuple(r) for r in entry["rows"]], entry["value"])
+
+
+def _world_define_item(args):
+    _define_in_world({"carrier": args["carrier"], "like": args["like"], "name": args["name"],
+                      "description": args.get("description", ""), "rows": args.get("rows", []),
+                      "value": args.get("value", -1)})
+    return None
+
+
 def _check_spawn(args, state):
     _require(args, "instance", "waypoint")
     _npc_instance(args["instance"])
@@ -516,6 +556,7 @@ OPS = {
     "rename_npc": (_check_rename, _noop, _world_rename),
     "give_item": (_check_give, _noop, _world_give),
     "give_xp": (_check_xp, _noop, _world_xp),
+    "define_item": (_check_define_item, _fold_define_item, _world_define_item),
     "narrate": (_check_narrate, _noop, _world_narrate),
     "relocate_npc": (_check_relocate, _noop, _world_relocate),
     "trip": (_check_trip, _noop, _world_trip),
@@ -542,10 +583,46 @@ class Story:
         self.reserved = {}   # (scheme, x, z) of objects kept for the hero -> world generation it was set in
         self.evicted = {}    # the same key -> who had to make way, his routine held until it is given back
 
+    def resolve_items(self, ops):
+        """The plan with each item of the story's own (define_item) given its carrier, and every mention of the item's
+        id (to place, give, take, check or notice it) put as that carrier: from here on it is an ordinary item."""
+        known = {i: e["carrier"] for i, e in self.state.get("items", {}).items()}
+        used = set(known.values())
+        for op in ops:
+            if isinstance(op, dict) and op.get("op") == "define_item" and isinstance(op.get("item"), str):
+                item = op["item"].upper()
+                if item not in known:
+                    free = [c for c in ITEM_CARRIERS if c not in used]
+                    if not free:
+                        raise PlanError("no carrier left for another item of the story's own")
+                    known[item] = op.get("carrier") or free[0]
+                    used.add(known[item])
+        if not known:
+            return ops
+
+        def walk(value):
+            # Only fields that name an item are put as the carrier ("instance" to place or give, "item" to check,
+            # take, give or notice); a definition keeps its own fields, its name may well equal its id.
+            if isinstance(value, list):
+                return [walk(v) for v in value]
+            if not isinstance(value, dict):
+                return value
+            if value.get("op") == "define_item":
+                return dict(value, carrier=known[value["item"].upper()]) if isinstance(value.get("item"), str) else value
+            out = {}
+            for k, v in value.items():
+                if k in ("instance", "item") and isinstance(v, str) and v.upper() in known:
+                    out[k] = known[v.upper()]
+                else:
+                    out[k] = walk(v)
+            return out
+        return walk(ops)
+
     def validate(self, ops):
         """Raise PlanError unless the whole plan is acceptable."""
         if not ops:
             raise PlanError("empty plan")
+        ops = self.resolve_items(ops)
         scratch = copy.deepcopy(self.state)
         for op in ops:
             name = op.get("op")
@@ -562,6 +639,7 @@ class Story:
 
     def apply_plan(self, plan):
         # State may have moved on since the plan was queued.
+        plan = dict(plan, ops=self.resolve_items(plan["ops"]))
         self.validate(plan["ops"])
         ordered = sorted(plan["ops"], key=lambda op: op["op"] in _LAST)
         undo = []
@@ -625,7 +703,9 @@ class Story:
     # ---- game loop ----
 
     def rebind(self):
-        """NPC handles do not survive a world load; attach graphs again."""
+        """NPC handles do not survive a world load; attach graphs again, and define the story's own items again."""
+        for entry in self.state.get("items", {}).values():
+            _define_in_world(entry)
         for instance in self.state["graphs"]:
             npc = gothic.world.find_npc(instance)
             if npc is not None:

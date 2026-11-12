@@ -585,6 +585,39 @@ def test_trip_operation():
     rejected(s, [{"op": "add_rule", "id": "r", "when": ["x"], "ops": [{"op": "trip", "profile": "nope"}]}], "unknown trip")
 
 
+def test_items_of_our_own():
+    # An item of the story's own gets a carrier nothing in the game uses, and every mention of it becomes that carrier.
+    s = st.Story()
+    plan = [{"op": "define_item", "item": "Mondaloe", "like": "ITPL_SAGITTA_HERB_MIS", "name": "Mondaloe",
+             "rows": [["Blüht nur im Mondlicht", 0]]},
+            {"op": "place_item", "instance": "MONDALOE", "waypoint": "WP_HUT"},
+            {"op": "add_rule", "id": "r", "when": ["x"], "on": {"event": "took_item", "item": "MONDALOE"},
+             "checks": [{"type": "has_item", "item": "MONDALOE"}], "ops": []}]
+    resolved = s.resolve_items(plan)
+    carrier = resolved[0]["carrier"]
+    assert carrier == st.ITEM_CARRIERS[0] and resolved[0]["item"] == "Mondaloe"     # its own id stays
+    assert resolved[1]["instance"] == carrier and resolved[2]["on"]["item"] == carrier
+    assert resolved[2]["checks"][0]["item"] == carrier and plan[1]["instance"] == "MONDALOE"   # the plan is untouched
+    s.validate(plan)
+    defined = []
+    fake.world.define_item = lambda *a: defined.append(a)
+    s.apply_plan({"reason": "r", "ops": plan})
+    assert s.state["items"]["MONDALOE"]["carrier"] == carrier, s.state.get("items")
+    assert defined and defined[0][:3] == (carrier, "ITPL_SAGITTA_HERB_MIS", "Mondaloe"), defined
+    # a later plan of the same game names the item and gets the same carrier; a second item gets the next one
+    again = s.resolve_items([{"op": "give_item", "instance": "Mondaloe"},
+                             {"op": "define_item", "item": "Nachtkerze", "like": "ITPL_SAGITTA_HERB_MIS", "name": "N"}])
+    assert again[0]["instance"] == carrier and again[1]["carrier"] == st.ITEM_CARRIERS[1]
+    # after a load the engine has forgotten it: the story defines it again
+    defined.clear()
+    s.rebind()
+    assert defined and defined[0][0] == carrier
+    rejected(s, [{"op": "define_item", "item": "X", "like": "NOV_A", "name": "X"}], "not an item")
+    rejected(s, [{"op": "define_item", "item": "X", "like": "ITPL_A", "name": ""}], "name")
+    rejected(s, [{"op": "define_item", "item": "X", "like": "ITPL_A", "name": "X", "rows": [["a", "b"]]}], "rows")
+    del fake.world.define_item
+
+
 def test_give_xp():
     s = st.Story()
     s.validate([{"op": "give_xp", "amount": 150}])
@@ -688,7 +721,7 @@ def test_topics_extend_an_npc():
     assert fake.dialog.topics["PARLAN"] == [("legend", "Kennst du die Kriegsmischung?")]
 
 
-for test in (test_give_xp, test_waited_for_pipe_is_reserved, test_handed_over_but_nothing_to_play, test_topics_extend_an_npc, test_trip_operation, test_rule_contents_are_checked_when_submitted, test_graph_validation, test_validation, test_apply_and_rollback, test_return_npc, test_conditional_choices, test_returns_to_menu, test_questions_are_asked_once, test_variant_line, test_again_line, test_scene_and_rule, test_rule_fires_on_perception, test_narration_waits_for_quiet, test_drawing_a_weapon_is_perceived,
+for test in (test_items_of_our_own, test_give_xp, test_waited_for_pipe_is_reserved, test_handed_over_but_nothing_to_play, test_topics_extend_an_npc, test_trip_operation, test_rule_contents_are_checked_when_submitted, test_graph_validation, test_validation, test_apply_and_rollback, test_return_npc, test_conditional_choices, test_returns_to_menu, test_questions_are_asked_once, test_variant_line, test_again_line, test_scene_and_rule, test_rule_fires_on_perception, test_narration_waits_for_quiet, test_drawing_a_weapon_is_perceived,
              test_queue_waits_for_safe_point, test_save_load_does_not_reapply_world,
              test_player):
     test()
