@@ -647,12 +647,7 @@ def tick_after(gothic, now):
         if line.get("taken") and not talking:  # unbinding the partner would close the conversation he is in
             _release(gothic, line)
             lines.remove(line)
-            if line.get("instead_of"):
-                try:
-                    for info in [line["instead_of"]] + line.get("also_heard", []):
-                        gothic.player.mark_heard(info)  # after that night he is no stranger to pitch to
-                except (AttributeError, ValueError, RuntimeError):
-                    pass                        # an older game build: he pitches once more, nothing worse
+
     for line in list(lines):
         if line.get("instead_of") and not line.get("bound") and not gothic.player.heard(line["instead_of"]):
             npc = gothic.world.find_npc(line["npc"])
@@ -684,7 +679,15 @@ def after_graph(npc):
         return None
     for line in _after[0]:
         if line.get("bound") and not line.get("taken") and line["npc"] == getattr(npc, "instance", ""):
-            line["taken"] = True                # released on the next tick (tick_after), with the game at hand
+            line["taken"] = True                # released once the conversation is over (tick_after)
+            # Counted as heard now, not when he is let go: the moment the conversation closes his own AI would
+            # stop the hero with the pitch, before the next tick could say otherwise.
+            try:
+                import gothic
+                for info in [line["instead_of"]] + line.get("also_heard", []):
+                    gothic.player.mark_heard(info)  # after that night he is no stranger to pitch to
+            except (ImportError, AttributeError, ValueError, RuntimeError):
+                pass                            # an older game build: he pitches once more, nothing worse
             return {"voice": line["voice"], "start": "a", "nodes": {"a": {
                 "line": line["line"],
                 "choices": [{"text": line.get("reply", "…"), "ends": True}]}}}

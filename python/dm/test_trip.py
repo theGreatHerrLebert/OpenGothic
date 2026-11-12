@@ -369,20 +369,21 @@ assert len(said) == 3 and binds == [("bind", people["VLK_434_BORKA"])]  # his co
 walk((4000.0, 0.0, 0.0), 1.5)
 assert len(binds) == 1                                          # bound once
 assert trip.special_for(types.SimpleNamespace(instance="VLK_433_BROMOR")) is None
+sys.modules.setdefault("gothic", types.ModuleType("gothic")).player = fake.player   # the game's own module
+fake.player.mark_heard = lambda info: pitched.add(info)
 g = trip.special_for(types.SimpleNamespace(instance="VLK_434_BORKA", voice=11))
+assert {"DIA_BORKA_TROUBLE", "DIA_BORKA_SECOND_CHANCE"} <= pitched   # heard at once: no pitch as it closes
 assert g["voice"] == "11" and g["nodes"]["a"]["line"].startswith("Mein Auftrag")
 assert g["nodes"]["a"]["choices"] == [{"text": "Schon gut, ich geh ja schon.", "ends": True}]
 sys.modules.setdefault("gothic", types.ModuleType("gothic"))
 from dm import graph as _graph  # noqa: E402
 assert _graph.validate(g) is None
-fake.player.mark_heard = lambda info: pitched.add(info)
 dialog.partner = lambda: people["VLK_434_BORKA"]                # still talking to him
 walk((4000.0, 0.0, 0.0), 1.8)
-assert binds[-1][0] == "bind" and not pitched                   # nothing released mid-conversation
+assert binds[-1][0] == "bind"                                   # not let go mid-conversation
 dialog.partner = lambda: None
 walk((4000.0, 0.0, 0.0), 2.0)
 assert binds[-1] == ("unbind", people["VLK_434_BORKA"])         # his own conversations back afterwards
-assert {"DIA_BORKA_TROUBLE", "DIA_BORKA_SECOND_CHANCE"} <= pitched   # and no pitch to a guest like that any more
 pitched.clear()
 assert trip.special_for(types.SimpleNamespace(instance="VLK_434_BORKA", voice=11)) is None   # once
 trip.remember_after(fake, trip.BLACKOUTS["skorpion_goa"]["after"], 0.0)
