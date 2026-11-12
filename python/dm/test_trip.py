@@ -525,8 +525,34 @@ assert g["nodes"]["a"]["choices"][0]["text"] == "Ich … hab nur was geraucht."
 trip.tick_after(fake, now + 0.2)
 assert binds[-1] == ("unbind", vatras)                          # his own conversations back
 trip.tick_after(fake, now + 0.3)
-assert trip._after is None
+assert [bool(line.get("sermon")) for line in trip._after[0]] == [True]   # only the sermon still waits
 assert ("05", trip.BLACKOUTS["anrufung"]["after"][0]["line"]) in trip.after_lines()
+
+# The morning sermon: begun once he is near, his own preaching hushed meanwhile, preached to the end even if the
+# hero walks off, one sentence at a time with a pause, then his routine is his own again.
+sermon = trip.BLACKOUTS["anrufung"]["after"][1]["sermon"]
+hushed = []
+vatras.stop = lambda: hushed.append(1)
+said.clear()
+trip.remember_after(fake, [trip.BLACKOUTS["anrufung"]["after"][1]], 0.0)
+fake.player.position = (0.0, 0.0, 0.0)                          # 90 m away
+trip.tick_after(fake, 1.0)
+assert said == [] and hushed == []
+fake.player.position = (0.0, 0.0, 8000.0)                       # 10 m: he begins
+trip.tick_after(fake, 2.0)
+assert said == [sermon[0]]
+fake.player.position = (0.0, 0.0, 0.0)                          # walking off does not stop a sermon begun
+trip.tick_after(fake, 2.5)
+assert said == [sermon[0]] and hushed                           # a pause, and his own sermon kept quiet
+t = 3.0
+while trip._after is not None and t < 400:
+    trip.tick_after(fake, t)
+    t += 0.5
+assert said == sermon                                           # all of it, in order, once
+n = len(hushed)
+trip.tick_after(fake, t + 1)
+assert len(hushed) == n                                         # done: he preaches his own again
+assert all(("05", text) in trip.after_lines() for text in sermon)
 
 # In another world (no temple there) he comes to where he fell: no move, no morning, nobody waiting.
 moves.clear(); times.clear(); binds.clear()

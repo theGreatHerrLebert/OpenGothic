@@ -224,9 +224,18 @@ BLACKOUTS = {
                           "Mein Kopf … und warum knie ich hier?"],
                  "after": [{"npc": "VLK_439_VATRAS", "voice": "05", "converse": True,
                             "line": "Was auch immer du heute Nacht angebetet hast, mein Sohn: Adanos war es nicht.",
-                            "reply": "Ich … hab nur was geraucht."}]},
+                            "reply": "Ich … hab nur was geraucht."},
+                           # And this morning his sermon is on moderation, Adanos's balance; his own waits meanwhile.
+                           {"npc": "VLK_439_VATRAS", "voice": "05", "near": 1500.0, "sermon": [
+                               "Hört mich an, Bürger von Khorinis! Adanos lehrt uns das Gleichgewicht. In allen Dingen.",
+                               "Wer nach dem Feuer greift, verbrennt sich. Wer nach den Sternen greift, der fällt.",
+                               "Manch einer sucht in Rauch und Kraut, was ihm nur die Demut geben kann.",
+                               "Ein Becher Wein ist Freude. Zehn sind Torheit. Und was manch einer in seine Pfeife "
+                               "stopft … darüber schweige ich lieber.",
+                               "Haltet Maß, Brüder und Schwestern, und Adanos wird euch Frieden schenken."]}]},
 }
 AFTER_NEAR = 500.0    # how close (cm) the hero passes someone before they speak up
+SERMON_GAP = 2.5      # seconds between the sentences of a sermon
 AFTER_FOR = 900.0     # seconds after waking that the house still remembers him
 # A galaxy in place of the sky (shader/sky/sky.frag), every trip its own: the Milky Way panorama graded to the
 # trip's colour, two Webb nebulae placed high on the sky, opening with the trip's strength and turning slowly.
@@ -764,10 +773,19 @@ def tick_after(gothic, now):
                 line["bound"] = True
     if gothic.dialog.partner() is not None or gothic.dialog.narrating():
         return
+    for line in lines:
+        if line.get("sermon") and line.get("next", 0) > 0:
+            npc = gothic.world.find_npc(line["npc"])
+            if npc is not None:
+                npc.stop()                      # his own sermon waits while he gives this one
     here = gothic.player.position
     for line in list(lines):
         if line.get("bound"):
             continue                            # said in the conversation he starts himself
+        if line.get("sermon"):
+            if _preach(gothic, line, here, now):
+                return
+            continue
         npc = gothic.world.find_npc(line["npc"])
         if npc is None:
             lines.remove(line)                  # gone (dead, or elsewhere in the world): nothing to say
@@ -779,6 +797,30 @@ def tick_after(gothic, now):
         if gothic.dialog.narrate(line["line"], ms, wav):
             lines.remove(line)
         return                                  # one at a time
+
+
+def _preach(gothic, line, here, now):
+    """The next sentence of a sermon once the hero is near and the last has had its pause; True if one was said.
+    Finished sermons leave the list, and the preacher his own routine again."""
+    npc = gothic.world.find_npc(line["npc"])
+    if npc is None:
+        _after[0].remove(line)
+        return False
+    if line.get("next", 0) == 0 and sum((a - b) ** 2 for a, b in zip(here, npc.position)) > line["near"] ** 2:
+        return False                            # not begun until he is near; once begun, it is preached to the end
+    if now < line.get("quiet_until", 0.0):
+        return False
+    if line.get("next", 0) >= len(line["sermon"]):
+        _after[0].remove(line)
+        return False
+    from dm import voices
+    text = line["sermon"][line.get("next", 0)]
+    wav, ms = voices.lookup(line["voice"], text)
+    if not gothic.dialog.narrate(text, ms, wav):
+        return False
+    line["next"] = line.get("next", 0) + 1
+    line["quiet_until"] = now + (ms or max(2500, len(text) * 70)) / 1000.0 + SERMON_GAP
+    return True
 
 
 def after_graph(npc):
@@ -805,7 +847,8 @@ def after_graph(npc):
 def after_lines():
     """Every line said after a blackout, by voice, for voicing: the speakers' and the hero's replies."""
     said = [line for b in BLACKOUTS.values() for line in b.get("after", [])]
-    return ([(line["voice"], line["line"]) for line in said]
+    return ([(line["voice"], line["line"]) for line in said if "line" in line]
+            + [(line["voice"], text) for line in said for text in line.get("sermon", [])]
             + [(HERO_VOICE, line["reply"]) for line in said if line.get("reply")])
 
 
