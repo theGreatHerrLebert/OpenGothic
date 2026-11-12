@@ -228,6 +228,56 @@ BLACKOUTS = {
 }
 AFTER_NEAR = 500.0    # how close (cm) the hero passes someone before they speak up
 AFTER_FOR = 900.0     # seconds after waking that the house still remembers him
+# A galaxy in place of the sky (shader/sky/sky.frag), every trip its own: the Milky Way panorama graded to the
+# trip's colour, two Webb nebulae placed high on the sky, opening with the trip's strength and turning slowly.
+# The images live in dm_runtime/sky (see CREDITS.md there); without them the sky stays the game's own.
+SKY_DIR = __import__("pathlib").Path(__file__).resolve().parent.parent / "dm_runtime" / "sky"
+SKY_FROM, SKY_TO = 0.2, 0.7     # intensity at which the sky starts to open, and is fully open
+SKY_SPIN = 0.006                # radians a second
+SKY_GAIN = 1.0
+GALAXIES = {
+    "ice": {"tint": (0.55, 0.80, 1.00), "grade": 0.70, "nebulae": ("cosmic_cliffs.jpg", "pillars.jpg")},
+    "hot": {"tint": (1.00, 0.50, 0.15), "grade": 0.75, "nebulae": ("pillars.jpg", "cosmic_cliffs.jpg")},
+    "sleeper": {"tint": (0.75, 0.65, 1.00), "grade": 0.30, "nebulae": ("stephans_quintet.jpg", "pillars.jpg")},
+    "neon": {"tint": (1.00, 0.45, 1.00), "grade": 0.50, "nebulae": ("cosmic_cliffs.jpg", "stephans_quintet.jpg")},
+}
+PROFILE_GALAXY = {"nordmar": "ice", "kriegsgesang": "ice", "skorpion": "hot", "skorpion_goa": "hot",
+                  "anrufung": "sleeper", "mindcap": "neon", "wasserpfeife": "neon"}
+# Where the two nebulae hang: (yaw, pitch, size across, strength), radians; high up, on opposite sides.
+NEBULA_SPOTS = ((0.6, 0.75, 0.95, 0.9), (3.6, 0.55, 0.85, 0.8))
+_sky_loaded = {}
+
+
+def sky_amount(intensity):
+    x = min(1.0, max(0.0, (intensity - SKY_FROM) / (SKY_TO - SKY_FROM)))
+    return x * x * (3 - 2 * x)
+
+
+def _load_sky(gothic, slot, name):
+    """Loads an image into a sky slot once; False if it or the engine's sky is missing."""
+    if _sky_loaded.get(slot) == name:
+        return True
+    path = SKY_DIR / name
+    if not path.is_file() or not hasattr(gothic, "sky") or not gothic.sky.load(slot, str(path)):
+        return False
+    _sky_loaded[slot] = name
+    return True
+
+
+def set_sky(gothic, kind, intensity, seconds, glow=0.0):
+    """Shows the trip's galaxy at this intensity, or the game's own sky when there is none."""
+    if not hasattr(gothic, "sky"):
+        return
+    cfg = GALAXIES.get(kind)
+    if cfg is None or not _load_sky(gothic, 0, "milkyway.jpg"):
+        gothic.sky.clear()
+        return
+    spots = [spot if _load_sky(gothic, i + 1, name) else (0.0, 0.0, 0.0, 0.0)
+             for i, (name, spot) in enumerate(zip(cfg["nebulae"], NEBULA_SPOTS))]
+    gothic.sky.galaxy(sky_amount(intensity), SKY_GAIN, cfg["tint"], cfg["grade"], seconds * SKY_SPIN,
+                      min(1.0, glow), spots)
+
+
 FADE_BLACK = 3.5    # seconds to black
 FADE_WAKE = 5.0     # seconds back from black
 SETTLE = 1.5        # seconds in the dark before looking for the bed: the world needs a moment after a move
@@ -563,6 +613,7 @@ class Trip:
         gothic.trip.set(fx["fov"], fx["speed"], fx["tint"], fx["time"], fx["shake"], fx["post"], fx["edges"],
                         fx["tracers"], (self.bass, self.mid, self.treble), fx["zoom"], fx["look"], fx["eye"],
                         fx["afterglow"])
+        set_sky(gothic, PROFILE_GALAXY.get(getattr(self, "profile", None)), fx["post"], elapsed, self.swell)
         if self.black is None:
             self._think(gothic, now)
         music_back = not self.track or (self.music_end is not None and now - self.music_end >= FADE_OUT)
@@ -652,6 +703,11 @@ def _end(gothic):
         pass
     try:
         gothic.trip.clear()         # needs a world; without one there is nothing on screen to clear
+    except RuntimeError:
+        pass
+    try:
+        if hasattr(gothic, "sky"):
+            gothic.sky.clear()      # the game's own sky again
     except RuntimeError:
         pass
     gothic.dialog.block(False)      # the hero may always talk again, as himself
