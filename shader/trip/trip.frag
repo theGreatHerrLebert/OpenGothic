@@ -378,9 +378,15 @@ vec3 vision(vec3 c, float V, float I) {
   // a lid closing rather than a grey screen; the negative is held down a little, a dark world inverted is bright.
   float s     = V<0.5 ? 0.5 - 0.5*pow(1.0 - V*2.0, 0.35) : 0.5 + 0.5*pow(V*2.0 - 1.0, 0.35);
   float mush  = clamp(1.0 - abs(s - 0.5)*2.0, 0.0, 1.0);
-  float guard = (1.0 - 0.25*s)*(1.0 - pow(mush, 1.6)*0.72);
-  vec3  inv   = (c + (vec3(1.0) - 2.0*c)*s)*guard;
-  return clamp(inv + vec3(0.16, -0.08, 0.10)*s, 0.0, 1.0);   // and it turns red-violet: the demon's light
+  float guard = 1.0 - pow(mush, 1.6)*0.72;
+  vec3  inv   = c + (vec3(1.0) - 2.0*c)*s;
+  // The negative of a night is nearly white. Its colours and contrast turn, but its brightness stays tied to the
+  // world's own: each pixel only moves a third of the way towards its inverted brightness.
+  float L      = lum(c);
+  float target = mix(L, 1.0 - L, 0.33*s);
+  inv *= target/max(lum(inv), 0.02);
+  inv *= guard;
+  return clamp(inv + vec3(0.10, -0.05, 0.07)*s*(0.3 + L), 0.0, 1.0);   // red-violet, the demon's light
   }
 
 void main() {
