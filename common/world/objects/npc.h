@@ -169,6 +169,7 @@ class Npc final {
     void       setPhysic     (DynamicWorld::NpcItem&& item);
     void       setFatness    (float f);
     void       setScale      (float x,float y,float z);
+    void       setBodyTexture(int32_t variant);
 
     bool       setAnim(Anim a);
     auto       setAnimAngGet(Anim a) -> const Animation::Sequence*;

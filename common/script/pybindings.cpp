@@ -209,6 +209,47 @@ struct PyNpc {
 
   void setName(const std::string& v) { fetch()->handle().name[0] = toEngine(v); }
 
+  static Attribute attributeOf(const std::string& name) {
+    static const std::pair<const char*,Attribute> names[] = {
+      {"hp",ATR_HITPOINTS},{"hp_max",ATR_HITPOINTSMAX},{"mana",ATR_MANA},{"mana_max",ATR_MANAMAX},
+      {"strength",ATR_STRENGTH},{"dexterity",ATR_DEXTERITY}};
+    for(auto& [n,a]:names)
+      if(name==n)
+        return a;
+    throw std::invalid_argument("unknown attribute: " + name + " (hp, hp_max, mana, mana_max, strength, dexterity)");
+    }
+
+  int32_t attribute(const std::string& name) const { return fetch()->attribute(attributeOf(name)); }
+
+  void setAttribute(const std::string& name, int32_t value) {
+    if(value<0 || value>100000)
+      throw std::invalid_argument("attribute value out of range");
+    fetch()->handle().attribute[attributeOf(name)] = value;
+    }
+
+  int32_t level() const { return fetch()->handle().level; }
+  void    setLevel(int32_t v) {
+    if(v<0 || v>1000)
+      throw std::invalid_argument("level out of range");
+    fetch()->handle().level = v;
+    }
+
+  // A body texture variant: the game's _V0 texture of the body mesh becomes _V<n>, which a story can register as
+  // its own texture (resources.register_texture), so one creature looks different from all others of its kind.
+  void setBodyTexture(int32_t variant) {
+    if(variant<0 || variant>99)
+      throw std::invalid_argument("body texture variant must be 0..99");
+    fetch()->setBodyTexture(variant);
+    }
+
+  void setScale(float x, float y, float z) {
+    if(y<=0) y = x;
+    if(z<=0) z = x;
+    if(!(x>0.05f && x<20.f && y>0.05f && y<20.f && z>0.05f && z<20.f))
+      throw std::invalid_argument("scale out of range");
+    fetch()->setScale(x,y,z);
+    }
+
   // Keeps the routine and perception intact: removing them makes an NPC
   // untalkable.
   // Replaces the daily routine with standing at the nearest waypoint.
@@ -645,6 +686,15 @@ PYBIND11_EMBEDDED_MODULE(gothic, m) {
            "Start a conversation with the player through normal perception.")
       .def("wear", &PyNpc::wear, py::arg("instance"),
            "Give the NPC an armour item and put it on.")
+      .def("attribute", &PyNpc::attribute, py::arg("name"),
+           "hp, hp_max, mana, mana_max, strength or dexterity.")
+      .def("set_attribute", &PyNpc::setAttribute, py::arg("name"), py::arg("value"))
+      .def_property("level", &PyNpc::level, &PyNpc::setLevel,
+                    "The NPC's level; the hero's experience for a kill follows it.")
+      .def("set_body_texture", &PyNpc::setBodyTexture, py::arg("variant"),
+           "Use body texture variant n (the mesh's _V0 texture becomes _V<n>).")
+      .def("set_scale", &PyNpc::setScale, py::arg("x"), py::arg("y") = 0.f, py::arg("z") = 0.f,
+           "Scale the NPC; one number scales evenly. Kept in saves.")
       .def("can_see_player", &PyNpc::canSeePlayer)
       .def("send_to", &PyNpc::sendTo, py::arg("waypoint"),
            "Make the NPC walk to a waypoint and stay there.")

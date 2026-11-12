@@ -1019,6 +1019,12 @@ void Npc::setFatness(float f) {
   visual.setFatness(f);
   }
 
+void Npc::setBodyTexture(int32_t variant) {
+  // Copies: setVisualBody assigns body and head from its arguments.
+  const std::string b = body, h = head;
+  setVisualBody(vHead,vTeeth,variant,bdColor,b,h);
+  }
+
 void Npc::setScale(float x, float y, float z) {
   sz[0]=x;
   sz[1]=y;
