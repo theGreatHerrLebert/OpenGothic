@@ -72,6 +72,9 @@ What a story can notice and test today:
   unconscious and others, and the evening's own: smoking at the water pipes, standing drinking at a barrel),
   `npc_dead`, `hour`, `has_item`, `wears`, `obsessed`. A topic only open while someone sits smoking talks the way
   people talk after work, as Hakon does about the dagger he holds in pawn.
+- **Where things lie.** A thing the hero should take lies where he may be: outdoors, in a public place, or where
+  the story has made it his to take. A hut or house is its owner's home; at night he sleeps there and attacks an
+  intruder, and taking from inside reads as theft. Use a waypoint outside (or `"position"` beside the door).
 - **Things of the story's own.** `define_item` makes an item the game does not have, like an existing one in look
   and use but with its own name and inventory lines: `{"op": "define_item", "item": "MONDALOE", "like":
   "ITPL_SAGITTA_HERB_MIS", "name": "Mondaloe", "rows": [["Öffnet sich nur im Mondlicht.", 0]], "look": {"tint":
