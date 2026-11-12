@@ -1025,8 +1025,11 @@ RECOGNISE_TITLE = "Was schaust du so auf mein Amulett?"
 RECOGNISE = [
     ("VLK_449_LARES", None, "09", ["Das Amulett kenn ich nicht. Aber den Geruch daran.",
                                    "Im Neuen Lager hätten sie dir dafür Erz gegeben, Junge."], "Ich rauch nicht für Erz."),
+    # Vatras, who will one day ask for swampweed for the Eye of Innos and never say what for
     ("VLK_439_VATRAS", None, "05", ["Dieses Amulett riecht nach drei Nächten, die du besser verschlafen hättest.",
-                                    "Adanos lehrt das Maß, mein Sohn. Vergiss das nicht."], "Ich halte Maß. Meistens."),
+                                    "Adanos lehrt das Maß, mein Sohn.",
+                                    "Und solltest du mir eines Tages Sumpfkraut bringen müssen … frag nicht, wofür."],
+     "Ich frag nicht."),
     ("VLK_454_BUERGER", "Bjarne", "01", ["Ha! Der Mann mit den drei Rauchen.",
                                          "Im Norden gäben sie dir am Feuer den ersten Platz."], "Den nehm ich gern."),
     ("VLK_455_BUERGER", "Kasim", "08", ["Du trägst den Wüstenrauch an der Hand.",
