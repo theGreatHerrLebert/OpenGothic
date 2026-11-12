@@ -191,4 +191,10 @@ assert checks.failing([{"type": "near", "npc": "BURNER"}]) is None
 assert checks.failing([{"type": "near", "npc": "BURNER", "within": 500}]) is not None
 assert checks.failing([{"type": "near", "npc": "CORPSE"}]) is not None and checks.failing([{"type": "near", "npc": "ABSENT"}]) is not None
 assert checks.validate({"type": "near"}) is not None and checks.validate({"type": "near", "npc": "BURNER"}) is None
+# What someone carries.
+burning.item_count = lambda item: 2 if item == "ITMI_GOLD" else 0
+assert checks.failing([{"type": "npc_has", "npc": "BURNER", "item": "ITMI_GOLD", "count": 2}]) is None
+assert checks.failing([{"type": "npc_has", "npc": "BURNER", "item": "ITMI_GOLD", "count": 3}]) is not None
+assert checks.failing([{"type": "npc_has", "npc": "ABSENT", "item": "ITMI_GOLD"}]) is not None
+assert checks.validate({"type": "npc_has", "npc": "BURNER"}) is not None
 print("checks ok")

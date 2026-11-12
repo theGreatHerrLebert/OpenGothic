@@ -182,6 +182,14 @@ Lays an item at a waypoint.
 {"op": "place_item", "instance": "MONDALOE", "waypoint": "NW_BIGFARM_SHEEP2_04"}
 ```
 
+### `npc_item`
+
+Puts an item into someone's pockets for real: he can be robbed of it, it can be looted from him when he lies down, a trader may sell it. Check where it is with npc_has and has_item.
+
+```json
+{"op": "npc_item", "npc": "SLD_807_BULLCO", "instance": "OLES_TALER"}
+```
+
 ### `give_item`
 
 Gives the hero an item, as the game's own handover.

@@ -788,6 +788,24 @@ def test_attack():
     st._ready_attack({"npc": "NOV_A", "target": "NOV_B"}, [])
 
 
+def test_npc_item():
+    # An item someone really carries, put in his pockets and taken out again if the plan fails.
+    s = st.Story()
+    s.validate([{"op": "npc_item", "npc": "NOV_A", "instance": "ITMI_COIN"}])
+    s.validate([{"op": "npc_item", "npc": "PARLAN", "instance": "ITMI_COIN", "count": 3}])
+    rejected(s, [{"op": "npc_item", "npc": "NOV_A", "instance": "NOV_B"}], "not an item")
+    rejected(s, [{"op": "npc_item", "npc": "NOV_A", "instance": "ITMI_COIN", "count": 0}], "count")
+    npc = fake.world.npcs["NOV_A"]
+    carried = []
+    npc.add_item = lambda item, count=1: carried.append((item, count))
+    npc.remove_item = lambda item, count=1: carried.remove((item, count))
+    undo = st._world_npc_item({"npc": "NOV_A", "instance": "ITMI_COIN"})
+    assert carried == [("ITMI_COIN", 1)]
+    undo()
+    assert carried == []
+    del npc.add_item, npc.remove_item
+
+
 def test_waited_for_pipe_is_reserved():
     # A pipe a rule waits for the hero to smoke is kept for him while the rule's conditions hold, then given back.
     calls = []
@@ -977,7 +995,7 @@ def test_plans_are_all_or_nothing_where_the_game_allows():
         del fake.daedalus.call, fake.journal
 
 
-for test in (test_plans_are_all_or_nothing_where_the_game_allows, test_owed_aftercare_survives_a_save, test_topic_while_he_smokes, test_return_to_a_split_menu, test_items_of_our_own, test_item_with_a_model_of_its_own, test_give_xp, test_attack, test_waited_for_pipe_is_reserved, test_handed_over_but_nothing_to_play, test_topics_extend_an_npc, test_trip_operation, test_rule_contents_are_checked_when_submitted, test_graph_validation, test_validation, test_apply_and_rollback, test_return_npc, test_conditional_choices, test_returns_to_menu, test_questions_are_asked_once, test_variant_line, test_again_line, test_scene_and_rule, test_rule_fires_on_perception, test_narration_waits_for_quiet, test_drawing_a_weapon_is_perceived,
+for test in (test_plans_are_all_or_nothing_where_the_game_allows, test_owed_aftercare_survives_a_save, test_topic_while_he_smokes, test_return_to_a_split_menu, test_items_of_our_own, test_item_with_a_model_of_its_own, test_give_xp, test_attack, test_npc_item, test_waited_for_pipe_is_reserved, test_handed_over_but_nothing_to_play, test_topics_extend_an_npc, test_trip_operation, test_rule_contents_are_checked_when_submitted, test_graph_validation, test_validation, test_apply_and_rollback, test_return_npc, test_conditional_choices, test_returns_to_menu, test_questions_are_asked_once, test_variant_line, test_again_line, test_scene_and_rule, test_rule_fires_on_perception, test_narration_waits_for_quiet, test_drawing_a_weapon_is_perceived,
              test_queue_waits_for_safe_point, test_save_load_does_not_reapply_world,
              test_player):
     test()

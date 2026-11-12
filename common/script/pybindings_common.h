@@ -171,6 +171,26 @@ struct PyNpc {
     n->addItem(id, size_t(count));
     }
 
+  int32_t itemCount(const std::string& instance) const {
+    auto*  n  = fetch();
+    auto*  w  = requireWorld();
+    size_t id = 0;
+    if(instanceClass(*w, upper(instance), id)!="C_ITEM")
+      throw std::invalid_argument("not an item instance: " + instance);
+    return int32_t(n->inventory().itemCount(id));
+    }
+
+  void removeItem(const std::string& instance, int32_t count) {
+    auto*  n  = fetch();
+    auto*  w  = requireWorld();
+    size_t id = 0;
+    if(count<1 || count>100000)
+      throw std::invalid_argument("count out of range");
+    if(instanceClass(*w, upper(instance), id)!="C_ITEM")
+      throw std::invalid_argument("not an item instance: " + instance);
+    n->delItem(id, uint32_t(count));
+    }
+
   void setAttribute(const std::string& name, int32_t value) {
     if(value<0 || value>100000)
       throw std::invalid_argument("attribute value out of range");

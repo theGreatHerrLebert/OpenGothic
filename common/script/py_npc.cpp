@@ -23,6 +23,9 @@ void bindNpc(py::module_& m) {
       .def_property_readonly("body_mesh", &PyNpc::bodyMesh, "The body mesh the game set (Wol_Body for a wolf).")
       .def("add_item", &PyNpc::addItem, py::arg("instance"), py::arg("count") = 1,
            "Put items into the NPC's inventory, to be looted.")
+      .def("item_count", &PyNpc::itemCount, py::arg("instance"), "How many of this item the NPC carries.")
+      .def("remove_item", &PyNpc::removeItem, py::arg("instance"), py::arg("count") = 1,
+           "Take items out of the NPC's inventory.")
       .def_property("level", &PyNpc::level, &PyNpc::setLevel,
                     "The NPC's level; the hero's experience for a kill follows it.")
       .def("set_body_texture", &PyNpc::setBodyTexture, py::arg("variant"),

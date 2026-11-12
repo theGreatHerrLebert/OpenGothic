@@ -79,7 +79,10 @@ and was still not worth playing: return a pouch or keep it, 25 gold, no conseque
   man the hero blamed); give its rule a `near` check so nobody charges in from across the map.
 - **The story's own things.** The pouch the story is about is Hanno's pouch, not one of the game's many; the sickle
   he left is his sickle. Make them with `define_item`, with a name and a line that says whose they were, so finding
-  one tells the player he has found it.
+  one tells the player he has found it. Put what someone has into his pockets for real (`npc_item`), not only into
+  a dialogue that hands it over: then the player can trade for it, steal it, or take it from him when he lies in the
+  dirt, and the `npc_has` and `has_item` checks tell the story which way it went. Players make their own plans with
+  the game's rules (set the brute on the cheat, then loot the coin from him); a story should let them work.
 
 ## Rules for a story
 

@@ -682,6 +682,25 @@ def _check_nothing(args, state):
     _require(args, "reason")
 
 
+def _check_npc_item(args, state):
+    """An item someone really carries: it can be traded, stolen or looted from him when he is down, and the story
+    sees where it is with the npc_has check."""
+    _require(args, "npc", "instance")
+    _live_npc(_npc_instance(args["npc"]))
+    if gothic.world.instance_kind(args["instance"]) != "item":
+        raise PlanError(f"not an item instance: {args['instance']}")
+    count = args.get("count", 1)
+    if not isinstance(count, int) or isinstance(count, bool) or not 1 <= count <= 1000:
+        raise PlanError("npc_item count is a whole number from 1 to 1000")
+
+
+def _world_npc_item(args):
+    npc = _live_npc(_npc_instance(args["npc"]))
+    count = args.get("count", 1)
+    npc.add_item(args["instance"], count)
+    return lambda: npc.remove_item(args["instance"], count)
+
+
 def _check_attack(args, state):
     """Someone of the story goes for the hero or for another of the story's people with his fists: the game's own
     brawl, which ends when one of them is down, never in a killing."""
@@ -748,6 +767,7 @@ OPS = {
     "end_story": (_check_end, _fold_end, None),
     "attack": (_check_attack, _noop, _world_attack),
     "retry_rule": (_check_fire_rule, _fold_retry_rule, None),
+    "npc_item": (_check_npc_item, _noop, _world_npc_item),
 }
 
 def _ready_live(args, plan):
@@ -762,7 +782,8 @@ def _ready_live(args, plan):
 # Checked against the live game just before a plan runs, before any effect: what could make an effect fail although
 # the plan is valid. Failing here changes nothing.
 _READY = {"trip": _ready_trip, "send_npc": _ready_live, "relocate_npc": _ready_live, "remove_npc": _ready_live,
-          "rename_npc": _ready_live, "attach_dialogue_graph": _ready_live, "attack": _ready_attack}
+          "rename_npc": _ready_live, "attach_dialogue_graph": _ready_live, "attack": _ready_attack,
+          "npc_item": _ready_live}
 # Effects that cannot be undone run after every effect that can, so a failure among the undoable ones still leaves
 # the world untouched. Removal comes last of all.
 _FINAL = {"give_xp", "journal", "trip", "send_npc", "relocate_npc", "attack"}

@@ -73,6 +73,9 @@ OPS = {
                     {"op": "define_item", "item": "MONDALOE", "like": "ITPL_HEALTH_HERB_01", "name": "Mondaloe",
                      "look": {"model": "mondaloe.obj"}}),
     "place_item": ("Items", "Lays an item at a waypoint.", {"op": "place_item", "instance": "MONDALOE", "waypoint": "NW_BIGFARM_SHEEP2_04"}),
+    "npc_item": ("Items", "Puts an item into someone's pockets for real: he can be robbed of it, it can be looted from "
+                          "him when he lies down, a trader may sell it. Check where it is with npc_has and has_item.",
+                 {"op": "npc_item", "npc": "SLD_807_BULLCO", "instance": "OLES_TALER"}),
     "give_item": ("Items", "Gives the hero an item, as the game's own handover.", {"op": "give_item", "instance": "ITMI_GOLD", "count": 50}),
     "give_xp": ("Items", "Experience with the game's own message and sound, at most 300.", {"op": "give_xp", "amount": 150}),
     # Effects

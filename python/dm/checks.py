@@ -14,6 +14,7 @@
     {"type": "day", "from": 3, "to": 6}                        the game's day counter (0 on the first day), included
     {"type": "story_age", "days": 3}                           at least this many days since the story began
     {"type": "near", "npc": "X", "within": 1500}               the hero is within this many cm of X (default 1500)
+    {"type": "npc_has", "npc": "X", "item": "ITMI_GOLD", "count": 1}   X carries at least this many
     {"type": "not", "check": {...}}
     {"type": "any", "checks": [{...}, ...]}                    at least one holds
 
@@ -39,7 +40,7 @@ _REQUIRED = {"has_item": ("item",), "wears": ("item",), "guild": ("guild",), "np
              "obsessed": (), "hour": ("from", "to"), "not": ("check",),
              "quest": ("quest", "state"), "any": ("checks",), "heard": ("info",),
              "chapter": (), "level": (), "day": (), "story_age": ("days",),
-             "near": ("npc",)}
+             "near": ("npc",), "npc_has": ("npc", "item")}
 # Range checks: which two fields bound them, and the smallest sensible value.
 RANGES = {"chapter": ("from", "to", 1, 7), "level": ("min", "max", 0, 100), "day": ("from", "to", 0, 100000)}
 
@@ -52,7 +53,7 @@ def validate(check):
     for field in _REQUIRED[kind]:
         if field not in check and not (field == "npc" and "creature" in check):
             return f"check {kind} needs {field}"
-    if kind in ("has_item", "wears") and gothic.world.instance_kind(check["item"]) != "item":
+    if kind in ("has_item", "wears", "npc_has") and gothic.world.instance_kind(check["item"]) != "item":
         return f"not an item instance: {check['item']}"
     if kind == "guild" and not str(check["guild"]).startswith("GIL_"):
         return f"not a guild: {check['guild']}"
@@ -189,6 +190,9 @@ def _holds(check):
     if kind == "npc_dead":
         npc = gothic.world.find_npc(check["npc"])
         return npc is not None and npc.dead
+    if kind == "npc_has":
+        npc = gothic.world.find_npc(check["npc"])
+        return npc is not None and npc.item_count(check["item"]) >= check.get("count", 1)
     if kind == "near":
         npc = gothic.world.find_npc(check["npc"])
         if npc is None or npc.dead:
