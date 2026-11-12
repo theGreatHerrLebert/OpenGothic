@@ -124,6 +124,11 @@ class Resources final {
     static bool                      registerMeshFile(std::string_view alias, std::string_view objPath,
                                                       std::string_view texture, float scale = 1.f);
     static std::vector<std::string>  meshTextures(std::string_view mesh);
+    // A game mesh written out as a Wavefront OBJ with its MTL and its textures as PNGs (recoloured as exportTexture
+    // does, if a tint is given), the exact inverse of ObjMesh::load: what is read back is the mesh as it was.
+    static bool                      exportMeshObj(std::string_view mesh, std::string_view objPath,
+                                                   const float tint[3] = nullptr, float strength = 0.f,
+                                                   float brighten = 1.f);
     static bool                      exportTexture(std::string_view name, std::string_view path,
                                                    const float tint[3] = nullptr, float strength = 0.f,
                                                    float brighten = 1.f);

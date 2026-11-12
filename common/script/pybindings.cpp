@@ -957,6 +957,15 @@ PYBIND11_EMBEDDED_MODULE(gothic, m) {
             }, py::arg("name"), py::arg("path"), py::arg("tint") = std::make_tuple(1.f,1.f,1.f),
           py::arg("strength") = 0.f, py::arg("brighten") = 1.f,
           "Write a game texture out as a PNG file, recoloured towards tint by strength (0 keeps it as it is).");
+  res.def("export_mesh",
+          [](const std::string& mesh, const std::string& path, std::tuple<float,float,float> tint, float strength,
+             float brighten) {
+            const float t[3] = {std::get<0>(tint), std::get<1>(tint), std::get<2>(tint)};
+            return Resources::exportMeshObj(mesh, path, t, strength, brighten);
+            }, py::arg("mesh"), py::arg("path"), py::arg("tint") = std::make_tuple(1.f,1.f,1.f),
+          py::arg("strength") = 0.f, py::arg("brighten") = 1.f,
+          "Write a game mesh (.3DS) out as OBJ with its MTL and PNG textures (recoloured if strength > 0), to be "
+          "reshaped and read back as a story's own model.");
   res.def("register_texture", [](const std::string& name, const std::string& path) {
             Resources::registerTexture(name, path);
             }, py::arg("name"), py::arg("path"), "A texture name that loads from this image file.");

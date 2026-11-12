@@ -1,5 +1,8 @@
 #include "resources.h"
 
+#include <fstream>
+#include <filesystem>
+
 #include <Tempest/MemReader>
 #include <Tempest/Pixmap>
 #include <Tempest/Device>
@@ -1335,4 +1338,67 @@ bool Resources::exportTexture(std::string_view name, std::string_view path, cons
   catch(...) {
     return false;
     }
+  }
+
+bool Resources::exportMeshObj(std::string_view mesh, std::string_view objPath, const float tint[3], float strength,
+                              float brighten) {
+  std::lock_guard<std::recursive_mutex> g(inst->sync);
+  std::string mrm(mesh);
+  FileExt::exchangeExt(mrm,"3DS","MRM");
+  const auto* entry = Resources::vdfsIndex().find(mrm);
+  if(entry==nullptr)
+    return false;
+  zenkit::MultiResolutionMesh zmsh;
+  try {
+    auto reader = entry->open_read();
+    zmsh.load(reader.get());
+    }
+  catch(...) {
+    return false;
+    }
+  if(zmsh.sub_meshes.empty())
+    return false;
+
+  const std::filesystem::path obj(std::string{objPath});
+  const auto dir  = obj.parent_path();
+  const auto stem = obj.stem().string();
+  std::ofstream out(obj);
+  std::ofstream mtl(dir / (stem + ".mtl"));
+  if(!out || !mtl)
+    return false;
+  out << "# " << std::string(mesh) << ", written out by OpenGothic (y up, 1 unit = 1 cm)\n";
+  out << "mtllib " << stem << ".mtl\n";
+  // Positions and normals into the file's right-handed space (z negated), uvs with v flipped back: ObjMesh::load
+  // undoes exactly this.
+  for(auto& p:zmsh.positions)
+    out << "v " << p.x << " " << p.y << " " << -p.z << "\n";
+  size_t vt = 0, vn = 0;
+  for(size_t s=0; s<zmsh.sub_meshes.size(); ++s) {
+    auto& sm = zmsh.sub_meshes[s];
+    for(auto& w:sm.wedges) {
+      out << "vt " << w.texture.x << " " << 1.f-w.texture.y << "\n";
+      out << "vn " << w.normal.x << " " << w.normal.y << " " << -w.normal.z << "\n";
+      }
+    std::string matName = "m" + std::to_string(s);
+    std::string texName = sm.mat.texture;
+    mtl << "newmtl " << matName << "\n";
+    if(!texName.empty()) {
+      std::string png = stem + "_" + std::to_string(s) + ".png";
+      if(exportTexture(texName, (dir / png).string(), tint, strength, brighten))
+        mtl << "map_Kd " << png << "\n";
+      }
+    out << "usemtl " << matName << "\n";
+    for(auto& t:sm.triangles) {
+      out << "f";
+      for(int k=0; k<3; ++k) {
+        auto& w = sm.wedges[t.wedges[k]];
+        const size_t i = size_t(t.wedges[k]);
+        out << " " << (w.index+1) << "/" << (vt+i+1) << "/" << (vn+i+1);
+        }
+      out << "\n";
+      }
+    vt += sm.wedges.size();
+    vn += sm.wedges.size();
+    }
+  return bool(out);
   }
