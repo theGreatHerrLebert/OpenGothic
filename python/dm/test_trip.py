@@ -434,6 +434,11 @@ g = trip.special_graph(4, _random.Random(1), "MIL_319_PABLO", guard=True)  # a g
 assert g["nodes"]["a"]["line"] in trip.SPECIAL_GUARDS["openers"] and g["nodes"]["z"]["line"] in trip.SPECIAL_GUARDS["closers"]
 _gothic = sys.modules["gothic"]
 _gothic.daedalus = types.SimpleNamespace(get=lambda name, index=0: {"GIL_PAL": 1, "GIL_MIL": 2}[name])  # as the game's
+drinker = types.SimpleNamespace(voice=6, instance="VLK_4_X", guild=3, in_state=lambda st: st == "ZS_STAND_DRINKING")
+g = trip.special_for(drinker)                                   # at the barrel: advice on mixing
+assert g["nodes"]["a"]["line"] in trip.SPECIAL_DRINKERS["openers"] and g["nodes"]["z"]["line"] in trip.SPECIAL_DRINKERS["closers"]
+sober_one = types.SimpleNamespace(voice=6, instance="VLK_4_X", guild=3, in_state=lambda st: False)
+assert trip.special_for(sober_one)["nodes"]["a"]["line"] in trip.SPECIAL_OPENERS
 pablo = types.SimpleNamespace(voice=4, instance="MIL_319_PABLO", guild=2)
 assert trip.special_for(pablo)["nodes"]["a"]["line"] in trip.SPECIAL_GUARDS["openers"]
 assert not trip.is_guard(types.SimpleNamespace(voice=4, guild=3))

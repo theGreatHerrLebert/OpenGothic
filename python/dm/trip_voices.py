@@ -77,7 +77,8 @@ def main(stories):
     lines = trip.thought_lines() + [line for path in stories for line in story_thoughts(path)]
     lines = list(dict.fromkeys(lines))
     graphs = voices.RUNTIME_DIR / "trip_thoughts.json"
-    npc_lines = trip.SPECIAL_OPENERS + trip.SPECIAL_CLOSERS
+    npc_lines = (trip.SPECIAL_OPENERS + trip.SPECIAL_CLOSERS
+                 + trip.SPECIAL_DRINKERS["openers"] + trip.SPECIAL_DRINKERS["closers"])
     all_graphs = {"trip__thoughts": {"voice": trip.HERO_VOICE, "narration": lines}}
     all_graphs.update({f"trip__special_{v}": {"voice": v, "narration": npc_lines} for v in SPECIAL_VOICES})
     all_graphs.update({f"trip__special_{name.lower()}": {"voice": SPECIAL_PEOPLE_VOICES[name],

@@ -153,6 +153,14 @@ SPECIAL_GUARDS = {"openers": ["Du bist ja völlig zugedröhnt.", "Was hast du ge
                               "Noch ein falscher Schritt, und du schläfst in der Kaserne.",
                               "Schlaf deinen Rausch aus. Woanders."]}
 GUARD_GUILDS = ("GIL_PAL", "GIL_MIL")
+# Whoever stands drinking (at a barrel, tankard in hand) has an opinion on mixing.
+DRINKING = "ZS_STAND_DRINKING"
+SPECIAL_DRINKERS = {"openers": ["Ich glaube, du solltest dich vom Bier lieber fernhalten. So wie du gerade aussiehst, "
+                                "würde ich dir vom Mischkonsum abraten.",
+                                "Noch eins? Nee, mein Freund. Du hattest schon was. Sieht man.",
+                                "Du riechst nach Rauch und willst noch Bier? Mutig."],
+                    "closers": ["Trink Wasser. Viel Wasser.", "Das Fass läuft nicht weg. Du hoffentlich schon.",
+                                "Komm wieder, wenn du nur noch eins davon bist: durstig oder benebelt."]}
 # People with their own reason to notice: whoever filled the pipe knows exactly what is going on.
 SPECIAL_PEOPLE = {
     "VLK_456_ABUYIN": {"openers": ["Ich hab's dir ja gesagt. Ich hab's dir doch gesagt!",
@@ -162,11 +170,11 @@ SPECIAL_PEOPLE = {
 }
 
 
-def special_graph(voice, rng, instance="", guard=False, profile=None):
+def special_graph(voice, rng, instance="", guard=False, profile=None, drinking=False):
     """A short dialogue for an NPC of this voice number: it notices, the hero babbles (of the trip's own region, if it
     has one), it sends him off."""
     answers = rng.sample(SPECIAL_ANSWERS + PROFILE_ANSWERS.get(profile, []), 3)
-    own = SPECIAL_PEOPLE.get(instance.upper(), SPECIAL_GUARDS if guard else {})
+    own = SPECIAL_PEOPLE.get(instance.upper(), SPECIAL_DRINKERS if drinking else SPECIAL_GUARDS if guard else {})
     return {"voice": f"{int(voice):02d}", "start": "a", "nodes": {
         "a": {"line": rng.choice(own.get("openers", SPECIAL_OPENERS)),
               "choices": [{"text": text, "goto": "z", "delivery": DELIVERY, "repeat": True}  # babble never runs out
@@ -182,7 +190,15 @@ def special_for(npc):
     if _current.black is not None or _current.envelope.intensity <= BLOCK_ABOVE:
         return None
     return special_graph(npc.voice, _current.rng, getattr(npc, "instance", "") or "", is_guard(npc),
-                         getattr(_current, "profile", None))
+                         getattr(_current, "profile", None), is_drinking(npc))
+
+
+def is_drinking(npc):
+    """Whether this NPC stands drinking right now."""
+    try:
+        return bool(npc.in_state(DRINKING))
+    except (AttributeError, RuntimeError, ValueError):
+        return False
 
 
 def is_guard(npc):
