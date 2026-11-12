@@ -32,3 +32,7 @@ hidden = {"plan": [{"op": "add_topic", "id": "extra", "npc": "VLK_456_ABUYIN", "
 assert check_story.unlisted_graphs(hidden) == ["plan: add_topic extra plays a dialogue missing from conversations"]
 hidden["conversations"]["VLK_456_ABUYIN_EXTRA"] = extra
 assert check_story.unlisted_graphs(hidden) == []
+
+nested = {"plan": [{"op": "add_rule", "id": "r", "when": ["x"], "ops": [{"op": "add_topic", "id": "deep", "graph": extra}]}],
+          "conversations": {}}
+assert check_story.unlisted_graphs(nested) == ["plan: add_topic deep plays a dialogue missing from conversations"]

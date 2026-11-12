@@ -755,7 +755,9 @@ PYBIND11_EMBEDDED_MODULE(gothic, m) {
              auto* w = requireWorld();
              Interactive* best = nullptr;
              float bestD = radius*radius;
-             for(auto* i:w->interactivesNear(Tempest::Vec3(x, 0, z), radius*4.f)) {
+             // The spatial search is three-dimensional and the story gives no height: search tall enough for any
+             // floor or hillside, then compare horizontally only.
+             for(auto* i:w->interactivesNear(Tempest::Vec3(x, 0, z), std::max(radius, 1.f) + 20000.f)) {
                if(!i->checkMobName(scheme))
                  continue;
                auto  p = i->position();

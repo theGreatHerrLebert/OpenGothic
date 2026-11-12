@@ -104,6 +104,7 @@ def write_library(all_graphs):
              "Gespräche im Rausch, Wachen, Trinker, Abschiede und das Nachgespräch. Keine Geschichte zum Spielen.",
              "hidden_truth": "", "plot": {"facts": {}}, "conversations": conversations, "plan": [], "voices_only": True}
     folder = voices.RUNTIME_DIR / "newgame"
+    folder.mkdir(parents=True, exist_ok=True)
     (folder / "story_trip.json").write_text(json.dumps(story, ensure_ascii=False, indent=1), encoding="utf-8")
     (folder / "graphs_trip.json").write_text(
         json.dumps({f"newgame_trip__{k}": g for k, g in conversations.items()}, ensure_ascii=False, indent=1),

@@ -111,12 +111,21 @@ def lint(data):
 
 
 def unlisted_graphs(data):
-    """Every dialogue the plan plays must be among the conversations: only those are checked for what people know."""
+    """Every dialogue the plan plays, also one inside a rule's ops, must be among the conversations: only those are
+    checked for what people know."""
     listed = [json.dumps(g, sort_keys=True) for g in data["conversations"].values()]
-    return [f"plan: {op.get('op')} {op.get('id') or op.get('npc')} plays a dialogue missing from conversations"
-            for op in data["plan"]
-            if isinstance(op, dict) and isinstance(op.get("graph"), dict)
-            and json.dumps(op["graph"], sort_keys=True) not in listed]
+    found = []
+
+    def walk(ops):
+        for op in ops or []:
+            if not isinstance(op, dict):
+                continue
+            if isinstance(op.get("graph"), dict) and json.dumps(op["graph"], sort_keys=True) not in listed:
+                found.append(f"plan: {op.get('op')} {op.get('id') or op.get('npc')} plays a dialogue missing "
+                             f"from conversations")
+            walk(op.get("ops"))
+    walk(data["plan"])
+    return found
 
 
 def check(path, names_path):
