@@ -818,6 +818,8 @@ PYBIND11_EMBEDDED_MODULE(gothic, m) {
            "post (0..1) runs the trip shader over the finished frame: glowing edges, tracers, colour; "
            "bands are the music's bass, mid and treble, smoothed.");
   trip.def("clear", []() { requireWorld()->globalFx()->setTrip(GlobalEffects::Trip()); });
+  trip.def("block_save", [](bool on) { Gothic::inst().dmBlockSave = on; }, py::arg("on"),
+           "While on, saving is refused as it is during a conversation, quick save included.");
 
   py::module_ weather = m.def_submodule("weather", "Weather the story lays over the world.");
   weather.def("snow", [](float density) { requireWorld()->globalFx()->setSnow(std::clamp(density, 0.f, 1.f)); },

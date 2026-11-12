@@ -1296,7 +1296,7 @@ void MainWindow::loadGame(std::string_view slot) {
   }
 
 void MainWindow::saveGame(std::string_view slot, std::string_view name) {
-  if(dialogs.isActive())
+  if(dialogs.isActive() || Gothic::inst().dmBlockSave)
     return;
   if(auto w = Gothic::inst().world(); w!=nullptr && w->currentCs()!=nullptr)
     return;
