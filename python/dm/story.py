@@ -49,6 +49,15 @@ class PlanError(Exception):
     pass
 
 
+class NotReady(RuntimeError):
+    """The plan is fine but cannot run this moment (a trip is still running, someone is not in the world yet):
+    a rule waits and tries again, it does not fail."""
+
+
+class PartlyApplied(RuntimeError):
+    """An effect that cannot be undone failed after others had already happened. What happened is in the log."""
+
+
 def empty_state():
     return {"facts": {}, "flags": {}, "removed": [], "graphs": {}, "scenes": {}, "rules": {}}
 
@@ -314,8 +323,9 @@ def _check_narrate(args, state):
 
 def _world_narrate(args):
     """Queued, not played: it waits until no conversation or other line is running. A save drops what is queued."""
-    _narration.append({"text": args["text"], "voice": args.get("voice")})
-    return None
+    line = {"text": args["text"], "voice": args.get("voice")}
+    _narration.append(line)
+    return lambda: line in _narration and _narration.remove(line)
 
 
 def _check_topic(args, state):
@@ -354,18 +364,24 @@ def _check_trip(args, state):
                 raise PlanError(f"a thought is [intensity between 0 and 1, text]: {thought!r}")
 
 
+def _ready_trip(args, plan):
+    from dm import trip
+    if trip.running():
+        raise NotReady("a trip is already running")
+
+
 def _world_trip(args):
     """A trip, with its own music and thoughts. One at a time: a second one while another runs is refused."""
     from dm import trip
     if not trip.start(args["profile"], thoughts=args.get("thoughts")):
-        raise RuntimeError("a trip is already running")
+        raise NotReady("a trip is already running")
     return None
 
 
 def _world_give(args):
     from dm import handover
     handover.give(args["instance"], args.get("count", 1))
-    return None
+    return lambda: handover.take(args["instance"], args.get("count", 1))
 
 
 XP_MAX = 300   # chapter one's quests give 50 to 200; a story stays within the game's own scale
@@ -566,6 +582,10 @@ def _world_send(args):
     return None
 
 
+def _fold_fail_rule(args, state):
+    state["rules"][args["id"]]["failed"] = args.get("error", True)
+
+
 def _check_flag(args, state):
     _require(args, "name", "value")
 
@@ -607,10 +627,29 @@ OPS = {
     "relocate_npc": (_check_relocate, _noop, _world_relocate),
     "trip": (_check_trip, _noop, _world_trip),
     "add_topic": (_check_topic, _fold_topic, None),
+    "fail_rule": (_check_fire_rule, _fold_fail_rule, None),
 }
 
-# Removal cannot be undone, so it runs after everything that can.
+def _ready_live(args, plan):
+    """Someone an effect moves or removes must be in the world when the plan runs, unless the plan brings him."""
+    name = args["instance"].upper()
+    brought = {str(op.get("instance", "")).upper() for op in plan if op.get("op") in ("spawn_npc", "return_npc")}
+    if name not in brought and gothic.world.find_npc(name) is None:
+        raise NotReady(f"not in the world right now: {name}")
+
+
+# Checked against the live game just before a plan runs, before any effect: what could make an effect fail although
+# the plan is valid. Failing here changes nothing.
+_READY = {"trip": _ready_trip, "send_npc": _ready_live, "relocate_npc": _ready_live, "remove_npc": _ready_live}
+# Effects that cannot be undone run after every effect that can, so a failure among the undoable ones still leaves
+# the world untouched. Removal comes last of all.
+_FINAL = {"give_xp", "journal", "trip", "send_npc", "relocate_npc", "detach_dialogue_graph"}
 _LAST = {"remove_npc"}
+
+
+def _phase(op):
+    name = op["op"]
+    return 0 if name == "define_item" else 3 if name in _LAST else 2 if name in _FINAL else 1
 
 
 class Story:
@@ -623,7 +662,6 @@ class Story:
         self.active_scene = None
         self.scene_opened = False
         self.scene_wait = 0
-        self.failed_rules = set()
         self.topics_generation = None
         self.topics_shown = {}
         self.reserved = {}   # (scheme, x, z) of objects kept for the hero -> world generation it was set in
@@ -689,27 +727,50 @@ class Story:
         self.queue.append({"reason": reason, "ops": ops})
 
     def apply_plan(self, plan):
+        """All or nothing where the game allows it. Every effect that can fail for a reason the plan cannot see is
+        checked first (NotReady, nothing happens). Undoable effects run first and are undone if any of them fails.
+        Effects that cannot be undone (experience, journal, a trip, sending or removing someone) run last; if one of
+        those fails, the log records exactly the part that happened and PartlyApplied is raised."""
         # State may have moved on since the plan was queued.
         plan = dict(plan, ops=self.resolve_items(plan["ops"]))
         self.validate(plan["ops"])
-        # Definitions first, so an item the plan gives or places is made as the story's own; removals last.
-        ordered = sorted(plan["ops"], key=lambda op: 0 if op["op"] == "define_item" else 2 if op["op"] in _LAST else 1)
-        undo = []
-        try:
-            for op in ordered:
-                effect = OPS[op["op"]][2]
-                if effect is not None:
-                    revert = effect(op)
-                    if revert is not None:
-                        undo.append(revert)
-        except Exception:
-            for revert in reversed(undo):
-                revert()
-            raise
+        for op in plan["ops"]:
+            ready = _READY.get(op["op"])
+            if ready is not None:
+                ready(op, plan["ops"])
+        # Definitions first, so an item the plan gives or places is made as the story's own; then what can be undone,
+        # then what cannot, removals last. The sort is stable, so the plan's own order holds within each phase.
+        ordered = sorted(plan["ops"], key=_phase)
+        undo, done, failed = [], [], None
+        for op in ordered:
+            effect = OPS[op["op"]][2]
+            try:
+                revert = effect(op) if effect is not None else None
+            except Exception as err:
+                failed = (op, err)
+                break
+            done.append(op)
+            if revert is not None:
+                undo.append(revert)
+        if failed is not None:
+            op, err = failed
+            final_done = [o for o in done if _phase(o) >= 2]
+            if not final_done:
+                for revert in reversed(undo):
+                    revert()
+                raise err
+            # The world has changed for good: keep the story in step with it. Everything but the failed effect and
+            # the effects after it is recorded, so a load replays the same state the game now has.
+            skipped = ordered[ordered.index(op):]
+            kept = [o for o in plan["ops"] if not any(o is s for s in skipped)]
+            self._record(plan["reason"] + " (teilweise)", kept)
+            raise PartlyApplied(f"{op['op']} failed after effects that cannot be undone: {err}") from err
+        self._record(plan["reason"], plan["ops"])
 
+    def _record(self, reason, ops):
         hour, minute = gothic.world.time
         entry = {"seq": len(self.log) + 1, "day": gothic.world.day, "hour": hour,
-                 "minute": minute, "reason": plan["reason"], "ops": plan["ops"]}
+                 "minute": minute, "reason": reason, "ops": ops}
         self.log.append(entry)
         self._fold(entry)
 
@@ -943,7 +1004,7 @@ class Story:
 
     def _tick_rules(self):
         for rule_id, rule in self.state.get("rules", {}).items():
-            if rule["fired"] or rule_id in self.failed_rules or not self._conditions(rule):
+            if rule["fired"] or rule.get("failed") or not self._conditions(rule):
                 continue
             if rule.get("on") and not rule.get("perceived"):
                 continue
@@ -954,9 +1015,14 @@ class Story:
             try:
                 self.apply_plan(plan)
                 self.results.append({"reason": plan["reason"], "ok": True})
+            except NotReady:
+                continue   # tried again on a later tick
             except (PlanError, RuntimeError, ValueError) as err:
-                self.failed_rules.add(rule_id)
                 self.results.append({"reason": plan["reason"], "ok": False, "error": str(err)})
+                if not self.state["rules"][rule_id].get("fired"):
+                    # Kept in the log, so a load does not try the broken rule again.
+                    self._record(f"Regel gescheitert: {rule_id}",
+                                 [{"op": "fail_rule", "id": rule_id, "error": str(err)[:200]}])
 
     def _track_hero(self):
         for flag, guild in HERO_GUILD_FLAGS.items():
@@ -997,6 +1063,8 @@ class Story:
             try:
                 self.apply_plan(plan)
                 self.results.append({"reason": plan["reason"], "ok": True})
+            except NotReady:
+                self.queue.append(plan)   # waits behind the rest, tried again on a later tick
             except (PlanError, RuntimeError, ValueError) as err:
                 self.results.append({"reason": plan["reason"], "ok": False,
                                      "error": str(err)})
@@ -1010,12 +1078,25 @@ _player = graphs.Player(lambda: _story.graphs_now(),
                         lambda npc: __import__("dm.trip").trip.special_for(npc))
 
 
+_reported = set()
+
+
 def _tick(dt):
+    try:
+        gothic.world.day   # needs a world, unlike the generation counter
+    except RuntimeError:
+        return  # no active world while loading
     try:
         _story.on_tick()
         _player.on_tick()
-    except RuntimeError:
-        pass  # no active world while loading
+    except Exception as err:
+        # A bug, not a loading screen: say so once per kind of failure instead of hiding it, and keep ticking.
+        key = f"{type(err).__name__}: {err}"
+        if key not in _reported and len(_reported) < 50:
+            _reported.add(key)
+            import traceback
+            traceback.print_exc()
+            _story.results.append({"reason": "Spielleiter-Takt", "ok": False, "error": key[:300]})
 
 
 def start():

@@ -853,7 +853,87 @@ def test_topics_extend_an_npc():
     assert fake.dialog.topics["PARLAN"] == [("legend", "Kennst du die Kriegsmischung?")]
 
 
-for test in (test_owed_aftercare_survives_a_save, test_topic_while_he_smokes, test_return_to_a_split_menu, test_items_of_our_own, test_item_with_a_model_of_its_own, test_give_xp, test_waited_for_pipe_is_reserved, test_handed_over_but_nothing_to_play, test_topics_extend_an_npc, test_trip_operation, test_rule_contents_are_checked_when_submitted, test_graph_validation, test_validation, test_apply_and_rollback, test_return_npc, test_conditional_choices, test_returns_to_menu, test_questions_are_asked_once, test_variant_line, test_again_line, test_scene_and_rule, test_rule_fires_on_perception, test_narration_waits_for_quiet, test_drawing_a_weapon_is_perceived,
+def test_plans_are_all_or_nothing_where_the_game_allows():
+    from dm import handover, trip
+    fake.world.__init__()
+    world_calls = []
+    saved = handover.give, handover.take, fake.world.place_item, trip.running
+    handover.give = lambda item, count=1: world_calls.append(("give", item))
+    handover.take = lambda item, count=1: world_calls.append(("take", item))
+    fake.daedalus.call = lambda name, *args: world_calls.append(("xp", *args))
+    fake.journal = lambda *a: world_calls.append(("journal",))
+    try:
+        # An undoable effect fails: what ran before it is undone, and nothing that cannot be undone has run yet.
+        def broken_place(*a, **k):
+            raise RuntimeError("engine refused")
+        fake.world.place_item = broken_place
+        s = st.Story()
+        try:
+            s.apply_plan({"reason": "r", "ops": [{"op": "give_xp", "amount": 50}, {"op": "give_item", "instance": "ITMI_GOLD"},
+                                                 {"op": "place_item", "instance": "ITCLUE", "waypoint": "WP_1"}]})
+            raise AssertionError("expected failure")
+        except RuntimeError as err:
+            assert not isinstance(err, st.PartlyApplied)
+        assert world_calls == [("give", "ITMI_GOLD"), ("take", "ITMI_GOLD")] and s.log == []
+        fake.world.place_item = saved[2]
+
+        # An effect that cannot be undone fails after another one happened: the log keeps exactly what happened.
+        world_calls.clear()
+        def broken_journal(*a):
+            raise RuntimeError("no such topic")
+        fake.journal = broken_journal
+        s = st.Story()
+        try:
+            s.apply_plan({"reason": "r", "ops": [{"op": "give_xp", "amount": 50}, {"op": "set_flag", "name": "x", "value": True},
+                                                 {"op": "journal", "topic": "T", "entry": "e"}, {"op": "give_item", "instance": "ITMI_GOLD"}]})
+            raise AssertionError("expected failure")
+        except st.PartlyApplied:
+            pass
+        assert world_calls == [("give", "ITMI_GOLD"), ("xp", 50)]
+        assert [o["op"] for o in s.log[0]["ops"]] == ["give_xp", "set_flag", "give_item"] and s.state["flags"]["x"]
+
+        # Not ready: nothing happens, and a rule waits instead of failing.
+        world_calls.clear()
+        trip.running = lambda: True
+        s = st.Story()
+        try:
+            s.apply_plan({"reason": "r", "ops": [{"op": "give_item", "instance": "ITMI_GOLD"}, {"op": "trip", "profile": "kriegsgesang"}]})
+            raise AssertionError("expected NotReady")
+        except st.NotReady:
+            pass
+        assert world_calls == [] and s.log == []
+        s.apply_plan({"reason": "r", "ops": [{"op": "add_rule", "id": "later", "when": [], "ops": [{"op": "trip", "profile": "kriegsgesang"}]}]})
+        s._tick_rules()
+        assert not s.state["rules"]["later"]["fired"] and not s.state["rules"]["later"].get("failed")
+        assert s.queue == [] and all(r["ok"] for r in s.results)
+
+        # Someone to send away must be in the world, unless the plan brings him.
+        try:
+            s.apply_plan({"reason": "r", "ops": [{"op": "send_npc", "instance": "GHOST", "waypoint": "WP_1"}]})
+            raise AssertionError("expected NotReady")
+        except (st.NotReady, st.PlanError):
+            pass
+
+        # A broken rule fails once, and the failure survives a save and load.
+        fake.world.place_item = broken_place
+        s = st.Story()
+        s.apply_plan({"reason": "r", "ops": [{"op": "add_rule", "id": "bad", "when": [],
+                                             "ops": [{"op": "place_item", "instance": "ITCLUE", "waypoint": "WP_1"}]}]})
+        s._tick_rules()
+        s._tick_rules()
+        assert sum(1 for r in s.results if not r["ok"]) == 1 and s.state["rules"]["bad"]["failed"]
+        s.save("atomic")
+        t = st.Story()
+        t.load("atomic")
+        assert t.state["rules"]["bad"]["failed"]
+        t._tick_rules()
+        assert t.results == []
+    finally:
+        handover.give, handover.take, fake.world.place_item, trip.running = saved
+        del fake.daedalus.call, fake.journal
+
+
+for test in (test_plans_are_all_or_nothing_where_the_game_allows, test_owed_aftercare_survives_a_save, test_topic_while_he_smokes, test_return_to_a_split_menu, test_items_of_our_own, test_item_with_a_model_of_its_own, test_give_xp, test_waited_for_pipe_is_reserved, test_handed_over_but_nothing_to_play, test_topics_extend_an_npc, test_trip_operation, test_rule_contents_are_checked_when_submitted, test_graph_validation, test_validation, test_apply_and_rollback, test_return_npc, test_conditional_choices, test_returns_to_menu, test_questions_are_asked_once, test_variant_line, test_again_line, test_scene_and_rule, test_rule_fires_on_perception, test_narration_waits_for_quiet, test_drawing_a_weapon_is_perceived,
              test_queue_waits_for_safe_point, test_save_load_does_not_reapply_world,
              test_player):
     test()

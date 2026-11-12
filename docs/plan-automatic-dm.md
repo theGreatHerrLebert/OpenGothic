@@ -31,9 +31,10 @@ local inspector whose approvals are bound to exact text and audio. Five stories 
 
 Known to be weaker than it sounds:
 - The logic checker ignores rules, `checks` and guild gates, and trusts each line's declared facts.
-- Plans are all-or-nothing only for operations that have an undo; give_item, give_xp, journal, trip, narrate,
-  send and relocate have none.
-- The rule loop swallows runtime errors, and a failed rule is remembered only until the game is reloaded.
+- Plans are all-or-nothing as far as the game allows: what can fail is checked first, undoable effects run before
+  the rest, and a failure among experience, journal, trip, send or relocate after another of them leaves a log
+  entry of exactly what happened. Those effects themselves still cannot be taken back.
+- A plan or rule that waits for someone who never comes back into the world waits for good, silently.
 - The dependency map guards removal and relocation only, and lists just two safe NPCs.
 - A save keeps its own copy of a story, so fixes to a story file do not reach saves that already loaded it.
 
