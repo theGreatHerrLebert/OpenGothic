@@ -72,6 +72,10 @@ What a story can notice and test today:
   unconscious and others, and the evening's own: smoking at the water pipes, standing drinking at a barrel),
   `npc_dead`, `hour`, `has_item`, `wears`, `obsessed`. A topic only open while someone sits smoking talks the way
   people talk after work, as Hakon does about the dagger he holds in pawn.
+- **Rewards.** `give_item` for a thing, `give_xp` (`{"op": "give_xp", "amount": 150}`) for experience, through the
+  game's own reward with its message and sound. Keep to the game's scale for chapter one: 50 for an errand, 100 for a
+  task with some risk, 150 to 200 for a quest of several steps or a fight. A first level needs 500, so never more than
+  300 (the checker refuses it). Give it where the story is resolved, in the rule that closes it.
 - **Things and people in places.** `place_item` puts an item on a waypoint, with a quest description; a letter is an
   `ITWR_` item that opens on use and raises `read_item`. `send_npc` and `relocate_npc` move someone, `spawn_npc` brings
   an existing character into the world. The inspector's map shows who stands where at each hour of each chapter and

@@ -368,6 +368,22 @@ def _world_give(args):
     return None
 
 
+XP_MAX = 300   # chapter one's quests give 50 to 200; a story stays within the game's own scale
+
+
+def _check_xp(args, state):
+    _require(args, "amount")
+    amount = args["amount"]
+    if not isinstance(amount, int) or isinstance(amount, bool) or not 1 <= amount <= XP_MAX:
+        raise PlanError(f"give_xp amount must be a whole number from 1 to {XP_MAX}")
+
+
+def _world_xp(args):
+    # The game's own reward: experience, a level when it is due, "Erfahrung + n" on screen and its sound.
+    gothic.daedalus.call("B_GIVEPLAYERXP", args["amount"])
+    return None
+
+
 def _check_spawn(args, state):
     _require(args, "instance", "waypoint")
     _npc_instance(args["instance"])
@@ -499,6 +515,7 @@ OPS = {
     "journal": (_check_journal, _noop, _world_journal),
     "rename_npc": (_check_rename, _noop, _world_rename),
     "give_item": (_check_give, _noop, _world_give),
+    "give_xp": (_check_xp, _noop, _world_xp),
     "narrate": (_check_narrate, _noop, _world_narrate),
     "relocate_npc": (_check_relocate, _noop, _world_relocate),
     "trip": (_check_trip, _noop, _world_trip),

@@ -585,6 +585,20 @@ def test_trip_operation():
     rejected(s, [{"op": "add_rule", "id": "r", "when": ["x"], "ops": [{"op": "trip", "profile": "nope"}]}], "unknown trip")
 
 
+def test_give_xp():
+    s = st.Story()
+    s.validate([{"op": "give_xp", "amount": 150}])
+    s.validate([{"op": "add_rule", "id": "r", "when": ["x"], "ops": [{"op": "give_xp", "amount": 200}]}])
+    for bad in (0, 301, "150", 1.5, True):
+        rejected(s, [{"op": "give_xp", "amount": bad}], "give_xp")
+    rejected(s, [{"op": "give_xp"}], "amount")
+    called = []
+    fake.daedalus.call = lambda name, *args: called.append((name, *args))
+    st._world_xp({"amount": 150})
+    assert called == [("B_GIVEPLAYERXP", 150)]
+    del fake.daedalus.call
+
+
 def test_waited_for_pipe_is_reserved():
     # A pipe a rule waits for the hero to smoke is kept for him while the rule's conditions hold, then given back.
     calls = []
@@ -673,7 +687,7 @@ def test_topics_extend_an_npc():
     assert fake.dialog.topics["PARLAN"] == [("legend", "Kennst du die Kriegsmischung?")]
 
 
-for test in (test_waited_for_pipe_is_reserved, test_handed_over_but_nothing_to_play, test_topics_extend_an_npc, test_trip_operation, test_rule_contents_are_checked_when_submitted, test_graph_validation, test_validation, test_apply_and_rollback, test_return_npc, test_conditional_choices, test_returns_to_menu, test_questions_are_asked_once, test_variant_line, test_again_line, test_scene_and_rule, test_rule_fires_on_perception, test_narration_waits_for_quiet, test_drawing_a_weapon_is_perceived,
+for test in (test_give_xp, test_waited_for_pipe_is_reserved, test_handed_over_but_nothing_to_play, test_topics_extend_an_npc, test_trip_operation, test_rule_contents_are_checked_when_submitted, test_graph_validation, test_validation, test_apply_and_rollback, test_return_npc, test_conditional_choices, test_returns_to_menu, test_questions_are_asked_once, test_variant_line, test_again_line, test_scene_and_rule, test_rule_fires_on_perception, test_narration_waits_for_quiet, test_drawing_a_weapon_is_perceived,
              test_queue_waits_for_safe_point, test_save_load_does_not_reapply_world,
              test_player):
     test()
