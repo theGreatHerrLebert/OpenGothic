@@ -204,10 +204,10 @@ A trip of a few minutes with its own music, picture and thoughts.
 
 ### `end_story`
 
-Ends the story: its rules, scenes and topics are retired. Closures end with it by themselves.
+Ends the story: its rules, scenes and topics are retired. Put it in every ending rule; the story is filled in when it is played. Closures end with it by themselves.
 
 ```json
-{"op": "end_story", "story": "story_6", "outcome": "timeout"}
+{"op": "end_story", "outcome": "returned"}
 ```
 
 ## Written by the game master itself

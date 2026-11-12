@@ -42,3 +42,8 @@ graphs = play_story.voice_graphs(story, "newgame_9")
 assert graphs["newgame_9__TOPIC_TITLES"] == {"voice": "15", "narration": ["Kanntest du ihn?", "Und?"]}
 assert "newgame_9__A" in graphs
 print("voice graphs ok")
+
+# An ending rule ends its own story without naming it.
+ended = play_story.namespaced([{"op": "add_rule", "id": "won", "when": [], "ops": [{"op": "end_story", "outcome": "won"}]}], "story_9")
+assert ended[0]["ops"][0] == {"op": "end_story", "outcome": "won", "story": "story_9"}, ended
+print("own ending ok")

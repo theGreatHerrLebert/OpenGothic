@@ -76,8 +76,9 @@ OPS = {
     # The story as a whole
     "begin_story": ("runtime", "Written by the game when a story starts: its day and cast.",
                     {"op": "begin_story", "story": "story_6", "title": "Der weiße Wolf", "day": 4, "cast": ["BAU_912_PEPE"]}),
-    "end_story": ("Story", "Ends the story: its rules, scenes and topics are retired. Closures end with it by themselves.",
-                  {"op": "end_story", "story": "story_6", "outcome": "timeout"}),
+    "end_story": ("Story", "Ends the story: its rules, scenes and topics are retired. Put it in every ending rule; the "
+                           "story is filled in when it is played. Closures end with it by themselves.",
+                  {"op": "end_story", "outcome": "returned"}),
 }
 
 GROUPS = ["Knowledge", "Dialogue", "Rules", "People", "Items", "Effects", "Story", "runtime"]

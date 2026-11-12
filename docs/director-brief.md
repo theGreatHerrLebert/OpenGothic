@@ -52,6 +52,29 @@ a `significance` block, written before anything else, each answer one or two pla
 Mundane stories are welcome, Gothic is full of them; but even a small one gives the player a reason to care. The
 checker refuses a story whose block is missing or empty, and the blind scoring tests whether it was true.
 
+## Good to play
+
+None of this is a rule a checker can hold you to. It is what the player missed in a story that ran without a fault
+and was still not worth playing: return a pouch or keep it, 25 gold, no consequence, nothing underneath.
+
+- **Layers, because people have reasons.** Keep the simple way open: find the runaway novice, send him home, get
+  paid. Underneath, for the player who asks one more question, lies why he acts tough: his father beat him. Nobody
+  hands the player that layer, and finding it changes how he sees the person and the choice. The layer lives in the
+  people, so give the people in a story a history that shows in how they talk.
+- **A decision between rightful claims.** Giving something back is not a decision when keeping it costs nothing. Let
+  two people have a claim, each with a cost: the widow who says he is better off dead but pays with his sickle, the
+  grieving brother who will pay nothing because it goes to a debt.
+- **The sure thing against the unknown.** A known reward now, or a thing whose worth someone only hints at: the
+  sickle is worth little, but a man says it would mean everything to him and he would trade something good for it.
+  Not knowing is the tension, and the unknown side is a hook for a later story.
+- **Stakes that tempt this hero.** Look at what he owns. 25 gold means nothing to a hero with a few hundred; to one
+  with 35 it is still too little to betray a widow for. Pitch it where keeping it is a real temptation.
+- **The world hits back.** A hero who lets a mercenary take the fall for his own gain should expect that mercenary's
+  fist, not a journal line. Consequences follow the consistent rules above: strength answers strength.
+- **The story's own things.** The pouch the story is about is Hanno's pouch, not one of the game's many; the sickle
+  he left is his sickle. Make them with `define_item`, with a name and a line that says whose they were, so finding
+  one tells the player he has found it.
+
 ## Rules for a story
 
 - Respect the world. A novice cannot command a mage. An NPC knows only what could
@@ -205,7 +228,12 @@ pipe, never by surprise. One trip at a time. A player may switch the picture off
 
 ## Endings
 
-A story must be able to end quietly when it is never finished. Its top-level `closures` are rules that end it:
+Every rule that ends the story the player's way (its journal topic closed with status 2 or 3) ends with
+`{"op": "end_story", "outcome": "returned"}`; the story's number is filled in when it is played. Without it the story
+never counts as finished. Ending it retires its topics and scenes, so a thank-you said afterwards belongs in a
+`variants` line of an attached conversation, which stays.
+
+A story must also be able to end quietly when it is never finished. Its top-level `closures` are rules that end it:
 `[{"id": "too_late", "outcome": "timeout", "checks": [{"type": "story_age", "days": 5}], "ops": [...]}]`. When one
 fires, its operations run (a last line from off, a flag for a later story) and the story ends: its waiting rules,
 scenes and topics are retired. `story_age` counts days since the story began in this save. Write at least a timeout,

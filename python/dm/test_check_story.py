@@ -58,6 +58,21 @@ assert check_story.significance_problems({"from_play": "x", "stakes": "a b c d",
 assert check_story.significance_problems({k: "one two three four" for k in check_story.SIGNIFICANCE}) == []
 print("significance ok")
 
+# Endings: one that closes the journal must end the story; key and reward items should be the story's own.
+done = {"op": "journal", "topic": "T", "entry": "e", "status": 2}
+plain = {"plan": [{"op": "add_rule", "id": "won", "when": ["x"], "ops": [done, {"op": "give_item", "instance": "ITMW_AXE"}]},
+                  {"op": "add_rule", "id": "found", "on": {"event": "took_item", "item": "ITSE_POUCH"}, "ops": []}]}
+found = check_story.ending_warnings(plain)
+assert any("won: closes the journal" in w for w in found) and any("plain game item (ITMW_AXE)" in w for w in found)
+assert any("found: waits for a plain game item (ITSE_POUCH)" in w for w in found), found
+own = {"plan": [{"op": "define_item", "item": "ITSE_POUCH"}, {"op": "define_item", "item": "ITMW_AXE"},
+                {"op": "add_rule", "id": "won", "when": ["x"], "ops": [done, {"op": "give_item", "instance": "ITMW_AXE"},
+                                                                        {"op": "give_item", "instance": "ITMI_GOLD"},
+                                                                        {"op": "end_story", "story": "s", "outcome": "won"}]},
+                {"op": "add_rule", "id": "found", "on": {"event": "took_item", "item": "ITSE_POUCH"}, "ops": []}]}
+assert check_story.ending_warnings(own) == [], check_story.ending_warnings(own)
+print("endings ok")
+
 # Discoverability: a topic nobody points to, a night-only topic nobody says is at night, a deed nothing hints at.
 from dm import discoverability  # noqa: E402
 G = lambda *lines: {"start": "a", "nodes": {"a": {"line": lines[0], "choices": [{"text": l, "ends": True} for l in lines[1:]] or [{"text": "Gut.", "ends": True}]}}}

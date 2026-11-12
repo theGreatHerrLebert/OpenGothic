@@ -55,6 +55,8 @@ def namespaced(ops, prefix):
                 out[key] = [walk(o, True) for o in item]
             else:
                 out[key] = walk(item)
+        if value.get("op") == "end_story":
+            out["story"] = prefix   # an author ends his own story, by an ending rule, without knowing its number
         return out
     return [walk(op, True) for op in ops]
 

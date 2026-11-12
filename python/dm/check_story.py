@@ -73,6 +73,38 @@ def significance_problems(block):
             if not isinstance(block.get(key), str) or len(block[key].split()) < 4]
 
 
+def _all_ops(ops):
+    for op in ops or []:
+        if isinstance(op, dict):
+            yield op
+            yield from _all_ops(op.get("ops"))
+
+
+def ending_warnings(data):
+    """Technical weak spots of a story's endings and key items, as the brief's 'Good to play' describes. Warnings only:
+    whether a story is good is for the player to say."""
+    out = []
+    plan = data.get("plan") or []
+    own = {str(op.get("item", "")).upper() for op in _all_ops(plan) if op.get("op") == "define_item"}
+    for rule in (op for op in _all_ops(plan) if op.get("op") == "add_rule"):
+        inner = list(_all_ops(rule.get("ops")))
+        closes = any(op.get("op") == "journal" and op.get("status") in (2, 3) for op in inner)
+        if closes and not any(op.get("op") == "end_story" for op in inner):
+            out.append(f"ending {rule.get('id')}: closes the journal topic but does not end the story (end_story), "
+                       "so the story stays open for ever")
+        if closes:
+            for op in inner:
+                item = str(op.get("instance", "")).upper()
+                if op.get("op") == "give_item" and item not in own and item != "ITMI_GOLD":
+                    out.append(f"ending {rule.get('id')}: rewards a plain game item ({item}); a reward the story is "
+                               "about reads better as the story's own (define_item)")
+        taken = str((rule.get("on") or {}).get("item", "")).upper()
+        if (rule.get("on") or {}).get("event") == "took_item" and taken and taken not in own:
+            out.append(f"{rule.get('id')}: waits for a plain game item ({taken}); the player cannot tell it is the "
+                       "one the story is about. Make it the story's own (define_item)")
+    return out
+
+
 def lint(data):
     """Defects no conversation-level check sees: story logic that can never happen, and text that cannot be spoken."""
     errors, warnings = [], []
@@ -203,6 +235,7 @@ def check(path, names_path):
     errors += significance_problems(data.get("significance"))
     from dm import discoverability
     warnings += discoverability.warnings(data)
+    warnings += ending_warnings(data)
     closures = data.get("closures")
     if closures is not None and (not isinstance(closures, list) or not all(isinstance(c, dict) for c in closures)):
         errors.append("closures must be a list of rules")

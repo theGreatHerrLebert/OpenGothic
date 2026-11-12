@@ -52,3 +52,13 @@ In the game, with Alt+5 after a story ends or is abandoned (`feedback.py`):
   does, the agent can screen stories before a player sees them; if not, discoverability needs players.
 
 Only after this does an unattended runner (plan phase 7) make sense.
+
+## Note, 2026-11-12, after the first story
+
+Story 6 ("Der freie Strohsack") was played blind on both paths and ran clean, but was rated not worth playing,
+excitement 2, not like the original game, way "with luck", no surprise. The player: no hard decision (return or keep,
+neither costs anything), stakes too small, no consequence for framing a mercenary, no hidden layer, and the pouch and
+sickle were plain game items. The naive-player agent predicted "alone"; it missed. The director brief gained the
+section "Good to play" and the checker warns about endings that do not end the story and plain key items. Story 6
+counts for brief v1; the remaining five stories are written with the revised brief, so the experiment now compares
+the two only loosely.

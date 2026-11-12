@@ -502,6 +502,13 @@ void MainWindow::keyDownEvent(KeyEvent &event) {
     }
   uiKeyUp=nullptr;
 
+  // Alt with a key belongs to the game master (rating, choices). It must not also reach the hero's controls, where F
+  // is the look key and the digits draw weapons. Only the press is held back, so a key held before Alt still releases.
+  if((event.modifier&Event::M_Alt)==Event::M_Alt && event.key!=Event::K_LAlt && event.key!=Event::K_RAlt) {
+    event.accept();
+    return;
+    }
+
   auto act     = keycodec.tr(event);
   auto mapping = keycodec.mapping(event);
   player.onKeyPressed(act,event.key,mapping);
