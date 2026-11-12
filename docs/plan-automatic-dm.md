@@ -113,6 +113,13 @@ can be told apart.
 
 *Done when* a path-walking test kills each cast member at each stage and every story still closes.
 
+### Before 7: play, not only read
+
+An outside review (2026-11-12) argued, rightly, that five played stories are not yet evidence that unattended
+generation makes good play. `docs/experiment-3.md` comes first: authored stories the player has not read, played and
+rated in the game for whether they work, belong and are good to play, with a naive-player agent's prediction of
+where he gets stuck checked against his answer.
+
 ### 7. Unattended runner
 
 Build generation as a real program with budgets, retries and a story library, running with only the
