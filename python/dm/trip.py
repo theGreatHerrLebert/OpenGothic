@@ -157,6 +157,9 @@ SPECIAL_GUARDS = {"openers": ["Du bist ja völlig zugedröhnt.", "Was hast du ge
                               "Noch ein falscher Schritt, und du schläfst in der Kaserne.",
                               "Schlaf deinen Rausch aus. Woanders."]}
 GUARD_GUILDS = ("GIL_PAL", "GIL_MIL")
+# The voices citizens and guards speak in (as trip_voices voices their lines).
+SPECIAL_VOICES_ALL = ["01", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "16", "17"]
+GUARD_VOICES_ALL = ["01", "03", "04", "05", "06", "07", "08", "09", "11", "12", "13"]
 # Whoever stands drinking (at a barrel, tankard in hand) has an opinion on mixing.
 DRINKING = "ZS_STAND_DRINKING"
 SPECIAL_DRINKERS = {"openers": ["Ich glaube, du solltest dich vom Bier lieber fernhalten. So wie du gerade aussiehst, "
@@ -1032,7 +1035,78 @@ RECOGNISE = [
                                    "Darf ich vielleicht … nein. Lieber nicht. Oder doch?"], "Lieber nicht, Ignaz."),
     ("DJG_705_ANGAR_NW", None, "04", ["Diesen Rauch kenne ich. So rochen die Nächte der Gurus.",
                                       "Du hast gesehen, was Y'Berion sah. Behalte es für dich."], "Ich weiß, was er sah."),
+    # where nobody would expect it: the oldest of the Fire Mages, who was young once too
+    ("KDF_500_PYROKAR", None, "11", ["Diese Ringe. Und das Amulett. Komm näher.",
+                                     "Ja. Das ist es. Nordrauch, Wüstenrauch, Mondrauch.",
+                                     "Als ich jung war, noch vor dem Kloster, gab es einen Sommer, in dem …",
+                                     "Nun. Innos vergibt die Torheiten der Jugend. Meistens.",
+                                     "Kein Wort davon zu den Novizen."], "Kein Wort, Meister."),
 ]
+
+
+# Wearing all three smokes, the hero is remarked on as he passes: some by name, any citizen and any guard in their
+# own voice. Each person once a game day, and a breath between remarks, so it stays a remark and never chatter.
+REMARK_NEAR = 450.0       # how close (cm) he passes
+REMARK_GAP = 40.0         # seconds between two remarks
+REMARKS_BY_NAME = {
+    "VLK_456_ABUYIN": ("13", ["Da geht er, der Mann der drei Rauche."]),
+    "VLK_431_KARDIF": ("14", ["Drei Rauche an einem Mann. Du verträgst sicher mehr als meine Gäste."]),
+    "VLK_432_MOE": ("01", ["Du riechst nach drei Ländern auf einmal, Freundchen."]),
+    "VLK_409_ZURIS": ("14", ["Ich verkauf dir den Tabak. Was du draus machst, will ich gar nicht wissen."]),
+    "VLK_469_HALVOR": ("06", ["Lass dich mit den Ringen bloß nicht von der Miliz erwischen."]),
+    # and where nobody would expect it
+    "VLK_417_CONSTANTINO": ("10", ["Hmpf. Drei Rauche, und keiner davon aus meiner Werkstatt."]),
+    "MIL_311_ANDRE": ("08", ["Ich weiß, was diese Ringe bedeuten. Und ich weiß, dass ich nichts weiß. Weiter."]),
+}
+REMARKS_CITIZEN = ["Ist das nicht der, von dem der Ausrufer erzählt hat?", "Riechst du das? Sumpf, Schnee und Wüste."]
+REMARKS_GUARD = ["Drei Rauchringe. Ich hab dich im Auge."]
+_remarked = {}            # instance -> game day of his remark
+_remark_at = [0.0]
+
+
+def smoke_set_worn(carried, pieces):
+    """Whether all three smokes are worn at once."""
+    return len(pieces) == len(SMOKE_SET) and all(carried.get(c, False) for c in pieces.values())
+
+
+def remark_for(npc, rng):
+    """(voice, line) someone says to a hero wearing the three smokes, or None."""
+    instance = getattr(npc, "instance", "") or ""
+    if instance in REMARKS_BY_NAME:
+        voice, lines = REMARKS_BY_NAME[instance]
+        return voice, rng.choice(lines)
+    voice = f"{int(getattr(npc, 'voice', 0) or 0):02d}"
+    if is_guard(npc) and voice in GUARD_VOICES_ALL:
+        return voice, rng.choice(REMARKS_GUARD)
+    if instance.startswith(("VLK_", "BAU_")) and voice in SPECIAL_VOICES_ALL:
+        return voice, rng.choice(REMARKS_CITIZEN)
+    return None
+
+
+def tick_remarks(gothic, now, rng=random):
+    """One remark from someone the hero passes while he wears the three smokes."""
+    if now - _remark_at[0] < REMARK_GAP or _current is not None:
+        return
+    if gothic.dialog.partner() is not None or gothic.dialog.narrating():
+        return
+    pieces = smoke_set() if _story() is not None else {}
+    if not smoke_set_worn(_carried(gothic), pieces):
+        return
+    day = gothic.world.day
+    here = gothic.player.position
+    for npc in gothic.world.npcs_near(REMARK_NEAR):
+        instance = getattr(npc, "instance", "")
+        if _remarked.get(instance) == day or not getattr(npc, "alive", True):
+            continue
+        said = remark_for(npc, rng)
+        if said is None:
+            continue
+        from dm import voices
+        wav, ms = voices.lookup(*said)
+        if gothic.dialog.narrate(said[1], ms, wav):
+            _remarked[instance] = day
+            _remark_at[0] = now
+        return
 
 
 def _story():
@@ -1110,7 +1184,7 @@ def extra_topics(gothic):
         carried = _carried(gothic)
         if all(c in carried for c in pieces.values()) and not _flag(SMOKE_MASTER_FLAG):
             out[AFTERCARE_NPC].append((SMOKE_MASTER_TOPIC, SMOKE_MASTER_TITLE))
-        wearing = carried.get(pieces.get("sleeper"), False)
+        wearing = smoke_set_worn(carried, pieces)
         for instance, name, _voice, _lines, _last in RECOGNISE:
             out.setdefault(instance, [])
             if not wearing or _flag(f"trip:erkannt:{instance}"):
@@ -1165,6 +1239,10 @@ def after_lines():
     care += [(AFTERCARE_VOICE, line) for line in list(SMOKE_GIFT.values()) + SMOKE_MASTER]
     for _instance, _name, voice, lines, last in RECOGNISE:
         care += [(voice, line) for line in lines] + [(HERO_VOICE, last)]
+    for voice, lines in REMARKS_BY_NAME.values():
+        care += [(voice, line) for line in lines]
+    care += [(v, line) for v in SPECIAL_VOICES_ALL for line in REMARKS_CITIZEN]
+    care += [(v, line) for v in GUARD_VOICES_ALL for line in REMARKS_GUARD]
     care += [
             (HERO_VOICE, AFTERCARE_TITLE), (HERO_VOICE, AFTERCARE_LAST)]
     for talk in AFTERCARE.values():
@@ -1194,6 +1272,7 @@ def _tick(_dt):
     if _current is None:
         try:
             tick_after(gothic, time.monotonic())
+            tick_remarks(gothic, time.monotonic())
         except RuntimeError:
             pass                    # no world while loading
         _block_save(gothic)

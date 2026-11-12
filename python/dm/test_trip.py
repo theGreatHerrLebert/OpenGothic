@@ -795,6 +795,9 @@ assert (trip.SMOKE_MASTER_TOPIC, trip.SMOKE_MASTER_TITLE) in topics[trip.AFTERCA
 assert topics["VLK_449_LARES"] == []                                                      # amulet not worn
 inv[-1]["equipped"] = True
 topics = trip.extra_topics(gw)
+assert topics["VLK_449_LARES"] == []                                                      # the amulet alone: not yet
+inv[0]["equipped"] = True                                                                 # all three worn
+topics = trip.extra_topics(gw)
 assert topics["VLK_449_LARES"] == [("trip:erkannt:VLK_449_LARES", trip.RECOGNISE_TITLE)]
 assert topics["VLK_454_BUERGER"] and topics["VLK_455_BUERGER"] == []                      # Bjarne is; Kasim isn't here
 g = trip.topic("trip:erkannt:VLK_449_LARES")["graph"]
@@ -818,3 +821,32 @@ assert trip.topic(trip.AFTERCARE_TOPIC)["graph"]["nodes"]["b"]["line"] == trip.A
 assert "aftercare" not in sys.modules["dm.story"]._story.state                 # talked about: gone
 del sys.modules["dm.story"]
 print("aftercare across restarts ok")
+
+# Passing people while wearing the three smokes: a remark, by name or in a citizen's or guard's own voice, once a day
+# each, with a breath between remarks; nothing without the whole set.
+sys.modules["dm.story"] = types.SimpleNamespace(_story=_FakeStory())
+pieces = trip.smoke_set()
+inv = [{"instance": c, "equipped": True} for c in pieces.values()]
+said.clear()
+near = [types.SimpleNamespace(instance="VLK_456_ABUYIN", voice=13, alive=True),
+        types.SimpleNamespace(instance="VLK_4_BUERGER", voice=6, alive=True, guild=3)]
+gw3 = types.SimpleNamespace(world=types.SimpleNamespace(generation=1, day=4, npcs_near=lambda r: near,
+                                                        find_npc=lambda n: None),
+                            player=types.SimpleNamespace(items=inv, position=(0, 0, 0)), dialog=dialog)
+dialog.partner = lambda: None
+trip._current, trip._remarked, trip._remark_at[0] = None, {}, -1000.0
+trip.tick_remarks(gw3, 0.0)
+assert said[-1] in trip.REMARKS_BY_NAME["VLK_456_ABUYIN"][1]
+trip.tick_remarks(gw3, 5.0)
+assert len(said) == 1                                                                     # a breath between
+trip.tick_remarks(gw3, 50.0)
+assert said[-1] in trip.REMARKS_CITIZEN                                                   # the citizen in his voice
+trip.tick_remarks(gw3, 100.0)
+assert len(said) == 2                                                                     # each once a day
+inv[0]["equipped"] = False
+gw3.world.day = 5
+trip.tick_remarks(gw3, 200.0)
+assert len(said) == 2                                                                     # not the whole set: nothing
+assert ("13", trip.REMARKS_BY_NAME["VLK_456_ABUYIN"][1][0]) in trip.after_lines()
+del sys.modules["dm.story"]
+print("remarks ok")
