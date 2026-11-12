@@ -73,6 +73,42 @@ GUARD_VOICES = ["01", "03", "04", "05", "06", "07", "08", "09", "11", "12", "13"
 SPECIAL_PEOPLE_VOICES = {"VLK_456_ABUYIN": "13"}
 
 
+# Who speaks each trip voice file's lines, for the story library's "Trip-Stimmen" page.
+LIBRARY_LABELS = {"trip__thoughts": "Held · Gedanken im Rausch (verzerrt)", "trip__after_15": "Held · nüchtern",
+                  "trip__after_13": "Abuyin · Nachgespräch", "trip__special_vlk_456_abuyin": "Abuyin · im Rausch",
+                  "trip__after_16": "Nadja · Abschied", "trip__after_07": "Bromor · Abschied",
+                  "trip__after_11": "Borka · Abschied", "trip__after_05": "Vatras · Morgen danach"}
+
+
+def write_library(all_graphs):
+    """Writes the trip's lines as a page for the story library (newgame/story_trip.json and its graphs_trip.json):
+    one conversation per speaker, one node per line, the hero's thoughts in their distorted take. Not a story to play:
+    a place to hear every recording and choose the better take."""
+    conversations = {}
+    for key, graph in all_graphs.items():
+        label = LIBRARY_LABELS.get(key) or (f"Wache · Stimme {graph['voice']}" if key.startswith("trip__guard_")
+                                            else f"Jemand · Stimme {graph['voice']}")
+        delivery = trip.DELIVERY if key == "trip__thoughts" else None
+        nodes = {}
+        lines = graph["narration"]
+        for i, line in enumerate(lines):
+            node = {"line": line, "choices": []}
+            if delivery:
+                node["delivery"] = delivery
+            if i + 1 < len(lines):
+                node["returns"] = f"n{i + 1}"
+            nodes[f"n{i}"] = node
+        conversations[label] = {"voice": graph["voice"], "start": "n0", "nodes": nodes}
+    story = {"title": "Trip-Stimmen", "premise": "Alle Zeilen der Trips zum Anhören und Sortieren: Gedanken, "
+             "Gespräche im Rausch, Wachen, Trinker, Abschiede und das Nachgespräch. Keine Geschichte zum Spielen.",
+             "hidden_truth": "", "plot": {"facts": {}}, "conversations": conversations, "plan": [], "voices_only": True}
+    folder = voices.RUNTIME_DIR / "newgame"
+    (folder / "story_trip.json").write_text(json.dumps(story, ensure_ascii=False, indent=1), encoding="utf-8")
+    (folder / "graphs_trip.json").write_text(
+        json.dumps({f"newgame_trip__{k}": g for k, g in conversations.items()}, ensure_ascii=False, indent=1),
+        encoding="utf-8")
+
+
 def main(stories):
     lines = trip.thought_lines() + [line for path in stories for line in story_thoughts(path)]
     lines = list(dict.fromkeys(lines))
@@ -93,10 +129,13 @@ def main(stories):
     subprocess.run([sys.executable, str(HERE / "bake_voices.py"), "all", game, str(graphs)], check=True)
     made = sum(distort(line) for line in lines)
     print(f"{made} of {len(lines)} thoughts distorted")
+    write_library(all_graphs)
 
 
 if __name__ == "__main__":
-    if sys.argv[1:2] == ["--again"]:
+    if sys.argv[1:2] == ["--library"]:
+        write_library(json.loads((voices.RUNTIME_DIR / "trip_thoughts.json").read_text(encoding="utf-8")))
+    elif sys.argv[1:2] == ["--again"]:
         redistort(sys.argv[2:])
     else:
         main(sys.argv[1:])

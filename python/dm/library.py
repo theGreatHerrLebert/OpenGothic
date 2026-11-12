@@ -224,6 +224,8 @@ def check(story_id):
     """check_story's report for a generated story, as it will play: with the voiced dialogue, see generated()."""
     data, _ = generated(story_id)
     names = EXPERIMENT / "world_names.json"
+    if data is not None and data.get("voices_only"):
+        return {"ok": True, "errors": [], "warnings": []}   # a page of recordings, not a story to check
     if data is None or not names.exists():
         return {"ok": False, "errors": ["story or world_names.json missing"], "warnings": []}
     return check_story.check(data, str(names))
