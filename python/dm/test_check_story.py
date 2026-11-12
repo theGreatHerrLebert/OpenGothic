@@ -83,6 +83,13 @@ priced["plan"][0]["value"] = 100
 assert check_story.value_warnings(priced) == []
 print("values ok")
 
+twins = {"conversations": {"c": {"nodes": {"a": {"choices": [{"text": "Noch mal.", "goto": "b", "requires": ["x"]},
+                                                              {"text": "Gleicher Wurf.", "goto": "b", "requires": ["x"]},
+                                                              {"text": "Anders.", "goto": "c"}]}}}}}
+found = check_story.duplicate_choice_warnings(twins)
+assert len(found) == 1 and "Gleicher Wurf." in found[0], found
+print("duplicate choices ok")
+
 # Discoverability: a topic nobody points to, a night-only topic nobody says is at night, a deed nothing hints at.
 from dm import discoverability  # noqa: E402
 G = lambda *lines: {"start": "a", "nodes": {"a": {"line": lines[0], "choices": [{"text": l, "ends": True} for l in lines[1:]] or [{"text": "Gut.", "ends": True}]}}}

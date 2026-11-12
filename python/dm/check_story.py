@@ -147,6 +147,28 @@ def softlock_errors(data):
     return [text for text in audit.softlocks() and audit.blockers if text.startswith("softlock")]
 
 
+def duplicate_choice_warnings(data):
+    """Two choices in one menu that show at the same time and lead to the same place: the player cannot tell them
+    apart. Each choice should say what it does."""
+    out = []
+    graphs = list((data.get("conversations") or {}).items())
+    graphs += [(op.get("id") or op.get("npc"), op["graph"]) for op in _all_ops(data.get("plan"))
+               if isinstance(op.get("graph"), dict)]
+    seen = set()
+    for name, graph_data in graphs:
+        for key, node in (graph_data.get("nodes") or {}).items():
+            shown = {}
+            for choice in node.get("choices") or []:
+                when = json.dumps([choice.get("goto"), choice.get("ends"), sorted(choice.get("requires") or []),
+                                   choice.get("unless"), choice.get("checks")], sort_keys=True)
+                if when in shown and (name, key, when) not in seen:
+                    seen.add((name, key, when))
+                    out.append(f"{name}: node {key}: \"{shown[when]}\" and \"{choice.get('text')}\" show together and "
+                               "lead to the same place; keep one, or make each say what it does")
+                shown.setdefault(when, choice.get("text"))
+    return out
+
+
 def ending_warnings(data):
     """Technical weak spots of a story's endings and key items, as the brief's 'Good to play' describes. Warnings only:
     whether a story is good is for the player to say."""
@@ -304,6 +326,7 @@ def check(path, names_path):
     warnings += discoverability.warnings(data)
     warnings += ending_warnings(data)
     warnings += value_warnings(data)
+    warnings += duplicate_choice_warnings(data)
     errors += softlock_errors(data)
     closures = data.get("closures")
     if closures is not None and (not isinstance(closures, list) or not all(isinstance(c, dict) for c in closures)):

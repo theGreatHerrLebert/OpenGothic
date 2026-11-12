@@ -234,6 +234,10 @@ accident with topics unexplored. A finished topic returns to the menu by itself;
 "Zurück" only where more can still be asked. A decision that must be faced may have no
 way out, and a story may still end a conversation deliberately. Every line must make sense as a response to what was just said.
 
+Every choice says what it does and what it implies: "Tausch: Oles Taler gegen deinen Würfel", "Kauf dir deinen
+Würfel zurück. Hundert Gold.", not three lines that all start with the coin. Two choices that show together and
+lead to the same place are one too many; the checker warns.
+
 ## Conditions on the live game
 
 Flags record what the story remembers. A `checks` list on a scene, a rule or a dialogue choice tests what is true right
