@@ -747,6 +747,38 @@ PYBIND11_EMBEDDED_MODULE(gothic, m) {
              return out;
              },
            py::arg("radius"), "Usable objects (beds, benches, pipes, anvils ...) within radius of the hero.")
+      .def("reserve_object",
+           [](const PyWorld&, const std::string& scheme, float x, float z, float radius, bool on) -> py::object {
+             // The object of this scheme nearest (x, z) within radius, kept for the hero or given back. An NPC
+             // already using it is told to get up the ordinary way; returns his instance name, "" if nobody was
+             // there, None if there is no such object.
+             auto* w = requireWorld();
+             Interactive* best = nullptr;
+             float bestD = radius*radius;
+             for(auto* i:w->interactivesNear(Tempest::Vec3(x, 0, z), radius*4.f)) {
+               if(!i->checkMobName(scheme))
+                 continue;
+               auto  p = i->position();
+               float d = (p.x-x)*(p.x-x) + (p.z-z)*(p.z-z);
+               if(d<=bestD) {
+                 bestD = d;
+                 best  = i;
+                 }
+               }
+             if(best==nullptr)
+               return py::none();
+             best->setReserved(on);
+             auto* user = best->currentUser();
+             if(on && user!=nullptr && !user->isPlayer()) {
+               user->aiPush(AiQueue::aiUseMob(scheme, -1));   // stands up, as at the end of his own smoke
+               if(auto* sym = w->script().getVm().find_symbol_by_index(uint32_t(user->handle().symbol_index())))
+                 return py::str(sym->name());
+               return py::str("?");
+               }
+             return py::str("");
+             },
+           py::arg("scheme"), py::arg("x"), py::arg("z"), py::arg("radius") = 150.f, py::arg("on") = true,
+           "Keep a usable object for the hero (NPCs treat it as taken; one using it gets up), or give it back.")
       .def("place_item", &PyWorld::placeItem, py::arg("instance"), py::arg("waypoint") = "",
            py::arg("count") = 1, py::arg("position") = py::none())
       .def("remove_npc", &PyWorld::removeNpc, py::arg("npc"))

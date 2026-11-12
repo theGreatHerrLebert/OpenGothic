@@ -77,6 +77,11 @@ class Interactive : public Vob {
     Tempest::Vec3       nearestPoint(const Npc& to) const;
 
     bool                isAvailable() const;
+    // Kept for the hero by a story (a pipe filled for him): NPCs treat it as taken, the hero may use it. Not saved; the
+    // story sets it again every tick from its own state.
+    bool                isReserved() const { return reserved; }
+    void                setReserved(bool r) { reserved = r; }
+    Npc*                currentUser() const;
     bool                isStaticState() const;
     bool                isDetachState(const Npc& npc) const;
     bool                canQuitAtState(const Npc& npc, int32_t state) const;
@@ -170,6 +175,7 @@ class Interactive : public Vob {
     bool                reverseState  = false;
     bool                loopState     = false;
     bool                isLockCracked = false;
+    bool                reserved      = false;
 
     uint64_t            waitAnim      = 0;
     bool                animChanged   = false;

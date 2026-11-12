@@ -878,7 +878,7 @@ Interactive *WorldObjects::availableMob(const Npc &pl, std::string_view dest) {
 
   float curDist=dist*dist;
   interactiveObj.find(pl.position(),dist,[&](Interactive& i){
-    if(i.isAvailable() && i.checkMobName(dest)) {
+    if(i.isAvailable() && i.checkMobName(dest) && !(i.isReserved() && !pl.isPlayer())) {
       float d = pl.qDistTo(i);
       if(d<curDist){
         ret    = &i;

@@ -738,6 +738,13 @@ Interactive::Pos *Interactive::findFreePos() {
   return nullptr;
   }
 
+Npc* Interactive::currentUser() const {
+  for(auto& i:attPos)
+    if(i.user!=nullptr)
+      return i.user;
+  return nullptr;
+  }
+
 bool Interactive::isAvailable() const {
   for(auto& i:attPos)
     if(i.user!=nullptr)
