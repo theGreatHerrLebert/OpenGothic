@@ -314,6 +314,7 @@ fake.player = types.SimpleNamespace(set_position=lambda *p: moves.append(p),
                                     use_object=lambda scheme, state, quiet=False: uses.append((scheme, state, quiet))
                                     or len(uses) >= 2)
 fake.world.set_time = lambda h, m: times.append((h, m))
+fake.world.has_waypoint = lambda wp: True
 said.clear()
 talking = {"open": True}                                        # mid-conversation when it goes black
 dialog.is_open = lambda: talking["open"]
@@ -526,5 +527,18 @@ assert binds[-1] == ("unbind", vatras)                          # his own conver
 trip.tick_after(fake, now + 0.3)
 assert trip._after is None
 assert ("05", trip.BLACKOUTS["anrufung"]["after"][0]["line"]) in trip.after_lines()
+
+# In another world (no temple there) he comes to where he fell: no move, no morning, nobody waiting.
+moves.clear(); times.clear(); binds.clear()
+fake.world.has_waypoint = lambda wp: False
+fake.player.use_object = lambda *a, **k: (_ for _ in ()).throw(AssertionError("no bed elsewhere"))
+elsewhere = trip.Trip([(3.0, 1.0, 0.2, 0, 0), (3.0, 0.0, 0.01, 0, 0)], None, style="invocation",
+                      blackout=trip.BLACKOUTS["anrufung"])
+now = 0.0
+while elsewhere.tick(fake, now):
+    now += 0.05
+    assert now < 60, "the blackout never ended"
+assert moves == [] and times == [] and trip._after is None and said[-1] in trip.BLACKOUTS["anrufung"]["wake"]
+fake.world.has_waypoint = lambda wp: True
 fake.player = None
 print("invocation ok")

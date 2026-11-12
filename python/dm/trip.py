@@ -200,6 +200,7 @@ def is_guard(npc):
 BLACKOUTS = {
     # An open bed upstairs in the Red Lantern: the one beside it is behind a door the hero cannot open alone.
     "skorpion_goa": {"bed": (2233.0, 97.0, -2556.0), "scheme": "BEDHIGH", "hour": 9,
+                     "in_world": "NW_CITY_HABOUR_PUFF_ENTRANCE",   # the Red Lantern exists only in Khorinis
                      "wake": ["Wo … bin ich?", "Was ist das für ein Bett?", "Riecht nach billigem Parfüm …",
                               "Mein Kopf … was ist passiert?"],
          # On the way out, the house has a word for him: each once, as he passes them.
@@ -218,7 +219,7 @@ BLACKOUTS = {
                             "wieder gehen."}]},
     # Y'Berion collapsed at the Invocation; the hero comes to in Adanos's temple, where Vatras prays at night and
     # preaches outside from five. No bed: he wakes on his feet before the altar. Vatras's first conversation is this.
-    "anrufung": {"waypoint": "NW_CITY_MERCHANT_TEMPLE_IN", "hour": 6,
+    "anrufung": {"waypoint": "NW_CITY_MERCHANT_TEMPLE_IN", "in_world": "NW_CITY_MERCHANT_TEMPLE_IN", "hour": 6,
                  "wake": ["Wo bin ich … ein Tempel?", "Adanos? Warum ausgerechnet Adanos?",
                           "Mein Kopf … und warum knie ich hier?"],
                  "after": [{"npc": "VLK_439_VATRAS", "voice": "05", "converse": True,
@@ -580,14 +581,17 @@ class Trip:
                 gothic.dialog.trip_talk(False)
                 if gothic.dialog.is_open():
                     gothic.dialog.close()                  # nobody talks through a blackout: the partner stays behind
-                gothic.player.set_position(*(cfg["bed"] if "bed" in cfg
-                                             else gothic.world.waypoint_position(cfg["waypoint"])))
-                gothic.world.set_time(cfg["hour"], 0)      # the next morning; NPCs go back to their routines
+                if "in_world" not in cfg or gothic.world.has_waypoint(cfg["in_world"]):
+                    gothic.player.set_position(*(cfg["bed"] if "bed" in cfg
+                                                 else gothic.world.waypoint_position(cfg["waypoint"])))
+                    gothic.world.set_time(cfg["hour"], 0)  # the next morning; NPCs go back to their routines
+                else:
+                    b["elsewhere"] = True                  # another world: he comes to where he fell, nobody waits
                 return dict(look(0.0, elapsed, style=self.style), tint=(0.0, 0.0, 0.0, 1.0))
             return dict(fx, tint=(0.0, 0.0, 0.0, alpha))
         sober = look(0.0, elapsed, style=self.style)
         if b["stage"] == "dark":
-            if "scheme" not in cfg:
+            if "scheme" not in cfg or b.get("elsewhere"):
                 b.setdefault("lying", True)                # no bed: he comes to on his feet
                 b.setdefault("lay_at", now)
             if not b.get("lying") and since >= SETTLE:
@@ -602,7 +606,8 @@ class Trip:
             alpha = max(0.0, 1.0 - since / FADE_WAKE)
             if alpha <= 0.0 and say_plain(gothic, self.rng.choice(cfg["wake"])) is not None:
                 b["stage"] = "done"
-                remember_after(gothic, cfg.get("after", []), now)
+                if not b.get("elsewhere"):
+                    remember_after(gothic, cfg.get("after", []), now)
             return dict(sober, tint=(0.0, 0.0, 0.0, alpha))
         return sober
 
