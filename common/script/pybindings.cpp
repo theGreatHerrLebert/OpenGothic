@@ -949,9 +949,14 @@ PYBIND11_EMBEDDED_MODULE(gothic, m) {
   py::module_ res = m.def_submodule("resources", "A story's own looks: textures from its files, variants of game meshes.");
   res.def("mesh_textures", [](const std::string& mesh) { return Resources::meshTextures(mesh); }, py::arg("mesh"),
           "The textures a game mesh (.3DS) is drawn with.");
-  res.def("export_texture", [](const std::string& name, const std::string& path) {
-            return Resources::exportTexture(name, path);
-            }, py::arg("name"), py::arg("path"), "Write a game texture out as a PNG file.");
+  res.def("export_texture",
+          [](const std::string& name, const std::string& path, std::tuple<float,float,float> tint, float strength,
+             float brighten) {
+            const float t[3] = {std::get<0>(tint), std::get<1>(tint), std::get<2>(tint)};
+            return Resources::exportTexture(name, path, t, strength, brighten);
+            }, py::arg("name"), py::arg("path"), py::arg("tint") = std::make_tuple(1.f,1.f,1.f),
+          py::arg("strength") = 0.f, py::arg("brighten") = 1.f,
+          "Write a game texture out as a PNG file, recoloured towards tint by strength (0 keeps it as it is).");
   res.def("register_texture", [](const std::string& name, const std::string& path) {
             Resources::registerTexture(name, path);
             }, py::arg("name"), py::arg("path"), "A texture name that loads from this image file.");

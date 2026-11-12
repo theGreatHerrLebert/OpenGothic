@@ -114,7 +114,9 @@ class Resources final {
     static bool                      registerMeshVariant(std::string_view alias, std::string_view base,
                                                          const std::map<std::string,std::string>& textures);
     static std::vector<std::string>  meshTextures(std::string_view mesh);
-    static bool                      exportTexture(std::string_view name, std::string_view path);
+    static bool                      exportTexture(std::string_view name, std::string_view path,
+                                                   const float tint[3] = nullptr, float strength = 0.f,
+                                                   float brighten = 1.f);
     static const PfxEmitterMesh*     loadEmiterMesh (std::string_view name);
     static const Skeleton*           loadSkeleton   (std::string_view name);
     static const Animation*          loadAnimation  (std::string_view name);

@@ -1240,7 +1240,8 @@ std::vector<std::string> Resources::meshTextures(std::string_view mesh) {
   return out;
   }
 
-bool Resources::exportTexture(std::string_view name, std::string_view path) {
+bool Resources::exportTexture(std::string_view name, std::string_view path, const float tint[3], float strength,
+                              float brighten) {
   std::lock_guard<std::recursive_mutex> g(inst->sync);
   auto alt = std::string(name);
   if(FileExt::hasExt(alt,"TGA")) {
@@ -1255,6 +1256,18 @@ bool Resources::exportTexture(std::string_view name, std::string_view path) {
     auto reader = entry->open_read();
     tex.load(reader.get());
     auto rgba = tex.as_rgba8(0);
+    if(tint!=nullptr && strength>0.f) {
+      // Towards the tint by each pixel's own lightness: shapes, shading and transparency stay.
+      for(size_t i=0; i+3<rgba.size(); i+=4) {
+        float r = rgba[i], g = rgba[i+1], b = rgba[i+2];
+        float lum = (0.299f*r + 0.587f*g + 0.114f*b)*brighten;
+        float c[3] = {r, g, b};
+        for(int k=0; k<3; ++k) {
+          float to = std::min(255.f, lum*tint[k]);
+          rgba[i+size_t(k)] = uint8_t(std::clamp(c[k]*(1.f-strength) + to*strength, 0.f, 255.f));
+          }
+        }
+      }
     Pixmap pm(tex.width(), tex.height(), TextureFormat::RGBA8);
     std::memcpy(pm.data(), rgba.data(), rgba.size());
     pm.save(std::string(path).c_str(), "png");
