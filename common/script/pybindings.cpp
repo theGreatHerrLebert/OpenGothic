@@ -771,6 +771,20 @@ PYBIND11_EMBEDDED_MODULE(gothic, m) {
              auto* user = best->currentUser();
              if(on && user!=nullptr && !user->isPlayer()) {
                user->aiPush(AiQueue::aiUseMob(scheme, -1));   // stands up, as at the end of his own smoke
+               // ... and steps clear of it, so the hero can get to it: the waypoint nearest a spot a few steps
+               // further away, on his side.
+               auto  bp  = best->position();
+               auto  up  = user->position();
+               float dx  = up.x-bp.x, dz = up.z-bp.z;
+               float len = std::max(std::sqrt(dx*dx + dz*dz), 1.f);
+               auto  to  = Tempest::Vec3(up.x + dx/len*250.f, up.y, up.z + dz/len*250.f);
+               auto clear = [bp](const WayPoint& wp) {
+                 auto  q  = wp.position();
+                 float wx = q.x-bp.x, wz = q.z-bp.z;
+                 return wx*wx + wz*wz > 150.f*150.f;
+                 };
+               if(auto* wp = w->findWayPoint(to, clear))
+                 user->aiPush(AiQueue::aiGoToPoint(*wp));
                if(auto* sym = w->script().getVm().find_symbol_by_index(uint32_t(user->handle().symbol_index())))
                  return py::str(sym->name());
                return py::str("?");
