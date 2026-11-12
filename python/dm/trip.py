@@ -50,10 +50,11 @@ PROFILES = {
     "skorpion_goa": [(25.0, 0.08, 0.010, 0.0, 0.0), (35.0, 0.35, 0.006, 0.02, 0.02), (5.0, 0.95, 0.050, 0.0, 0.0),
                      (55.0, 0.80, 0.008, 0.12, 0.05), (50.0, 0.90, 0.006, 0.10, 0.04), (65.0, 1.00, 0.010, 0.06, 0.05),
                      (30.0, 0.00, 0.006, 0.0, 0.0)],
-    # The Invocation (Y'Berion's forbidden blend): a long moonlit prayer, the call rising, the vision at the peak,
-    # and a collapse into a blackout. Provisional until its own track is cut to it.
-    "anrufung": [(40.0, 0.25, 0.006, 0.0, 0.0), (40.0, 0.45, 0.005, 0.03, 0.02), (50.0, 0.75, 0.006, 0.05, 0.02),
-                 (45.0, 1.00, 0.010, 0.04, 0.03), (25.0, 0.00, 0.008, 0.0, 0.0)],
+    # The Invocation (Y'Berion's forbidden blend). Cut to "Moonlit Prayer" (234 s, 103 BPM): a quiet prayer for a
+    # minute, the call rising to 160 s, a short break, the vision opening as the climax starts at 168 s, and the
+    # blackout falling with the music's collapse into silence at 230 s.
+    "anrufung": [(60.0, 0.30, 0.005, 0.0, 0.0), (40.0, 0.50, 0.005, 0.03, 0.02), (60.0, 0.75, 0.006, 0.05, 0.02),
+                 (8.0, 0.65, 0.020, 0.0, 0.0), (60.0, 1.00, 0.012, 0.04, 0.03), (12.0, 0.00, 0.020, 0.0, 0.0)],
 }
 
 # How each trip looks. Mindcap: neon edges and long tracers in pink, violet and green. Ember (Solaris's Emberheart):
@@ -269,7 +270,8 @@ def draw_thoughts(rng, style="mindcap"):
 
 # A profile's own track, in python/dm_runtime/music (private: never committed).
 TRACKS = {"mindcap": "mindcap.wav", "wasserpfeife": "wasserpfeife.wav", "nordmar": "nordmar.wav",
-          "kriegsgesang": "kriegsgesang.wav", "skorpion": "skorpion.wav", "skorpion_goa": "skorpion_goa.wav"}
+          "kriegsgesang": "kriegsgesang.wav", "skorpion": "skorpion.wav", "skorpion_goa": "skorpion_goa.wav",
+          "anrufung": "anrufung.wav"}
 MUSIC_DIR = __import__("pathlib").Path(__file__).resolve().parent.parent / "dm_runtime" / "music"
 
 
