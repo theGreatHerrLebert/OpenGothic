@@ -78,10 +78,23 @@ def build():
     data={"title":"Der Fall Tilo","frame":re.sub(r"\s+"," ",t.__doc__.split("Frame:")[1]).strip(),"truth":t.HIDDEN_TRUTH,"errors":errors,"warnings":warnings,"facts":{f:dict(essential=v.get("essential",False),topic=v.get("topic",False),needs=v.get("needs",[]),knownBy=[names.get(n,n) for n in v.get("known_by",[])]) for f,v in plot["facts"].items()},
     "convs":[{"id":i,"speaker":s,"where":w,"requires":scenes.get(i,{}).get("requires",[]),"unless":scenes.get(i,{}).get("unless") or [],"within":scenes.get(i,{}).get("within"),"scene":i in scenes,"start":g[i]["start"],"nodes":g[i]["nodes"]} for i,s,w in order],
     "rules":[{"id":r["id"],"when":r["when"],"ops":[{k:v for k,v in o.items() if k in("op","instance","count","id","waypoint","requires")} for o in r["ops"]]} for r in rules]}
+    mermaid = _demo_mermaid(data, plot)
+    _demo_audio(data, g)
+    return data, mermaid
+
+
+_CLASS_DEFS = ["  classDef conv fill:#7A1F14,stroke:#2a1c10,color:#F0E2C0",
+               "  classDef fact fill:#EADBB6,stroke:#7A5F36,color:#2A1C10",
+               "  classDef ess fill:#D9A441,stroke:#7A1F14,color:#2A1C10",
+               "  classDef effect fill:#3E5A22,stroke:#2a1c10,color:#F0E2C0"]
+
+
+def _demo_mermaid(data, plot):
+    """The hand-drawn flow graph of the demo story."""
     lab={"tilo_named":"Tilos Name","tilo_absent":"Tilo fehlt","wine_trips":"seine Weingänge","silver_stolen":"Silber gestohlen","candlesticks":"zwei Leuchter","reward":"Belohnung ausgesetzt","tilo_past":"sein Vater","gambling":"Würfelschulden","harbour_lead":"Spur zum Hafen","friend_offer":"Anselms Angebot","harek_wary":"Harek ist misstrauisch","silver_sold":"Silber an Harek verkauft","tilo_nearby":"versteckt am Hafen","tilo_cornered":"am Hafen getroffen","tilo_met":"Tilo getroffen","barrel_met":"Fass-Novize getroffen","tilo_stressed":"wirkte gehetzt","tilo_turned_in":"Tilo ausgeliefert","tilo_helped":"Tilo geholfen","parlan_paid":"Belohnung bezahlt","anselm_secret":"Geheimnis erzählt","tilo_threatened":"Tilo erpresst","tilo_confessed":"Tilo gestanden"}
     conv={c["id"]:c for c in data["convs"]}
     titles={"tilo_back_at_work":"Tilo wieder bei der Arbeit","tilo_ordered_home":"Tilo gehorcht","tilo_after_help":"Tilo verabschiedet sich","tilo_after_turned_in":"Tilo verspricht zu folgen","barrel":"Der Novize an den Fässern","tilo_before":"Tilo vor dem Diebstahl","gorax":"Gorax beschwert sich","parlan":"Parlan verkündet","anselm":"Anselms Bitte","harek":"Harek","tilo":"Tilo","parlan_reward":"Parlan zahlt","anselm_bitter":"Anselm wendet sich ab","anselm_grateful":"Anselms Geheimnis"}
-    L=["flowchart LR"]; seen=set(); facts=set(); E=set()
+    L=["flowchart LR"]; facts=set(); E=set()
     def f(x):
         facts.add(x); return "f_"+x
     for cid,c in conv.items():
@@ -106,7 +119,12 @@ def build():
     for x in sorted(facts):
         L.append(f'  f_{x}("{lab[x]}"):::{"ess" if plot["facts"].get(x,{}).get("essential") else "fact"}')
     L+=sorted(E)
-    L+=["  classDef conv fill:#7A1F14,stroke:#2a1c10,color:#F0E2C0","  classDef fact fill:#EADBB6,stroke:#7A5F36,color:#2A1C10","  classDef ess fill:#D9A441,stroke:#7A1F14,color:#2A1C10","  classDef effect fill:#3E5A22,stroke:#2a1c10,color:#F0E2C0"]
+    L+=_CLASS_DEFS
+    return "\n".join(L)
+
+
+def _demo_audio(data, g):
+    """The demo story's recordings, attached to copies of its nodes."""
     for conv in data["convs"]:
         voice = g[conv["id"]].get("voice")
         conv["voice"] = voice
@@ -119,7 +137,6 @@ def build():
                 variant["audio"] = audio_url(voice, variant["line"], n.get("delivery"))
             for choice in n["choices"]:
                 choice["audio"] = audio_url(voices.HERO_VOICE, choice["text"])
-    return data, "\n".join(L)
 
 
 def _text_hash(text):
@@ -546,16 +563,6 @@ def story_graph(data, labels, cast):
                     edge(f"  {fact(name)} -. line .-> {conv_ids[key]}")
                     note(name, "unlocks", labels[key] + ": „" + choice["text"] + "“")
 
-    def outcome(op):
-        who = cast.get(op.get("npc") or op.get("instance"), op.get("npc") or op.get("instance"))
-        if op["op"] == "give_item":
-            return f"{op.get('count', 1)}× {op['instance']}"
-        if op["op"] == "place_item":
-            return (op.get("quest") or {}).get("description") or op["instance"]
-        return {"send_npc": f"{who} geht fort", "relocate_npc": f"{who} wechselt den Ort",
-                "detach_dialogue_graph": f"{who} verstummt", "spawn_npc": f"{who} erscheint",
-                "rename_npc": f"{who} heisst nun anders"}.get(op["op"])
-
     def walk(ops, when=(), unless=()):
         for op in ops:
             if op["op"] == "add_rule":
@@ -572,14 +579,31 @@ def story_graph(data, labels, cast):
                 for name in when:
                     edge(f"  {fact(name)} ==> {fact(op['name'])}")
                 note(op["name"], "taught", "eine Folge in der Welt")
-            elif when and outcome(op):
-                target = effect(outcome(op))
+            elif when and _outcome(op, cast):
+                target = effect(_outcome(op, cast))
                 for name in when:
                     edge(f"  {fact(name)} ==> {target}")
                 for name in unless:
                     edge(f"  {fact(name)} --x {target}")
 
     walk(data["plan"])
+    return {"mermaid": _flow_mermaid(labels, conv_ids, attached, fact_ids, facts, effects, edges), "facts": facts}
+
+
+def _outcome(op, cast):
+    """How a plan operation shows in the flow graph, or None if it does not."""
+    who = cast.get(op.get("npc") or op.get("instance"), op.get("npc") or op.get("instance"))
+    if op["op"] == "give_item":
+        return f"{op.get('count', 1)}× {op['instance']}"
+    if op["op"] == "place_item":
+        return (op.get("quest") or {}).get("description") or op["instance"]
+    return {"send_npc": f"{who} geht fort", "relocate_npc": f"{who} wechselt den Ort",
+            "detach_dialogue_graph": f"{who} verstummt", "spawn_npc": f"{who} erscheint",
+            "rename_npc": f"{who} heisst nun anders"}.get(op["op"])
+
+
+def _flow_mermaid(labels, conv_ids, attached, fact_ids, facts, effects, edges):
+    """Mermaid source of a story's flow graph: conversations, facts, effects, then the edges between them."""
     lines = ["flowchart LR"]
     for key, node_id in conv_ids.items():
         mark = "" if key in attached else " (nie gestartet)"
@@ -590,11 +614,8 @@ def story_graph(data, labels, cast):
     for label, node_id in effects.items():
         lines.append(f'  {node_id}(["{_graph_text(label)}"]):::effect')
     lines += list(edges)
-    lines += ["  classDef conv fill:#7A1F14,stroke:#2a1c10,color:#F0E2C0",
-              "  classDef fact fill:#EADBB6,stroke:#7A5F36,color:#2A1C10",
-              "  classDef ess fill:#D9A441,stroke:#7A1F14,color:#2A1C10",
-              "  classDef effect fill:#3E5A22,stroke:#2a1c10,color:#F0E2C0"]
-    return {"mermaid": "\n".join(lines), "facts": facts}
+    lines += _CLASS_DEFS
+    return "\n".join(lines)
 
 
 def experiment_data():
@@ -687,109 +708,115 @@ class Handler(http.server.BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(body)
 
+    def _send_json(self, value):
+        self._send(json.dumps(value, ensure_ascii=False).encode("utf-8"))
+
+    def _send_page(self, page):
+        self._send(self._localized(page.read_text(encoding="utf-8")), "text/html; charset=utf-8")
+
     def do_GET(self):
         path, _, query = self.path.partition("?")
         self.path = path.rstrip("/") or "/"
-        chosen = dict(urllib.parse.parse_qsl(query)).get("lang")
+        params = dict(urllib.parse.parse_qsl(query))
+        chosen = params.get("lang")
         if chosen in ("en", "de"):
             self.send_response(303)
             self.send_header("Location", self.path)
             self.send_header("Set-Cookie", f"lang={chosen}; Path=/; Max-Age=31536000; SameSite=Lax")
             self.send_header("Content-Length", "0")
             return self.end_headers()
-        if self.path == "/":
-            self._send(self._localized(LIBRARY_PAGE.read_text(encoding="utf-8")), "text/html; charset=utf-8")
-        elif self.path == "/map":
-            self._send(self._localized(MAP_PAGE.read_text(encoding="utf-8")), "text/html; charset=utf-8")
-        elif self.path == "/map/data":
-            path = MAP_DIR / "map_data.json"
-            if not path.exists():
-                return self._send(b"{}", status=404)
-            self._send(path.read_bytes())
-        elif MAP_IMAGE.match(self.path):
-            path = MAP_DIR / MAP_IMAGE.match(self.path)[1]
-            if not path.exists():
-                return self._send(b"", "image/png", status=404)
-            self._send(path.read_bytes(), "image/png")
-        elif self.path == "/voice/takes":
-            q = dict(urllib.parse.parse_qsl(query))
-            data = story_view(q.get("story", ""))[0]
-            line = line_of(data, q.get("id", "")) if data else None
-            if line is None:
-                return self._send(b"{}", status=404)
-            self._send(json.dumps({"takes": takes_of(line), "current": audio_url(*line),
-                                   "spare": bake_voices.spare_path(*line).exists()}).encode("utf-8"))
-        elif TAKE_PATH.match(self.path):
-            m = TAKE_PATH.match(self.path)
-            path = voices.VOICE_DIR / m[1] / "takes" / m[2] / f"{m[3]}.wav"
-            if not path.exists():
-                return self._send(b"{}", status=404)
-            self._send(path.read_bytes(), "audio/wav")
-        elif self.path == "/voice/status":
-            finished = bake_voices.job_result(dict(urllib.parse.parse_qsl(query)).get("job"))
-            if finished is not None:
-                return self._send(json.dumps({**finished, "finished": True}, ensure_ascii=False).encode("utf-8"))
-            try:
-                state = json.loads(bake_voices.JOB_STATUS.read_text(encoding="utf-8"))
-            except (OSError, ValueError):
-                state = {"state": "idle"}
-            process = _worker["process"]
-            state["worker"] = process is not None and process.poll() is None
-            self._send(json.dumps(state, ensure_ascii=False).encode("utf-8"))
-        elif self.path == "/library/data":
-            self._send(json.dumps(library_data(), ensure_ascii=False).encode("utf-8"))
-        elif self.path == "/story/data":   # the page's data again, after a line was edited
-            story_id = dict(urllib.parse.parse_qsl(query)).get("id", "")
-            data = story_view(story_id)[0]
-            if data is None:
-                return self._send(b"{}", status=404)
-            data = {**data, "id": story_id, "voices": voice_panel(story_id, data), "takes": takes_index(data)}
-            self._send(json.dumps(data, ensure_ascii=False).encode("utf-8"))
-        elif self.path.startswith("/story/"):
-            story_id = self.path[len("/story/"):]
-            data, graph = story_view(story_id)
-            if data is None:
-                return self._send(b"unknown story", "text/plain; charset=utf-8", status=404)
-            data = {**data, "id": story_id, "voices": voice_panel(story_id, data), "takes": takes_index(data)}
-            language = self._language()
-            # Translate the page first, then insert the story. Only the demo story's own labels are translated,
-            # generated stories stay in the language they were written in.
-            labels = (lambda text: inspector_i18n.translate(text, language, inspector_i18n.LABELS)) \
-                if story_id == library.DEMO_ID else (lambda text: text)
-            mermaid = labels(graph) if story_id == library.DEMO_ID else html_escape(graph, quote=False)
-            html = self._localized(PAGE.read_text(encoding="utf-8")).decode("utf-8").replace("%%GRAPH%%", mermaid).replace(
-                "/*DATA*/null", labels(json.dumps(data, ensure_ascii=False)).replace("</", "<\\/"))
-            self._send(html.encode("utf-8"), "text/html; charset=utf-8")
-        elif self.path in ("/vendor/mermaid.min.js", "/vendor/svg-pan-zoom.min.js"):
-            path = voices.RUNTIME_DIR / "vendor" / self.path.rsplit("/", 1)[1]
-            if path.exists():
-                self._send(path.read_bytes(), "text/javascript; charset=utf-8")
-            else:
-                self._send(b"", "text/javascript; charset=utf-8", status=404)
-        elif self.path == "/gothic.css":
-            self._send((ROOT / "inspector" / "gothic.css").read_bytes(), "text/css; charset=utf-8")
-        elif self.path == "/characters":
-            self._send(self._localized(CHARACTERS_PAGE.read_text(encoding="utf-8")), "text/html; charset=utf-8")
-        elif self.path == "/characters.json":
-            self._send(json.dumps(character_data(), ensure_ascii=False).encode("utf-8"))
-        elif self.path == "/experiment":
-            self._send(self._localized(EXPERIMENT_PAGE.read_text(encoding="utf-8")), "text/html; charset=utf-8")
-        elif self.path == "/experiment/data":
-            self._send(json.dumps(experiment_data(), ensure_ascii=False).encode("utf-8"))
-        elif self.path == "/experiment/scores":
-            self._send(json.dumps(load_scores(), ensure_ascii=False).encode("utf-8"))
-        elif self.path == "/reviews":
-            story_id = dict(urllib.parse.parse_qsl(query)).get("story", library.DEMO_ID)
-            if story_view(story_id)[0] is None:
-                return self._send(b"{}", status=404)
-            self._send(json.dumps(story_reviews(story_id), ensure_ascii=False).encode("utf-8"))
+        route = GET_ROUTES.get(self.path)
+        if route is not None:
+            return route(self, params)
+        for pattern, route in GET_PATTERNS:
+            match = pattern.match(self.path)
+            if match:
+                return route(self, match)
+        self._send(b"{}", status=404)
+
+    # --- GET handlers, by exact path: each takes the parsed query ---
+
+    def _get_map_data(self, params):
+        path = MAP_DIR / "map_data.json"
+        if not path.exists():
+            return self._send(b"{}", status=404)
+        self._send(path.read_bytes())
+
+    def _get_voice_takes(self, params):
+        data = story_view(params.get("story", ""))[0]
+        line = line_of(data, params.get("id", "")) if data else None
+        if line is None:
+            return self._send(b"{}", status=404)
+        self._send(json.dumps({"takes": takes_of(line), "current": audio_url(*line),
+                               "spare": bake_voices.spare_path(*line).exists()}).encode("utf-8"))
+
+    def _get_voice_status(self, params):
+        finished = bake_voices.job_result(params.get("job"))
+        if finished is not None:
+            return self._send_json({**finished, "finished": True})
+        try:
+            state = json.loads(bake_voices.JOB_STATUS.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            state = {"state": "idle"}
+        process = _worker["process"]
+        state["worker"] = process is not None and process.poll() is None
+        self._send_json(state)
+
+    def _get_story_data(self, params):   # the page's data again, after a line was edited
+        story_id = params.get("id", "")
+        data = story_view(story_id)[0]
+        if data is None:
+            return self._send(b"{}", status=404)
+        self._send_json({**data, "id": story_id, "voices": voice_panel(story_id, data), "takes": takes_index(data)})
+
+    def _get_vendor(self, params):
+        path = voices.RUNTIME_DIR / "vendor" / self.path.rsplit("/", 1)[1]
+        if path.exists():
+            self._send(path.read_bytes(), "text/javascript; charset=utf-8")
         else:
-            match = AUDIO_PATH.match(self.path)
-            path = voices.VOICE_DIR / match[1] / f"{match[2]}.wav" if match else None
-            if path is not None and path.exists():
-                self._send(path.read_bytes(), "audio/wav")
-            else:
-                self._send(b"{}", status=404)
+            self._send(b"", "text/javascript; charset=utf-8", status=404)
+
+    def _get_reviews(self, params):
+        story_id = params.get("story", library.DEMO_ID)
+        if story_view(story_id)[0] is None:
+            return self._send(b"{}", status=404)
+        self._send_json(story_reviews(story_id))
+
+    # --- GET handlers, by pattern: each takes the match ---
+
+    def _get_map_image(self, match):
+        path = MAP_DIR / match[1]
+        if not path.exists():
+            return self._send(b"", "image/png", status=404)
+        self._send(path.read_bytes(), "image/png")
+
+    def _get_take(self, match):
+        path = voices.VOICE_DIR / match[1] / "takes" / match[2] / f"{match[3]}.wav"
+        if not path.exists():
+            return self._send(b"{}", status=404)
+        self._send(path.read_bytes(), "audio/wav")
+
+    def _get_audio(self, match):
+        path = voices.VOICE_DIR / match[1] / f"{match[2]}.wav"
+        if not path.exists():
+            return self._send(b"{}", status=404)
+        self._send(path.read_bytes(), "audio/wav")
+
+    def _get_story_page(self, match):
+        story_id = match[1]
+        data, graph = story_view(story_id)
+        if data is None:
+            return self._send(b"unknown story", "text/plain; charset=utf-8", status=404)
+        data = {**data, "id": story_id, "voices": voice_panel(story_id, data), "takes": takes_index(data)}
+        language = self._language()
+        # Translate the page first, then insert the story. Only the demo story's own labels are translated,
+        # generated stories stay in the language they were written in.
+        labels = (lambda text: inspector_i18n.translate(text, language, inspector_i18n.LABELS)) \
+            if story_id == library.DEMO_ID else (lambda text: text)
+        mermaid = labels(graph) if story_id == library.DEMO_ID else html_escape(graph, quote=False)
+        html = self._localized(PAGE.read_text(encoding="utf-8")).decode("utf-8").replace("%%GRAPH%%", mermaid).replace(
+            "/*DATA*/null", labels(json.dumps(data, ensure_ascii=False)).replace("</", "<\\/"))
+        self._send(html.encode("utf-8"), "text/html; charset=utf-8")
 
     def _read_json(self):
         """Another website can send requests to localhost, so only this page's own JSON is accepted."""
@@ -812,35 +839,27 @@ class Handler(http.server.BaseHTTPRequestHandler):
         return (None, request) if isinstance(request, dict) else ("expected an object", None)
 
     def do_POST(self):
-        if self.path not in ("/reviews", "/experiment/score", "/library/stage", "/library/play", "/voice/resample",
-                             "/voice/reference", "/voice/choose", "/voice/discard", "/line/edit"):
+        route = POST_ROUTES.get(self.path)
+        if route is None:
             return self._send(b"{}", status=404)
         problem, request = self._read_json()
         if problem:
             return self._send(json.dumps({"error": problem}).encode("utf-8"), status=400)
-        if self.path == "/experiment/score":
-            problem, score = _clean_score(request)
-            if problem:
-                return self._send(json.dumps({"error": problem}).encode("utf-8"), status=400)
-            with REVIEW_LOCK:
-                scores = load_scores()
-                scores[request["id"]] = score
-                temporary = SCORES.with_suffix(".tmp")
-                temporary.write_text(json.dumps(scores, ensure_ascii=False, indent=1), encoding="utf-8")
-                temporary.replace(SCORES)
-            return self._send(b"{}")
-        if self.path == "/library/stage":
-            return self._stage(request)
-        if self.path == "/library/play":
-            return self._play(request)
-        if self.path == "/voice/resample":
-            return self._resample(request)
-        if self.path == "/voice/reference":
-            return self._reference(request)
-        if self.path in ("/voice/choose", "/voice/discard"):
-            return self._take(request, self.path.endswith("choose"))
-        if self.path == "/line/edit":
-            return self._edit(request)
+        route(self, request)
+
+    def _score(self, request):
+        problem, score = _clean_score(request)
+        if problem:
+            return self._send(json.dumps({"error": problem}).encode("utf-8"), status=400)
+        with REVIEW_LOCK:
+            scores = load_scores()
+            scores[request["id"]] = score
+            temporary = SCORES.with_suffix(".tmp")
+            temporary.write_text(json.dumps(scores, ensure_ascii=False, indent=1), encoding="utf-8")
+            temporary.replace(SCORES)
+        self._send(b"{}")
+
+    def _review(self, request):
         story_id = request.get("story", library.DEMO_ID)
         data = story_view(story_id)[0] if isinstance(story_id, str) else None
         target = content_index(data).get(request.get("id")) if data else None
@@ -931,6 +950,12 @@ class Handler(http.server.BaseHTTPRequestHandler):
         job = bake_voices.queue({"kind": "reference", "voice": voice, "count": count, "graphs": story_graphs(story_id)})
         self._send(json.dumps({"job": job}).encode("utf-8"))
 
+    @staticmethod
+    def _play_generated(story_id):
+        """A generated story, started like play_story does: closures, its own ids, its cast and requirements."""
+        start = library.start(story_id)
+        return bridge.call("play", start["title"], start["ops"], start["requires"], start["story"], start["cast"])
+
     def _play(self, request):
         story_id = request.get("id")
         data = story_view(story_id)[0] if isinstance(story_id, str) else None
@@ -939,13 +964,67 @@ class Handler(http.server.BaseHTTPRequestHandler):
         if library.stage_of(story_id, rev=fingerprint(story_id, content_index(data)))[0] != library.ACCEPTED:
             return self._error("only accepted stories can be played", status=409)
         reply = bridge.call("play_demo") if story_id == library.DEMO_ID else \
-            bridge.call("play", data["title"], library.plan(story_id), library.requires(story_id))
+            self._play_generated(story_id)
         if reply.get("error") or reply.get("ok") is False:
             return self._error(reply.get("error") or "the game refused the story", status=502)
         self._send(b"{}")
 
     def log_message(self, *args):
         pass
+
+
+def _page(page):
+    return lambda handler, params: handler._send_page(page)
+
+
+def _static(path, kind):
+    return lambda handler, params: handler._send(path.read_bytes(), kind)
+
+
+def _json(read):
+    return lambda handler, params: handler._send_json(read())
+
+
+# exact paths, after the query and a trailing slash are stripped
+GET_ROUTES = {
+    "/": _page(LIBRARY_PAGE),
+    "/map": _page(MAP_PAGE),
+    "/map/data": Handler._get_map_data,
+    "/voice/takes": Handler._get_voice_takes,
+    "/voice/status": Handler._get_voice_status,
+    "/library/data": _json(library_data),
+    "/story/data": Handler._get_story_data,
+    "/vendor/mermaid.min.js": Handler._get_vendor,
+    "/vendor/svg-pan-zoom.min.js": Handler._get_vendor,
+    "/gothic.css": _static(ROOT / "inspector" / "gothic.css", "text/css; charset=utf-8"),
+    "/characters": _page(CHARACTERS_PAGE),
+    "/characters.json": _json(character_data),
+    "/experiment": _page(EXPERIMENT_PAGE),
+    "/experiment/data": _json(experiment_data),
+    "/experiment/scores": _json(load_scores),
+    "/reviews": Handler._get_reviews,
+}
+
+# tried in order when no exact path matches; anything else is a 404
+GET_PATTERNS = [
+    (MAP_IMAGE, Handler._get_map_image),
+    (TAKE_PATH, Handler._get_take),
+    (re.compile(r"^/story/(.*)$", re.DOTALL), Handler._get_story_page),
+    (AUDIO_PATH, Handler._get_audio),
+]
+
+# the full request path, query included: anything else is a 404 before the body is read
+POST_ROUTES = {
+    "/reviews": Handler._review,
+    "/experiment/score": Handler._score,
+    "/library/stage": Handler._stage,
+    "/library/play": Handler._play,
+    "/voice/resample": Handler._resample,
+    "/voice/reference": Handler._reference,
+    "/voice/choose": lambda handler, request: handler._take(request, True),
+    "/voice/discard": lambda handler, request: handler._take(request, False),
+    "/line/edit": Handler._edit,
+}
 
 
 if __name__ == "__main__":
