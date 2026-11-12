@@ -460,7 +460,9 @@ def _finish(job_id, error, result):
     temporary.write_text(json.dumps({"state": "failed" if error else "done", "error": error, "result": result},
                                     ensure_ascii=False), encoding="utf-8")
     temporary.replace(JOBS_DONE / f"{job_id}.json")
-    for old in sorted(JOBS_DONE.glob("*.json"))[:-100]:  # keep the recent ones
+    # Keep the recent ones by when they finished: by name, every urgent result (0-...) sorts before every spare one
+    # (1-...) and was the first to go, while its caller was still waiting for it.
+    for old in sorted(JOBS_DONE.glob("*.json"), key=lambda f: f.stat().st_mtime_ns)[:-100]:
         old.unlink(missing_ok=True)
 
 

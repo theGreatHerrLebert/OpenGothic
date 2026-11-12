@@ -74,7 +74,7 @@ SPECIAL_PEOPLE_VOICES = {"VLK_456_ABUYIN": "13"}
 
 
 # Who speaks each trip voice file's lines, for the story library's "Trip-Stimmen" page.
-LIBRARY_LABELS = {"trip__thoughts": "Held · Gedanken im Rausch (verzerrt)", "trip__after_15": "Held · nüchtern",
+LIBRARY_LABELS = {"trip__thoughts": "Held · Gedanken im Rausch (Rohaufnahme, im Spiel verzerrt)", "trip__after_15": "Held · nüchtern",
                   "trip__after_13": "Abuyin · Nachgespräch", "trip__special_vlk_456_abuyin": "Abuyin · im Rausch",
                   "trip__after_16": "Nadja · Abschied", "trip__after_07": "Bromor · Abschied",
                   "trip__after_11": "Borka · Abschied", "trip__after_05": "Vatras · Morgen danach"}
@@ -82,13 +82,14 @@ LIBRARY_LABELS = {"trip__thoughts": "Held · Gedanken im Rausch (verzerrt)", "tr
 
 def write_library(all_graphs):
     """Writes the trip's lines as a page for the story library (newgame/story_trip.json and its graphs_trip.json):
-    one conversation per speaker, one node per line, the hero's thoughts in their distorted take. Not a story to play:
-    a place to hear every recording and choose the better take."""
+    one conversation per speaker, one node per line. Not a story to play: a place to hear every recording and choose
+    the better take. The hero's thoughts appear as their plain recording, the one new takes can be made of; the game
+    plays a distorted copy, remade from the chosen take with --again."""
     conversations = {}
     for key, graph in all_graphs.items():
         label = LIBRARY_LABELS.get(key) or (f"Wache · Stimme {graph['voice']}" if key.startswith("trip__guard_")
                                             else f"Jemand · Stimme {graph['voice']}")
-        delivery = trip.DELIVERY if key == "trip__thoughts" else None
+        delivery = None
         nodes = {}
         lines = graph["narration"]
         for i, line in enumerate(lines):

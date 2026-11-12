@@ -93,6 +93,15 @@ with tempfile.TemporaryDirectory() as d:
     b._finish(urgent, "boom", None)
     assert b.job_result(job) == {"state": "done", "error": None, "result": {"takes": [4]}}
     assert b.job_result(urgent)["state"] == "failed" and b.job_result("../../etc") is None
+    # an urgent result outlives a burst of spare ones finishing after it (by name it would sort first and go first)
+    import os as _os
+    for n in range(105):
+        spare_job = f"1-{9_000_000 + n}-1"
+        b._finish(spare_job, None, None)
+        _os.utime(b.JOBS_DONE / f"{spare_job}.json", ns=(10**18 + n, 10**18 + n))
+    _os.utime(b.JOBS_DONE / f"{urgent}.json", ns=(10**18 + 200, 10**18 + 200))
+    b._finish("1-99999999-1", None, None)
+    assert b.job_result(urgent) is not None
     b.voices.VOICE_DIR, b.voices.REF_DIR, b.JOBS = saved
     b.JOBS_DONE = b.JOBS / "done"
 

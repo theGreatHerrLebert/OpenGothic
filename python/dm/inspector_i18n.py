@@ -42,7 +42,9 @@ ENGLISH = [
     ('" von "+DATA.facts.length+" Tatsachen"', '" of "+DATA.facts.length+" facts"'), ('DATA.facts.length+" Tatsachen"', 'DATA.facts.length+" facts"'), ('"unlesbar"', '"unreadable"'), ('"Keine Figur passt."', '"No sheet matches."'), ('"Keine Figur ausgewählt."', '"No sheet selected."'),
     ('"Die Figuren konnten nicht geladen werden. Läuft der Inspektor noch?"', '"Could not load the sheets. Is the inspector server still running?"'),
     # experiment
-    ('"Die Geschichten konnten nicht geladen werden."', '"Could not load the stories."'), ('"Fehler"', '"Defects"'), ('"Wert zu spielen?"', '"Worth playing?"'), ('"Zählt eine Tat?"', '"Does a deed matter?"'), ('"Wie aus dem Original?"', '"Like the original?"'),
+    ('"Die Geschichten konnten nicht geladen werden."', '"Could not load the stories."'), ('"Fehler"', '"Defects"'), ('"Wert zu spielen?"', '"Worth playing?"'), ('"Zählt eine Tat?"', '"Does a deed matter?"'),
+    ('"Abgebrochen. Kommt die Aufnahme doch noch, steht sie bei den Takes."', '"Cancelled. If the recording still arrives, it will be among the takes."'),
+    ('"Nicht mehr warten; eine Aufnahme, die noch kommt, erscheint später bei den Takes."', '"Stop waiting; a recording still on its way will appear among the takes."'), ('"Wie aus dem Original?"', '"Like the original?"'),
     ('"Wie aus dem Original: Hätte das im Originalspiel stehen können, ohne dass man die Naht sieht?"', '"Like the original: could this have been in the original game, with no seam to see?"'),
     ('"Zählt eine Tat: Ändert etwas, das der Spieler tut statt sagt, was er erfährt oder wie es endet?"', '"A deed matters: does something the player does, not says, change what they learn or how it ends?"'), ('"Ja"', '"Yes"'), ('"Nein"', '"No"'), ('"Interesse"', '"Interest"'),
     ('"Fehler: was stimmt nicht, und welche Regel bricht es?"', '"Defects: what is wrong, and which rule does it break?"'), ('"Nächste Geschichte"', '"Next story"'), ('"Nächste ohne Urteil"', '"Next unjudged"'),
