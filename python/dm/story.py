@@ -326,9 +326,13 @@ def _hooks(name):
 
 
 def special_for(npc):
-    refusal = _refusing(_story.state, getattr(npc, "instance", "") or "")
+    instance = getattr(npc, "instance", "") or ""
+    refusal = _refusing(_story.state, instance)
     if refusal is not None:
         return _refusal_graph(refusal)
+    refusal_id, cooled = _grumbling(_story.state, instance)
+    if cooled is not None:
+        return _grumble_graph(refusal_id, cooled)
     for hook in _hooks("special_for"):
         graph = hook(npc)
         if graph is not None:
@@ -721,26 +725,53 @@ def _check_refuse(args, state):
         raise PlanError(f"refusal already added: {args['id']}")
     if not isinstance(args["line"], str) or not args["line"].strip():
         raise PlanError("refuse_talk needs a line")
+    days = args.get("days")
+    if days is not None and (not isinstance(days, int) or isinstance(days, bool) or not 1 <= days <= 30):
+        raise PlanError("refuse_talk days is a whole number from 1 to 30")
+    if args.get("after") is not None and (not isinstance(args["after"], str) or not args["after"].strip()):
+        raise PlanError("refuse_talk after is the line he grumbles once he talks again")
 
 
 def _fold_refuse(args, state):
     state.setdefault("refusals", {})[args["id"]] = {
         "npc": args["npc"].upper(), "line": args["line"], "reply": args.get("reply") or "Schon gut.",
-        "voice": str(args["voice"]), "unless": args.get("unless")}
+        "voice": str(args["voice"]), "unless": args.get("unless"), "days": args.get("days"),
+        "since": args.get("since"), "after": args.get("after")}
+
+
+def _cooled(refusal):
+    """Whether a refusal with days has run its time: people in Gothic do not hold a grudge for ever."""
+    days, since = refusal.get("days"), refusal.get("since")
+    return bool(days) and since is not None and gothic.world.day - since >= days
 
 
 def _refusing(state, npc_instance):
     """The refusal that holds for this NPC right now, or None."""
     for refusal_id, refusal in state.get("refusals", {}).items():
         if refusal["npc"] == npc_instance.upper() and not ended(state, refusal_id) \
-                and not (refusal.get("unless") and state["flags"].get(refusal["unless"])):
+                and not (refusal.get("unless") and state["flags"].get(refusal["unless"])) and not _cooled(refusal):
             return refusal
     return None
+
+
+def _grumbling(state, npc_instance):
+    """A refusal that has cooled and still owes the hero its grumbled line, with its id, or (None, None)."""
+    for refusal_id, refusal in state.get("refusals", {}).items():
+        if refusal["npc"] == npc_instance.upper() and refusal.get("after") and _cooled(refusal) \
+                and not ended(state, refusal_id) and not state["flags"].get(f"{refusal_id}:grumbled"):
+            return refusal_id, refusal
+    return None, None
 
 
 def _refusal_graph(refusal):
     return {"start": "a", "voice": refusal["voice"],
             "nodes": {"a": {"line": refusal["line"], "choices": [{"text": refusal["reply"], "ends": True}]}}}
+
+
+def _grumble_graph(refusal_id, refusal):
+    return {"start": "a", "voice": refusal["voice"],
+            "nodes": {"a": {"line": refusal["after"], "sets": f"{refusal_id}:grumbled",
+                            "choices": [{"text": refusal["reply"], "ends": True}]}}}
 
 
 _refusal_bound = set()   # NPCs bound only so that they can refuse; not saved, so a load binds them again
@@ -755,7 +786,8 @@ def _keep_refusals(state):
     if generation != _refusal_world:   # a loaded or new world has nobody bound yet
         _refusal_bound.clear()
         _refusal_world = generation
-    wanted = {r["npc"] for r in state.get("refusals", {}).values() if _refusing(state, r["npc"])}
+    wanted = {r["npc"] for r in state.get("refusals", {}).values()
+              if _refusing(state, r["npc"]) or _grumbling(state, r["npc"])[1] is not None}
     for name in wanted:   # every time: binding again is harmless, and a scene or detach may have let him go
         npc = gothic.world.find_npc(name)
         if npc is not None:
@@ -969,6 +1001,9 @@ class Story:
         those fails, the log records exactly the part that happened and PartlyApplied is raised."""
         # State may have moved on since the plan was queued.
         plan = dict(plan, ops=creatures.assign_variants(self.resolve_items(plan["ops"]), self.state))
+        # A refusal counts its days from when it begins; the log keeps that day, so a load agrees.
+        plan["ops"] = [dict(op, since=gothic.world.day) if isinstance(op, dict) and op.get("op") == "refuse_talk"
+                       and op.get("since") is None else op for op in plan["ops"]]
         # Readiness before validation: validation also finds someone missing, but as a broken plan, and a rule that
         # waits for him to come back must wait, not fail.
         for op in plan["ops"]:

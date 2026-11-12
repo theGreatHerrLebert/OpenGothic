@@ -874,6 +874,10 @@ def test_refuse_talk():
     s = st.Story()
     s.validate([{"op": "refuse_talk", "id": "snitch", "npc": "PARLAN", "voice": "05", "line": "Verschwinde."}])
     rejected(s, [{"op": "refuse_talk", "id": "snitch", "npc": "PARLAN", "line": "Verschwinde."}], "voice")
+    rejected(s, [{"op": "refuse_talk", "id": "x", "npc": "PARLAN", "voice": "05", "line": "Weg.", "days": 0}], "days")
+    s.apply_plan({"reason": "t", "ops": [{"op": "refuse_talk", "id": "dated", "npc": "PARLAN", "voice": "05",
+                                          "line": "Weg.", "days": 2}]})
+    assert s.state["refusals"]["dated"]["since"] == fake.world.day and s.log[-1]["ops"][0]["since"] == fake.world.day
     state = st.empty_state()
     st._fold_refuse({"id": "snitch", "npc": "PARLAN", "voice": "05", "line": "Verschwinde.", "unless": "forgiven"}, state)
     refusal = st._refusing(state, "parlan")
@@ -890,6 +894,20 @@ def test_refuse_talk():
     st._fold_retire({"id": "snitch"}, state)
     assert st._refusing(state, "PARLAN") is None and st.ended(state, "snitch")
     state["retired"].remove("snitch")
+    # Days: the grudge cools, he grumbles once, then talks as before.
+    st._fold_refuse({"id": "cool", "npc": "NOV_A", "voice": "05", "line": "Weg.", "days": 2, "since": 1,
+                     "after": "Na gut."}, state)
+    fake.world.day = 2
+    assert st._refusing(state, "NOV_A") is not None and st._grumbling(state, "NOV_A")[1] is None
+    fake.world.day = 3
+    assert st._refusing(state, "NOV_A") is None
+    rid, cooled = st._grumbling(state, "NOV_A")
+    graph = st._grumble_graph(rid, cooled)
+    assert graph["nodes"]["a"]["line"] == "Na gut." and graph["nodes"]["a"]["sets"] == "cool:grumbled"
+    state["flags"]["cool:grumbled"] = True
+    assert st._grumbling(state, "NOV_A") == (None, None)
+    fake.world.day = 1
+    del state["refusals"]["cool"]
     state["flags"]["forgiven"] = True
     assert st._refusing(state, "PARLAN") is None
     st._keep_refusals(state)

@@ -63,6 +63,11 @@ and was still not worth playing: return a pouch or keep it, 25 gold, no conseque
   through that: the loaded dice are how the cheat cheats, what the hero plays with, the edge he gains, how he gets
   caught, the counter he holds up ("isn't that your die?") and what he trades. A story whose central thing only
   appears in talk has a topic, not a theme. Name the thing first, then let each deed, turn and price go through it.
+- **The theme's thing is earned, and the levers need it.** If it is handed over on first asking, the story is over
+  in five minutes. Make getting it part of the game: a price, a test, a theft. And a lever does not move on words
+  alone: the brute wants proof before he goes for the cheat, so the die is needed there too. A good map of ways
+  has most of them run through the theme's thing and the rest through luck or force (win fairly at dice, beat the
+  holder yourself), each at its own price; nobody is forced onto the theme's way, but it is the clever one.
 - **Layers, because people have reasons.** Keep the simple way open: find the runaway novice, send him home, get
   paid. Underneath, for the player who asks one more question, lies why he acts tough: his father beat him. Nobody
   hands the player that layer, and finding it changes how he sees the person and the choice. The layer lives in the
@@ -86,7 +91,12 @@ and was still not worth playing: return a pouch or keep it, 25 gold, no conseque
   operation starts the game's own brawl, at the hero or between two of the story's people (the brute sent after the
   man the hero blamed); give its rule a `near` check so nobody charges in from across the map.
   People also hit back without fists: someone the hero snitched on or cheated can stop talking to him altogether
-  (`refuse_talk`, his trade included) until something mends it, or for the rest of the story.
+  (`refuse_talk`, his trade included). Always leave a way back the hero can manage at his level: compensation
+  through someone who mediates, an apology with a gift (best through the theme: give him back his die), or time
+  (`days`, after which he grumbles the `after` line once). A refusal whose only key is a deed beyond the hero, such
+  as knocking down a mercenary forty levels above him, locks the story; in the second version of the dice story it
+  closed every route that ran through the cheat. Or let the refusal move the story on: the cheat sells the coin, and
+  now the hero deals with the buyer.
 - **The story's own things.** The pouch the story is about is Hanno's pouch, not one of the game's many; the sickle
   he left is his sickle. Make them with `define_item`, with a name and a line that says whose they were, so finding
   one tells the player he has found it. Put what someone has into his pockets for real (`npc_item`), not only into

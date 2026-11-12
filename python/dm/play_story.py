@@ -114,7 +114,9 @@ def voice_graphs(story, prefix):
                 if op.get("op") == "add_topic" and isinstance(op.get("title"), str) and op["title"] not in titles:
                     titles.append(op["title"])
                 if op.get("op") == "refuse_talk" and isinstance(op.get("line"), str):
-                    graphs[f"{prefix}__refuse_{op.get('id')}"] = {"voice": str(op.get("voice")), "narration": [op["line"]]}
+                    graphs[f"{prefix}__refuse_{op.get('id')}"] = {
+                        "voice": str(op.get("voice")),
+                        "narration": [op["line"]] + ([op["after"]] if isinstance(op.get("after"), str) else [])}
                     reply = op.get("reply") or "Schon gut."
                     if reply not in titles:
                         titles.append(reply)

@@ -39,9 +39,11 @@ OPS = {
     "finish_scene": ("Dialogue", "Marks a scene done without playing it.", {"op": "finish_scene", "id": "warning"}),
     "refuse_talk": ("Dialogue", "Someone stops talking to the hero: every conversation with him, his own topics and "
                                 "trade included, is one line of refusal and the hero's reply, until the flag in unless "
-                                "is set or the story ends. Not on people the main quest needs.",
+                                "is set, days have passed (then he grumbles the after line once), or the story ends. "
+                                "Always leave a way back the hero can manage. Not on people the main quest needs.",
                     {"op": "refuse_talk", "id": "snitch", "npc": "BAU_919_BAUER", "voice": "07",
-                     "line": "Mit dir red ich nicht mehr, du Petze.", "reply": "Dann eben nicht.", "unless": "forgiven"}),
+                     "line": "Mit dir red ich nicht mehr, du Petze.", "reply": "Dann eben nicht.", "unless": "forgiven",
+                     "days": 2, "after": "Na gut. Aber ich hab dich im Auge."}),
     "narrate": ("Dialogue", "A line from off-screen, queued until no conversation runs.",
                 {"op": "narrate", "text": "Irgendwo heult ein Wolf.", "voice": "10"}),
     # Rules
