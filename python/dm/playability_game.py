@@ -179,12 +179,13 @@ class Game:
     """Everything the audit knows about the game, built from plain dicts so tests can make a small one."""
 
     def __init__(self, items=None, dialogues=None, functions=None, quests=None, world=None, people=None,
-                 inventories=None, objects=None):
+                 inventories=None, objects=None, levels=None):
         self.items = {k.upper(): v for k, v in (items or {}).items()}
         self.dialogues = {d["id"].upper(): d for d in (dialogues or [])}
         self.functions = functions or {}
         self.quests = quests or {}
         self.inventories = inventories          # instance -> {item: count}; None when GOTHIC.DAT was not read
+        self.levels = {k.upper(): v.get("level") for k, v in (levels or {}).items()}   # read from a running game
         self._read_world(world or [], objects)
         self._read_people(people or {})
         self._read_routines()
@@ -747,7 +748,7 @@ def load_game(mechanics=MECHANICS, map_data=MAP_DATA, game=None):
         worlds = json.loads(pathlib.Path(map_data).read_text(encoding="utf-8"))["worlds"]
         people = {name: w.get("people", []) for name, w in worlds.items()}
     return Game(read("items.json", {}), read("dialogues.json", []), read("functions.json", {}), read("quests.json", {}),
-                world, people, read_inventories(game))
+                world, people, read_inventories(game), levels=read("npc_levels.json", {}))
 
 
 def read_inventories(game):

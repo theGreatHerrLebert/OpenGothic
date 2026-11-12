@@ -12,6 +12,8 @@ class Story:
         self.given = []         # (item, count, container)
         self.renamed = []       # (npc, name)
         self.npcs = {}          # npc -> set of roles
+        self.pocketed = []      # (item, npc, container): put into someone's pockets (npc_item)
+        self.defined = {}       # item id -> name, for the story's own items (define_item)
         for op in story.get("plan", []):
             self._op(op, None)
 
@@ -32,6 +34,10 @@ class Story:
             self.placed.append((op.get("instance", "").upper(), op.get("waypoint"), parent))
         elif kind == "give_item":
             self.given.append((op.get("instance", "").upper(), op.get("count", 1), parent))
+        elif kind == "define_item" and op.get("item"):
+            self.defined[str(op["item"]).upper()] = op.get("name")
+        elif kind == "npc_item":
+            self.pocketed.append((op.get("instance", "").upper(), (op.get("npc") or "").upper(), parent))
         elif kind == "rename_npc":
             self.renamed.append((op.get("instance", "").upper(), op.get("display_name")))
             self._role(op.get("instance"), "renamed")

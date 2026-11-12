@@ -215,3 +215,24 @@ self_barred = audit([{"op": "add_topic", "id": "t", "npc": "VLK_1_SMITH", "title
                       "graph": graph({"text": "Go.", "goto": "b", "unless": "seen"}, sets="seen")}, ending("done")])
 assert self_barred["endings"]["endings"][0]["status"] != "reachable", self_barred["endings"]
 print("ending guards ok")
+
+# A refusal whose only way back is a deed against someone far stronger locks the story; days or an easy way back do not.
+game.levels = {"VLK_1_SMITH": 40}
+locking = [{"op": "add_topic", "id": "t", "npc": "VLK_1_SMITH", "title": "?", "graph": graph({"text": "Go.", "goto": "b"})},
+           ending("done"),
+           {"op": "add_rule", "id": "snitched", "when": [], "ops": [
+               {"op": "refuse_talk", "id": "r", "npc": "VLK_1_SMITH", "voice": "1", "line": "Weg.", "unless": "floored"}]},
+           {"op": "add_rule", "id": "beat", "on": {"event": "knocked_down", "target": "VLK_1_SMITH"}, "when": [],
+            "ops": [{"op": "set_flag", "name": "floored", "value": True}]}]
+plan_story = {"title": "s", "plan": locking, "requires": [{"type": "chapter", "to": 1}]}
+locked = pa.Audit(pa.Story(plan_story, "s"), game).run()
+assert locked["softlocks"] and any(b.startswith("softlock") for b in locked["blockers"]), locked["blockers"]
+plan_story["plan"][2]["ops"][0]["days"] = 2
+cooled = pa.Audit(pa.Story(plan_story, "s"), game).run()
+assert not cooled["softlocks"], cooled["blockers"]
+plan_story["plan"][2]["ops"][0].pop("days")
+game.levels = {"VLK_1_SMITH": 5}
+weak = pa.Audit(pa.Story(plan_story, "s"), game).run()
+assert not weak["softlocks"], weak["blockers"]
+game.levels = {}
+print("softlocks ok")

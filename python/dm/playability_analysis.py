@@ -29,6 +29,9 @@ class Audit:
         for name, count, parent in self.story.given:
             if name == item:
                 out.append(f"given by the story ({count}x, {describe(parent) if parent else 'at start'})")
+        for name, npc, parent in self.story.pocketed:
+            if name == item:
+                out.append(f"carried by {npc} ({describe(parent) if parent else 'from the start'})")
         return out
 
     def run(self):
@@ -46,6 +49,7 @@ class Audit:
         # attached conversations hide the NPC's own
         report["attached"] = self.attached(report["quests"], report["heard"])
         report["endings"] = self.endings(report["quests"], report["heard"])
+        report["softlocks"] = self.softlocks()
         report["shared"] = self.shared()
         report["blockers"], report["caveats"] = _unique(self.blockers), _unique(self.caveats)
         report["verdict"] = ("blocked" if report["blockers"] else "playable with caveats" if report["caveats"]
@@ -61,7 +65,9 @@ class Audit:
             sources = self.sources(item)
             story_made = self.made_by_story(item)
             reach = t_or([x["reach"] for x in sources] + ([TRUE] if story_made else []))
-            entry = {"item": item, "name": g.items.get(item, {}).get("name"), "known": item in g.items or not g.items,
+            own = item in self.story.defined   # an item of the story's own (define_item) exists once it is played
+            entry = {"item": item, "name": g.items.get(item, {}).get("name") or self.story.defined.get(item),
+                     "known": item in g.items or own or not g.items,
                      "uses": uses, "sources": sources, "story": story_made, "reach": reach}
             out.append(entry)
             if not entry["known"]:
@@ -413,6 +419,53 @@ class Audit:
         self._judge_endings(out, reasons)
         return {"endings": out, "game_gates_failing": reasons}
 
+    # A hero of this chapter is about this level, when the story does not say (see "requires").
+    CHAPTER_LEVEL = {1: 6, 2: 12, 3: 20, 4: 28, 5: 35, 6: 40, 7: 45}
+    TOO_STRONG = 10   # levels above the hero at which knocking someone down is not a plan
+
+    def hero_level(self):
+        """The highest level the hero can have while the story runs: its own requirement, else its chapter's."""
+        levels, chapters = [], []
+        for check in self.story.data.get("requires") or []:
+            if check.get("type") == "level" and check.get("max") is not None:
+                levels.append(check["max"])
+            if check.get("type") == "chapter" and check.get("to") is not None:
+                chapters.append(check["to"])
+        if levels:
+            return min(levels)
+        return self.CHAPTER_LEVEL.get(min(chapters)) if chapters else None
+
+    def too_strong(self, npc):
+        """Why the hero cannot be counted on to knock this one down, or None."""
+        hero, level = self.hero_level(), self.game.levels.get((npc or "").upper())
+        if hero is None or level is None or level <= hero + self.TOO_STRONG:
+            return None
+        return f"{npc} is level {level}, far above a hero of about level {hero}"
+
+    def softlocks(self):
+        """Refusals without days: if one comes as early as it can, is an ending of the player's still reachable?
+        A refusal closes everything of that NPC until its unless flag is set, and its way back must be one the hero
+        can manage."""
+        found = []
+        endings = [c for c, kind in self.story.endings() if kind in ("success", "reward")]
+        if not endings:
+            return found
+        for c in self.story.containers:
+            for op in c.get("ops") or []:
+                if op.get("op") != "refuse_talk" or op.get("days"):
+                    continue
+                reach = _Reach(self, real=True, closed=(op.get("npc") or "").upper(), lifted_by=op.get("unless"),
+                               start=set(c["requires"]) | {o["name"] for o in c.get("ops") or []
+                                                            if o.get("op") == "set_flag" and o.get("value")})
+                _, active, _ = reach.run()
+                if not any(id(e) in active for e in endings):
+                    way = f"only {op['unless']} lifts it" if op.get("unless") else "nothing lifts it"
+                    text = (f"softlock: once {c['id']} makes {op.get('npc')} refuse the hero, no ending of the "
+                            f"player's can be reached ({way}; give it days, or a way back the hero can manage)")
+                    self.blockers.append(text)
+                    found.append({"rule": c["id"], "npc": op.get("npc"), "unless": op.get("unless")})
+        return found
+
     def _judge_endings(self, endings, reasons):
         reachable = [e for e in endings if e["status"] == "reachable"]
         lost = [e for e in endings if e["status"] != "reachable"]
@@ -489,14 +542,18 @@ class _Reach:
     (Audit.gate), and the ones that fail are collected by container or choice.
     """
 
-    def __init__(self, audit, real):
+    def __init__(self, audit, real, closed=None, lifted_by=None, start=()):
         s = audit.story
         self.audit, self.story, self.real = audit, s, real
-        self.flags, self.active, self.failing = set(s.initial_flags), set(), {}
+        self.closed, self.lifted_by = closed, lifted_by   # an NPC who refuses the hero, and the flag that ends it
+        self.flags, self.active, self.failing = set(s.initial_flags) | set(start), set(), {}
         self.items = {name for name, _, parent in s.placed + s.given if parent is None}
         self.changed = False
 
     def run(self):
+        for item, npc, parent in self.story.pocketed:
+            if parent is None and not self.audit.too_strong(npc):
+                self.items.add(item)   # carried from the start by someone the hero can knock down and loot
         self.changed = True
         while self.changed:
             self.changed = False
@@ -514,6 +571,8 @@ class _Reach:
         parent = c.get("parent")
         if parent is not None and id(parent) not in self.active:
             return
+        if self.closed and c.get("npc") == self.closed and not (self.lifted_by and self.lifted_by in self.flags):
+            return   # he will not talk to the hero
         if not all(f in self.flags for f in c["requires"]):
             return
         # "unless" can only be ordered in time by playing; what the runtime provably never allows is
@@ -527,6 +586,8 @@ class _Reach:
         self.failing.pop(c["id"], None)
         self._add(self.active, id(c))
         for op in c.get("ops") or []:
+            if op.get("op") == "npc_item" and not self.audit.too_strong(op.get("npc")):
+                self._add(self.items, str(op.get("instance", "")).upper())   # he can be knocked down and looted
             if op.get("op") == "set_flag" and op.get("value"):
                 self._add(self.flags, op["name"])
             if op.get("op") in ("give_item", "place_item") and op.get("instance", "").upper() not in self.items:
@@ -552,6 +613,10 @@ class _Reach:
         for field in ("target", "seen_by"):
             if on.get(field) and on[field] != "PLAYER" and self.audit.game.presence(on[field])[0] == FALSE:
                 reasons.append(f"{on[field]} is not in Khorinis")
+        if on.get("event") in ("knocked_down", "killed") and on.get("target") and on["target"] != "PLAYER":
+            strong = self.audit.too_strong(on["target"])
+            if strong:
+                reasons.append(strong)
         return reasons
 
     def _walk(self, c, graph):

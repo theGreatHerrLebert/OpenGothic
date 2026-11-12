@@ -129,6 +129,24 @@ def _game_item_gold(instance):
         return None
 
 
+def softlock_errors(data):
+    """Refusals that lock the story: the playability audit, run against the game data when it is there (private,
+    dm_runtime/mechanics); without it nothing is said."""
+    if not any(op.get("op") == "refuse_talk" for op in _all_ops(data.get("plan"))):
+        return []
+    try:
+        sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+        from playability_analysis import Audit
+        from playability_game import load_game
+        from playability_story import Story as AuditStory
+    except ImportError:
+        return []
+    if not GAME_ITEMS.exists():
+        return []
+    audit = Audit(AuditStory(data, "story"), load_game())
+    return [text for text in audit.softlocks() and audit.blockers if text.startswith("softlock")]
+
+
 def ending_warnings(data):
     """Technical weak spots of a story's endings and key items, as the brief's 'Good to play' describes. Warnings only:
     whether a story is good is for the player to say."""
@@ -286,6 +304,7 @@ def check(path, names_path):
     warnings += discoverability.warnings(data)
     warnings += ending_warnings(data)
     warnings += value_warnings(data)
+    errors += softlock_errors(data)
     closures = data.get("closures")
     if closures is not None and (not isinstance(closures, list) or not all(isinstance(c, dict) for c in closures)):
         errors.append("closures must be a list of rules")

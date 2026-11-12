@@ -144,7 +144,7 @@ def main():
     symbols, out = program.symbols, pathlib.Path(sys.argv[2])
     out.mkdir(parents=True, exist_ok=True)
     by_name = {s["name"]: s for s in symbols}
-    dialogues, items, used = [], {}, set()
+    dialogues, items, npcs, used = [], {}, {}, set()
 
     def body(name, seen):
         s = by_name.get(name)
@@ -174,16 +174,23 @@ def main():
         elif root == "C_ITEM":
             f = fields(program.run(s))
             items[s["name"]] = {k.lower(): unquote(f.get(k)) for k in ("NAME", "VALUE", "ON_STATE[0]", "MAINFLAG") if k in f}
+        elif root == "C_NPC":
+            f = fields(program.run(s))
+            npcs[s["name"]] = {k.lower(): unquote(f.get(k)) for k in ("NAME", "LEVEL", "GUILD") if k in f}
     # An item's value is usually a constant (VALUE_NUGGET): its number, so a checker can price a story's items.
     constants = {s["name"]: s["ints"][0] for s in symbols if s["kind"] == dm.T_INT and s.get("ints")}
     for item in items.values():
         value = item.get("value")
         if isinstance(value, str):
             item["gold"] = int(value) if value.lstrip("-").isdigit() else constants.get(value)
+    for npc in npcs.values():   # how strong someone is, so a checker knows whom a hero cannot knock down
+        level = npc.get("level")
+        if isinstance(level, str):
+            npc["level"] = int(level) if level.lstrip("-").isdigit() else constants.get(level)
     functions = {s["name"]: program.run(s) for s in symbols
                  if s["kind"] == dm.T_FUNC and s["address"] and s["address"] > 0 and not s["flags"] & 8 and s["name"] not in used
                  and "." not in s["name"]}
-    for name, data in (("dialogues", dialogues), ("functions", functions), ("items", items)):
+    for name, data in (("dialogues", dialogues), ("functions", functions), ("items", items), ("npcs", npcs)):
         (out / f"{name}.json").write_text(json.dumps(data, ensure_ascii=False, indent=1), encoding="utf-8")
     print(len(dialogues), "dialogues,", len(functions), "other functions,", len(items), "items")
 
