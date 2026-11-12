@@ -794,7 +794,7 @@ PYBIND11_EMBEDDED_MODULE(gothic, m) {
              GlobalEffects::Trip t;
              t.eye     = std::clamp(eye,   0.f, 1.f);
              t.afterglow = std::clamp(afterglow, 0.f, 1.f);
-             t.look    = std::clamp(look, 0, 1);
+             t.look    = std::clamp(look, 0, 2);   // 0 Mindcap, 1 Emberheart, 2 the Invocation
              t.zoom    = std::clamp(zoom, 0.f, 0.3f);
              t.post    = std::clamp(post, 0.f, 1.f);
              t.edges   = std::clamp(edges, 0.f, 1.f);

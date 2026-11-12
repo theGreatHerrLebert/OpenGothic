@@ -38,7 +38,7 @@ class GlobalEffects {
       float          edges   = 1;          // how strongly edges glow
       float          tracers = 1;          // how strongly the previous frame persists
       float          bass = 0, mid = 0, treble = 0;   // music bands, smoothed
-      int            look = 0;             // 0 Mindcap (neon edges, tracers), 1 Emberheart (desert heat shimmer)
+      int            look = 0;             // 0 Mindcap (neon edges, tracers), 1 Emberheart (heat shimmer), 2 the Invocation
       float          eye   = 0;            // Solaris's DragonflyEye over it: compound eye and rose window, 0..1
       float          afterglow = 0;        // Solaris's Afterglow over it: long-exposure glow and light trails, 0..1
       };
