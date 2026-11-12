@@ -75,9 +75,12 @@ SPECIAL_PEOPLE_VOICES = {"VLK_456_ABUYIN": "13", "VLK_454_BUERGER": "01"}
 
 # Who speaks each trip voice file's lines, for the story library's "Trip-Stimmen" page.
 LIBRARY_LABELS = {"trip__thoughts": "Held · Gedanken im Rausch (Rohaufnahme, im Spiel verzerrt)", "trip__after_15": "Held · nüchtern",
-                  "trip__after_13": "Abuyin · Nachgespräch", "trip__special_vlk_456_abuyin": "Abuyin · im Rausch",
+                  "trip__after_13": "Abuyin · Nachgespräch, die drei Rauche", "trip__special_vlk_456_abuyin": "Abuyin · im Rausch",
                   "trip__after_16": "Nadja · Abschied", "trip__after_07": "Bromor · Abschied",
-                  "trip__after_11": "Borka · Abschied", "trip__after_05": "Vatras · Morgen danach"}
+                  "trip__after_11": "Borka · Abschied", "trip__after_05": "Vatras · Morgen danach, erkennt das Amulett",
+                  "trip__after_09": "Lares · erkennt das Amulett", "trip__after_01": "Bjarne · erkennt das Amulett",
+                  "trip__after_08": "Kasim · erkennt das Amulett", "trip__after_14": "Ignaz · erkennt das Amulett",
+                  "trip__after_04": "Ausrufer und Angar (erkennt das Amulett)"}
 
 
 def write_library(all_graphs):
