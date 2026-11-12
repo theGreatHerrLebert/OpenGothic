@@ -201,6 +201,8 @@ def check(path, names_path):
         if problem:
             errors.append(f"requires: {problem}")
     errors += significance_problems(data.get("significance"))
+    from dm import discoverability
+    warnings += discoverability.warnings(data)
     closures = data.get("closures")
     if closures is not None and (not isinstance(closures, list) or not all(isinstance(c, dict) for c in closures)):
         errors.append("closures must be a list of rules")

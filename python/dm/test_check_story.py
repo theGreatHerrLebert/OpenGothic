@@ -57,3 +57,21 @@ assert check_story.significance_problems({"from_play": "x", "stakes": "a b c d",
     ["significance.from_play is missing or too short to say anything"]
 assert check_story.significance_problems({k: "one two three four" for k in check_story.SIGNIFICANCE}) == []
 print("significance ok")
+
+# Discoverability: a topic nobody points to, a night-only topic nobody says is at night, a deed nothing hints at.
+from dm import discoverability  # noqa: E402
+G = lambda *lines: {"start": "a", "nodes": {"a": {"line": lines[0], "choices": [{"text": l, "ends": True} for l in lines[1:]] or [{"text": "Gut.", "ends": True}]}}}
+lost = {"title": "t", "plan": [
+    {"op": "add_scene", "id": "hook", "npc": "VLK_1_HANNO", "graph": G("Geh zu Bodo.")},
+    {"op": "add_topic", "id": "bodo", "npc": "VLK_2_BODO", "title": "Hanno schickt mich.", "requires": ["met"],
+     "graph": G("Ja?"), "checks": [{"type": "hour", "from": 22, "to": 4}]},
+    {"op": "add_topic", "id": "nobody", "npc": "VLK_3_GERDA", "title": "Und?", "requires": ["met"], "graph": G("Hm.")},
+    {"op": "add_rule", "id": "deed", "when": [], "on": {"event": "used_object", "object": "BENCH"}, "ops": []}]}
+found = {f["id"]: f["text"] for f in discoverability.findings(lost) if f["level"] == "guess"}
+assert "bodo" in found and "no line says so" in found["bodo"], found          # Bodo is named, the night is not
+assert "nobody" in found and "never named" in found["nobody"], found          # Gerda is never named
+assert "deed" in found, found                                                  # nobody mentions a bench
+lost["plan"][0]["graph"] = G("Geh heute Nacht zu Bodo, und zu Gerda. Setz dich auf die Bank.")
+assert [f for f in discoverability.findings(lost) if f["level"] == "guess"] == []
+assert any(w.startswith("discoverability: no hook") for w in discoverability.warnings({"plan": lost["plan"][1:]}))
+print("discoverability ok")

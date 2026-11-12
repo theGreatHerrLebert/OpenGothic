@@ -127,6 +127,12 @@ A deed must be findable. One line or one object points at it, as Lares mentions 
 player guess. A deed and a conversation reaching the same fact are two different approaches, which is what the
 two-sources rule asks for.
 
+The checker looks for those pointers (`discoverability.py`): every topic, conversation and deed needs something
+elsewhere in the story that leads there, a line naming the person, the item or the object, and a hint whenever it
+only works at a certain hour or while someone smokes or sleeps. What it cannot find comes back as a warning that the
+player would have to guess. A naive-player agent can also play the story from what the player sees
+(`discoverability.py <story> --dossier`) and say where it got stuck.
+
 ## Writing dialogue
 
 Read the character sheet with `get_character`. Write a sheet first for anyone who has
