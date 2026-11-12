@@ -5,6 +5,7 @@
 #include "world/aiqueue.h"
 #include "world/objects/interactive.h"
 #include "gamemusic.h"
+#include "graphics/sky/galaxy.h"
 #include "game/globaleffects.h"
 #include <algorithm>
 #include "game/constants.h"
@@ -821,6 +822,32 @@ PYBIND11_EMBEDDED_MODULE(gothic, m) {
   py::module_ weather = m.def_submodule("weather", "Weather the story lays over the world.");
   weather.def("snow", [](float density) { requireWorld()->globalFx()->setSnow(std::clamp(density, 0.f, 1.f)); },
               py::arg("density"), "Falling snow, 0 none .. 1 a blizzard.");
+
+  py::module_ sky = m.def_submodule("sky", "A galaxy in place of the sky: images loaded once, shown as strongly as set.");
+  sky.def("load", [](int slot, const std::string& path) { return ::Galaxy::inst().load(size_t(std::max(slot, 0)), path); },
+          py::arg("slot"), py::arg("path"),
+          "Load an image: slot 0 a 360-degree panorama (equirectangular), 1 and 2 nebulae placed on the sky.");
+  sky.def("galaxy",
+          [](float amount, float gain, std::tuple<float,float,float> tint, float grade, float spin, float glow,
+             std::vector<std::tuple<float,float,float,float>> nebulae) {
+            GlobalEffects::Galaxy g;
+            g.amount = std::clamp(amount, 0.f, 1.f);
+            g.gain   = std::max(gain, 0.f);
+            g.tint   = Tempest::Vec3(std::get<0>(tint), std::get<1>(tint), std::get<2>(tint));
+            g.grade  = std::clamp(grade, 0.f, 1.f);
+            g.spin   = spin;
+            g.glow   = std::clamp(glow, 0.f, 1.f);
+            for(size_t i=0; i<nebulae.size() && i<2; ++i) {
+              auto& n = nebulae[i];
+              g.nebula[i] = Tempest::Vec4(std::get<0>(n), std::get<1>(n), std::get<2>(n), std::get<3>(n));
+              }
+            requireWorld()->globalFx()->setGalaxy(g);
+            },
+          py::arg("amount"), py::arg("gain") = 1.f, py::arg("tint") = std::make_tuple(1.f,1.f,1.f),
+          py::arg("grade") = 0.f, py::arg("spin") = 0.f, py::arg("glow") = 0.f,
+          py::arg("nebulae") = std::vector<std::tuple<float,float,float,float>>{},
+          "amount 0 is the game's sky, 1 the galaxy instead; nebulae are (yaw, pitch, size, strength) in radians.");
+  sky.def("clear", []() { requireWorld()->globalFx()->setGalaxy(GlobalEffects::Galaxy()); });
 
   py::module_ music = m.def_submodule("music", "A story's own track beside the game's music; mix() crossfades.");
   music.def("play_track", [](const std::string& path) { return GameMusic::inst().playTrack(path); },

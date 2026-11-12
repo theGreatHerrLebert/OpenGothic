@@ -1,4 +1,5 @@
 #include "renderer.h"
+#include "graphics/sky/galaxy.h"
 
 #include <Tempest/Color>
 #include <Tempest/Fence>
@@ -1968,6 +1969,22 @@ void Renderer::drawSky(Encoder<CommandBuffer>& cmd, const WorldView& wview) {
   cmd.setBinding(7, *wview.sky().cloudsDay()  .lay[1], Sampler::trillinear());
   cmd.setBinding(8, *wview.sky().cloudsNight().lay[0], Sampler::trillinear());
   cmd.setBinding(9, *wview.sky().cloudsNight().lay[1], Sampler::trillinear());
+  // The galaxy over the sky: a panorama and two nebulae, and how strongly they show (zero: the game's own sky).
+  auto& gx = ::Galaxy::inst();
+  cmd.setBinding(10, gx.texture(0), Sampler::bilinear(ClampMode::Repeat));
+  cmd.setBinding(11, gx.texture(1), Sampler::trillinear(ClampMode::ClampToEdge));
+  cmd.setBinding(12, gx.texture(2), Sampler::trillinear(ClampMode::ClampToEdge));
+  struct PushGalaxy {
+    Vec4 main, tint, neb0, neb1;
+    } gp;
+  if(auto* world = Gothic::inst().world()) {
+    const auto& g = world->globalFx()->galaxyState();
+    gp.main = Vec4(g.amount, g.gain, g.grade, g.spin);
+    gp.tint = Vec4(g.tint.x, g.tint.y, g.tint.z, g.glow);
+    gp.neb0 = g.nebula[0];
+    gp.neb1 = g.nebula[1];
+    }
+  cmd.setPushData(&gp, sizeof(gp));
   cmd.setPipeline(skyShader);
   cmd.draw(nullptr, 0, 3);
   }

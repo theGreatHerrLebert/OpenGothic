@@ -44,6 +44,18 @@ class GlobalEffects {
       };
     void        setTrip(const Trip& t) { trip = t; }
     const Trip& tripState() const { return trip; }
+    // A galaxy in place of the sky (graphics/sky/galaxy.h holds its images), set every tick like the trip.
+    struct Galaxy {
+      float          amount = 0;           // 0 the game's own sky .. 1 the galaxy instead
+      float          gain   = 1;           // its brightness
+      Tempest::Vec3  tint   = {1,1,1};     // the colour it is graded towards
+      float          grade  = 0;           // 0 its own colours .. 1 graded to the tint
+      float          spin   = 0;           // radians around the pole: the sky turning
+      float          glow   = 0;           // a swell, 0..1, from the music
+      Tempest::Vec4  nebula[2] = {};       // per nebula slot: yaw, pitch, size across (radians), strength
+      };
+    void          setGalaxy(const Galaxy& g) { galaxy = g; }
+    const Galaxy& galaxyState() const { return galaxy; }
     // Falling snow over the finished frame, 0 none .. 1 a blizzard; independent of a trip.
     void        setSnow(float density) { snow = density; }
     float       snowDensity() const { return snow; }
@@ -110,6 +122,7 @@ class GlobalEffects {
     std::vector<std::shared_ptr<Quake>>       quakeEff;
     Trip                                      trip;
     float                                     snow = 0;
+    Galaxy                                    galaxy;
     float                                     tripTimeRem = 0;
   friend class GlobalFx;
   };
