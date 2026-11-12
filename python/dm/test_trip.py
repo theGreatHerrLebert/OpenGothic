@@ -531,8 +531,10 @@ assert ("05", trip.BLACKOUTS["anrufung"]["after"][0]["line"]) in trip.after_line
 # The morning sermon: begun once he is near, his own preaching hushed meanwhile, preached to the end even if the
 # hero walks off, one sentence at a time with a pause, then his routine is his own again.
 sermon = trip.BLACKOUTS["anrufung"]["after"][1]["sermon"]
-hushed = []
-vatras.stop = lambda: hushed.append(1)
+hushed, routines = [], []
+vatras.in_state = lambda state: state == "ZS_PREACH_VATRAS"
+vatras.stand_here = lambda: hushed.append("stand")
+fake.daedalus = types.SimpleNamespace(call=lambda name, npc, routine: routines.append((name, npc, routine)))
 said.clear()
 trip.remember_after(fake, [trip.BLACKOUTS["anrufung"]["after"][1]], 0.0)
 fake.player.position = (0.0, 0.0, 0.0)                          # 90 m away
@@ -540,18 +542,33 @@ trip.tick_after(fake, 1.0)
 assert said == [] and hushed == []
 fake.player.position = (0.0, 0.0, 8000.0)                       # 10 m: he begins
 trip.tick_after(fake, 2.0)
-assert said == [sermon[0]]
+assert said == [sermon[0]] and hushed == ["stand"]              # his own sermon on hold
 fake.player.position = (0.0, 0.0, 0.0)                          # walking off does not stop a sermon begun
 trip.tick_after(fake, 2.5)
-assert said == [sermon[0]] and hushed                           # a pause, and his own sermon kept quiet
+assert said == [sermon[0]] and hushed == ["stand"] and not routines   # a pause; still on hold
 t = 3.0
 while trip._after is not None and t < 400:
     trip.tick_after(fake, t)
     t += 0.5
 assert said == sermon                                           # all of it, in order, once
-n = len(hushed)
-trip.tick_after(fake, t + 1)
-assert len(hushed) == n                                         # done: he preaches his own again
+assert routines == [("B_STARTOTHERROUTINE", vatras, "START")] and hushed == ["stand"]   # his own routine back
+# In another routine (not preaching) there is nothing to hush and nothing to give back.
+vatras.in_state = lambda state: False
+hushed.clear(); routines.clear(); said.clear()
+trip.remember_after(fake, [trip.BLACKOUTS["anrufung"]["after"][1]], 0.0)
+fake.player.position = (0.0, 0.0, 8000.0)
+t = 1.0
+while trip._after is not None and t < 400:
+    trip.tick_after(fake, t)
+    t += 0.5
+assert said == sermon and hushed == [] and routines == []
+# Forgotten mid-sermon (too late), he still gets his routine back.
+vatras.in_state = lambda state: state == "ZS_PREACH_VATRAS"
+said.clear()
+trip.remember_after(fake, [trip.BLACKOUTS["anrufung"]["after"][1]], 0.0)
+trip.tick_after(fake, 1.0)
+trip.tick_after(fake, trip.AFTER_FOR + 1)
+assert routines == [("B_STARTOTHERROUTINE", vatras, "START")] and trip._after is None
 assert all(("05", text) in trip.after_lines() for text in sermon)
 
 # In another world (no temple there) he comes to where he fell: no move, no morning, nobody waiting.

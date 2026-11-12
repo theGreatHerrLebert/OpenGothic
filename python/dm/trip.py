@@ -226,7 +226,10 @@ BLACKOUTS = {
                             "line": "Was auch immer du heute Nacht angebetet hast, mein Sohn: Adanos war es nicht.",
                             "reply": "Ich … hab nur was geraucht."},
                            # And this morning his sermon is on moderation, Adanos's balance; his own waits meanwhile.
-                           {"npc": "VLK_439_VATRAS", "voice": "05", "near": 1500.0, "sermon": [
+                           # His own sermon (ZS_PREACH_VATRAS, only in his START routine) is put on hold by having
+                           # him stand, and START given back after; in another routine there is nothing to hush.
+                           {"npc": "VLK_439_VATRAS", "voice": "05", "near": 1500.0,
+                            "hush": "ZS_PREACH_VATRAS", "resume": "START", "sermon": [
                                "Hört mich an, Bürger von Khorinis! Adanos lehrt uns das Gleichgewicht. In allen Dingen.",
                                "Wer nach dem Feuer greift, verbrennt sich. Wer nach den Sternen greift, der fällt.",
                                "Manch einer sucht in Rauch und Kraut, was ihm nur die Demut geben kann.",
@@ -737,6 +740,10 @@ def _forget_after(gothic, same_world):
     if _after is not None and same_world:
         for line in _after[0]:
             _release(gothic, line)
+            if line.get("hushed"):
+                npc = gothic.world.find_npc(line["npc"])
+                if npc is not None:
+                    _unhush(gothic, npc, line)
     _after = None
 
 
@@ -773,11 +780,6 @@ def tick_after(gothic, now):
                 line["bound"] = True
     if gothic.dialog.partner() is not None or gothic.dialog.narrating():
         return
-    for line in lines:
-        if line.get("sermon") and line.get("next", 0) > 0:
-            npc = gothic.world.find_npc(line["npc"])
-            if npc is not None:
-                npc.stop()                      # his own sermon waits while he gives this one
     here = gothic.player.position
     for line in list(lines):
         if line.get("bound"):
@@ -812,7 +814,11 @@ def _preach(gothic, line, here, now):
         return False
     if line.get("next", 0) >= len(line["sermon"]):
         _after[0].remove(line)
+        _unhush(gothic, npc, line)
         return False
+    if line.get("next", 0) == 0 and line.get("hush") and npc.in_state(line["hush"]):
+        npc.stand_here()                        # his own sermon waits while he gives this one
+        line["hushed"] = True
     from dm import voices
     text = line["sermon"][line.get("next", 0)]
     wav, ms = voices.lookup(line["voice"], text)
@@ -821,6 +827,15 @@ def _preach(gothic, line, here, now):
     line["next"] = line.get("next", 0) + 1
     line["quiet_until"] = now + (ms or max(2500, len(text) * 70)) / 1000.0 + SERMON_GAP
     return True
+
+
+def _unhush(gothic, npc, line):
+    """Gives a preacher his own routine back."""
+    if line.pop("hushed", False):
+        try:
+            gothic.daedalus.call("B_STARTOTHERROUTINE", npc, line["resume"])
+        except RuntimeError:
+            pass
 
 
 def after_graph(npc):
