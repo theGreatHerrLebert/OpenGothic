@@ -797,7 +797,10 @@ PYBIND11_EMBEDDED_MODULE(gothic, m) {
                    }
                  return true;
                  };
-               if(auto* wp = w->findWayPoint(to, clear))
+               // Best a bench nearby, where he can wait out the evening; else a free spot a few steps away.
+               if(w->availableMob(*user, "BENCH")!=nullptr)
+                 user->aiPush(AiQueue::aiUseMob("BENCH", 1));
+               else if(auto* wp = w->findWayPoint(to, clear))
                  user->aiPush(AiQueue::aiGoToPoint(*wp));
                if(auto* sym = w->script().getVm().find_symbol_by_index(uint32_t(user->handle().symbol_index())))
                  return py::str(sym->name());
