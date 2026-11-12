@@ -54,6 +54,25 @@ a `significance` block, written before anything else, each answer one or two pla
 Mundane stories are welcome, Gothic is full of them; but even a small one gives the player a reason to care. The
 checker refuses a story whose block is missing or empty, and the blind scoring tests whether it was true.
 
+## Let the story write itself
+
+A story nearly writes itself once three things are fixed: people with character, beliefs and intentions; an occasion
+that makes them act or react; and choices through which the player can express himself. Start there, not from a plot.
+
+1. **A place where people gather,** and the power gradient in it. Thekla's kitchen at night: mercenaries above
+   farmers, Sylvio's men above the rest. The gradient explains most of what follows by itself.
+2. **A situation as old as society:** gambling and cheating, a debt, a love affair, a theft, an inheritance, a feud.
+3. **An occasion that disturbs it:** a farmer stakes his father's coin and loses it to a cheat.
+4. **For each person, what he wants, fears and believes.** Bullco was cheated and is quick to hit, so he wants
+   someone to hit. Fiete lost money and fears mercenaries. The cheat wants to keep winning and not be caught.
+5. **Only then the hero's choices,** as the questions a player would naturally ask and the things he would naturally
+   try. Every obvious question needs an answer that comes from the situation: "Why don't you go to Lee?" — "The
+   mercenaries would beat me to a pulp." That answer is also why the hero is needed, and why a mercenary like Bullco
+   is the lever.
+
+When people act by their own character, the player can play them against each other, and the story stops being a
+list of stations.
+
 ## Good to play
 
 None of this is a rule a checker can hold you to. It is what the player missed in a story that ran without a fault

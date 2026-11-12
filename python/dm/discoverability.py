@@ -220,7 +220,9 @@ def dossier(story):
              "You are a player of Gothic II. Below is everything this side story can show you, grouped by where it "
              "appears, with the conditions under which it appears. You do not know the solution. For each step, say "
              "what you would do next and why, and name every point where nothing tells you where to go, whom to ask, "
-             "or when. Do not assume you can see this list in the game: you only see a group once you are there.", ""]
+             "or when. Do not assume you can see this list in the game: you only see a group once you are there. "
+             "Then, for each person, list the questions a player would obviously ask them (\"Why don't you go to Lee?\") "
+             "and the things he would obviously try, and say which of them the story never answers or allows.", ""]
     for entry in m["entries"]:
         who = m["names"].get(entry.get("npc", ""), entry.get("npc", ""))
         if entry["kind"] == "deed":
