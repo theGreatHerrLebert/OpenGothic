@@ -45,11 +45,12 @@ PROFILES = {
     # the peak near the end, an abrupt stop.
     "skorpion": [(20.0, 0.10, 0.010, 0.0, 0.0), (4.0, 0.90, 0.040, 0.0, 0.0), (46.0, 0.70, 0.008, 0.10, 0.05),
                  (95.0, 0.85, 0.006, 0.10, 0.04), (25.0, 1.00, 0.015, 0.05, 0.05), (25.0, 0.00, 0.008, 0.0, 0.0)],
-    # Cut to "Khe-Ru-Dhem" (244 s, the Goa take): a long quiet opening, the first big rise at 60 s, climbing to its
-    # loudest near 230 s.
-    "skorpion_goa": [(25.0, 0.08, 0.010, 0.0, 0.0), (35.0, 0.35, 0.006, 0.02, 0.02), (5.0, 0.95, 0.050, 0.0, 0.0),
-                     (55.0, 0.80, 0.008, 0.12, 0.05), (50.0, 0.90, 0.006, 0.10, 0.04), (65.0, 1.00, 0.010, 0.06, 0.05),
-                     (30.0, 0.00, 0.006, 0.0, 0.0)],
+    # Cut to "Circle of Fire" (208 s, 102 BPM, an acoustic desert ritual; the Goa take was out of place in Gothic):
+    # a creeping opening, the heat hitting at the step up at 60 s, waves climbing, the eye opening after the small dip
+    # at 165 s, and the blackout as the music stops.
+    "skorpion_goa": [(20.0, 0.10, 0.010, 0.0, 0.0), (40.0, 0.35, 0.006, 0.02, 0.02), (5.0, 0.85, 0.040, 0.0, 0.0),
+                     (60.0, 0.75, 0.008, 0.10, 0.05), (40.0, 0.85, 0.006, 0.10, 0.04), (37.0, 1.00, 0.012, 0.06, 0.05),
+                     (8.0, 0.00, 0.020, 0.0, 0.0)],
     # The Invocation (Y'Berion's forbidden blend). Cut to "Moonlit Prayer" (234 s, 103 BPM): a quiet prayer for a
     # minute, the call rising to 160 s, a short break, the vision opening as the climax starts at 168 s, and the
     # blackout falling with the music's collapse into silence at 230 s.
@@ -356,7 +357,7 @@ def draw_thoughts(rng, style="mindcap"):
 
 # A profile's own track, in python/dm_runtime/music (private: never committed).
 TRACKS = {"mindcap": "mindcap.wav", "wasserpfeife": "wasserpfeife.wav", "nordmar": "nordmar.wav",
-          "kriegsgesang": "kriegsgesang.wav", "skorpion": "skorpion.wav", "skorpion_goa": "skorpion_goa.wav",
+          "kriegsgesang": "kriegsgesang.wav", "skorpion": "skorpion.wav", "skorpion_goa": "skorpion_fire.wav",
           "anrufung": "anrufung.wav"}
 MUSIC_DIR = __import__("pathlib").Path(__file__).resolve().parent.parent / "dm_runtime" / "music"
 

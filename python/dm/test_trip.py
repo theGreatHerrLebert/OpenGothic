@@ -457,7 +457,7 @@ trip._end(fake)
 assert trip.length("wasserpfeife") == 225
 assert trip.length("nordmar") == 215          # the 185 s track plus its landing
 assert trip.length("kriegsgesang") == 200     # the 170 s track plus its landing
-assert trip.length("skorpion") == 215 and trip.length("skorpion_goa") == 265
+assert trip.length("skorpion") == 215 and trip.length("skorpion_goa") == 210
 
 # The scorpion blend looks like heat, not neon: Emberheart's look, desert colours, edges and tracers low.
 ember, neon = trip.look(1.0, 3.0, style="ember"), trip.look(1.0, 3.0)
