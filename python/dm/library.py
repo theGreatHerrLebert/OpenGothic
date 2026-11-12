@@ -45,9 +45,21 @@ def story_paths():
             if not p.name.endswith((".first.json", ".final.json"))]
 
 
+NEWGAME = voices.RUNTIME_DIR / "newgame"
+
+
+def newgame_paths():
+    """The stories written live for the running game (newgame/story_N.json): in the library, never on the trial page."""
+    return sorted(NEWGAME.glob("story_*.json"))
+
+
+def library_paths():
+    return story_paths() + newgame_paths()
+
+
 def path_of(story_id):
     """The file behind a generated story's blind id, or None."""
-    return next((p for p in story_paths() if blind_id(p.stem) == story_id), None)
+    return next((p for p in library_paths() if blind_id(p.stem) == story_id), None)
 
 
 def revision(story_id):
@@ -132,9 +144,14 @@ def generated(story_id):
         return None, None
     data = json.loads(path.read_text(encoding="utf-8"))
     graphs_file = EXPERIMENT / "graphs.json"
+    prefix = path.stem
+    if path.parent == NEWGAME:
+        # A live story's voices were made from newgame/graphs_N.json, keyed newgame_N__<conversation>.
+        number = path.stem.rsplit("_", 1)[-1]
+        graphs_file, prefix = NEWGAME / f"graphs_{number}.json", f"newgame_{number}"
     baked = json.loads(graphs_file.read_text(encoding="utf-8")) if graphs_file.exists() else {}
     edits = load_edits()
-    conversations = {key: edits.get(f"{path.stem}__{key}") or baked.get(f"{path.stem}__{key}", graph)
+    conversations = {key: edits.get(f"{path.stem}__{key}") or baked.get(f"{prefix}__{key}", graph)
                      for key, graph in data["conversations"].items()}
     data["plan"] = _with_graphs(data["plan"], data["conversations"], conversations)
     data["conversations"] = conversations
@@ -228,7 +245,7 @@ def entries():
     result.append({"id": DEMO_ID, "title": "Der Fall Tilo", "premise": "Die Referenzgeschichte: ein Novize, "
                    "zwei gestohlene Silberleuchter und Würfelschulden am Hafen.", "demo": True,
                    "stage": demo_stage, "changed": demo_changed})
-    for path in story_paths():
+    for path in library_paths():
         story_id = blind_id(path.stem)
         try:
             data = json.loads(path.read_text(encoding="utf-8"))

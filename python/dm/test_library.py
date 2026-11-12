@@ -12,6 +12,7 @@ with tempfile.TemporaryDirectory() as d:
     root = pathlib.Path(d)
     (root / "stories").mkdir()
     library.EXPERIMENT = root
+    library.NEWGAME = root / "newgame"
     library.STAGE_FILE = root / "story_stages.json"
     story = root / "stories" / "s1_1.json"
     story.write_text(json.dumps({"title": "Zweite", "premise": "p", "plan": []}), encoding="utf-8")
@@ -96,3 +97,21 @@ assert library.gate(["x"], {}, index) == ["1 check errors", "3 lines not reviewe
 assert library.gate([], {"a": {"verdict": "reject"}, "a__voice": {"verdict": "approve"},
                          "b": {"verdict": "approve"}}, index) == ["1 lines rejected"]
 print("ok")
+
+# A live story (newgame/story_N.json) is in the library with the dialogue it was voiced from, never on the trial page.
+with tempfile.TemporaryDirectory() as d:
+    root = pathlib.Path(d)
+    (root / "stories").mkdir()
+    (root / "newgame").mkdir()
+    library.EXPERIMENT, library.NEWGAME = root, root / "newgame"
+    library.STAGE_FILE = root / "story_stages.json"
+    graph = {"voice": "05", "start": "a", "nodes": {"a": {"line": "Alt.", "choices": []}}}
+    voiced = {"voice": "05", "start": "a", "nodes": {"a": {"line": "Vertont.", "choices": []}}}
+    (root / "newgame" / "story_4.json").write_text(json.dumps({"title": "Live", "conversations": {"X": graph},
+                                                               "plan": []}), encoding="utf-8")
+    (root / "newgame" / "graphs_4.json").write_text(json.dumps({"newgame_4__X": voiced}), encoding="utf-8")
+    sid = library.blind_id("story_4")
+    assert [e["title"] for e in library.entries()[1:]] == ["Live"]
+    assert library.generated(sid)[1]["X"]["nodes"]["a"]["line"] == "Vertont."
+    assert library.story_paths() == []                                   # the trial page does not see it
+print("live stories ok")
