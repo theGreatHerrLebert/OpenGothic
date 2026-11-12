@@ -1,5 +1,9 @@
 """Feedback from inside the game. Alt+F opens a menu in the DM panel, Alt+1 to Alt+5 pick, Alt+F closes it.
 
+A rating covers three things, kept apart because they fail apart: whether it worked (broke), whether it belongs in
+Gothic (original, interest, deed), and whether playing it was good (worth, way, surprised). `report()` sums them up
+per story.
+
 Flagging a moment records what was on screen: the story, the conversation, the node and its line, the time and the
 place, and the last few events. Rating a story asks the story trial page's questions and marks the story played,
 which is the signal a live game master waits for before starting the next one. Notes in words are added afterwards in
@@ -28,6 +32,10 @@ ASK_WORTH = "Lohnt es sich, sie zu spielen?\nAlt+1  ja\nAlt+2  nein\nAlt+F  abbr
 ASK_INTEREST = "Wie spannend, 1 bis 5?\nAlt+1 … Alt+5\nAlt+F  abbrechen"
 ASK_DEED = "Hat etwas gezählt, das du getan\nund nicht gesagt hast?\nAlt+1  ja\nAlt+2  nein\nAlt+F  abbrechen"
 ASK_ORIGINAL = "Hätte das im Originalspiel\nstehen können?\nAlt+1  ja\nAlt+2  nein\nAlt+F  abbrechen"
+ASK_WAY = "Hast du den Weg selbst gefunden?\nAlt+1  allein\nAlt+2  mit Glück\nAlt+3  nur mit Hilfe\nAlt+F  abbrechen"
+ASK_SURPRISE = "Hat dich etwas überrascht,\nals Spieler, nicht als Entwickler?\nAlt+1  ja\nAlt+2  nein\nAlt+F  abbrechen"
+ASK_BROKE = "Ist etwas kaputtgegangen?\nAlt+1  nein, lief sauber\nAlt+2  ja\nAlt+F  abbrechen"
+WAYS = {"1": "alone", "2": "luck", "3": "help"}
 NO_STORY = "Keine Geschichte läuft."
 SAVED = "Vermerkt."
 RATED = "Bewertet. Danke."
@@ -73,6 +81,18 @@ class Menu:
             return ASK_ORIGINAL, None
         elif self.state == "original" and key in ("1", "2"):
             self.rating["original"] = "yes" if key == "1" else "no"
+            self.state = "way"
+            return ASK_WAY, None
+        elif self.state == "way" and key in WAYS:
+            self.rating["way"] = WAYS[key]
+            self.state = "surprise"
+            return ASK_SURPRISE, None
+        elif self.state == "surprise" and key in ("1", "2"):
+            self.rating["surprised"] = "yes" if key == "1" else "no"
+            self.state = "broke"
+            return ASK_BROKE, None
+        elif self.state == "broke" and key in ("1", "2"):
+            self.rating["broke"] = "no" if key == "1" else "yes"
             self.state = "closed"
             entry = {"kind": "rating", **self.rating, "played": True}
             self.rating = {}
@@ -204,3 +224,41 @@ def start():
         return
     gothic.on_tick(_tick)
     gothic._dm_feedback_registered = True
+
+
+def report(path=PATH):
+    """Per rated story: technical, narrative and player-experience results, from every rating given in the game."""
+    stories = {}
+    try:
+        lines = path.read_text(encoding="utf-8").splitlines()
+    except OSError:
+        return {}
+    for line in lines:
+        try:
+            entry = json.loads(line)
+        except ValueError:
+            continue
+        if entry.get("kind") != "rating" or not entry.get("story"):
+            continue
+        stories.setdefault(entry["story"], []).append(entry)
+
+    def share(ratings, key, value):
+        given = [r for r in ratings if key in r]
+        return None if not given else round(sum(r[key] == value for r in given) / len(given), 2)
+
+    out = {}
+    for story, ratings in stories.items():
+        interests = [r["interest"] for r in ratings if isinstance(r.get("interest"), int)]
+        out[story] = {
+            "ratings": len(ratings),
+            "technical": {"ran_clean": share(ratings, "broke", "no")},
+            "narrative": {"could_be_original": share(ratings, "original", "yes"),
+                          "interest": None if not interests else round(sum(interests) / len(interests), 1),
+                          "a_deed_counted": share(ratings, "deed", "yes")},
+            "experience": {"worth_playing": share(ratings, "worth", "yes"), "found_way_alone": share(ratings, "way", "alone"),
+                           "surprised": share(ratings, "surprised", "yes")}}
+    return out
+
+
+if __name__ == "__main__":
+    print(json.dumps(report(), ensure_ascii=False, indent=1))

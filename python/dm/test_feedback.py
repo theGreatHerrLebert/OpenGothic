@@ -30,10 +30,25 @@ assert menu.press("3") == (None, None)                      # yes/no question ig
 assert menu.press("2")[0] == feedback.ASK_INTEREST
 assert menu.press("4")[0] == feedback.ASK_DEED
 assert menu.press("1")[0] == feedback.ASK_ORIGINAL
-text, entry = menu.press("2")
+assert menu.press("2")[0] == feedback.ASK_WAY
+assert menu.press("4") == (None, None)                      # only three ways
+assert menu.press("2")[0] == feedback.ASK_SURPRISE
+assert menu.press("1")[0] == feedback.ASK_BROKE
+text, entry = menu.press("1")
 assert text == feedback.RATED
 assert entry == {"kind": "rating", "story": "Die eine Flasche", "worth": "no", "interest": 4, "deed": "yes",
-                 "original": "no", "played": True}
+                 "original": "no", "way": "luck", "surprised": "yes", "broke": "no", "played": True}
+
+with tempfile.TemporaryDirectory() as d:
+    log = pathlib.Path(d) / "feedback.jsonl"
+    log.write_text("\n".join(json.dumps(e) for e in [
+        entry, dict(entry, interest=2, way="alone", surprised="no", broke="yes"), {"kind": "moment", "tag": "gut"},
+        {"kind": "rating", "story": "Alt", "worth": "yes", "interest": 3, "deed": "no", "original": "yes"}]) + "\n{torn")
+    summary = feedback.report(log)
+    flasche = summary["Die eine Flasche"]
+    assert flasche["ratings"] == 2 and flasche["technical"]["ran_clean"] == 0.5 and flasche["narrative"]["interest"] == 3.0
+    assert flasche["experience"] == {"worth_playing": 0.0, "found_way_alone": 0.5, "surprised": 0.5}
+    assert summary["Alt"]["experience"]["surprised"] is None    # a rating from before the question counts as unknown
 
 menu.press("feedback")
 menu.press("5", "X")
@@ -41,7 +56,8 @@ assert menu.press("feedback") == ("", None) and menu.state == "closed"   # Alt+F
 assert menu.press("1") == (None, None)
 
 # The panel never shows story text beyond the title.
-for fixed in (feedback.MAIN, feedback.ASK_WORTH, feedback.ASK_INTEREST, feedback.ASK_DEED, feedback.ASK_ORIGINAL):
+for fixed in (feedback.MAIN, feedback.ASK_WORTH, feedback.ASK_INTEREST, feedback.ASK_DEED, feedback.ASK_ORIGINAL,
+              feedback.ASK_WAY, feedback.ASK_SURPRISE, feedback.ASK_BROKE):
     assert "Flasche" not in fixed
 
 # Which story is current: internal log entries do not count.
