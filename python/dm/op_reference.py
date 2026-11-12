@@ -88,6 +88,10 @@ OPS = {
     "give_item": ("Items", "Gives the hero an item, as the game's own handover.", {"op": "give_item", "instance": "ITMI_GOLD", "count": 50}),
     "give_xp": ("Items", "Experience with the game's own message and sound, at most 300.", {"op": "give_xp", "amount": 150}),
     # Effects
+    "weather": ("Effects", "Weather in the world: snow, rain or clear, how strongly (0..1), over how many seconds it comes "
+                           "(fade), the wind [x, z] in m/s, and snow lying on the ground (cover 0..1 over cover_seconds). "
+                           "Kept in the save; a change of kind lets the old one stop first.",
+                {"op": "weather", "kind": "snow", "intensity": 0.7, "fade": 60, "wind": [2, 0], "cover": 0.6}),
     "trip": ("Effects", "A trip of a few minutes with its own music, picture and thoughts.",
              {"op": "trip", "profile": "kriegsgesang"}),
     # The story as a whole

@@ -800,6 +800,38 @@ def _keep_refusals(state):
         _refusal_bound.discard(name)
 
 
+WEATHER_KINDS = ("clear", "snow", "rain")
+
+
+def _check_weather(args, state):
+    """Weather in the world: what falls, how strongly, how fast it comes, the wind, and snow lying on the ground."""
+    _require(args, "kind")
+    if args["kind"] not in WEATHER_KINDS:
+        raise PlanError("weather kind is snow, rain or clear")
+    for key, low, high in (("intensity", 0, 1), ("fade", 0, 3600), ("cover", 0, 1), ("cover_seconds", 0, 86400)):
+        value = args.get(key)
+        if value is not None and (isinstance(value, bool) or not isinstance(value, (int, float)) or not low <= value <= high):
+            raise PlanError(f"weather {key} is a number from {low} to {high}")
+    wind = args.get("wind", [0, 0])
+    if not (isinstance(wind, list) and len(wind) == 2 and all(isinstance(v, (int, float)) and abs(v) <= 30 for v in wind)):
+        raise PlanError("weather wind is [x, z] in metres per second, at most 30")
+
+
+def _fold_weather(args, state):
+    state["weather"] = {"kind": args["kind"], "intensity": args.get("intensity", 1.0), "wind": list(args.get("wind", [0, 0])),
+                        "cover": args.get("cover")}
+
+
+def _world_weather(args, fade=None):
+    if not hasattr(gothic, "weather") or not hasattr(gothic.weather, "set"):
+        return None
+    gothic.weather.set(args["kind"], args.get("intensity", 1.0), args.get("fade", 10) if fade is None else fade,
+                       tuple(args.get("wind", [0, 0])))
+    if args.get("cover") is not None:
+        gothic.weather.cover(args["cover"], args.get("cover_seconds", 600) if fade is None else 0)
+    return None
+
+
 def _check_npc_item(args, state):
     """An item someone really carries: it can be traded, stolen or looted from him when he is down, and the story
     sees where it is with the npc_has check."""
@@ -893,6 +925,7 @@ OPS = {
     "npc_item": (_check_npc_item, _noop, _world_npc_item),
     "refuse_talk": (_check_refuse, _fold_refuse, None),
     "retire": (_check_retire, _fold_retire, None),
+    "weather": (_check_weather, _fold_weather, _world_weather),
 }
 
 def _ready_live(args, plan):
@@ -1097,6 +1130,8 @@ class Story:
             npc = gothic.world.find_npc(instance)
             if npc is not None:
                 gothic.dialog.bind(npc)
+        if self.state.get("weather"):
+            _world_weather(self.state["weather"], fade=0)   # as it was when saved, at once
 
     def graphs_now(self):
         """Dialogue graphs, including the scene currently playing."""

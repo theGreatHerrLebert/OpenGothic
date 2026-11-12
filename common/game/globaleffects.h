@@ -63,6 +63,25 @@ class GlobalEffects {
     void        setSnow(float density) { snow = density; }
     float       snowDensity() const { return snow; }
 
+    // Weather in the world (docs/plan-weather.md), set from Python and eased towards its target in game time. A change
+    // of kind first lets the old precipitation stop, then the new one begins.
+    enum class Precipitation : uint8_t { None, Snow, Rain };
+    struct Weather {
+      Precipitation kind        = Precipitation::None;
+      float         intensity   = 0;    // what falls now, 0..1
+      float         target      = 0;
+      float         fadeSeconds = 10;
+      float         windX       = 0;    // metres per second the wind carries what falls
+      float         windZ       = 0;
+      float         cover       = 0;    // snow lying on the ground, 0..1
+      float         coverTarget = 0;
+      float         coverSeconds = 600;
+      };
+    void           setWeather(Precipitation kind, float target, float fadeSeconds, float windX, float windZ);
+    void           setCover(float target, float seconds);
+    const Weather& weatherState() const { return weather; }
+    bool           isRaining() const { return weather.kind==Precipitation::Rain && weather.intensity>0.1f; }
+
   private:
     struct Effect {
       virtual ~Effect(){}
@@ -125,6 +144,11 @@ class GlobalEffects {
     std::vector<std::shared_ptr<Quake>>       quakeEff;
     Trip                                      trip;
     float                                     snow = 0;
+    Weather                                   weather;
+    Precipitation                             pendingKind   = Precipitation::None;
+    float                                     pendingTarget = -1;   // below zero: no change of kind waiting
+
+    void tickWeather(uint64_t dt);
     Galaxy                                    galaxy;
     float                                     tripTimeRem = 0;
   friend class GlobalFx;

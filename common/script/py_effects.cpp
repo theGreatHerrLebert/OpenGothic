@@ -92,7 +92,31 @@ void bindTrip(py::module_& m) {
 
   py::module_ weather = m.def_submodule("weather", "Weather the story lays over the world.");
   weather.def("snow", [](float density) { requireWorld()->globalFx()->setSnow(std::clamp(density, 0.f, 1.f)); },
-              py::arg("density"), "Falling snow, 0 none .. 1 a blizzard.");
+              py::arg("density"), "Falling snow over the frame (the trip lens), 0 none .. 1 a blizzard.");
+  weather.def("set",
+              [](const std::string& kind, float intensity, float fade, std::tuple<float,float> wind) {
+                using P = GlobalEffects::Precipitation;
+                P k = kind=="snow" ? P::Snow : kind=="rain" ? P::Rain : kind=="clear" ? P::None
+                    : throw std::invalid_argument("weather kind is snow, rain or clear: " + kind);
+                requireWorld()->globalFx()->setWeather(k, intensity, fade, std::get<0>(wind), std::get<1>(wind));
+                },
+              py::arg("kind"), py::arg("intensity") = 1.f, py::arg("fade") = 10.f,
+              py::arg("wind") = std::make_tuple(0.f, 0.f),
+              "Weather in the world: snow, rain or clear, intensity 0..1, reached over fade seconds of game time; "
+              "wind (x, z) in metres per second. A change of kind lets the old one stop first.");
+  weather.def("cover", [](float target, float seconds) { requireWorld()->globalFx()->setCover(target, seconds); },
+              py::arg("target"), py::arg("seconds") = 600.f, "Snow lying on the ground, 0..1, reached over seconds.");
+  weather.def("state",
+              []() {
+                auto& w = requireWorld()->globalFx()->weatherState();
+                const char* kinds[] = {"clear", "snow", "rain"};
+                py::dict d;
+                d["kind"] = kinds[int(w.kind)]; d["intensity"] = w.intensity; d["target"] = w.target;
+                d["wind"] = std::make_tuple(w.windX, w.windZ); d["cover"] = w.cover;
+                d["raining"] = requireWorld()->globalFx()->isRaining();
+                return d;
+                },
+              "What the weather is now.");
   }
 
 void bindSky(py::module_& m) {

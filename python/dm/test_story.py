@@ -914,6 +914,25 @@ def test_refuse_talk():
     assert fake.dialog.bound == []
 
 
+def test_weather():
+    # Weather a story sets, kept in the log and set again at once after a load.
+    s = st.Story()
+    s.validate([{"op": "weather", "kind": "snow", "intensity": 0.7, "wind": [2, 0], "cover": 0.5}])
+    rejected(s, [{"op": "weather", "kind": "hail"}], "kind")
+    rejected(s, [{"op": "weather", "kind": "rain", "intensity": 2}], "intensity")
+    rejected(s, [{"op": "weather", "kind": "rain", "wind": [99, 0]}], "wind")
+    calls = []
+    fake.weather = types.SimpleNamespace(set=lambda *a: calls.append(("set",) + a),
+                                         cover=lambda *a: calls.append(("cover",) + a))
+    s.apply_plan({"reason": "t", "ops": [{"op": "weather", "kind": "snow", "intensity": 0.7, "fade": 30, "cover": 0.5}]})
+    assert calls == [("set", "snow", 0.7, 30, (0, 0)), ("cover", 0.5, 600)], calls
+    assert s.state["weather"]["kind"] == "snow"
+    calls.clear()
+    s.rebind()
+    assert calls[0] == ("set", "snow", 0.7, 0, (0, 0)) and calls[1] == ("cover", 0.5, 0), calls
+    del fake.weather
+
+
 def test_waited_for_pipe_is_reserved():
     # A pipe a rule waits for the hero to smoke is kept for him while the rule's conditions hold, then given back.
     calls = []
@@ -1103,7 +1122,7 @@ def test_plans_are_all_or_nothing_where_the_game_allows():
         del fake.daedalus.call, fake.journal
 
 
-for test in (test_plans_are_all_or_nothing_where_the_game_allows, test_owed_aftercare_survives_a_save, test_topic_while_he_smokes, test_return_to_a_split_menu, test_items_of_our_own, test_item_with_a_model_of_its_own, test_give_xp, test_attack, test_npc_item, test_refuse_talk, test_waited_for_pipe_is_reserved, test_handed_over_but_nothing_to_play, test_topics_extend_an_npc, test_trip_operation, test_rule_contents_are_checked_when_submitted, test_graph_validation, test_validation, test_apply_and_rollback, test_return_npc, test_conditional_choices, test_gamble, test_returns_to_menu, test_questions_are_asked_once, test_variant_line, test_again_line, test_scene_and_rule, test_rule_fires_on_perception, test_narration_waits_for_quiet, test_drawing_a_weapon_is_perceived,
+for test in (test_plans_are_all_or_nothing_where_the_game_allows, test_owed_aftercare_survives_a_save, test_topic_while_he_smokes, test_return_to_a_split_menu, test_items_of_our_own, test_item_with_a_model_of_its_own, test_give_xp, test_attack, test_npc_item, test_weather, test_refuse_talk, test_waited_for_pipe_is_reserved, test_handed_over_but_nothing_to_play, test_topics_extend_an_npc, test_trip_operation, test_rule_contents_are_checked_when_submitted, test_graph_validation, test_validation, test_apply_and_rollback, test_return_npc, test_conditional_choices, test_gamble, test_returns_to_menu, test_questions_are_asked_once, test_variant_line, test_again_line, test_scene_and_rule, test_rule_fires_on_perception, test_narration_waits_for_quiet, test_drawing_a_weapon_is_perceived,
              test_queue_waits_for_safe_point, test_save_load_does_not_reapply_world,
              test_player):
     test()

@@ -1,3 +1,4 @@
+#include <algorithm>
 #include "globaleffects.h"
 
 #include <Tempest/Log>
@@ -23,6 +24,51 @@ void GlobalEffects::tick(uint64_t dt) {
   tick(dt,scrEff);
   tick(dt,morphEff);
   tick(dt,quakeEff);
+  tickWeather(dt);
+  }
+
+void GlobalEffects::setWeather(Precipitation kind, float target, float fadeSeconds, float windX, float windZ) {
+  target            = std::clamp(target, 0.f, 1.f);
+  weather.fadeSeconds = std::max(fadeSeconds, 0.f);
+  weather.windX     = windX;
+  weather.windZ     = windZ;
+  if(kind!=weather.kind && weather.intensity>0.01f && weather.fadeSeconds>0.f) {
+    pendingKind    = kind;      // let what falls now stop first
+    pendingTarget  = target;
+    weather.target = 0;
+    return;
+    }
+  pendingTarget  = -1;
+  weather.kind   = kind;
+  weather.target = kind==Precipitation::None ? 0.f : target;
+  if(weather.fadeSeconds<=0.f)
+    weather.intensity = weather.target;
+  }
+
+void GlobalEffects::setCover(float target, float seconds) {
+  weather.coverTarget  = std::clamp(target, 0.f, 1.f);
+  weather.coverSeconds = std::max(seconds, 0.f);
+  if(weather.coverSeconds<=0.f)
+    weather.cover = weather.coverTarget;
+  }
+
+void GlobalEffects::tickWeather(uint64_t dt) {
+  const float sec  = float(dt)/1000.f;
+  auto        ease = [sec](float& value, float target, float seconds) {
+    if(seconds<=0.f) {
+      value = target;
+      return;
+      }
+    const float step = sec/seconds;
+    value = value<target ? std::min(value+step, target) : std::max(value-step, target);
+    };
+  ease(weather.intensity, weather.target, weather.fadeSeconds);
+  ease(weather.cover, weather.coverTarget, weather.coverSeconds);
+  if(pendingTarget>=0.f && weather.intensity<=0.01f) {
+    weather.kind   = pendingKind;
+    weather.target = pendingKind==Precipitation::None ? 0.f : pendingTarget;
+    pendingTarget  = -1;
+    }
   }
 
 template<class T>

@@ -1944,12 +1944,9 @@ void GameScript::wld_senduntrigger(std::string_view triggerTarget) {
   }
 
 bool GameScript::wld_israining() {
-  static bool first=true;
-  if(first){
-    Log::e("not implemented call [wld_israining]");
-    first=false;
-  }
-  return false;
+  // The weather the game master sets (GlobalEffects::Weather); a hero sheltering indoors still hears it rain.
+  auto* fx = world().globalFx();
+  return fx!=nullptr && fx->isRaining();
   }
 
 void GameScript::mdl_setvisual(std::shared_ptr<zenkit::INpc> npcRef, std::string_view visual) {
