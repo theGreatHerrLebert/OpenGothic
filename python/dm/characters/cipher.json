@@ -38,6 +38,13 @@
     "Diebstahl an seiner Truhe": "Sinnt auf Rache, aber heimlich und ohne Zeugen.",
     "Schlägerei mit einem Bauern": "Vermeidet sie, weil Zeugen das Strafgeld in die Höhe treiben."
   },
+  "beliefs": [
+    {
+      "believes": "Der Bauer Bodo hat sein Sumpfkrautpaket aus der Truhe gestohlen.",
+      "truth": "Dar hat es gestohlen und im Hafen verkauft.",
+      "honest": true
+    }
+  ],
   "evidence": [
     {
       "about": "sees_hero.fremder",

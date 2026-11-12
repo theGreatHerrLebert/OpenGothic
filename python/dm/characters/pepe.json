@@ -39,6 +39,18 @@
     "Drohung": "Knickt sofort ein und schmeichelt.",
     "Schafkauf": "Gibt eine Liesel ab und bittet, sie gut zu behandeln."
   },
+  "beliefs": [
+    {
+      "believes": "Der Herde fehlt nichts, was Onar wissen müsste.",
+      "truth": "Wölfe haben fast die Hälfte gerissen; Pepe hat es verschwiegen.",
+      "honest": false
+    },
+    {
+      "believes": "Bullco ist schuld an den verlorenen Schafen.",
+      "truth": "Bullco sollte die Weide bewachen und saß in der Küche; gerissen haben sie die Wölfe, während Pepe selbst Hirte war.",
+      "honest": true
+    }
+  ],
   "evidence": [
     {
       "about": "core",

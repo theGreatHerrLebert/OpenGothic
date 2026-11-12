@@ -36,6 +36,13 @@
     "Drohung": "Knickt sofort ein, behauptet, zu dicht für eine Prügelei zu sein.",
     "Spott über seine Härte": "Wird gereizt und droht, dem Helden den Schädel zu spalten."
   },
+  "beliefs": [
+    {
+      "believes": "Er weiß nichts von Ciphers Kraut.",
+      "truth": "Er hat es selbst gestohlen und zugedröhnt am Hafen verscherbelt.",
+      "honest": false
+    }
+  ],
   "evidence": [
     {
       "about": "sees_hero.fremder",

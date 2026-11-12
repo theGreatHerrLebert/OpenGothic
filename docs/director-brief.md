@@ -145,7 +145,7 @@ alternative with `unless`. Name a person before referring to them as "er" on eve
 path. A first meeting line needs an `again` line for later conversations. Reviewing
 every line for natural German and for who is talking to whom comes before submitting.
 
-People may be wrong, and they may lie. Gothic runs on gossip, suspicion and prejudice, so a false fact is a good tool:
+People may be wrong, and they may lie. A character sheet's `beliefs` lists what someone believes (`honest`) or claims (a lie) that is not so, with the truth; each is a false fact ready to use. Gothic runs on gossip, suspicion and prejudice, so a false fact is a good tool:
 `{"text": "Bodo hat das Kraut gestohlen.", "false": true, "contradicts": "dar_stole", "believed_by":
 ["SLD_803_CIPHER"], "claimed_by": ["SLD_810_DAR"]}`. Those who believe it say it honestly; those who claim it know
 better (they must know the truth). Nobody else may say it, a false fact is never essential, and the player should be
