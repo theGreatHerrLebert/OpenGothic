@@ -747,9 +747,22 @@ PYBIND11_EMBEDDED_MODULE(gothic, m) {
              return out;
              },
            py::arg("radius"), "Usable objects (beds, benches, pipes, anvils ...) within radius of the hero.")
+      .def("item_visual",
+           [](const PyWorld&, const std::string& instance) -> std::string {
+             auto* w   = requireWorld();
+             auto& vm  = w->script().getVm();
+             auto* sym = vm.find_symbol_by_name(upper(instance));
+             if(sym==nullptr)
+               return "";
+             auto item = std::make_shared<zenkit::IItem>();
+             vm.init_instance(item, sym);
+             return item->visual;
+             },
+           py::arg("instance"), "The mesh an item instance is drawn with.")
       .def("define_item",
            [](const PyWorld&, const std::string& carrier, const std::string& like, const std::string& name,
-              const std::string& description, std::vector<std::tuple<std::string,int32_t>> rows, int32_t value) {
+              const std::string& description, std::vector<std::tuple<std::string,int32_t>> rows, int32_t value,
+              const std::string& visual) {
              auto* w = requireWorld();
              auto& vm = w->script().getVm();
              auto* c  = vm.find_symbol_by_name(upper(carrier));
@@ -764,12 +777,14 @@ PYBIND11_EMBEDDED_MODULE(gothic, m) {
                def.text[i+1]  = toEngine(std::get<0>(rows[i]));   // the first row sits under the title, kept blank
                def.count[i+1] = std::get<1>(rows[i]);
                }
-             def.value = value;
+             def.value  = value;
+             def.visual = visual;
              w->script().defineItem(c->index(), std::move(def));
              return true;
              },
            py::arg("carrier"), py::arg("like"), py::arg("name"), py::arg("description") = "",
            py::arg("rows") = std::vector<std::tuple<std::string,int32_t>>{}, py::arg("value") = -1,
+           py::arg("visual") = "",
            "Make every new item of the carrier instance like the item 'like', with its own name, description and "
            "inventory rows (label, number). The story defines it again after a load.")
       .def("reserve_object",
@@ -930,6 +945,21 @@ PYBIND11_EMBEDDED_MODULE(gothic, m) {
   py::module_ weather = m.def_submodule("weather", "Weather the story lays over the world.");
   weather.def("snow", [](float density) { requireWorld()->globalFx()->setSnow(std::clamp(density, 0.f, 1.f)); },
               py::arg("density"), "Falling snow, 0 none .. 1 a blizzard.");
+
+  py::module_ res = m.def_submodule("resources", "A story's own looks: textures from its files, variants of game meshes.");
+  res.def("mesh_textures", [](const std::string& mesh) { return Resources::meshTextures(mesh); }, py::arg("mesh"),
+          "The textures a game mesh (.3DS) is drawn with.");
+  res.def("export_texture", [](const std::string& name, const std::string& path) {
+            return Resources::exportTexture(name, path);
+            }, py::arg("name"), py::arg("path"), "Write a game texture out as a PNG file.");
+  res.def("register_texture", [](const std::string& name, const std::string& path) {
+            Resources::registerTexture(name, path);
+            }, py::arg("name"), py::arg("path"), "A texture name that loads from this image file.");
+  res.def("register_mesh_variant",
+          [](const std::string& alias, const std::string& base, const std::map<std::string,std::string>& textures) {
+            return Resources::registerMeshVariant(alias, base, textures);
+            }, py::arg("alias"), py::arg("base"), py::arg("textures"),
+          "A mesh name that is the game mesh 'base' drawn with some textures swapped: {game texture: own name}.");
 
   py::module_ sky = m.def_submodule("sky", "A galaxy in place of the sky: images loaded once, shown as strongly as set.");
   sky.def("load", [](int slot, const std::string& path) { return ::Galaxy::inst().load(size_t(std::max(slot, 0)), path); },

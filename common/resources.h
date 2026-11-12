@@ -106,6 +106,15 @@ class Resources final {
 
     static const AttachBinder*       bindMesh       (const ProtoMesh& anim, const Skeleton& s);
     static const ProtoMesh*          loadMesh       (std::string_view name);
+
+    // A story's own looks (see the Python "resources" module): a texture name that loads from a file of ours, a mesh
+    // that is a game mesh with some textures swapped for such names, and a game texture written out as a PNG to make
+    // them from. Names are chosen by content, so nothing registered ever needs replacing.
+    static void                      registerTexture(std::string_view name, std::string_view path);
+    static bool                      registerMeshVariant(std::string_view alias, std::string_view base,
+                                                         const std::map<std::string,std::string>& textures);
+    static std::vector<std::string>  meshTextures(std::string_view mesh);
+    static bool                      exportTexture(std::string_view name, std::string_view path);
     static const PfxEmitterMesh*     loadEmiterMesh (std::string_view name);
     static const Skeleton*           loadSkeleton   (std::string_view name);
     static const Animation*          loadAnimation  (std::string_view name);
@@ -252,6 +261,9 @@ class Resources final {
     TextureCache                                                      texCache;
     std::map<Tempest::Color,std::unique_ptr<Tempest::Texture2d>,Less> pixCache;
     std::unordered_map<std::string,std::unique_ptr<ProtoMesh>>        aniMeshCache;
+    std::unordered_map<std::string,std::string>                       customTextures;
+    struct MeshVariant { std::string base; std::map<std::string,std::string> textures; };
+    std::unordered_map<std::string,MeshVariant>                       meshVariants;
     std::unordered_map<DecalK,std::unique_ptr<ProtoMesh>,Hash>        decalMeshCache;
     std::unordered_map<std::string,std::unique_ptr<Skeleton>>         skeletonCache;
     std::unordered_map<std::string,std::unique_ptr<Animation>>        animCache;

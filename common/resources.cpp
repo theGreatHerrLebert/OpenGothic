@@ -51,6 +51,8 @@ static void emplaceTag(char* buf, char tag){
     }
   }
 
+static std::string upperName(std::string_view s);
+
 Resources::Resources(Tempest::Device &device)
   : dev(device) {
   inst=this;
@@ -368,6 +370,17 @@ Texture2d Resources::implLoadTextureUncached(std::string_view name, bool forceMi
   if(name.empty())
     return Texture2d();
 
+  if(auto own = customTextures.find(upperName(name)); own!=customTextures.end()) {
+    try {
+      Pixmap pm(own->second);
+      return dev.texture(pm, true);
+      }
+    catch(...) {
+      Log::e("unable to load texture \"", own->second, "\"");
+      return Texture2d();
+      }
+    }
+
   if(FileExt::hasExt(name,"TGA")) {
     auto nameAlt = std::string(name);
     nameAlt.resize(nameAlt.size() + 2);
@@ -446,6 +459,25 @@ ProtoMesh* Resources::implLoadMesh(std::string_view name) {
   }
 
 std::unique_ptr<ProtoMesh> Resources::implLoadMeshMain(std::string name) {
+  if(auto v = meshVariants.find(upperName(name)); v!=meshVariants.end()) {
+    // A game mesh with some of its textures swapped for a story's own.
+    std::string base = v->second.base;
+    FileExt::exchangeExt(base,"3DS","MRM");
+    const auto* entry = Resources::vdfsIndex().find(base);
+    if(entry==nullptr)
+      return nullptr;
+    zenkit::MultiResolutionMesh zmsh;
+    auto reader = entry->open_read();
+    zmsh.load(reader.get());
+    if(zmsh.sub_meshes.empty())
+      return nullptr;
+    for(auto& sub:zmsh.sub_meshes)
+      if(auto t = v->second.textures.find(upperName(sub.mat.texture)); t!=v->second.textures.end())
+        sub.mat.texture = t->second;
+    PackedMesh packed(zmsh,PackedMesh::PK_Visual);
+    return std::unique_ptr<ProtoMesh>{new ProtoMesh(std::move(packed),name)};
+    }
+
   if(FileExt::hasExt(name,"3DS")) {
     FileExt::exchangeExt(name,"3DS","MRM");
 
@@ -1163,4 +1195,72 @@ Tempest::VertexBuffer<Resources::Vertex> Resources::sphere(int passCount, float 
     }
 
   return dev.vbo(r);
+  }
+
+static std::string upperName(std::string_view s) {
+  std::string r(s);
+  for(auto& c:r)
+    c = char(std::toupper(static_cast<unsigned char>(c)));
+  return r;
+  }
+
+void Resources::registerTexture(std::string_view name, std::string_view path) {
+  std::lock_guard<std::recursive_mutex> g(inst->sync);
+  inst->customTextures[upperName(name)] = std::string(path);
+  }
+
+bool Resources::registerMeshVariant(std::string_view alias, std::string_view base,
+                                    const std::map<std::string,std::string>& textures) {
+  std::lock_guard<std::recursive_mutex> g(inst->sync);
+  std::string mrm(base);
+  FileExt::exchangeExt(mrm,"3DS","MRM");
+  if(Resources::vdfsIndex().find(mrm)==nullptr)
+    return false;
+  MeshVariant v;
+  v.base = std::string(base);
+  for(auto& [from,to]:textures)
+    v.textures[upperName(from)] = to;
+  inst->meshVariants[upperName(alias)] = std::move(v);
+  return true;
+  }
+
+std::vector<std::string> Resources::meshTextures(std::string_view mesh) {
+  std::lock_guard<std::recursive_mutex> g(inst->sync);
+  std::string mrm(mesh);
+  FileExt::exchangeExt(mrm,"3DS","MRM");
+  std::vector<std::string> out;
+  const auto* entry = Resources::vdfsIndex().find(mrm);
+  if(entry==nullptr)
+    return out;
+  zenkit::MultiResolutionMesh zmsh;
+  auto reader = entry->open_read();
+  zmsh.load(reader.get());
+  for(auto& sub:zmsh.sub_meshes)
+    out.push_back(sub.mat.texture);
+  return out;
+  }
+
+bool Resources::exportTexture(std::string_view name, std::string_view path) {
+  std::lock_guard<std::recursive_mutex> g(inst->sync);
+  auto alt = std::string(name);
+  if(FileExt::hasExt(alt,"TGA")) {
+    alt.resize(alt.size()+2);
+    std::memcpy(&alt[0]+alt.size()-6, "-C.TEX", 6);
+    }
+  const auto* entry = Resources::vdfsIndex().find(alt);
+  if(entry==nullptr)
+    return false;
+  try {
+    zenkit::Texture tex;
+    auto reader = entry->open_read();
+    tex.load(reader.get());
+    auto rgba = tex.as_rgba8(0);
+    Pixmap pm(tex.width(), tex.height(), TextureFormat::RGBA8);
+    std::memcpy(pm.data(), rgba.data(), rgba.size());
+    pm.save(std::string(path).c_str(), "png");
+    return true;
+    }
+  catch(...) {
+    return false;
+    }
   }

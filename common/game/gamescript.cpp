@@ -570,6 +570,8 @@ void GameScript::initializeInstanceItem(const std::shared_ptr<zenkit::IItem>& it
     }
   if(def->second.value>=0)
     d.value = def->second.value;
+  if(!def->second.visual.empty())
+    d.visual = def->second.visual;
   }
 
 void GameScript::saveQuests(Serialize &fout) {

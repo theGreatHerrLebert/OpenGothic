@@ -78,6 +78,7 @@ class GameScript final {
       std::array<std::string,6>  text  = {};
       std::array<int32_t,6>      count = {};
       int32_t                    value = -1;   // -1: the base item's
+      std::string                visual;       // a mesh of its own (a variant of the base's), empty: the base's
       };
     void         defineItem(size_t carrier, ItemDefinition def) { itemDefinitions[carrier] = std::move(def); }
     void         clearItemDefinitions() { itemDefinitions.clear(); }
