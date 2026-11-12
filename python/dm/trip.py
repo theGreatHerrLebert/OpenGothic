@@ -1199,12 +1199,17 @@ def extra_topics(gothic):
     return out
 
 
+AFTERCARE_FLAG = "trip:aftercare:"   # + region: the talk Abuyin still owes, a flag in the story's log
+
+
 def _pending_aftercare(gothic=None):
-    """The region of the trip Abuyin still has to hear about: from this session, else from the save's story state."""
+    """The region of the trip Abuyin still has to hear about: from this session, else from the save's story flags."""
     if _aftercare is not None and (gothic is None or _aftercare[1] == gothic.world.generation):
         return _aftercare[0]
     story = _story()
-    return story.state.get("aftercare") if story is not None else None
+    if story is None:
+        return None
+    return next((r for r in AFTERCARE if story.state["flags"].get(f"{AFTERCARE_FLAG}{r}")), None)
 
 
 def topic(key):
@@ -1214,8 +1219,8 @@ def topic(key):
     if region is not None:
         _aftercare = None
         story = _story()
-        if story is not None:
-            story.state.pop("aftercare", None)
+        if story is not None and story.state["flags"].get(f"{AFTERCARE_FLAG}{region}"):
+            story.player_flag(f"{AFTERCARE_FLAG}{region}", False)
         gift = smoke_set().get(region)
         if gift:
             import gothic
@@ -1287,7 +1292,11 @@ def _tick(_dt):
                 _aftercare = (PROFILE_REGION.get(getattr(_current, "profile", None), "other"), gothic.world.generation)
                 story = _story()
                 if story is not None:
-                    story.state["aftercare"] = _aftercare[0]   # kept in the save: a restart does not lose the talk
+                    # Through the story's log, which is what a save keeps: a restart does not lose the talk.
+                    for region in AFTERCARE:
+                        if story.state["flags"].get(f"{AFTERCARE_FLAG}{region}"):
+                            story.player_flag(f"{AFTERCARE_FLAG}{region}", False)
+                    story.player_flag(f"{AFTERCARE_FLAG}{_aftercare[0]}")
                 if _after is not None:   # a crier's earlier news gives way to tonight's
                     _after[0][:] = [line for line in _after[0] if line.get("npc") != HEROLD["npc"] or line.get("next")]
                 remember_after(gothic, [herold_lines(_aftercare[0])], time.monotonic())

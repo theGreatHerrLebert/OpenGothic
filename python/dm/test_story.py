@@ -189,6 +189,24 @@ def test_handed_over_but_nothing_to_play():
     assert not d.open and player.stage == "idle"
 
 
+def test_owed_aftercare_survives_a_save():
+    # The talk Abuyin owes is kept in the story's log, so a save and load (a restart) keeps it.
+    import importlib
+    trip = importlib.import_module("dm.trip")
+    s = st.Story()
+    s.player_flag("trip:aftercare:north")
+    s.save("slot_aftercare")
+    t = st.Story()
+    t.load("slot_aftercare")
+    assert t.state["flags"].get("trip:aftercare:north")
+    real = st._story
+    st._story = t
+    try:
+        assert trip._pending_aftercare() == "north"
+    finally:
+        st._story = real
+
+
 def test_topic_while_he_smokes():
     # A topic open only while he smokes stays in the menu once he talks (the talk state replaces his smoking), and
     # can be chosen then; his other conditions still count.
@@ -835,7 +853,7 @@ def test_topics_extend_an_npc():
     assert fake.dialog.topics["PARLAN"] == [("legend", "Kennst du die Kriegsmischung?")]
 
 
-for test in (test_topic_while_he_smokes, test_return_to_a_split_menu, test_items_of_our_own, test_item_with_a_model_of_its_own, test_give_xp, test_waited_for_pipe_is_reserved, test_handed_over_but_nothing_to_play, test_topics_extend_an_npc, test_trip_operation, test_rule_contents_are_checked_when_submitted, test_graph_validation, test_validation, test_apply_and_rollback, test_return_npc, test_conditional_choices, test_returns_to_menu, test_questions_are_asked_once, test_variant_line, test_again_line, test_scene_and_rule, test_rule_fires_on_perception, test_narration_waits_for_quiet, test_drawing_a_weapon_is_perceived,
+for test in (test_owed_aftercare_survives_a_save, test_topic_while_he_smokes, test_return_to_a_split_menu, test_items_of_our_own, test_item_with_a_model_of_its_own, test_give_xp, test_waited_for_pipe_is_reserved, test_handed_over_but_nothing_to_play, test_topics_extend_an_npc, test_trip_operation, test_rule_contents_are_checked_when_submitted, test_graph_validation, test_validation, test_apply_and_rollback, test_return_npc, test_conditional_choices, test_returns_to_menu, test_questions_are_asked_once, test_variant_line, test_again_line, test_scene_and_rule, test_rule_fires_on_perception, test_narration_waits_for_quiet, test_drawing_a_weapon_is_perceived,
              test_queue_waits_for_safe_point, test_save_load_does_not_reapply_world,
              test_player):
     test()

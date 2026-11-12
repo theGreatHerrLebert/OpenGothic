@@ -770,6 +770,8 @@ print("bench save block ok")
 class _FakeStory:
     def __init__(self):
         self.state = {"items": {}, "flags": {}}
+    def player_flag(self, name, value=True):
+        self.state["flags"][name] = value
     def apply_plan(self, plan):
         for i, op in enumerate(plan["ops"]):
             self.state["items"][op["item"]] = {"carrier": f"CARRIER_{len(self.state['items'])}"}
@@ -815,10 +817,10 @@ print("three smokes ok")
 sys.modules["dm.story"] = types.SimpleNamespace(_story=_FakeStory())
 trip._aftercare = None
 gw2 = types.SimpleNamespace(world=types.SimpleNamespace(generation=3, find_npc=lambda n: None), player=types.SimpleNamespace(items=[]))
-sys.modules["dm.story"]._story.state["aftercare"] = "desert"            # as a loaded save would have it
+sys.modules["dm.story"]._story.player_flag("trip:aftercare:desert")      # as a loaded save's log would have it
 assert (trip.AFTERCARE_TOPIC, trip.AFTERCARE_TITLE) in trip.extra_topics(gw2)[trip.AFTERCARE_NPC]
 assert trip.topic(trip.AFTERCARE_TOPIC)["graph"]["nodes"]["b"]["line"] == trip.AFTERCARE["desert"]["ask"]
-assert "aftercare" not in sys.modules["dm.story"]._story.state                 # talked about: gone
+assert not sys.modules["dm.story"]._story.state["flags"]["trip:aftercare:desert"]   # talked about: cleared
 del sys.modules["dm.story"]
 print("aftercare across restarts ok")
 
