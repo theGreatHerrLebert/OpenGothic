@@ -148,23 +148,13 @@ STORM_FROM = 0.75        # rain at least this heavy can bring lightning
 STORM_CHANCE = 0.06      # per look (every TICK_SECONDS): about one flash in half a minute
 
 
-FIRE_FROM = 0.3          # a fire rain at least this strong has impacts
-FIRE_CHANCE = 0.12       # per look: a strike about every quarter minute
-
-
 def storm(gothic, rng):
     """Lightning in heavy rain, whoever set it: a flash, and its thunder after the time sound needs (0.5 to 5 s).
-    In a fire rain, impacts instead: an orange flash and the blast close behind it (the engine picks the colour and
-    the sound by the kind)."""
+    A fire rain's strikes are magic_weather's."""
     if not hasattr(gothic.weather, "lightning"):
         return False
     state = gothic.weather.state()
     kind, intensity = state.get("kind"), state.get("intensity", 0)
-    if kind == "fire":
-        if intensity < FIRE_FROM or rng.random() > FIRE_CHANCE:
-            return False
-        gothic.weather.lightning(round(0.3 + rng.random() * 1.5, 2))
-        return True
     if kind != "rain" or intensity < STORM_FROM or rng.random() > STORM_CHANCE:
         return False
     gothic.weather.lightning(round(0.5 + rng.random() ** 2 * 4.5, 2))
