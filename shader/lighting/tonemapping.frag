@@ -19,6 +19,7 @@ layout(binding  = 0, std140) uniform UboScene {
   SceneDesc scene;
   };
 layout(binding  = 1) uniform sampler2D textureD;
+layout(binding  = 2) uniform sampler2D depthD;   // for the heat's shimmer (docs/plan-weather.md)
 
 layout(location = 0) in  vec2 uv;
 layout(location = 0) out vec4 outColor;
@@ -74,14 +75,68 @@ float luminance(vec3 rgb) {
   return dot(rgb, W);
   }
 
+// Heat: how far away a pixel is (cm) and how much of the shimmer and bleaching it gets, from 15 m on and
+// strongest along the ground towards the horizon, never above it.
+float heatAt(vec2 at, out float dist) {
+  const float z   = textureLod(depthD, at, 0).r;
+  dist            = linearDepth(z, scene.clipInfo);
+  if(z>=1.0)
+    return 0.0;   // the sky: no shimmer, no bleaching
+  const vec4  wp  = scene.viewProjectInv*vec4(at*2.0-vec2(1.0), z, 1.0);
+  const vec3  dir = normalize(wp.xyz/wp.w - scene.camPos);
+  const float low = 1.0 - smoothstep(0.0, 0.08, dir.y);   // land below the eye and just above it, not hills high up
+  return smoothstep(1500.0, 9000.0, dist) * low;
+  }
+
+// The nearest surface the colour at `at` is made from. A shimmered pixel is read with one bilinear tap (not the
+// upscale filter), so its footprint is exactly the 2x2 texels around it.
+float nearestAround(vec2 at) {
+#if defined(UPSCALE)
+  const ivec2 size = textureSize(depthD, 0);
+  const ivec2 c    = ivec2(floor(at*vec2(size) - 0.5));
+  float n = 1.0e30;
+  for(int i=0; i<4; ++i) {
+    const ivec2 t = clamp(c + ivec2(i&1, i>>1), ivec2(0), size-1);
+    n = min(n, linearDepth(texelFetch(depthD, t, 0).r, scene.clipInfo));
+    }
+  return n;
+#else
+  float n;
+  heatAt(at, n);
+  return n;
+#endif
+  }
+
 void main() {
   float exposure   = scene.exposure;
 
+  vec2  at         = uv;
+  float bleach     = 0.0;
+  if(scene.weatherHeat>0.001) {
+    // Rising waves of air, finer and faster far away; a sample that would come from something nearer is not taken,
+    // so the shimmer never smears a close silhouette over the distance.
+    float dist;
+    const float k   = heatAt(uv, dist) * scene.weatherHeat;
+    const float t   = float(scene.tickCount32 % 600000u)/1000.0;
+    const float f   = 1.0 + dist/20000.0;
+    const vec2  off = vec2(sin(uv.y*620.0*f - t*5.5 + sin(uv.x*40.0 + t*0.7)*2.0),
+                           sin(uv.y*410.0*f - t*4.1 + uv.x*90.0)*0.6) * (0.0011*k);
+    if(k>0.0 && nearestAround(uv + off)>dist*0.6)
+      at = uv + off;
+    bleach = k;
+  }
+
 #if defined(UPSCALE)
-  vec3  color      = lanczosUpscale(textureD, uv).rgb;
+  // where it shimmers, one bilinear tap whose footprint was checked; the sharp filter everywhere else
+  vec3  color      = at!=uv ? textureLod(textureD, at, 0).rgb : lanczosUpscale(textureD, at).rgb;
 #else
-  vec3  color      = textureLod(textureD, uv, 0).rgb;
+  vec3  color      = textureLod(textureD, at, 0).rgb;
 #endif
+  if(bleach>0.0) {
+    // the far land pales and warms in the haze of a hot day
+    const float l = luminance(color);
+    color = mix(color, vec3(l)*vec3(1.10, 1.0, 0.82)*1.08, bleach*scene.weatherHeat*0.45);
+  }
 
   {
     // outColor = vec4(srgbEncode(color), 1);

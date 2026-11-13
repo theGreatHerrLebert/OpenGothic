@@ -151,3 +151,23 @@ morning fog in valleys, mist over the swamp, sea fog at the harbour.
   into the light), grey-blue at night; colour and transmittance out, blended as `scene*T + light`.
 - **Cost:** full resolution first, measured; half resolution with a depth-aware upsample if it is too slow.
 - **Not yet:** shadows in the fog (light shafts), fog over water specially, path tracing.
+
+## Heat (2026-11-13)
+
+A hot day as weather in the world, not the trip's lens (Emberheart's shimmer stays the trip's). For the drought in a
+story ("The Mage and the Weather Spell") and for summer afternoons.
+
+- **State:** `heat` 0..1, eased over seconds like the rest; it does not touch the sky, the caller clears it.
+  Python `weather.heat(level, fade=120)`; the story op `weather` gains `heat` (and `fog`, `fog_height`, `fog_base`),
+  kept in the log like `cover` and set again at once after a load; when a story's hours run out, its heat and fog go.
+- **Shimmer:** in the tonemapping pass, which already reads the whole linear scene: a small UV offset of rising waves,
+  finer far away, from 15 m and strongest along the ground towards the horizon (none above it). The depth buffer is
+  bound there; an offset sample that comes from something nearer than 60 % of the pixel's own distance is not taken,
+  so a close silhouette never smears over the distance. No extra pass, no copy of the scene.
+- **Light and haze:** the sun's colour harder and warmer, the sky light a little paler and warmer
+  (`setWeatherSky`); far land bleached towards a warm grey, by the same distance weight as the shimmer.
+- **Dry:** wet ground dries up to five times faster.
+- **Talk:** people speak of the heat when it is over 0.4 and nothing falls; farmers of their fields, mercenaries of
+  their armour, townsfolk of the stink at the harbour; the hero of the sun and of water.
+- **Not yet:** the climate's own hot days, cicadas, sweat, dust devils; the shimmer is a screen effect and does not
+  bend reflections.

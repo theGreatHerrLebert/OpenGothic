@@ -821,6 +821,7 @@ void Renderer::drawTonemapping(Attachment& result, Encoder<CommandBuffer>& cmd, 
   const auto sampler = settings.vidResIndex==0 ? Sampler::nearest(ClampMode::ClampToEdge) :
                                                Sampler::bilinear(ClampMode::ClampToEdge);
   cmd.setBinding(1, sceneLinear, sampler);
+  cmd.setBinding(2, zbuffer, Sampler::nearest(ClampMode::ClampToEdge));
   cmd.setPushData(p);
   cmd.setPipeline(pso);
   cmd.draw(nullptr, 0, 3);
@@ -935,6 +936,7 @@ void Renderer::drawCMAA2(Tempest::Attachment& result, Tempest::Encoder<Tempest::
   cmd.setFramebuffer({{result, Tempest::Discard, Tempest::Preserve}});
   cmd.setBinding(0, wview.sceneGlobals().uboGlobal[SceneGlobals::V_Main]);
   cmd.setBinding(1, sceneLinear, Sampler::nearest());
+  cmd.setBinding(2, zbuffer, Sampler::nearest(ClampMode::ClampToEdge));
   cmd.setPushData(&p, sizeof(p));
   cmd.setPipeline(psoTone);
   cmd.draw(nullptr, 0, 3);

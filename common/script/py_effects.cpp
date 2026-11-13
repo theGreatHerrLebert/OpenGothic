@@ -117,6 +117,10 @@ void bindTrip(py::module_& m) {
               py::arg("density"), py::arg("height") = 25.f, py::arg("base") = py::none(), py::arg("fade") = 60.f,
               "Ground fog: density 0..1 reached over fade seconds, thinning upwards over height metres from base (world "
               "cm; default a little below the hero's feet). A fixed base fills valleys and leaves hills clear.");
+  weather.def("heat", [](float level, float fade) { requireWorld()->globalFx()->setHeat(level, fade); },
+              py::arg("level"), py::arg("fade") = 120.f,
+              "A hot day, 0..1 reached over fade seconds: the air shimmers over the distance, the sun is hard and warm, "
+              "the far land bleaches and wet ground dries fast. It leaves the sky to weather.set: clear it for heat.");
   weather.def("lightning", [](float delay) { requireWorld()->globalFx()->lightning(delay); }, py::arg("delay") = 2.f,
               "A lightning flash now and its thunder after delay seconds (3 s is about a kilometre away).");
   weather.def("roof_at",
@@ -134,6 +138,7 @@ void bindTrip(py::module_& m) {
                 d["wind"] = std::make_tuple(w.windX, w.windZ); d["cover"] = w.cover; d["wet"] = w.wet; d["overcast"] = w.overcast;
                 d["raining"] = requireWorld()->globalFx()->isRaining();
                 d["fog"] = w.fog; d["fog_height"] = w.fogHeight; d["fog_base"] = w.fogBase;
+                d["heat"] = w.heat;
                 d["falling"] = requireWorld()->globalFx()->falling();
                 return d;
                 },

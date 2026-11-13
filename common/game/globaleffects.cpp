@@ -77,9 +77,10 @@ void GlobalEffects::tickWeather(uint64_t dt) {
     ease(weather.cover, weather.coverTarget, weather.coverSeconds);
     }
   ease(weather.fog, weather.fogTarget, weather.fogSeconds);
-  // The ground gets wet within a couple of minutes of rain and takes a quarter of an hour to dry.
+  ease(weather.heat, weather.heatTarget, weather.heatSeconds);
+  // The ground gets wet within a couple of minutes of rain and takes a quarter of an hour to dry, much less in heat.
   const float wetTarget = weather.kind==Precipitation::Rain ? falling() : 0.f;
-  ease(weather.wet, wetTarget, wetTarget>weather.wet ? 120.f : 900.f);
+  ease(weather.wet, wetTarget, wetTarget>weather.wet ? 120.f : 900.f/(1.f + 4.f*weather.heat));
   // The sky closes as the weather comes (a minute and a half) and opens again slower (three minutes).
   const float closed = cloudsFor();
   ease(weather.overcast, closed, closed>weather.overcast ? 90.f : 180.f);
@@ -415,6 +416,13 @@ void GlobalEffects::tickWeatherSound() {
     };
   keep(rainSound, "RAIN_01.WAV",       rain*0.9f);
   keep(windSound, "WIND_HEAVY01.WAV",  wind*0.7f);
+  }
+
+void GlobalEffects::setHeat(float target, float seconds) {
+  weather.heatTarget  = std::clamp(target, 0.f, 1.f);
+  weather.heatSeconds = std::max(seconds, 0.f);
+  if(weather.heatSeconds<=0.f)
+    weather.heat = weather.heatTarget;
   }
 
 void GlobalEffects::setFog(float target, float heightMetres, float baseCm, float seconds) {

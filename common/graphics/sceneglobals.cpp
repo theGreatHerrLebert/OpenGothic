@@ -275,8 +275,9 @@ const Tempest::Matrix4x4 SceneGlobals::viewProjectLwcInv() const {
   return m;
   }
 
-void SceneGlobals::setWeatherSky(float overcast, float flash, float snowy) {
+void SceneGlobals::setWeatherSky(float overcast, float flash, float snowy, float heat) {
   uboGlobalCpu.weatherSnowy    = snowy;
+  uboGlobalCpu.weatherHeat     = heat;
   // Called after setSky: a closed sky dims the sun and a little of the sky's light; a flash lights everything.
   uboGlobalCpu.weatherOvercast = overcast;
   uboGlobalCpu.weatherFlash    = flash;
@@ -284,4 +285,9 @@ void SceneGlobals::setWeatherSky(float overcast, float flash, float snowy) {
   uboGlobalCpu.GSunIntensity *= (1.f - 0.45f*overcast) * (1.f + 2.f*flash);
   uboGlobalCpu.lightAmb      *= (1.f - 0.3f*overcast);
   uboGlobalCpu.lightAmb      += Tempest::Vec3(1.f, 1.f, 1.1f) * (flash*1.5f);
+  // Heat: a harder, warmer sun and a paler, warmer sky light (the clouds, if any, still dim it).
+  auto& sun = uboGlobalCpu.lightCl;
+  auto& amb = uboGlobalCpu.lightAmb;
+  sun.x *= 1.f + 0.25f*heat;  sun.y *= 1.f + 0.12f*heat;  sun.z *= 1.f - 0.08f*heat;
+  amb.x *= 1.f + 0.10f*heat;  amb.y *= 1.f + 0.05f*heat;  amb.z *= 1.f - 0.10f*heat;
   }

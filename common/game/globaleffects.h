@@ -89,9 +89,14 @@ class GlobalEffects {
       float         fogSeconds  = 60;
       float         fogHeight   = 25;   // metres the fog reaches above its base (it thins exponentially)
       float         fogBase     = 0;    // world height of its base, in cm
+      float         heat        = 0;    // a hot day, 0..1: shimmer over the distance, a hard warm sun, quick drying
+      float         heatTarget  = 0;
+      float         heatSeconds = 120;
       };
     // Ground fog (docs/plan-weather.md): density 0..1 over seconds, lying from base (world cm) and thinning upwards.
     void           setFog(float target, float heightMetres, float baseCm, float seconds);
+    // A hot day (docs/plan-weather.md): 0..1 over seconds. It does not clear the sky; the caller does.
+    void           setHeat(float target, float seconds);
     // Lightning: a flash now, its thunder after delay seconds (sound travels about 340 m a second).
     void           lightning(float delaySeconds);
     void           setWeather(Precipitation kind, float target, float fadeSeconds, float windX, float windZ,
