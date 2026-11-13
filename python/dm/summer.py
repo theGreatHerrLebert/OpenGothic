@@ -15,7 +15,7 @@ CLEAR = 0.15       # overcast above which the stars are hidden
 GALAXY = 0.85      # how much the Milky Way replaces the night sky at most
 TINT = (1.0, 0.95, 0.86)   # a little warm, not the trip's colours
 SPIN = 0.002       # radians a second: the stars turn slowly
-CICADAS, CRICKETS = 0.55, 0.6   # loudest volume of each
+CICADAS, CRICKETS = 0.35, 0.6   # loudest volume of each
 LOOK = 2.0         # seconds between looks
 
 

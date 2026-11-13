@@ -51,5 +51,5 @@ summer.tick(fake, 107.0)                                             # the trip 
 fake.world.time = (13, 0)                                            # noon: cicadas, the game's sky
 calls.clear()
 summer.tick(fake, 108.0)
-assert ("loop", "cicadas", "zikaden.wav", 0.55, 20.0) in calls and ("clear",) in calls, calls
+assert ("loop", "cicadas", "zikaden.wav", 0.35, 20.0) in calls and ("clear",) in calls, calls
 print("summer ok")
