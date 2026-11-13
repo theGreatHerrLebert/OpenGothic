@@ -73,7 +73,7 @@ def flashed(now):
     _state["flash_at"] = now
 
 
-def category(state, now):
+def category(state, now, hour=12):
     """What the weather gives people to say now, or None."""
     kind, intensity = state.get("kind"), state.get("intensity", 0.0)
     raining = kind == "rain" and intensity > 0.2
@@ -88,7 +88,7 @@ def category(state, now):
             return "storm"
         return kind
     # Fog where nothing falls: thick enough to speak of. (Rain or snow in fog is talked about as rain or snow.)
-    if state.get("heat", 0.0) > 0.4:
+    if state.get("heat", 0.0) > 0.4 and 9 <= hour < 19:   # the heat people speak of is the sun's
         return "heat"
     if state.get("fog", 0.0) > 0.3:
         return "fog"
@@ -118,7 +118,7 @@ def tick(gothic, now, rng):
     if not hasattr(gothic, "weather") or not hasattr(gothic.weather, "state"):
         return None
     state = gothic.weather.state()
-    what = category(state, now)
+    what = category(state, now, gothic.world.time[0])
     if what is None or now - _state["remark_at"] < REMARK_GAP:
         return None
     if gothic.dialog.partner() is not None or gothic.dialog.narrating():

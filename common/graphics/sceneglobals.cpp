@@ -1,6 +1,8 @@
 #include "sceneglobals.h"
+#include <algorithm>
 
 #include "graphics/shaders.h"
+#include <algorithm>
 #include "graphics/sky/sky.h"
 #include "worldview.h"
 
@@ -277,6 +279,10 @@ const Tempest::Matrix4x4 SceneGlobals::viewProjectLwcInv() const {
 
 void SceneGlobals::setWeatherSky(float overcast, float flash, float snowy, float heat) {
   uboGlobalCpu.weatherSnowy    = snowy;
+  // What heat shows (shimmer, warm light, bleaching) comes from the sun on the ground: none at night, growing as
+  // the sun climbs, full from about 25 degrees up. setSky has set the sun's direction for this frame.
+  const float sunUp = std::clamp((uboGlobalCpu.sunDir.y - 0.02f)/0.40f, 0.f, 1.f);
+  heat *= sunUp*sunUp*(3.f - 2.f*sunUp);
   uboGlobalCpu.weatherHeat     = heat;
   // Called after setSky: a closed sky dims the sun and a little of the sky's light; a flash lights everything.
   uboGlobalCpu.weatherOvercast = overcast;
