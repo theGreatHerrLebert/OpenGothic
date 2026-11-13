@@ -84,7 +84,14 @@ class GlobalEffects {
       float         overcast    = 0;    // how closed the sky is: follows what falls, slower
       float         flash       = 0;    // a lightning flash, fading within a fraction of a second
       bool          openSky     = false; // falls from a clear sky (a trip's snow under the stars): no clouds
+      float         fog         = 0;    // ground fog, 0..1, eased towards fogTarget
+      float         fogTarget   = 0;
+      float         fogSeconds  = 60;
+      float         fogHeight   = 25;   // metres the fog reaches above its base (it thins exponentially)
+      float         fogBase     = 0;    // world height of its base, in cm
       };
+    // Ground fog (docs/plan-weather.md): density 0..1 over seconds, lying from base (world cm) and thinning upwards.
+    void           setFog(float target, float heightMetres, float baseCm, float seconds);
     // Lightning: a flash now, its thunder after delay seconds (sound travels about 340 m a second).
     void           lightning(float delaySeconds);
     void           setWeather(Precipitation kind, float target, float fadeSeconds, float windX, float windZ,

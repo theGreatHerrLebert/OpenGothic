@@ -68,6 +68,7 @@ void GlobalEffects::tickWeather(uint64_t dt) {
     };
   ease(weather.intensity, weather.target, weather.fadeSeconds);
   ease(weather.cover, weather.coverTarget, weather.coverSeconds);
+  ease(weather.fog, weather.fogTarget, weather.fogSeconds);
   // The ground gets wet within a couple of minutes of rain and takes a quarter of an hour to dry.
   const float wetTarget = weather.kind==Precipitation::Rain ? falling() : 0.f;
   ease(weather.wet, wetTarget, wetTarget>weather.wet ? 120.f : 900.f);
@@ -406,4 +407,13 @@ void GlobalEffects::tickWeatherSound() {
     };
   keep(rainSound, "RAIN_01.WAV",       rain*0.9f);
   keep(windSound, "WIND_HEAVY01.WAV",  wind*0.7f);
+  }
+
+void GlobalEffects::setFog(float target, float heightMetres, float baseCm, float seconds) {
+  weather.fogTarget  = std::clamp(target, 0.f, 1.f);
+  weather.fogHeight  = std::clamp(heightMetres, 2.f, 300.f);
+  weather.fogBase    = baseCm;
+  weather.fogSeconds = std::max(seconds, 0.f);
+  if(weather.fogSeconds<=0.f)
+    weather.fog = weather.fogTarget;
   }

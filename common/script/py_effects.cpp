@@ -108,6 +108,15 @@ void bindTrip(py::module_& m) {
               "until the clouds have half covered the sky; open_sky lets it fall from a clear sky at once.");
   weather.def("cover", [](float target, float seconds) { requireWorld()->globalFx()->setCover(target, seconds); },
               py::arg("target"), py::arg("seconds") = 600.f, "Snow lying on the ground, 0..1, reached over seconds.");
+  weather.def("fog",
+              [](float density, float height, py::object base, float fade) {
+                // by default the fog lies from a little below the hero's feet, so he stands in it
+                float baseCm = base.is_none() ? requirePlayer()->position().y - 300.f : py::cast<float>(base);
+                requireWorld()->globalFx()->setFog(density, height, baseCm, fade);
+                },
+              py::arg("density"), py::arg("height") = 25.f, py::arg("base") = py::none(), py::arg("fade") = 60.f,
+              "Ground fog: density 0..1 reached over fade seconds, thinning upwards over height metres from base (world "
+              "cm; default a little below the hero's feet). A fixed base fills valleys and leaves hills clear.");
   weather.def("lightning", [](float delay) { requireWorld()->globalFx()->lightning(delay); }, py::arg("delay") = 2.f,
               "A lightning flash now and its thunder after delay seconds (3 s is about a kilometre away).");
   weather.def("roof_at",
@@ -124,6 +133,7 @@ void bindTrip(py::module_& m) {
                 d["kind"] = kinds[int(w.kind)]; d["intensity"] = w.intensity; d["target"] = w.target;
                 d["wind"] = std::make_tuple(w.windX, w.windZ); d["cover"] = w.cover; d["wet"] = w.wet; d["overcast"] = w.overcast;
                 d["raining"] = requireWorld()->globalFx()->isRaining();
+                d["fog"] = w.fog; d["fog_height"] = w.fogHeight; d["fog_base"] = w.fogBase;
                 d["falling"] = requireWorld()->globalFx()->falling();
                 return d;
                 },
