@@ -56,3 +56,19 @@ while fall.tick(game, now):
     now += 0.05
 assert now - start <= 4.1 and sent[-1] < 0.05
 print("weather ok")
+
+# With world weather, the snowfall sets it (only when it changes), lets snow lie, and indoors is left to the roof map.
+world_calls = []
+world = types.SimpleNamespace(set=lambda *a: world_calls.append(("set",) + a),
+                              cover=lambda *a: world_calls.append(("cover",) + a),
+                              snow=lambda d: world_calls.append(("lens", d)))
+g2 = types.SimpleNamespace(player=types.SimpleNamespace(room="HOUSE"), weather=world)
+fall = weather.Snowfall(10, 10, 10, 1.0)
+fall.tick(g2, 0.0)
+fall.tick(g2, 15.0)   # at the peak, indoors: still snowing in the world; the roof map keeps it off him
+fall.tick(g2, 15.5)   # the same level: nothing set again
+sets = [c for c in world_calls if c[0] == "set"]
+assert sets[-1][:3] == ("set", "snow", 1.0) and sets[-1][4] == weather.WIND, sets
+assert len([c for c in sets if c[2] == 1.0]) == 1 and not any(c[0] == "lens" for c in world_calls)
+assert ("cover", 0.7, 90.0) in world_calls
+print("world snowfall ok")

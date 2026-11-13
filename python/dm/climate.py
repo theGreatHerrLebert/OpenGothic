@@ -71,6 +71,12 @@ def enabled():
     return _enabled
 
 
+def forget():
+    """Something else set the weather: set the climate's front again on the next look."""
+    global _last
+    _last = None
+
+
 def enable(on=True):
     global _enabled, _last
     _enabled, _last = on, None
