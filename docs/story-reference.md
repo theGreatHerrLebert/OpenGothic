@@ -108,6 +108,16 @@ more can be asked.
 - **From off-screen.** `narrate` plays a line with a subtitle outside any conversation, queued until nobody talks and
   voiced with the rest of the story (`voice`, default the narrator); use it rarely, best from a rule on a deed.
 
+## Weather
+
+`get_weather` (MCP) says what falls now, the wind, how much snow lies and how wet it is, who decides it (a story, a
+trip's snowfall, the climate or nobody) and a forecast in three-hour steps: the climate's fronts follow game time
+alone, so the forecast holds. A story waits for weather with a check, `{"type": "weather", "kind": "storm"}` (also
+`rain`, `snow`, `clear`, with an optional `min` strength) or `{"type": "weather", "cover": 0.5}` / `"wet": 0.3`, and
+brings it with the `weather` op, for `hours` if it should end. What falls waits for the clouds, and the check reads
+what falls, not what is planned. Weather is a good occasion: the harvest before the storm, the barn the lightning
+set alight, tracks in fresh snow, a smuggler who only sails in rain.
+
 ## Effects and creatures
 
 - **A trip.** `{"op": "trip", "profile": "kriegsgesang"}` (also `nordmar`, `wasserpfeife`, `mindcap`): a few minutes

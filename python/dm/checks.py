@@ -15,6 +15,8 @@
     {"type": "story_age", "days": 3}                           at least this many days since the story began
     {"type": "near", "npc": "X", "within": 1500}               the hero is within this many cm of X (default 1500)
     {"type": "npc_has", "npc": "X", "item": "ITMI_GOLD", "count": 1}   X carries at least this many
+    {"type": "weather", "kind": "rain", "min": 0.3}            it rains at least this hard now (snow, rain, storm, clear)
+    {"type": "weather", "cover": 0.5}                          at least this much snow lies; "wet": 0.3 as wet
     {"type": "not", "check": {...}}
     {"type": "any", "checks": [{...}, ...]}                    at least one holds
 
@@ -40,7 +42,7 @@ _REQUIRED = {"has_item": ("item",), "wears": ("item",), "guild": ("guild",), "np
              "obsessed": (), "hour": ("from", "to"), "not": ("check",),
              "quest": ("quest", "state"), "any": ("checks",), "heard": ("info",),
              "chapter": (), "level": (), "day": (), "story_age": ("days",),
-             "near": ("npc",), "npc_has": ("npc", "item")}
+             "near": ("npc",), "npc_has": ("npc", "item"), "weather": ()}
 # Range checks: which two fields bound them, and the smallest sensible value.
 RANGES = {"chapter": ("from", "to", 1, 7), "level": ("min", "max", 0, 100), "day": ("from", "to", 0, 100000)}
 
@@ -66,6 +68,15 @@ def validate(check):
         return f"state cannot be checked: {check['state']}"
     if kind == "hour" and not (0 <= check["from"] <= 23 and 0 <= check["to"] <= 23):
         return "hour out of range"
+    if kind == "weather":
+        if check.get("kind") not in (None, "rain", "snow", "storm", "clear"):
+            return "check weather kind is rain, snow, storm or clear"
+        for key in ("min", "cover", "wet"):
+            value = check.get(key)
+            if value is not None and (isinstance(value, bool) or not isinstance(value, (int, float)) or not 0 <= value <= 1):
+                return f"check weather {key} is a number from 0 to 1"
+        if not any(k in check for k in ("kind", "cover", "wet")):
+            return "check weather needs a kind, a cover or a wet"
     if kind == "story_age" and (type(check["days"]) is not int or not 0 <= check["days"] <= 1000):
         return "story_age days is a whole number from 0 to 1000"
     if kind in RANGES:
@@ -200,6 +211,8 @@ def _holds(check):
     if kind == "npc_dead":
         npc = gothic.world.find_npc(check["npc"])
         return npc is not None and npc.dead
+    if kind == "weather":
+        return _weather_holds(check)
     if kind == "npc_has":
         npc = gothic.world.find_npc(check["npc"])
         return npc is not None and npc.item_count(check["item"]) >= check.get("count", 1)
@@ -232,6 +245,26 @@ def _holds(check):
     if kind == "heard":
         return bool(gothic.player.heard(check["info"].upper()))
     return not _holds(check["check"])
+
+
+def _weather_holds(check):
+    """What falls now (not what is planned: it waits for the clouds), how much snow lies, how wet it is."""
+    if not hasattr(gothic, "weather") or not hasattr(gothic.weather, "state"):
+        return False
+    state = gothic.weather.state()
+    falling = state.get("falling", state.get("intensity", 0.0))
+    want = check.get("kind")
+    if want == "clear" and falling > 0.05:
+        return False
+    if want in ("rain", "snow") and (state.get("kind") != want or falling < check.get("min", 0.2)):
+        return False
+    if want == "storm" and (state.get("kind") not in ("rain", "snow") or falling < check.get("min", 0.75)):
+        return False
+    if "cover" in check and state.get("cover", 0.0) < check["cover"]:
+        return False
+    if "wet" in check and state.get("wet", 0.0) < check["wet"]:
+        return False
+    return True
 
 
 def _current(kind):

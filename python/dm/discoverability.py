@@ -30,6 +30,8 @@ OBJECT_WORDS = {"SMOKE": ("pfeife", "rauch", "wasserpfeife"), "BENCH": ("bank",)
                 "CAULDRON": ("kessel", "koch"), "LAB": ("alchemie", "labor", "brau"), "BOOK": ("buch", "pult", "lese"),
                 "ANVIL": ("amboss", "schmied"), "CHEST": ("truhe", "kiste"), "THRONE": ("thron", "stuhl"),
                 "PRAY": ("schrein", "bete", "innos", "adanos"), "STOVE": ("herd", "ofen"), "BARBQ": ("spieß", "braten")}
+WEATHER_WORDS = {"rain": ("regen", "regnet", "nass", "schauer"), "snow": ("schnee", "schneit", "frost", "kalt"),
+                 "storm": ("gewitter", "sturm", "unwetter", "blitz", "donner"), "clear": ("trocken", "sonne", "klar")}
 STATE_WORDS = {"ZS_SMOKE_WATERPIPE": ("pfeife", "raucht", "rauch"), "ZS_SLEEP": ("schläft", "schlaf"),
                "ZS_STAND_DRINKING": ("trinkt", "bier", "fass"), "ZS_PRAY_INNOS": ("betet", "gebet")}
 
@@ -181,6 +183,10 @@ def findings(story):
                 night = check["from"] >= 18 or check["to"] <= 6 or check["from"] > check["to"]
                 wanted = NIGHT_WORDS if night else DAY_WORDS
                 what = f"only between {check['from']} and {check['to']} o'clock"
+            elif check.get("type") == "weather" and check.get("kind") in WEATHER_WORDS:
+                wanted, what = WEATHER_WORDS[check["kind"]], f"only in {check['kind']}"
+            elif check.get("type") == "weather" and "cover" in check:
+                wanted, what = WEATHER_WORDS["snow"], "only with snow lying"
             elif check.get("type") == "npc_state" and check.get("state") in STATE_WORDS:
                 wanted, what = STATE_WORDS[check["state"]], f"only while {check['npc']} is {check['state']}"
             if wanted and not _mentions(texts, wanted, entry["id"]):

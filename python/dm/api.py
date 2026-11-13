@@ -47,6 +47,31 @@ def world():
     })
 
 
+def weather(hours=24):
+    """The weather now and what the climate brings in the next hours (docs/plan-weather.md): what falls, the wind,
+    snow lying and wet ground, who decides it (a story, a trip's snowfall, the climate, or nobody), and a forecast in
+    three-hour steps from the climate's fronts, which follow game time alone."""
+    from dm import climate
+    from dm import weather as snowfall
+    state = gothic.weather.state() if hasattr(gothic, "weather") and hasattr(gothic.weather, "state") else {}
+    day, (hour, minute) = gothic.world.day, gothic.world.time
+    now = day * 24 + hour + minute / 60.0
+    owned = climate.story_weather(story.state(), now)
+    owner = ("trip" if snowfall.active() else "story" if owned else "climate" if climate.enabled() else "nobody")
+    forecast = []
+    for step in range(0, max(0, min(int(hours), 72)) + 1, climate.BLOCK_HOURS):
+        at = now + step
+        d, h = int(at // 24), int(at % 24)
+        kind, intensity, wind = climate.front(d, h)
+        if owned and (owned.get("until") is None or at < owned["until"]):
+            kind, intensity, wind = owned["kind"], owned.get("intensity", 1.0), tuple(owned.get("wind", (0, 0)))
+        elif not climate.enabled():
+            kind, intensity, wind = state.get("kind", "clear"), state.get("target", 0.0), state.get("wind", (0, 0))
+        forecast.append({"day": d, "hour": h, "kind": kind, "intensity": round(intensity, 2), "wind": wind})
+    _reply({"now": {k: (round(v, 2) if isinstance(v, float) else v) for k, v in state.items()},
+            "decided_by": owner, "climate_on": climate.enabled(), "forecast": forecast})
+
+
 def story_state():
     _reply({"state": story.state(), "results": story.results()[-20:],
             "safe_to_remove": sorted(story.SAFE_TO_REMOVE)})

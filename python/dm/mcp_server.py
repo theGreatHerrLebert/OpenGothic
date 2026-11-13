@@ -34,6 +34,13 @@ def get_world() -> str:
 
 
 @mcp.tool()
+def get_weather(hours: int = 24) -> str:
+    """The weather now (what falls, wind, snow lying, wet ground, who decides it) and a forecast for the next hours,
+    for stories that wait for weather or bring it (the weather check and the weather op)."""
+    return json.dumps(_call("weather", hours), ensure_ascii=False)
+
+
+@mcp.tool()
 def get_story_state() -> str:
     """Committed facts, flags, removed NPCs, active dialogues and plan results."""
     return json.dumps(_call("story_state"), ensure_ascii=False)

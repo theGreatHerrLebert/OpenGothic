@@ -100,6 +100,14 @@ denies = {"conversations": {"c": {"nodes": {"a": {"variants": [{"when": "paid", 
 assert check_story.denial_warnings(denies) and not check_story.denial_warnings(
     {"conversations": {"c": {"nodes": {"a": {"variants": [{"when": "paid", "unless": "told", "line": "Du hast Jost nichts gesagt."}]}}}}})
 print("denials ok")
+from dm import discoverability
+stormy = {"plan": [{"op": "add_topic", "id": "t", "npc": "BAU_901_BAUER", "title": "Hm?",
+                    "checks": [{"type": "weather", "kind": "storm"}],
+                    "graph": {"start": "a", "nodes": {"a": {"line": "Na.", "choices": [{"text": "Tschüss.", "ends": True}]}}}}]}
+assert any("only in storm" in f["text"] for f in discoverability.findings(stormy))
+stormy["plan"].append({"op": "narrate", "text": "Wenn das Gewitter kommt, steht er am Steinkreis."})
+assert not any("only in storm" in f["text"] for f in discoverability.findings(stormy))
+print("weather pointers ok")
 
 # Discoverability: a topic nobody points to, a night-only topic nobody says is at night, a deed nothing hints at.
 from dm import discoverability  # noqa: E402
