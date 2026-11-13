@@ -633,8 +633,10 @@ def _release(gothic, line):
     """Gives a speaker his own conversations back."""
     if line.pop("bound", False):
         npc = gothic.world.find_npc(line["npc"])
-        if npc is not None:
-            gothic.dialog.unbind(npc)
+        story = sys.modules.get("dm.story")   # only if it runs: importing it here would start it
+        graphs = story.state().get("graphs", {}) if story is not None else {}
+        if npc is not None and str(line["npc"]).upper() not in graphs:
+            gothic.dialog.unbind(npc)   # one with a story conversation of his own keeps it
 
 
 def tick_after(gothic, now):

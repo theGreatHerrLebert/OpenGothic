@@ -778,6 +778,24 @@ _refusal_bound = set()   # NPCs bound only so that they can refuse; not saved, s
 _refusal_world = None
 
 
+def _keep_bindings(state):
+    """Everyone with a conversation of the story's own stays bound, whatever let him go (a scene's end, a trip's
+    aftercare): binding again is harmless. Once a second, so it costs nothing."""
+    global _bindings_at
+    import time
+    now = time.monotonic()
+    if now < _bindings_at:
+        return
+    _bindings_at = now + 1.0
+    for instance in state.get("graphs", {}):
+        npc = gothic.world.find_npc(instance)
+        if npc is not None:
+            gothic.dialog.bind(npc)
+
+
+_bindings_at = 0.0
+
+
 def _keep_refusals(state):
     """Binds whoever refuses the hero, so the game hands his conversations here, and lets go once he talks again,
     unless a story conversation of his keeps him bound."""
@@ -1044,10 +1062,12 @@ class Story:
         plan["ops"] = [dict(op, since=gothic.world.day) if isinstance(op, dict) and op.get("op") == "refuse_talk"
                        and op.get("since") is None else op for op in plan["ops"]]
         # Weather with hours counts them from now, in game hours; the log keeps when, so a load agrees.
-        hour, minute = gothic.world.time
-        plan["ops"] = [dict(op, at=gothic.world.day * 24 + hour + minute / 60.0) if isinstance(op, dict)
-                       and op.get("op") == "weather" and op.get("hours") and op.get("at") is None else op
-                       for op in plan["ops"]]
+        if any(isinstance(op, dict) and op.get("op") == "weather" and op.get("hours") and op.get("at") is None
+               for op in plan["ops"]):
+            hour, minute = gothic.world.time
+            plan["ops"] = [dict(op, at=gothic.world.day * 24 + hour + minute / 60.0) if isinstance(op, dict)
+                           and op.get("op") == "weather" and op.get("hours") and op.get("at") is None else op
+                           for op in plan["ops"]]
         # Readiness before validation: validation also finds someone missing, but as a broken plan, and a rule that
         # waits for him to come back must wait, not fail.
         for op in plan["ops"]:
@@ -1169,8 +1189,10 @@ class Story:
         scene_id, npc = self.active_scene
         self.active_scene = None
         self.scene_opened = False
-        if _refusing(self.state, getattr(npc, "instance", "") or "") is None:
-            gothic.dialog.unbind(npc)   # someone who refuses the hero stays bound for that
+        instance = (getattr(npc, "instance", "") or "").upper()
+        # someone who refuses the hero, or who has a conversation of the story's own, stays bound for that
+        if _refusing(self.state, instance) is None and instance not in self.state.get("graphs", {}):
+            gothic.dialog.unbind(npc)
         if finished:
             self.apply_plan({"reason": f"Szene beendet: {scene_id}",
                              "ops": [{"op": "finish_scene", "id": scene_id}]})
@@ -1446,6 +1468,7 @@ def _tick(dt):
     try:
         _story.on_tick()
         _keep_refusals(_story.state)
+        _keep_bindings(_story.state)
         _player.on_tick()
     except Exception as err:
         # A bug, not a loading screen: say so once per kind of failure instead of hiding it, and keep ticking.
