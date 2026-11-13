@@ -90,8 +90,9 @@ OPS = {
     # Effects
     "weather": ("Effects", "Weather in the world: snow, rain or clear, how strongly (0..1), over how many seconds it comes "
                            "(fade), the wind [x, z] in m/s, and snow lying on the ground (cover 0..1 over cover_seconds). "
-                           "Kept in the save; a change of kind lets the old one stop first.",
-                {"op": "weather", "kind": "snow", "intensity": 0.7, "fade": 60, "wind": [2, 0], "cover": 0.6}),
+                           "With hours it lasts that long, then the climate takes over again. Kept in the save; a change of kind "
+                           "lets the old one stop first. Snow without cover lies as it falls and melts after.",
+                {"op": "weather", "kind": "snow", "intensity": 0.7, "fade": 60, "wind": [2, 0], "hours": 6}),
     "trip": ("Effects", "A trip of a few minutes with its own music, picture and thoughts.",
              {"op": "trip", "profile": "kriegsgesang"}),
     # The story as a whole

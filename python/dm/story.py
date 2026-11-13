@@ -808,7 +808,8 @@ def _check_weather(args, state):
     _require(args, "kind")
     if args["kind"] not in WEATHER_KINDS:
         raise PlanError("weather kind is snow, rain or clear")
-    for key, low, high in (("intensity", 0, 1), ("fade", 0, 3600), ("cover", 0, 1), ("cover_seconds", 0, 86400)):
+    for key, low, high in (("intensity", 0, 1), ("fade", 0, 3600), ("cover", 0, 1), ("cover_seconds", 0, 86400),
+                           ("hours", 0.1, 24 * 30)):
         if key not in args:
             continue   # left out: its default; written out, it must be a number
         value = args[key]
@@ -821,8 +822,10 @@ def _check_weather(args, state):
 
 def _fold_weather(args, state):
     before = state.get("weather") or {}
+    at, hours = args.get("at"), args.get("hours")
     state["weather"] = {"kind": args["kind"], "intensity": args.get("intensity", 1.0), "wind": list(args.get("wind", [0, 0])),
-                        "cover": args.get("cover", before.get("cover"))}   # snow already lying stays unless set
+                        "cover": args.get("cover", before.get("cover")),   # snow already lying stays unless set
+                        "until": at + hours if at is not None and hours else None}   # then the climate takes over
 
 
 def _world_weather(args, fade=None):
@@ -1040,6 +1043,11 @@ class Story:
         # A refusal counts its days from when it begins; the log keeps that day, so a load agrees.
         plan["ops"] = [dict(op, since=gothic.world.day) if isinstance(op, dict) and op.get("op") == "refuse_talk"
                        and op.get("since") is None else op for op in plan["ops"]]
+        # Weather with hours counts them from now, in game hours; the log keeps when, so a load agrees.
+        hour, minute = gothic.world.time
+        plan["ops"] = [dict(op, at=gothic.world.day * 24 + hour + minute / 60.0) if isinstance(op, dict)
+                       and op.get("op") == "weather" and op.get("hours") and op.get("at") is None else op
+                       for op in plan["ops"]]
         # Readiness before validation: validation also finds someone missing, but as a broken plan, and a rule that
         # waits for him to come back must wait, not fail.
         for op in plan["ops"]:
