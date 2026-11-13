@@ -234,6 +234,23 @@ def test_returns_to_menu():
         player.on_tick()
     assert d.lines == ["Menü.", "Frage", "Antwort."], d.lines
     assert d.choices == ["Frage", "Tschüss"]
+    # A line that leads back to the menu is still said; only "Zurück." is not.
+    back = {"start": "a", "nodes": {
+        "a": {"line": "Menü.", "choices": [{"text": "Frage", "goto": "b"}, {"text": "Tschüss", "ends": True}]},
+        "b": {"line": "Antwort.", "choices": [{"text": "Verstehe.", "goto": "a"}, {"text": "Zurück.", "goto": "a"}]}}}
+    for pick, said in ((0, "Verstehe."), (1, None)):
+        d.reset()
+        player = graphs.Player(lambda: {"NOV_B": back}, lambda n: None)
+        d.who, d.opened, d.open = Npc("NOV_B"), True, True
+        for _ in range(3):
+            player.on_tick()
+        d.selection = 0
+        for _ in range(6):
+            player.on_tick()
+        d.selection = pick
+        for _ in range(6):
+            player.on_tick()
+        assert (said in d.lines) if said else ("Zurück." not in d.lines), (pick, d.lines)
 
 
 def test_handed_over_but_nothing_to_play():

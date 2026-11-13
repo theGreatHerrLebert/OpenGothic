@@ -282,10 +282,10 @@ class Player:
             is_question = self.choice.get("goto") and self.choice["goto"] not in self.path
             if is_question and not self.choice.get("repeat"):
                 self.on_flag(self._asked_flag(self.choice))
-            if self.choice.get("goto") in self.path:
-                self._enter(self.choice["goto"])
+            if self.choice.get("goto") in self.path and self.choice.get("text", "").rstrip(".") == "Zurück":
+                self._enter(self.choice["goto"])   # going back is not said aloud, as in the game
             else:
-                self.stage = "hero"
+                self.stage = "hero"                # anything else he says, also when it leads back to a menu
         elif self.stage == "hero":
             if self._say(self.choice["text"], voices.HERO_VOICE, True, self.choice.get("delivery")):
                 self.stage = "hero_wait"
