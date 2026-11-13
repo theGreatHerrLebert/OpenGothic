@@ -84,8 +84,8 @@ float heatAt(vec2 at, out float dist) {
     return 0.0;   // the sky: no shimmer, no bleaching
   const vec4  wp  = scene.viewProjectInv*vec4(at*2.0-vec2(1.0), z, 1.0);
   const vec3  dir = normalize(wp.xyz/wp.w - scene.camPos);
-  const float low = 1.0 - smoothstep(0.0, 0.08, dir.y);   // land below the eye and just above it, not hills high up
-  return smoothstep(1500.0, 9000.0, dist) * low;
+  const float low = 1.0 - smoothstep(0.02, 0.12, dir.y);   // land below the eye and just above it, not hills high up
+  return smoothstep(800.0, 6000.0, dist) * low;
   }
 
 // The nearest surface the colour at `at` is made from. A shimmered pixel is read with one bilinear tap (not the
@@ -119,8 +119,9 @@ void main() {
     const float k   = heatAt(uv, dist) * scene.weatherHeat;
     const float t   = float(scene.tickCount32 % 600000u)/1000.0;
     const float f   = 1.0 + dist/20000.0;
-    const vec2  off = vec2(sin(uv.y*620.0*f - t*5.5 + sin(uv.x*40.0 + t*0.7)*2.0),
-                           sin(uv.y*410.0*f - t*4.1 + uv.x*90.0)*0.6) * (0.0011*k);
+    // as the trip's Emberheart, milder: slow, broad waves rising, a second one across
+    const vec2  off = vec2(sin(uv.y*120.0*f - t*4.8 + sin(uv.x*18.0 + t*0.6)*2.0),
+                           sin(uv.y*90.0*f  - t*3.0 + uv.x*30.0)*0.7) * (0.0045*k);
     if(k>0.0 && nearestAround(uv + off)>dist*0.6)
       at = uv + off;
     bleach = k;
@@ -132,10 +133,12 @@ void main() {
 #else
   vec3  color      = textureLod(textureD, at, 0).rgb;
 #endif
+  // the whole day a little warmer, as the trip's ember wash but faint
+  color *= mix(vec3(1.0), vec3(1.07, 1.0, 0.88), scene.weatherHeat);
   if(bleach>0.0) {
     // the far land pales and warms in the haze of a hot day
     const float l = luminance(color);
-    color = mix(color, vec3(l)*vec3(1.10, 1.0, 0.82)*1.08, bleach*scene.weatherHeat*0.45);
+    color = mix(color, vec3(l)*vec3(1.12, 1.0, 0.78)*1.15, bleach*scene.weatherHeat*0.6);
   }
 
   {

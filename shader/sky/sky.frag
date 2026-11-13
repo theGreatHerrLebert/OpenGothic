@@ -226,7 +226,8 @@ void main() {
   vec3  lum = sky(uv, sunDir) - maxFog;
   float tr  = 1.0;
   // Clouds
-  lum = applyClouds(lum);
+  // a hot day burns the sky clean: the game's own cloud layers thin out with the heat (plan-weather.md)
+  lum = mix(applyClouds(lum), lum, 0.85*scene.weatherHeat);
   if(scene.weatherOvercast>0.01) {
     // sky behind them times their transmittance, plus their own light; the fog pass applies the same transmittance
     // a soft filter over the small image: the per-pixel jitter of the march would otherwise show as pixel noise
