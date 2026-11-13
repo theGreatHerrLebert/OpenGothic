@@ -158,6 +158,7 @@ void bindTrip(py::module_& m) {
                 d["heat"] = w.heat;
                 d["fog_tint"] = std::make_tuple(w.fogTint.x, w.fogTint.y, w.fogTint.z);
                 d["frost"] = w.frost; d["ash"] = w.ash;
+                d["soak"] = w.soak; d["dust"] = w.dust; d["dust_frost"] = w.dustFrost; d["soot"] = w.soot;
                 d["magic"] = requireWorld()->globalFx()->isMagic();
                 py::dict loops;
                 for(auto& [name, level] : requireWorld()->globalFx()->loopLevels())

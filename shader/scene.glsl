@@ -50,6 +50,10 @@ struct SceneDesc {
   vec3  weatherFlashCl;
   float weatherFrost;
   float weatherAsh;
+  float weatherSoak;
+  float weatherDust;
+  float weatherDustFrost;
+  float weatherSoot;
   float weatherPad0;
   float weatherPad1;
   float weatherPad2;

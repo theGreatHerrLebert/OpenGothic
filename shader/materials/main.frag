@@ -181,8 +181,8 @@ vec4 diffuseTex() {
 #endif
 
 #if defined(GBUFFER) && (MESH_TYPE!=T_PFX)
-// Snow lying on what faces up, and wet ground (docs/plan-weather.md): landscape, roofs, rocks, the tops of trees, but
-// no characters, and nothing under a static roof (the roof map). Patches grow with the cover.
+// Snow lying on what faces up, and wet ground (docs/plan-weather.md): landscape, roofs, rocks, the tops of trees, and
+// nothing under a static roof (the roof map). Patches grow with the cover. Characters have their own, lighter branch.
 float snowHash(vec2 p) {
   return fract(sin(dot(p, vec2(127.1, 311.7)))*43758.5453);
   }
@@ -204,38 +204,83 @@ vec3 weatherWorldPos() {
 #endif
   }
 
-vec3 snowCover(vec3 albedo) {
-  if(scene.weatherCover<=0.001 && scene.weatherWet<=0.001)
+// The roof map's cell, in cm.
+float weatherCell() {
+  return 1.0/(scene.weatherBox.z*float(textureSize(roofMap, 0).x));
+  }
+
+// How far pos is under a static roof, 0 open sky .. 1 covered (the roof map); 0 outside the map. The map holds one
+// height per cell, so something counts as a roof only tol cm above pos. Five samples around the point, each eased
+// over 80 cm, let the weather thin out towards a wall instead of ending in a hard line at a cell's edge.
+float weatherShelter(vec3 pos, float tol) {
+  const vec2 ruv = (pos.xz - scene.weatherBox.xy) * scene.weatherBox.zw;
+  if(any(lessThan(ruv, vec2(0))) || any(greaterThan(ruv, vec2(1))))
+    return 0.0;
+  const float cell  = weatherCell();
+  const vec2  du    = vec2(0.75*cell*scene.weatherBox.z, 0.0);
+  const vec2  dv    = vec2(0.0, 0.75*cell*scene.weatherBox.w);
+  const vec2  taps[5] = vec2[](ruv, ruv+du, ruv-du, ruv+dv, ruv-dv);
+  float shelter = 0.0;
+  for(int i=0; i<5; ++i)
+    shelter += smoothstep(tol, tol+80.0, textureLod(roofMap, taps[i], 0).r - pos.y);
+  return shelter/5.0;
+  }
+
+#if !defined(SIMPLE_MAT)
+// People and animals (docs/plan-weather.md, Characters): wet clothes and fur in rain, a light patchy dusting of snow
+// (or a crystal storm's frost) on what faces up, a fire rain's soot. Their own values in the scene rise and fall
+// faster than the ground's; under a roof they get none of it, at once (shelter is per fragment, no per-character
+// memory). Faces (the morph heads) stay only a little wet; snow needs a normal facing up, so none on a face looking
+// forward.
+vec3 weatherOnCharacter(vec3 albedo, bool face) {
+  if(scene.weatherSoak<=0.001 && scene.weatherDust<=0.001 && scene.weatherSoot<=0.001)
     return albedo;
+  const vec3  pos   = weatherWorldPos();
+  const vec3  n     = normalize(shInp.normal);
+  // The ground's tolerance on a moderate slope: a character's normal says nothing about the ground under him.
+  const float open  = 1.0 - weatherShelter(pos, 50.0 + weatherCell());
+  if(open<=0.001)
+    return albedo;
+  const float up    = smoothstep(0.45, 0.85, n.y);
+  // Wet cloth, leather and fur are darker and deeper in colour; skin only a little.
+  const float wet   = scene.weatherSoak * open * mix(0.75, 1.0, up) * (face ? 0.3 : 0.85);
+  albedo = mix(albedo, pow(albedo, vec3(1.3))*0.7, wet);
+  // Soot: a faint grey-brown darkening, most on top.
+  const float soot  = scene.weatherSoot * open * mix(0.4, 1.0, up) * 0.3;
+  albedo = mix(albedo, albedo*vec3(0.55, 0.52, 0.5), soot);
+  if(scene.weatherDust<=0.001 || up<=0.0)
+    return albedo;
+  // Patches anchored to the mesh's texture coordinates, so they ride along with him instead of swimming; at most
+  // about 40 % of what faces up.
+  const vec2  q      = shInp.uv;
+  const float noise  = snowNoise(q*9.0)*0.6 + snowNoise(q*31.0 + vec2(5.3, 1.7))*0.4;
+  const float amount = smoothstep(0.0, 0.1, noise - (1.0 - 0.42*scene.weatherDust)) * up * open * 0.85;
+  const vec3  frost  = mix(vec3(0.62, 0.79, 0.95), albedo*vec3(0.75, 0.9, 1.15) + vec3(0.12, 0.16, 0.22), 0.3);
+  const vec3  flake  = mix(vec3(0.86, 0.88, 0.92), frost, scene.weatherDustFrost);
+  return mix(albedo, flake, amount);
+  }
+#endif
+
+vec3 snowCover(vec3 albedo) {
 #if !defined(SIMPLE_MAT)
   if((bucket[bucketId].flags & (BK_SKIN|BK_MORPH))!=0)
-    return albedo;   // people and animals stay as they are
+    return weatherOnCharacter(albedo, (bucket[bucketId].flags & BK_MORPH)!=0);   // people and animals: their own
 #endif
+  if(scene.weatherCover<=0.001 && scene.weatherWet<=0.001)
+    return albedo;
   const vec3 pos = weatherWorldPos();
   const vec3 n   = normalize(shInp.normal);
-  const vec2 ruv = (pos.xz - scene.weatherBox.xy) * scene.weatherBox.zw;
-  float shelter = 0.0;
-  if(all(greaterThanEqual(ruv, vec2(0))) && all(lessThanEqual(ruv, vec2(1)))) {
-    // The map holds one height per cell; on a slope the surface itself rises within its cell, so the tolerance
-    // grows with the cell's width and the surface's steepness before something counts as a roof above it. Five
-    // samples around the point, each eased over 80 cm, let the snow thin out towards a wall instead of ending in a
-    // hard line at a cell's edge.
-    const float cell  = 1.0/(scene.weatherBox.z*float(textureSize(roofMap, 0).x));
-    const float slope = sqrt(max(1.0-n.y*n.y, 0.0))/max(abs(n.y), 0.2);
+  // On a slope the surface itself rises within its roof map cell, so the tolerance grows with the cell's width and
+  // the surface's steepness before something counts as a roof above it.
+  const float slope = sqrt(max(1.0-n.y*n.y, 0.0))/max(abs(n.y), 0.2);
 #if defined(ATEST)
-    const float tol   = 150.0 + cell*slope;   // foliage: the outer layer of a crown, not only its very top
+  const float tol   = 150.0 + weatherCell()*slope;   // foliage: the outer layer of a crown, not only its very top
 #else
-    const float tol   = 50.0 + cell*slope;
+  const float tol   = 50.0 + weatherCell()*slope;
 #endif
-    const vec2  du    = vec2(0.75*cell*scene.weatherBox.z, 0.0);
-    const vec2  dv    = vec2(0.0, 0.75*cell*scene.weatherBox.w);
-    const vec2  taps[5] = vec2[](ruv, ruv+du, ruv-du, ruv+dv, ruv-dv);
-    for(int i=0; i<5; ++i)
-      shelter += smoothstep(tol, tol+80.0, textureLod(roofMap, taps[i], 0).r - pos.y);
-    shelter /= 5.0;
-    if(shelter>=0.999)
-      return albedo;   // under a roof
-    }
+  const float shelter = weatherShelter(pos, tol);
+  if(shelter>=0.999)
+    return albedo;   // under a roof
 #if defined(ATEST)
   // Leaves are thin and mostly steep: snow catches on them well before they face up.
   const float up = smoothstep(0.0, 0.5, abs(n.y)) * 0.85;

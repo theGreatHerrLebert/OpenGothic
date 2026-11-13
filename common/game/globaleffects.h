@@ -87,6 +87,11 @@ class GlobalEffects {
       float         coverTarget = 0;
       float         coverSeconds = 600;
       float         wet         = 0;    // how wet the ground is: rises while it rains, dries slowly after
+      // People and animals out in the open (docs/plan-weather.md, Characters): they react faster than the ground.
+      float         soak        = 0;    // wet clothes and fur: soaked within half a minute of rain, dry in ~4 minutes
+      float         dust        = 0;    // snow on shoulders and backs: settles within a minute, gone in ~3 minutes
+      float         dustFrost   = 0;    // how much of that dusting is a crystal storm's glassy frost, 0..1
+      float         soot        = 0;    // a fire rain's soot on them: settles within a minute, fades in ~5 minutes
       float         overcast    = 0;    // how closed the sky is: follows what falls, slower
       float         flash       = 0;    // a lightning flash, fading within a fraction of a second
       bool          openSky     = false; // falls from a clear sky (a trip's snow under the stars): no clouds

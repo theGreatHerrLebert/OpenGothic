@@ -109,6 +109,18 @@ void GlobalEffects::tickWeather(uint64_t dt) {
   // The ground gets wet within a couple of minutes of rain and takes a quarter of an hour to dry, much less in heat.
   const float wetTarget = weather.kind==Precipitation::Rain ? falling() : 0.f;
   ease(weather.wet, wetTarget, wetTarget>weather.wet ? 120.f : 900.f/(1.f + 4.f*weather.heat));
+  // People and animals in the open: rain soaks them within half a minute and they dry in about four (faster in heat);
+  // snow or a crystal storm dusts them within a minute and melts off in three (half a minute in rain); a fire rain
+  // leaves soot that fades in five minutes (one in rain). Shelter is the shader's, per fragment (plan-weather.md).
+  const bool  flakes     = weather.kind==Precipitation::Snow || weather.kind==Precipitation::Crystal;
+  const float rain       = weather.kind==Precipitation::Rain ? falling() : 0.f;
+  const float dustTarget = flakes ? falling() : 0.f;
+  const float sootTarget = weather.kind==Precipitation::Fire ? falling() : 0.f;
+  ease(weather.soak, rain, rain>weather.soak ? 30.f : 240.f/(1.f + 4.f*weather.heat));
+  ease(weather.dust, dustTarget, dustTarget>weather.dust ? 60.f : (rain>0.f ? 30.f : 180.f/(1.f + 4.f*weather.heat)));
+  ease(weather.soot, sootTarget, sootTarget>weather.soot ? 60.f : (rain>0.f ? 60.f : 300.f));
+  if(flakes && falling()>0.001f)
+    ease(weather.dustFrost, weather.kind==Precipitation::Crystal ? 1.f : 0.f, 20.f);
   // The sky closes as the weather comes (a minute and a half) and opens again slower (three minutes).
   const float closed = cloudsFor();
   ease(weather.overcast, closed, closed>weather.overcast ? 90.f : 180.f);

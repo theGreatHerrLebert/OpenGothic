@@ -73,6 +73,7 @@ void WorldView::preFrameUpdate(const Camera& camera, uint64_t tickCount, uint8_t
   if(auto* world = Gothic::inst().world()) {
     auto& w = world->globalFx()->weatherState();
     sGlobal.setWeatherCover(w.cover, w.wet);
+    sGlobal.setWeatherCharacters(w.soak, w.dust, w.dustFrost, w.soot);
     sGlobal.setWeatherSky(w.overcast, w.flash, w.kind==GlobalEffects::Precipitation::Snow ? 1.f : 0.f, w.heat,
                           world->globalFx()->isMagic() ? int(w.kind) : 0, world->globalFx()->falling(), w.frost, w.ash);
     if(auto* pl = Gothic::inst().player()) {
