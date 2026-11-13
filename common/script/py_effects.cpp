@@ -1,4 +1,5 @@
 #include "pybindings_common.h"
+#include "graphics/worldview.h"
 
 #include <algorithm>
 
@@ -106,6 +107,12 @@ void bindTrip(py::module_& m) {
               "wind (x, z) in metres per second. A change of kind lets the old one stop first.");
   weather.def("cover", [](float target, float seconds) { requireWorld()->globalFx()->setCover(target, seconds); },
               py::arg("target"), py::arg("seconds") = 600.f, "Snow lying on the ground, 0..1, reached over seconds.");
+  weather.def("roof_at",
+              [](float x, float z) {
+                auto* view = requireWorld()->view();
+                return view==nullptr ? -1.0e9f : view->weatherRoofAt(x, z);
+                },
+              py::arg("x"), py::arg("z"), "The roof map's height over a point (cm): the highest static surface there.");
   weather.def("state",
               []() {
                 auto& w = requireWorld()->globalFx()->weatherState();

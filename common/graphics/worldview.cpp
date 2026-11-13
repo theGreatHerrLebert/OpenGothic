@@ -1,4 +1,6 @@
 #include "worldview.h"
+#include "resources.h"
+#include "graphics/material.h"
 #include "world/objects/npc.h"
 #include <Tempest/Pixmap>
 #include <cmath>
@@ -280,6 +282,11 @@ void WorldView::buildWeatherHeight(const PackedMesh& wmesh) {
   for(auto& sub:wmesh.subMeshes) {
     if(sub.material.group==zenkit::MaterialGroup::WATER)
       continue;
+    // What the renderer does not draw (light shafts, glow and mist planes) or what one sees through shelters nothing.
+    const auto alpha = Resources::loadMaterial(sub.material,true).alpha;
+    if(alpha==Material::AdditiveLight || alpha==Material::Transparent ||
+       alpha==Material::Multiply || alpha==Material::Multiply2 || alpha==Material::Ghost)
+      continue;
     for(size_t i=sub.iboOffset; i+2<sub.iboOffset+sub.iboLength && i+2<wmesh.indices.size(); i+=3) {
       const auto& a = wmesh.vertices[wmesh.indices[i+0]].pos;
       const auto& b = wmesh.vertices[wmesh.indices[i+1]].pos;
@@ -334,8 +341,20 @@ void WorldView::buildWeatherHeight(const PackedMesh& wmesh) {
     if(v<=empty)
       v = lo.y;
 
+  weatherRoofCpu  = top;
+  weatherRoofCpuW = uint32_t(w);
   Tempest::Pixmap pm(uint32_t(w), uint32_t(h), Tempest::TextureFormat::R32F);
   std::memcpy(pm.data(), top.data(), top.size()*sizeof(float));
   weatherHeightMap = Resources::device().texture(pm, false);
   weatherHeightBox = Tempest::Vec4(lo.x, lo.z, 1.f/(float(w)*cell), 1.f/(float(h)*cell));
+  }
+
+float WorldView::weatherRoofAt(float x, float z) const {
+  // For checking the roof map from Python (gothic.weather.roof_at): the highest static surface there, in cm.
+  const int w = int(weatherRoofCpuW), h = int(weatherRoofCpu.size())/std::max(1, int(weatherRoofCpuW));
+  const int cx = int((x-weatherHeightBox.x)*weatherHeightBox.z*float(w));
+  const int cz = int((z-weatherHeightBox.y)*weatherHeightBox.w*float(h));
+  if(cx<0 || cz<0 || cx>=w || cz>=h)
+    return -1.0e9f;
+  return weatherRoofCpu[size_t(cz*w+cx)];
   }

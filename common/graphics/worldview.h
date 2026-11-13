@@ -83,6 +83,7 @@ class WorldView {
     // below it is under a roof. weatherBox is (min x, min z, 1/width, 1/depth) in world cm.
     const Tempest::Texture2d& weatherHeight() const { return weatherHeightMap; }
     const Tempest::Vec4&      weatherBox()    const { return weatherHeightBox; }
+    float                     weatherRoofAt(float x, float z) const;
     const Sky&          sky() const { return gSky; }
     const Landscape&    landscape() const { return land; }
     const LightGroup&   lights() const { return gLights; }
@@ -112,4 +113,6 @@ class WorldView {
     Tempest::Vec4        weatherHeightBox;
     void                 buildWeatherHeight(const PackedMesh& wmesh);
     SnowTrail            snowTrail;
+    std::vector<float>   weatherRoofCpu;
+    uint32_t             weatherRoofCpuW = 0;
 };
