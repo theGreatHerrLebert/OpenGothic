@@ -133,6 +133,9 @@ def storm(gothic, rng):
     if state.get("kind") != "rain" or state.get("intensity", 0) < STORM_FROM or rng.random() > STORM_CHANCE:
         return False
     gothic.weather.lightning(round(0.5 + rng.random() ** 2 * 4.5, 2))
+    import time
+    from dm import weather_talk
+    weather_talk.flashed(time.monotonic())   # people may speak of it
     return True
 
 
