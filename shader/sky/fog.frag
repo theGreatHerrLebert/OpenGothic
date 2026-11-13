@@ -198,6 +198,10 @@ void main_frag() {
 
   lum *= scene.GSunIntensity;
   lum *= scene.exposure;
+  // A closed sky (docs/plan-weather.md): the atmosphere the fog adds over the sky is mostly the blue sky and the sun's
+  // glow, which the weather's clouds cover; over the ground it stays, so distance still hazes.
+  if(isSky)
+    lum *= 1.0 - 0.85*scene.weatherOvercast;
 
   outColor = vec4(lum, 1.0-tr);
   }

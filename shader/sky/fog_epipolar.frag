@@ -89,6 +89,8 @@ void main() {
   vec3  lum = val.rgb + mst.rgb; // - maxVal;
   lum *= scene.GSunIntensity;
   lum *= scene.exposure;
+  if(z>=1.0)
+    lum *= 1.0 - 0.85*scene.weatherOvercast;   // the weather's clouds cover the sky's own glow (plan-weather.md)
 
   outColor = vec4(lum, 1.0-tr);
   // outColor = vec4(dbgColor.rgb, 1);

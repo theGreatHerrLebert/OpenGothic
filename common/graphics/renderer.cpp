@@ -1035,6 +1035,10 @@ void Renderer::drawSunMoon(Tempest::Encoder<Tempest::CommandBuffer>& cmd, const 
   push.sunDir         = d;
   push.viewProjectInv = scene.viewProjectLwcInv();
 
+  // Behind the weather's clouds the sun and moon disappear (docs/plan-weather.md).
+  if(auto* world = Gothic::inst().world())
+    push.GSunIntensity *= std::max(0.f, 1.f - 1.25f*world->globalFx()->weatherState().overcast);
+
   // HACK
   if(isSun) {
     float day = sun.dir().y;
