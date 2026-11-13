@@ -52,7 +52,7 @@ void main() {
     const float a     = core*core * pow(along, 3.0) * inAlpha;
     if(a<=0.002)
       discard;
-    outColor = vec4(mix(vec3(0.75, 0.85, 1.0), vec3(1.0), smoothstep(0.8, 1.0, along)) * a * 1.6, 0.0);
+    outColor = vec4(mix(vec3(0.75, 0.85, 1.0), vec3(1.0), smoothstep(0.8, 1.0, along)) * a * 1.2, 0.0);
     return;
     }
   if(kind==KMeteor) {
