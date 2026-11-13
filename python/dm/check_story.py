@@ -185,7 +185,7 @@ def repeated_hero_lines(data, most=3):
                 text = choice.get("text", "")
                 if text and len(text.split()) <= 3 and text.rstrip(".") != "Zurück":
                     counts[text] += 1
-    return [f"the hero says \"{text}\" {n} times: the same take each time; vary it, or let him react to what was said"
+    return [f"the hero says \"{text}\" {n} times: the same take each time; a little variety is enough"
             for text, n in counts.most_common() if n > most]
 
 
