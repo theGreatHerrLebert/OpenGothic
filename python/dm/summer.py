@@ -12,7 +12,7 @@ import sys
 SOUNDS = pathlib.Path(__file__).resolve().parent.parent / "dm_runtime" / "assets" / "sounds"
 HOT = 0.3          # heat from which a day or night counts as hot, full from 0.6
 CLEAR = 0.15       # overcast above which the stars are hidden
-GALAXY = 0.43      # how much the Milky Way replaces the night sky at most
+GALAXY = 0.32      # how much the Milky Way replaces the night sky at most
 TINT = (1.0, 0.95, 0.86)   # a little warm, not the trip's colours
 SPIN = 0.002       # radians a second: the stars turn slowly
 CICADAS, CRICKETS = 0.35, 0.35   # loudest volume of each

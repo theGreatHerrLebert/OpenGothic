@@ -31,7 +31,7 @@ fake = types.SimpleNamespace(
 from dm import trip  # noqa: E402
 trip._load_sky = lambda gothic, slot, name: True
 summer.tick(fake, 100.0)
-assert ("loop", "crickets", "grillen.wav", 0.35, 20.0) in calls and ("galaxy", 0.43) in calls, calls
+assert ("loop", "crickets", "grillen.wav", 0.35, 20.0) in calls and ("galaxy", 0.32) in calls, calls
 calls.clear()
 summer.tick(fake, 102.0)
 assert not any(c[0] == "loop" for c in calls), calls                 # unchanged: not set again
