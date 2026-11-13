@@ -171,3 +171,13 @@ story ("The Mage and the Weather Spell") and for summer afternoons.
   their armour, townsfolk of the stink at the harbour; the hero of the sun and of water.
 - **Not yet:** the climate's own hot days, cicadas, sweat, dust devils; the shimmer is a screen effect and does not
   bend reflections.
+
+### Summer: cicadas, crickets, the Milky Way (2026-11-13)
+
+On a hot day (heat over 0.3, full from 0.6) the cicadas saw away from 8:30 to 19:30 unless the sky has closed; on the
+warm night after it, under a clear sky (20:30 to 5:30), the crickets sing and the trips' Milky Way stands over the land,
+a little warm, without their colours or nebulae, turning slowly. Nothing falling, no summer. `python/dm/summer.py` looks
+every two seconds; the engine loops our own WAVs by name (`weather.loop(name, path, volume, fade)`). The sounds are CC0
+recordings from Freesound kept with the rest of our runtime assets (`python/dm_runtime/assets/sounds/CREDITS.md`). A trip
+owns the sky while it runs; the sounds keep following the weather; a load sets everything again. Not yet: quieter
+indoors (the loops are heard everywhere, like the rain).
