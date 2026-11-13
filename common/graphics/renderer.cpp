@@ -960,7 +960,8 @@ void Renderer::drawPrecipitation(Tempest::Encoder<Tempest::CommandBuffer>& cmd, 
 
   // Shelter is the roof map's business (in the shader): the game's "rooms" are BSP sectors, and a cave's sector can
   // reach out past its entrance, which hid the snow from a hero standing outside.
-  const float amount = w.intensity;
+  // What falls follows the clouds: a drizzle while the sky is still open, the full weather once it has closed.
+  const float amount = w.intensity * (0.15f + 0.85f*std::clamp((w.overcast-0.1f)/0.8f, 0.f, 1.f));
   if(amount<0.001f)
     return;
 

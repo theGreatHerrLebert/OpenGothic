@@ -45,6 +45,11 @@ float noise3(vec3 x) {
                  mix(hash31(i+vec3(0,1,1)), hash31(i+vec3(1,1,1)), f.x), f.y), f.z);
   }
 
+// Coverage over a wide area: heavier bands and lighter stretches some fifteen kilometres across.
+float regional(vec2 w) {
+  return noise3(vec3(w/15000.0, 0.37))*0.7 + noise3(vec3(w/6000.0, 1.91))*0.3;
+  }
+
 // x, z: world metres; y: metres above the shell's bottom.
 float density(vec3 w, float h, bool coarse) {
   // rounded bellies, flatter tops; storms reach higher
@@ -52,11 +57,15 @@ float density(vec3 w, float h, bool coarse) {
   if(profile<=0.0)
     return 0.0;
   vec3  q    = vec3(w.x/2200.0, w.y/900.0, w.z/2200.0);
-  float base = noise3(q)*0.6 + noise3(q*2.03 + vec3(3.1, 1.7, 5.3))*0.3;
-  if(!coarse)
-    base += noise3(q*4.1 + vec3(7.7, 2.3, 1.1))*0.1;
-  float cover = mix(0.25, 0.97, push.weather.x);
-  return clamp((base - (1.0-cover))/max(cover, 0.05), 0.0, 1.0) * profile;
+  float base = noise3(q)*0.6 + noise3(q*2.03 + vec3(3.1, 1.7, 5.3))*0.3 + noise3(q*4.1 + vec3(7.7, 2.3, 1.1))*0.1;
+  float cover = clamp(mix(0.25, 0.97, push.weather.x) + (regional(w.xz) - 0.5)*0.45, 0.05, 1.0);
+  float d = clamp((base - (1.0-cover))/max(cover, 0.05), 0.0, 1.0);
+  if(!coarse && d>0.0) {
+    // fine noise wears the edges away: frayed, cauliflower edges instead of soft blobs
+    float detail = noise3(q*11.0 + vec3(push.weather.z*0.02, 0.0, 0.0))*0.6 + noise3(q*23.0)*0.4;
+    d = clamp(d - (1.0-d)*detail*0.55, 0.0, 1.0);
+    }
+  return d * profile;
   }
 
 float phaseHG(float c, float g) {
@@ -112,6 +121,9 @@ void main() {
     const float shadow  = exp(-Sigma*od*0.6);
     const float powder  = 1.0 - exp(-d*Sigma*stepLen*2.0);            // thick parts darker inside
     vec3  light = sunAt*shadow*phase*12.0*mix(1.0, powder, 0.5) + ambient*(0.35 + 0.65*h);
+    // colour varies between neutral grey and a cool navy: thick, low parts go dark navy, thin high ones light grey
+    const float navy = clamp(d*0.8 + (1.0-h)*0.4 + (noise3(vec3(w.xz/4000.0, 2.7))-0.5)*0.8, 0.0, 1.0);
+    light *= mix(vec3(1.0), vec3(0.62, 0.70, 0.92), navy*(1.0-push.weather.y*0.7));
     light += vec3(0.9, 0.92, 1.0) * push.weather.w * d * 40.0;        // lightning from inside
     const float ext = exp(-d*Sigma*stepLen);
     C += T*(1.0-ext)*light*albedo;
