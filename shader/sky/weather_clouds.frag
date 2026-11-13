@@ -52,8 +52,10 @@ float regional(vec2 w) {
 
 // x, z: world metres; y: metres above the shell's bottom.
 float density(vec3 w, float h, bool coarse) {
-  // rounded bellies, flatter tops; storms reach higher
-  float profile = smoothstep(0.0, 0.12, h) * (1.0 - smoothstep(mix(0.55, 0.95, push.weather.x), 1.0, h));
+  // rounded bellies, flatter tops; storms reach higher, and some towers rise above the rest
+  const float tower = noise3(vec3(w.xz/5000.0, 4.4));
+  const float top   = clamp(mix(0.55, 0.95, push.weather.x) * (0.65 + 0.6*tower), 0.3, 0.99);
+  float profile = smoothstep(0.0, 0.12, h) * (1.0 - smoothstep(top, min(top+0.2, 1.0), h));
   if(profile<=0.0)
     return 0.0;
   vec3  q    = vec3(w.x/2200.0, w.y/900.0, w.z/2200.0);
@@ -111,16 +113,17 @@ void main() {
       continue;
     // light reaching this point: two coarse steps towards the sun
     float od = 0.0;
-    for(int s=1; s<=2; ++s) {
-      const float ls = 220.0*float(s*s);
+    for(int s=1; s<=3; ++s) {
+      const float ls = 180.0*float(s*s);
       const vec3  lp = p + sunDir*ls;
       const float lh = (length(lp)-CloudBottom)/(CloudTop-CloudBottom);
       od += density(vec3(w.x + sunDir.x*ls, lh*(CloudTop-CloudBottom), w.z + sunDir.z*ls), lh, true) * ls;
       }
     const vec3  sunAt   = textureLUT(tLUT, p, sunDir);
-    const float shadow  = exp(-Sigma*od*0.6);
+    const float shadow  = exp(-Sigma*od*1.1);
     const float powder  = 1.0 - exp(-d*Sigma*stepLen*2.0);            // thick parts darker inside
-    vec3  light = sunAt*shadow*phase*12.0*mix(1.0, powder, 0.5) + ambient*(0.35 + 0.65*h);
+    // the sun on what it reaches, the sky's light mostly from above: bright tops, dark bellies
+    vec3  light = sunAt*shadow*phase*16.0*mix(1.0, powder, 0.6) + ambient*(0.18 + 0.72*h*h);
     // colour varies between neutral grey and a cool navy: thick, low parts go dark navy, thin high ones light grey
     const float navy = clamp(d*0.8 + (1.0-h)*0.4 + (noise3(vec3(w.xz/4000.0, 2.7))-0.5)*0.8, 0.0, 1.0);
     light *= mix(vec3(1.0), vec3(0.62, 0.70, 0.92), navy*(1.0-push.weather.y*0.7));
