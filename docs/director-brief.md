@@ -116,6 +116,8 @@ two sentences at a time.
 - The hero's short replies are voiced takes: "Aha." said five times is heard five times. Nothing fancy is needed,
   just a little variety (the checker warns past three).
 - Let the player postpone or refuse, unless the situation truly forces a decision.
+- Options that lead to nearly the same thing, depending on what the hero already knows, are one option whose words
+  change with that knowledge, not several standing side by side.
 
 ## Let the story finish, and life continue
 
