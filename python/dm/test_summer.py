@@ -15,11 +15,6 @@ assert summer.levels(dict(hot, overcast=0.3), 13, 0)[0] == 1.0      # a few clou
 assert summer.levels(dict(hot, heat=0.2), 13, 0) == (0.0, 0.0)      # a mild day is just a day
 assert summer.levels(dict(hot, falling=0.3), 13, 0) == (0.0, 0.0)
 
-assert summer.cold({"kind": "snow", "falling": 0.8, "cover": 0.0}) == 0.8
-assert summer.cold({"kind": "clear", "falling": 0.0, "cover": 0.8}) == 0.9   # snow lying is cold too
-assert summer.cold({"kind": "rain", "falling": 1.0, "cover": 0.0}) == 0.0
-assert summer.cold({"kind": "snow", "falling": 1.0, "heat": 0.8}) == 0.0
-
 calls = []
 summer.SOUNDS = types.SimpleNamespace(__truediv__=None)
 class Here:

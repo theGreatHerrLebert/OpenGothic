@@ -64,8 +64,6 @@ void bindNpc(py::module_& m) {
              n->changeAttribute(ATR_HITPOINTS,
                                 n->attribute(ATR_HITPOINTSMAX), false);
              })
-      .def("breathe", [](const PyNpc& self, float puff) { self.fetch()->breathe(uint64_t(std::max(puff, 0.05f)*1000.f)); },
-           py::arg("puff") = 1.2f, "One breath in the cold: the game's BREATH particles at the head for puff seconds.")
       .def("hurt",
            [](const PyNpc& self, int amount) {
              Npc* p = self.fetch();

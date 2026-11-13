@@ -3188,17 +3188,6 @@ void Npc::startEffect(Npc& to, const VisualFx& vfx) {
   visual.startEffect(owner, std::move(e), 0, true);
   }
 
-void Npc::breathe(uint64_t puffMs) {
-  static constexpr int32_t BreathSlot = -7301;
-  PfxEmitter pfx(owner, "BREATH");
-  if(pfx.isEmpty())
-    return;
-  pfx.setActive(true);
-  Effect e(std::move(pfx), "BIP01 HEAD");
-  e.setActive(true);
-  visual.startEffect(owner, std::move(e), BreathSlot, false, puffMs);
-  }
-
 void Npc::stopEffect(const VisualFx& vfx) {
   visual.stopEffect(vfx);
   }

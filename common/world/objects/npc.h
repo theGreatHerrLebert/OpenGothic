@@ -427,8 +427,6 @@ class Npc final {
 
     void      startEffect(Npc& to, const VisualFx& vfx);
     void      stopEffect (const VisualFx& vfx);
-    // One breath in the cold (docs/plan-weather.md): the game's BREATH particles at the head, in a slot of their own.
-    void      breathe(uint64_t puffMs);
     void      runEffect  (Effect&& e);
 
   private:
