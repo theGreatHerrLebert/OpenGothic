@@ -1,5 +1,7 @@
 #pragma once
 
+#include <Tempest/SoundEffect>
+
 #include <Tempest/Matrix4x4>
 #include <Tempest/Painter>
 #include <Tempest/Texture2d>
@@ -77,7 +79,11 @@ class GlobalEffects {
       float         coverTarget = 0;
       float         coverSeconds = 600;
       float         wet         = 0;    // how wet the ground is: rises while it rains, dries slowly after
+      float         overcast    = 0;    // how closed the sky is: follows what falls, slower
+      float         flash       = 0;    // a lightning flash, fading within a fraction of a second
       };
+    // Lightning: a flash now, its thunder after delay seconds (sound travels about 340 m a second).
+    void           lightning(float delaySeconds);
     void           setWeather(Precipitation kind, float target, float fadeSeconds, float windX, float windZ);
     void           setCover(float target, float seconds);
     const Weather& weatherState() const { return weather; }
@@ -150,6 +156,9 @@ class GlobalEffects {
     float                                     pendingTarget = -1;   // below zero: no change of kind waiting
 
     void tickWeather(uint64_t dt);
+    void tickWeatherSound();
+    Tempest::SoundEffect                      rainSound, windSound;
+    float                                     thunderIn = -1;   // seconds until the thunder; below zero: none due
     Galaxy                                    galaxy;
     float                                     tripTimeRem = 0;
   friend class GlobalFx;

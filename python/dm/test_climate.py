@@ -46,4 +46,13 @@ snowfall._current = object()
 calls.clear()
 assert climate.tick(fake, state, 5) is None and calls == []
 snowfall._current = None
+# Lightning only in heavy rain, its thunder delayed by distance.
+flashes = []
+sky = types.SimpleNamespace(state=lambda: {"kind": "rain", "intensity": 0.9}, lightning=flashes.append)
+always = types.SimpleNamespace(random=lambda: 0.0)
+assert climate.storm(types.SimpleNamespace(weather=sky), always) and flashes == [0.5]
+sky.state = lambda: {"kind": "rain", "intensity": 0.4}
+assert not climate.storm(types.SimpleNamespace(weather=sky), always)
+sky.state = lambda: {"kind": "snow", "intensity": 1.0}
+assert not climate.storm(types.SimpleNamespace(weather=sky), always)
 print("climate ok")

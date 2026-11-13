@@ -31,7 +31,8 @@ vec3 applyClouds(vec3 skyColor, vec3 refl) {
 
   return applyClouds(skyColor, skyLUT, plPos, scene.sunDir, refl, night,
                      scene.cloudsDir.xy, scene.cloudsDir.zw,
-                     textureDayL1,textureDayL0, textureNightL1,textureNightL0);
+                     textureDayL1,textureDayL0, textureNightL1,textureNightL0,
+                     scene.weatherOvercast, scene.weatherSnowy);
   }
 
 void main() {

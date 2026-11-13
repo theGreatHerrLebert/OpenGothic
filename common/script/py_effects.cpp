@@ -107,6 +107,8 @@ void bindTrip(py::module_& m) {
               "wind (x, z) in metres per second. A change of kind lets the old one stop first.");
   weather.def("cover", [](float target, float seconds) { requireWorld()->globalFx()->setCover(target, seconds); },
               py::arg("target"), py::arg("seconds") = 600.f, "Snow lying on the ground, 0..1, reached over seconds.");
+  weather.def("lightning", [](float delay) { requireWorld()->globalFx()->lightning(delay); }, py::arg("delay") = 2.f,
+              "A lightning flash now and its thunder after delay seconds (3 s is about a kilometre away).");
   weather.def("roof_at",
               [](float x, float z) {
                 auto* view = requireWorld()->view();
@@ -119,7 +121,7 @@ void bindTrip(py::module_& m) {
                 const char* kinds[] = {"clear", "snow", "rain"};
                 py::dict d;
                 d["kind"] = kinds[int(w.kind)]; d["intensity"] = w.intensity; d["target"] = w.target;
-                d["wind"] = std::make_tuple(w.windX, w.windZ); d["cover"] = w.cover; d["wet"] = w.wet;
+                d["wind"] = std::make_tuple(w.windX, w.windZ); d["cover"] = w.cover; d["wet"] = w.wet; d["overcast"] = w.overcast;
                 d["raining"] = requireWorld()->globalFx()->isRaining();
                 return d;
                 },

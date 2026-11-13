@@ -274,3 +274,14 @@ const Tempest::Matrix4x4 SceneGlobals::viewProjectLwcInv() const {
   m.inverse();
   return m;
   }
+
+void SceneGlobals::setWeatherSky(float overcast, float flash, float snowy) {
+  uboGlobalCpu.weatherSnowy    = snowy;
+  // Called after setSky: a closed sky dims the sun and a little of the sky's light; a flash lights everything.
+  uboGlobalCpu.weatherOvercast = overcast;
+  uboGlobalCpu.weatherFlash    = flash;
+  uboGlobalCpu.lightCl       *= (1.f - 0.75f*overcast);
+  uboGlobalCpu.GSunIntensity *= (1.f - 0.45f*overcast) * (1.f + 2.f*flash);
+  uboGlobalCpu.lightAmb      *= (1.f - 0.3f*overcast);
+  uboGlobalCpu.lightAmb      += Tempest::Vec3(1.f, 1.f, 1.1f) * (flash*1.5f);
+  }

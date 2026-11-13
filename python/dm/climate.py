@@ -121,8 +121,24 @@ def tick(gothic, state, now):
     return current
 
 
+STORM_FROM = 0.75        # rain at least this heavy can bring lightning
+STORM_CHANCE = 0.06      # per look (every TICK_SECONDS): about one flash in half a minute
+
+
+def storm(gothic, rng):
+    """Lightning in heavy rain, whoever set it: a flash, and its thunder after the time sound needs (0.5 to 5 s)."""
+    if not hasattr(gothic.weather, "lightning"):
+        return False
+    state = gothic.weather.state()
+    if state.get("kind") != "rain" or state.get("intensity", 0) < STORM_FROM or rng.random() > STORM_CHANCE:
+        return False
+    gothic.weather.lightning(round(0.5 + rng.random() ** 2 * 4.5, 2))
+    return True
+
+
 def _tick(_dt):
     global _next_look
+    import random
     import time
     import gothic
     from dm import story
@@ -135,6 +151,7 @@ def _tick(_dt):
     except RuntimeError:
         return   # no world while loading
     tick(gothic, story.state(), now)
+    storm(gothic, random)
 
 
 def start():

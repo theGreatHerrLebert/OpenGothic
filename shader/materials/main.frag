@@ -243,7 +243,9 @@ vec3 snowCover(vec3 albedo) {
   const float up = smoothstep(0.55, 0.85, n.y);
 #endif
   // Wet ground is darker; v1 has no gloss, the G-buffer has no channel for it (plan-weather.md).
-  albedo *= mix(1.0, 0.62, scene.weatherWet*mix(0.6, 1.0, up)*(1.0-shelter));
+  // Wet surfaces are darker and deeper in colour: soaked earth, stone and wood.
+  const float wetness = scene.weatherWet*mix(0.6, 1.0, up)*(1.0-shelter);
+  albedo = mix(albedo, pow(albedo, vec3(1.4))*0.72, wetness);
   if(scene.weatherCover<=0.001)
     return albedo;
   const vec2  p      = pos.xz/100.0;                       // metres

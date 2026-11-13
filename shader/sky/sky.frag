@@ -104,7 +104,8 @@ vec3 applyClouds(vec3 skyColor) {
   vec3  viewDir  = normalize(pos1);
   return applyClouds(skyColor, skyLUT, plPos, scene.sunDir, viewDir, night,
                      scene.cloudsDir.xy, scene.cloudsDir.zw,
-                     textureDayL1,textureDayL0, textureNightL1,textureNightL0);
+                     textureDayL1,textureDayL0, textureNightL1,textureNightL0,
+                     scene.weatherOvercast, scene.weatherSnowy);
   }
 
 vec3 galaxyLinear(vec3 c) {
@@ -224,6 +225,7 @@ void main() {
   float tr  = 1.0;
   // Clouds
   lum = applyClouds(lum);
+  // A closed sky: grey and dark, the clouds pulled together (docs/plan-weather.md); a flash lights it up.
   lum = lum * scene.GSunIntensity;
 
   lum *= scene.exposure;

@@ -43,6 +43,9 @@ struct SceneDesc {
   float weatherTrailY;
   vec4  weatherBox;
   vec4  weatherTrail;
+  float weatherOvercast;
+  float weatherFlash;
+  float weatherSnowy;
   };
 
 struct LightSource {

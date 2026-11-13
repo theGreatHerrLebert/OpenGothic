@@ -1,3 +1,5 @@
+#include <cmath>
+#include "gothic.h"
 #include <algorithm>
 #include "globaleffects.h"
 
@@ -67,6 +69,16 @@ void GlobalEffects::tickWeather(uint64_t dt) {
   // The ground gets wet within a couple of minutes of rain and takes a quarter of an hour to dry.
   const float wetTarget = weather.kind==Precipitation::Rain ? weather.intensity : 0.f;
   ease(weather.wet, wetTarget, wetTarget>weather.wet ? 120.f : 900.f);
+  // The sky closes as the weather comes (a minute and a half) and opens again slower (three minutes).
+  const float closed = weather.kind==Precipitation::None ? 0.f : weather.intensity;
+  ease(weather.overcast, closed, closed>weather.overcast ? 90.f : 180.f);
+  weather.flash = std::max(0.f, weather.flash - sec*5.f);
+  if(thunderIn>=0.f) {
+    thunderIn -= sec;
+    if(thunderIn<0.f)
+      Gothic::inst().emitGlobalSoundWav("NEARTHUNDER.WAV");
+    }
+  tickWeatherSound();
   if(pendingTarget>=0.f && weather.intensity<=0.01f) {
     weather.kind   = pendingKind;
     weather.target = pendingKind==Precipitation::None ? 0.f : pendingTarget;
@@ -366,4 +378,30 @@ Vec3 GlobalEffects::parseVec3(std::string_view sv) {
 
 void GlobalEffects::Effect::stop() {
   timeUntil = 0;
+  }
+
+void GlobalEffects::lightning(float delaySeconds) {
+  weather.flash = 1.f;
+  thunderIn     = std::max(delaySeconds, 0.f);
+  }
+
+void GlobalEffects::tickWeatherSound() {
+  // The game's own rain and storm sounds, kept going while they are wanted, as loud as the weather is.
+  const float rain = weather.kind==Precipitation::Rain ? weather.intensity : 0.f;
+  const float wind = std::min(std::sqrt(weather.windX*weather.windX + weather.windZ*weather.windZ)/8.f, 1.f) *
+                     (weather.kind==Precipitation::None ? 0.3f : 1.f);
+  auto keep = [](Tempest::SoundEffect& snd, const char* wav, float volume) {
+    if(volume<0.02f) {
+      if(!snd.isEmpty())
+        snd = Tempest::SoundEffect();
+      return;
+      }
+    if(snd.isEmpty() || snd.isFinished()) {
+      snd = Gothic::inst().loadSoundEffect(wav);
+      snd.play();
+      }
+    snd.setVolume(volume);
+    };
+  keep(rainSound, "RAIN_01.WAV",       rain*0.9f);
+  keep(windSound, "WIND_HEAVY01.WAV",  wind*0.7f);
   }
