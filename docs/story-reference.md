@@ -125,6 +125,19 @@ Top-level `closures` end a story that is never finished: `[{"id": "too_late", "o
 [{"type": "story_age", "days": 5}], "ops": [...]}]`, and one for each death that matters. If a cast member dies and no
 closure speaks of it, the game master ends the story quietly.
 
+## Names that mislead
+
+Some of the game's creatures carry names that sound like people or deeds. They are animals: they eat fields and
+people, they never steal, set fires, talk or bargain.
+
+- **Feldräuber**: giant insects that eat the fields bare (not robbers). **Pestkäfer**, **Blutfliege**,
+  **Minecrawler**: insects too.
+- **Scavenger**: a large running bird. **Snapper**, **Razor**, **Waran**, **Feuerwaran**: lizards.
+- **Lurker**: a swamp reptile. **Schattenläufer**: a great horned beast of the night. **Warg**: a wolf-like beast.
+- **Gobbo** and **Ork** are creatures with a culture of their own; **Banditen** and **Wegelagerer** are people.
+
+When a hut burns or a purse is stolen, it was people.
+
 ## Voices and limits
 
 Voices are baked after a plan is accepted (`bake_voices.py`); unvoiced lines appear as silent subtitles. Stories cannot
