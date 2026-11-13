@@ -194,10 +194,14 @@ float snowNoise(vec2 p) {
   }
 
 vec3 snowCover(vec3 albedo) {
-  if(scene.weatherCover<=0.001)
+  if(scene.weatherCover<=0.001 && scene.weatherWet<=0.001)
     return albedo;
   const vec3  n      = normalize(shInp.normal);
   const float up     = smoothstep(0.55, 0.85, n.y);
+  // Wet ground is darker; v1 has no gloss, the G-buffer has no channel for it (plan-weather.md).
+  albedo *= mix(1.0, 0.62, scene.weatherWet*mix(0.6, 1.0, up));
+  if(scene.weatherCover<=0.001)
+    return albedo;
   const vec2  p      = shInp.pos.xz/100.0;                       // metres
   const float noise  = snowNoise(p*0.35)*0.6 + snowNoise(p*1.7)*0.4;
   const float amount = clamp(scene.weatherCover*1.6 - (1.0-noise), 0.0, 1.0) * up;

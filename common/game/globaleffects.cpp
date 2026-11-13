@@ -64,6 +64,9 @@ void GlobalEffects::tickWeather(uint64_t dt) {
     };
   ease(weather.intensity, weather.target, weather.fadeSeconds);
   ease(weather.cover, weather.coverTarget, weather.coverSeconds);
+  // The ground gets wet within a couple of minutes of rain and takes a quarter of an hour to dry.
+  const float wetTarget = weather.kind==Precipitation::Rain ? weather.intensity : 0.f;
+  ease(weather.wet, wetTarget, wetTarget>weather.wet ? 120.f : 900.f);
   if(pendingTarget>=0.f && weather.intensity<=0.01f) {
     weather.kind   = pendingKind;
     weather.target = pendingKind==Precipitation::None ? 0.f : pendingTarget;

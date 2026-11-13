@@ -76,6 +76,7 @@ class GlobalEffects {
       float         cover       = 0;    // snow lying on the ground, 0..1
       float         coverTarget = 0;
       float         coverSeconds = 600;
+      float         wet         = 0;    // how wet the ground is: rises while it rains, dries slowly after
       };
     void           setWeather(Precipitation kind, float target, float fadeSeconds, float windX, float windZ);
     void           setCover(float target, float seconds);

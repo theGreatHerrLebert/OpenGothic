@@ -61,7 +61,7 @@ void WorldView::preFrameUpdate(const Camera& camera, uint64_t tickCount, uint8_t
   gLights.tick(tickCount);
   sGlobal.setTime(tickCount);
   if(auto* world = Gothic::inst().world())
-    sGlobal.setWeatherCover(world->globalFx()->weatherState().cover);
+    sGlobal.setWeatherCover(world->globalFx()->weatherState().cover, world->globalFx()->weatherState().wet);
   sGlobal.commitUbo(fId);
 
   pfxGroup.preFrameUpdate(fId);

@@ -112,7 +112,7 @@ void bindTrip(py::module_& m) {
                 const char* kinds[] = {"clear", "snow", "rain"};
                 py::dict d;
                 d["kind"] = kinds[int(w.kind)]; d["intensity"] = w.intensity; d["target"] = w.target;
-                d["wind"] = std::make_tuple(w.windX, w.windZ); d["cover"] = w.cover;
+                d["wind"] = std::make_tuple(w.windX, w.windZ); d["cover"] = w.cover; d["wet"] = w.wet;
                 d["raining"] = requireWorld()->globalFx()->isRaining();
                 return d;
                 },

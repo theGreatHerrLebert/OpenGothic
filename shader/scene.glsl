@@ -39,6 +39,7 @@ struct SceneDesc {
   vec4  cloudsDir;
   float probeGridBias;
   float weatherCover;
+  float weatherWet;
   };
 
 struct LightSource {
