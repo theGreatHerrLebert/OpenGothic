@@ -72,7 +72,7 @@ void GlobalEffects::tickWeather(uint64_t dt) {
   const float wetTarget = weather.kind==Precipitation::Rain ? falling() : 0.f;
   ease(weather.wet, wetTarget, wetTarget>weather.wet ? 120.f : 900.f);
   // The sky closes as the weather comes (a minute and a half) and opens again slower (three minutes).
-  const float closed = (weather.kind==Precipitation::None || weather.openSky) ? 0.f : weather.intensity;
+  const float closed = cloudsFor();
   ease(weather.overcast, closed, closed>weather.overcast ? 90.f : 180.f);
   weather.flash = std::max(0.f, weather.flash - sec*5.f);
   if(thunderIn>=0.f) {

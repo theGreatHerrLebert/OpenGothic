@@ -97,8 +97,13 @@ class GlobalEffects {
         return 0.f;
       if(weather.openSky)
         return weather.intensity;
-      const float t = std::clamp((weather.overcast-0.5f)/0.4f, 0.f, 1.f);
+      // how far the clouds have come towards the cover this weather brings: half way, it starts; nearly there, all
+      const float t = std::clamp((weather.overcast/std::max(cloudsFor(), 0.01f)-0.55f)/0.4f, 0.f, 1.f);
       return weather.intensity*t*t*(3.f-2.f*t);
+      }
+    // The cover any weather brings: even light rain greys most of the sky; heavy weather closes it.
+    float          cloudsFor() const {
+      return (weather.kind==Precipitation::None || weather.openSky) ? 0.f : 0.7f + 0.3f*weather.intensity;
       }
     bool           isRaining() const { return weather.kind==Precipitation::Rain && falling()>0.1f; }
 
