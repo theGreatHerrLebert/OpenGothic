@@ -273,7 +273,9 @@ vec3 snowCover(vec3 albedo) {
       }
     amount *= 1.0 - smoothstep(0.05, 0.9, print)*0.75;
     }
-  return mix(albedo, vec3(0.86, 0.88, 0.92), amount);      // in texture space: lighting decodes the albedo
+  // A crystal storm's frost: glassy and blue, the ground still showing a little through it (plan-weather.md).
+  const vec3 frost = mix(vec3(0.62, 0.79, 0.95), albedo*vec3(0.75, 0.9, 1.15) + vec3(0.12, 0.16, 0.22), 0.3);
+  return mix(albedo, mix(vec3(0.86, 0.88, 0.92), frost, scene.weatherFrost), amount);   // texture space: lighting decodes it
   }
 #endif
 

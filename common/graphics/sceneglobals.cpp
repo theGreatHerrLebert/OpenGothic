@@ -277,7 +277,9 @@ const Tempest::Matrix4x4 SceneGlobals::viewProjectLwcInv() const {
   return m;
   }
 
-void SceneGlobals::setWeatherSky(float overcast, float flash, float snowy, float heat) {
+void SceneGlobals::setWeatherSky(float overcast, float flash, float snowy, float heat, int magic, float magicAmount,
+                                 float frost) {
+  uboGlobalCpu.weatherFrost    = frost;
   uboGlobalCpu.weatherSnowy    = snowy;
   // What heat shows (shimmer, warm light, bleaching) comes from the sun on the ground: none at night, growing as
   // the sun climbs, full from about 25 degrees up. setSky has set the sun's direction for this frame.
@@ -290,7 +292,25 @@ void SceneGlobals::setWeatherSky(float overcast, float flash, float snowy, float
   uboGlobalCpu.lightCl       *= (1.f - 0.75f*overcast);
   uboGlobalCpu.GSunIntensity *= (1.f - 0.45f*overcast) * (1.f + 2.f*flash);
   uboGlobalCpu.lightAmb      *= (1.f - 0.3f*overcast);
-  uboGlobalCpu.lightAmb      += Tempest::Vec3(1.f, 1.f, 1.1f) * (flash*1.5f);
+  // Magical weather colours the light: a fire rain burns red and low, a crystal storm is cold and pale.
+  const float   m       = std::clamp(magicAmount, 0.f, 1.f);
+  Tempest::Vec3 flashCl = Tempest::Vec3(1.f, 1.f, 1.1f);
+  if(magic==3) {
+    flashCl = Tempest::Vec3(1.6f, 0.75f, 0.3f);
+    uboGlobalCpu.lightCl  *= (1.f - 0.45f*m);
+    uboGlobalCpu.lightCl.y *= 1.f - 0.35f*m;  uboGlobalCpu.lightCl.z *= 1.f - 0.6f*m;
+    auto& a = uboGlobalCpu.lightAmb;
+    a = Tempest::Vec3(a.x*(1.f + 0.5f*m), a.y*(1.f - 0.25f*m), a.z*(1.f - 0.5f*m));
+    a += Tempest::Vec3(0.08f, 0.025f, 0.005f)*m;   // the glow of the falling fire, by night too
+    }
+  else if(magic==4) {
+    flashCl = Tempest::Vec3(0.8f, 0.95f, 1.35f);
+    auto& a = uboGlobalCpu.lightAmb;
+    a = Tempest::Vec3(a.x*(1.f - 0.15f*m), a.y*(1.f - 0.03f*m), a.z*(1.f + 0.2f*m));
+    uboGlobalCpu.lightCl.x *= 1.f - 0.15f*m;
+    }
+  uboGlobalCpu.weatherFlashCl = flashCl;
+  uboGlobalCpu.lightAmb      += flashCl * (flash*1.5f);
   // Heat: a harder, warmer sun and a paler, warmer sky light (the clouds, if any, still dim it).
   auto& sun = uboGlobalCpu.lightCl;
   auto& amb = uboGlobalCpu.lightAmb;

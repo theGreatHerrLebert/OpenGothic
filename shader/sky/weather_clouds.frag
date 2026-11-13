@@ -20,6 +20,7 @@ layout(binding = 2) uniform sampler2D skyLUT;
 layout(push_constant, std140) uniform Push {
   vec4 target;   // xy the image's size in pixels; zw the wind's displacement in metres (x, z)
   vec4 weather;  // x coverage 0..1, y snow 0..1, z seconds, w lightning 0..1
+  vec4 glow;     // rgb light from below (a fire rain lights its clouds' bellies), a unused
   } push;
 
 layout(location = 0) out vec4 outColor;
@@ -127,7 +128,8 @@ void main() {
     // colour varies between neutral grey and a cool navy: thick, low parts go dark navy, thin high ones light grey
     const float navy = clamp(d*0.8 + (1.0-h)*0.4 + (noise3(vec3(w.xz/4000.0, 2.7))-0.5)*0.8, 0.0, 1.0);
     light *= mix(vec3(1.0), vec3(0.62, 0.70, 0.92), navy*(1.0-push.weather.y*0.7));
-    light += vec3(0.9, 0.92, 1.0) * push.weather.w * d * 40.0;        // lightning from inside
+    light += scene.weatherFlashCl*0.85 * push.weather.w * d * 40.0;   // lightning from inside, in the weather's colour
+    light += push.glow.rgb * (1.0-h)*(1.0-h);                         // the bellies glow over a fire rain
     const float ext = exp(-d*Sigma*stepLen);
     C += T*(1.0-ext)*light*albedo;
     depthSum += T*(1.0-ext)*t;

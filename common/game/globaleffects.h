@@ -72,7 +72,8 @@ class GlobalEffects {
 
     // Weather in the world (docs/plan-weather.md), set from Python and eased towards its target in game time. A change
     // of kind first lets the old precipitation stop, then the new one begins.
-    enum class Precipitation : uint8_t { None, Snow, Rain };
+    // Fire, Crystal and Motes are magical weather (docs/plan-weather.md, Magical weather): never the climate's.
+    enum class Precipitation : uint8_t { None, Snow, Rain, Fire, Crystal, Motes };
     struct Weather {
       Precipitation kind        = Precipitation::None;
       float         intensity   = 0;    // what falls now, 0..1
@@ -80,7 +81,8 @@ class GlobalEffects {
       float         fadeSeconds = 10;
       float         windX       = 0;    // metres per second the wind carries what falls
       float         windZ       = 0;
-      float         cover       = 0;    // snow lying on the ground, 0..1
+      float         cover       = 0;    // snow (or frost) lying on the ground, 0..1
+      float         frost       = 0;    // how much of what lies is a crystal storm's glassy frost, 0..1
       float         coverTarget = 0;
       float         coverSeconds = 600;
       float         wet         = 0;    // how wet the ground is: rises while it rains, dries slowly after
@@ -92,12 +94,15 @@ class GlobalEffects {
       float         fogSeconds  = 60;
       float         fogHeight   = 25;   // metres the fog reaches above its base (it thins exponentially)
       float         fogBase     = 0;    // world height of its base, in cm
+      Tempest::Vec3 fogTint     = {1,1,1};   // its colour: white is ordinary fog; a coloured fog glows a little
       float         heat        = 0;    // a hot day, 0..1: shimmer over the distance, a hard warm sun, quick drying
       float         heatTarget  = 0;
       float         heatSeconds = 120;
       };
     // Ground fog (docs/plan-weather.md): density 0..1 over seconds, lying from base (world cm) and thinning upwards.
-    void           setFog(float target, float heightMetres, float baseCm, float seconds);
+    // A tint colours it (white is ordinary fog); fading out keeps the tint it has.
+    void           setFog(float target, float heightMetres, float baseCm, float seconds,
+                          Tempest::Vec3 tint = Tempest::Vec3(1,1,1));
     // A hot day (docs/plan-weather.md): 0..1 over seconds. It does not clear the sky; the caller does.
     void           setHeat(float target, float seconds);
     // A sound of our own looped over everything (cicadas, crickets: python/dm/summer.py), by name; volume 0..1 over
@@ -111,18 +116,27 @@ class GlobalEffects {
     void           setCover(float target, float seconds);
     const Weather& weatherState() const { return weather; }
     // What actually falls: nothing until the clouds have half covered the sky, all of it once they have closed.
+    // Motes need no clouds: they hang in the air at once.
     float          falling() const {
       if(weather.kind==Precipitation::None)
         return 0.f;
-      if(weather.openSky)
+      if(weather.openSky || weather.kind==Precipitation::Motes)
         return weather.intensity;
       // how far the clouds have come towards the cover this weather brings: half way, it starts; nearly there, all
       const float t = std::clamp((weather.overcast/std::max(cloudsFor(), 0.01f)-0.55f)/0.4f, 0.f, 1.f);
       return weather.intensity*t*t*(3.f-2.f*t);
       }
     // The cover any weather brings: even light rain greys most of the sky; heavy weather closes it.
+    // A fire rain leaves gaps for its meteors; motes bring none.
     float          cloudsFor() const {
-      return (weather.kind==Precipitation::None || weather.openSky) ? 0.f : 0.7f + 0.3f*weather.intensity;
+      if(weather.kind==Precipitation::None || weather.kind==Precipitation::Motes || weather.openSky)
+        return 0.f;
+      if(weather.kind==Precipitation::Fire)
+        return 0.55f + 0.2f*weather.intensity;
+      return 0.7f + 0.3f*weather.intensity;
+      }
+    bool           isMagic() const {
+      return weather.kind==Precipitation::Fire || weather.kind==Precipitation::Crystal || weather.kind==Precipitation::Motes;
       }
     bool           isRaining() const { return weather.kind==Precipitation::Rain && falling()>0.1f; }
 
@@ -194,7 +208,8 @@ class GlobalEffects {
 
     void tickWeather(uint64_t dt);
     void tickWeatherSound();
-    Tempest::SoundEffect                      rainSound, windSound;
+    Tempest::SoundEffect                      rainSound, windSound, magicSound;
+    Precipitation                             magicSoundKind = Precipitation::None;
     struct Loop {
       std::string          path;
       float                level = 0, target = 0, seconds = 20;
@@ -203,6 +218,7 @@ class GlobalEffects {
       };
     std::map<std::string, Loop>               loops;
     float                                     thunderIn = -1;   // seconds until the thunder; below zero: none due
+    bool                                      thunderFire = false;
     Galaxy                                    galaxy;
     float                                     tripTimeRem = 0;
   friend class GlobalFx;

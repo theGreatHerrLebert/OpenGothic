@@ -19,6 +19,7 @@ layout(binding = 1) uniform sampler2D depth;
 layout(push_constant, std430) uniform Push {
   vec4 fog;    // density 0..1, height in m, base in world cm, time in s
   vec4 drift;  // wind displacement x, z in m; snowy; unused
+  vec4 tint;   // its colour (white: ordinary fog); a coloured fog glows a little of itself, by night too
   } push;
 
 layout(location = 0) out vec4 outColor;
@@ -85,7 +86,9 @@ void main() {
   const float g      = 0.55;
   const float hg     = (1.0-g*g)/(4.0*M_PI*pow(max(1.0 + g*g - 2.0*g*cosT, 1e-4), 1.5));
   const vec3  sunL   = scene.sunColor*max(scene.sunDir.y, 0.0)*(0.25 + hg*2.2);
-  const vec3  light  = (sunL + scene.ambient*2.0 + NightAmbient*Fd_Lambert)*0.85;
+  const vec3  tint   = push.tint.rgb;
+  const float glow   = max(tint.r, max(tint.g, tint.b)) - min(tint.r, min(tint.g, tint.b));   // 0 for grey fog
+  const vec3  light  = (sunL + scene.ambient*2.0 + NightAmbient*Fd_Lambert)*0.85*tint;
 
   const int   steps = 12;
   const float ds    = dist/float(steps);
@@ -101,12 +104,11 @@ void main() {
       continue;
     const float s   = sigma0*prf*(0.15 + 1.35*banks(p));
     const float a   = 1.0 - exp(-s*ds);
-    L += T*a*light;
+    L += T*a*(light*scene.exposure + tint*glow*0.35*(0.6 + 0.4*banks(p*1.7 + vec3(0.0, push.fog.w*0.05, 0.0))));
     T *= 1.0 - a;
     if(T<0.01)
       break;
     }
 
-  L *= scene.exposure;
-  outColor = vec4(L, 1.0 - T);
+  outColor = vec4(L, 1.0 - T);   // the light is exposed in the loop; the glow is our own, as the motes
   }

@@ -516,8 +516,13 @@ void Renderer::drawWeatherClouds(Tempest::Encoder<Tempest::CommandBuffer>& cmd, 
   struct Push {
     Vec4 target;
     Vec4 weather;
+    Vec4 glow;
     } push;
   push.target  = Vec4(float(sky.weatherClouds.w()), float(sky.weatherClouds.h()), sky.cloudWind.x, sky.cloudWind.y);
+  if(w.kind==GlobalEffects::Precipitation::Fire) {
+    const float f = world->globalFx()->falling();
+    push.glow = Vec4(0.9f*f, 0.28f*f, 0.06f*f, 0.f);
+    }
   push.weather = Vec4(w.overcast, w.kind==GlobalEffects::Precipitation::Snow ? 1.f : 0.f,
                       float(now%(1000*1000))/1000.f, w.flash);
 
@@ -969,20 +974,39 @@ void Renderer::drawPrecipitation(Tempest::Encoder<Tempest::CommandBuffer>& cmd, 
   if(amount<0.001f)
     return;
 
-  const bool   rain  = w.kind==GlobalEffects::Precipitation::Rain;
-  const size_t count = size_t(float(rain ? 30000 : 24000)*amount);
+  using P = GlobalEffects::Precipitation;
+  uint32_t kind  = 1;
+  size_t   count = 24000;
+  switch(w.kind) {
+    case P::None:    return;
+    case P::Snow:    kind = 1; count = 24000; break;
+    case P::Rain:    kind = 2; count = 30000; break;
+    case P::Fire:    kind = 3; count =  7000; break;   // fewer embers than drops: each one glows
+    case P::Crystal: kind = 4; count = 18000; break;
+    case P::Motes:   kind = 5; count =  2500; break;
+    }
+  count = size_t(float(count)*amount);
   struct Push {
     Tempest::Vec4 heightBox;
     Tempest::Vec2 wind;
     float         time      = 0;
     float         intensity = 0;
     uint32_t      kind      = 0;
+    uint32_t      pad[3]    = {};
+    Tempest::Vec4 tint;
     } push;
   push.heightBox = wview.weatherBox();
   push.wind      = Tempest::Vec2(w.windX*100.f, w.windZ*100.f);   // m/s to cm/s
   push.time      = float(world->tickCount()%(10000*1000))/1000.f;  // kept small for float precision
   push.intensity = amount;
-  push.kind      = rain ? 2 : 1;
+  push.kind      = kind;
+  if(w.kind==P::Motes) {
+    // the motes take the fog's colour, if it is a coloured fog, else a pale violet; they hang in its layer, or
+    // around the hero's feet without fog
+    const bool tinted = w.fog>0.01f && (w.fogTint.x<0.97f || w.fogTint.y<0.97f || w.fogTint.z<0.97f);
+    const Tempest::Vec3 cl = tinted ? w.fogTint : Tempest::Vec3(0.75f, 0.6f, 1.f);
+    push.tint = Tempest::Vec4(cl.x, cl.y, cl.z, w.fog>0.01f ? w.fogBase + 300.f : -1.0e9f);   // none: the camera's
+    }
 
   auto& scene = wview.sceneGlobals();
   cmd.setBinding(0, scene.uboGlobal[SceneGlobals::V_Main]);
@@ -994,6 +1018,12 @@ void Renderer::drawPrecipitation(Tempest::Encoder<Tempest::CommandBuffer>& cmd, 
   cmd.setPushData(push);
   cmd.setPipeline(shaders.precipitation);
   cmd.draw(nullptr, 0, 6, 0, count);
+  if(w.kind==P::Fire) {
+    // a few meteors far off in the sky: their own draw, never in the box around the camera
+    push.kind = 6;
+    cmd.setPushData(push);
+    cmd.draw(nullptr, 0, 6, 0, 6);
+    }
   }
 
 void Renderer::drawGroundFog(Tempest::Encoder<Tempest::CommandBuffer>& cmd, const WorldView& wview) {
@@ -1013,9 +1043,11 @@ void Renderer::drawGroundFog(Tempest::Encoder<Tempest::CommandBuffer>& cmd, cons
   struct Push {
     Vec4 fog;
     Vec4 drift;
+    Vec4 tint;
     } push;
   push.fog   = Vec4(w.fog, w.fogHeight, w.fogBase, float(now%(1000*1000))/1000.f);
   push.drift = Vec4(sky.fogWind.x, sky.fogWind.y, w.kind==GlobalEffects::Precipitation::Snow ? 1.f : 0.f, 0.f);
+  push.tint  = Vec4(w.fogTint.x, w.fogTint.y, w.fogTint.z, 0.f);
 
   auto& scene = wview.sceneGlobals();
   cmd.setBinding(0, scene.uboGlobal[SceneGlobals::V_Main]);

@@ -98,25 +98,30 @@ void bindTrip(py::module_& m) {
               [](const std::string& kind, float intensity, float fade, std::tuple<float,float> wind, bool openSky) {
                 using P = GlobalEffects::Precipitation;
                 P k = kind=="snow" ? P::Snow : kind=="rain" ? P::Rain : kind=="clear" ? P::None
-                    : throw std::invalid_argument("weather kind is snow, rain or clear: " + kind);
+                    : kind=="fire" ? P::Fire : kind=="crystal" ? P::Crystal : kind=="motes" ? P::Motes
+                    : throw std::invalid_argument("weather kind is snow, rain, fire, crystal, motes or clear: " + kind);
                 requireWorld()->globalFx()->setWeather(k, intensity, fade, std::get<0>(wind), std::get<1>(wind), openSky);
                 },
               py::arg("kind"), py::arg("intensity") = 1.f, py::arg("fade") = 10.f,
               py::arg("wind") = std::make_tuple(0.f, 0.f), py::arg("open_sky") = false,
-              "Weather in the world: snow, rain or clear, intensity 0..1, reached over fade seconds of game time; "
+              "Weather in the world: snow, rain, clear, or magical: fire (a rain of embers and meteors), crystal (a "
+              "storm of glass shards that frosts the ground) or motes (glowing dust in the air), intensity 0..1, reached over fade seconds of game time; "
               "wind (x, z) in metres per second. A change of kind lets the old one stop first. Normally nothing falls "
               "until the clouds have half covered the sky; open_sky lets it fall from a clear sky at once.");
   weather.def("cover", [](float target, float seconds) { requireWorld()->globalFx()->setCover(target, seconds); },
               py::arg("target"), py::arg("seconds") = 600.f, "Snow lying on the ground, 0..1, reached over seconds.");
   weather.def("fog",
-              [](float density, float height, py::object base, float fade) {
+              [](float density, float height, py::object base, float fade, std::tuple<float,float,float> tint) {
                 // by default the fog lies from a little below the hero's feet, so he stands in it
                 float baseCm = base.is_none() ? requirePlayer()->position().y - 300.f : py::cast<float>(base);
-                requireWorld()->globalFx()->setFog(density, height, baseCm, fade);
+                requireWorld()->globalFx()->setFog(density, height, baseCm, fade,
+                                                   Tempest::Vec3(std::get<0>(tint), std::get<1>(tint), std::get<2>(tint)));
                 },
               py::arg("density"), py::arg("height") = 25.f, py::arg("base") = py::none(), py::arg("fade") = 60.f,
+              py::arg("tint") = std::make_tuple(1.f, 1.f, 1.f),
               "Ground fog: density 0..1 reached over fade seconds, thinning upwards over height metres from base (world "
-              "cm; default a little below the hero's feet). A fixed base fills valleys and leaves hills clear.");
+              "cm; default a little below the hero's feet). A fixed base fills valleys and leaves hills clear. tint (r, g, b) "
+              "0..1 colours it; a coloured fog glows a little (arcane mist). Fading it out keeps its colour.");
   weather.def("heat", [](float level, float fade) { requireWorld()->globalFx()->setHeat(level, fade); },
               py::arg("level"), py::arg("fade") = 120.f,
               "A hot day, 0..1 reached over fade seconds: the air shimmers over the distance, the sun is hard and warm, "
@@ -139,13 +144,16 @@ void bindTrip(py::module_& m) {
   weather.def("state",
               []() {
                 auto& w = requireWorld()->globalFx()->weatherState();
-                const char* kinds[] = {"clear", "snow", "rain"};
+                const char* kinds[] = {"clear", "snow", "rain", "fire", "crystal", "motes"};
                 py::dict d;
                 d["kind"] = kinds[int(w.kind)]; d["intensity"] = w.intensity; d["target"] = w.target;
                 d["wind"] = std::make_tuple(w.windX, w.windZ); d["cover"] = w.cover; d["wet"] = w.wet; d["overcast"] = w.overcast;
                 d["raining"] = requireWorld()->globalFx()->isRaining();
                 d["fog"] = w.fog; d["fog_height"] = w.fogHeight; d["fog_base"] = w.fogBase;
                 d["heat"] = w.heat;
+                d["fog_tint"] = std::make_tuple(w.fogTint.x, w.fogTint.y, w.fogTint.z);
+                d["frost"] = w.frost;
+                d["magic"] = requireWorld()->globalFx()->isMagic();
                 py::dict loops;
                 for(auto& [name, level] : requireWorld()->globalFx()->loopLevels())
                   loops[py::str(name)] = level;

@@ -52,8 +52,12 @@ void GlobalEffects::setWeather(Precipitation kind, float target, float fadeSecon
 void GlobalEffects::setCover(float target, float seconds) {
   weather.coverTarget  = std::clamp(target, 0.f, 1.f);
   weather.coverSeconds = std::max(seconds, 0.f);
-  if(weather.coverSeconds<=0.f)
+  if(weather.coverSeconds<=0.f) {
     weather.cover = weather.coverTarget;
+    // laid at once (a load): it is what this weather lays, frost under a crystal storm
+    if(weather.kind==Precipitation::Snow || weather.kind==Precipitation::Crystal)
+      weather.frost = weather.kind==Precipitation::Crystal ? 1.f : 0.f;
+    }
   }
 
 void GlobalEffects::tickWeather(uint64_t dt) {
@@ -69,10 +73,14 @@ void GlobalEffects::tickWeather(uint64_t dt) {
   ease(weather.intensity, weather.target, weather.fadeSeconds);
   // Snow settles only while it falls, as fast as it falls: no white ground under a sky still closing.
   // Melting keeps its own pace; a cover set at once (seconds 0) is snow already lying.
+  // A crystal storm lays frost the same way; what settles gives what lies its colour, as fast as it settles.
+  const bool  settles = weather.kind==Precipitation::Snow || weather.kind==Precipitation::Crystal;
   if(weather.cover<weather.coverTarget && weather.coverSeconds>0.f) {
-    const float snowing = weather.kind==Precipitation::Snow ? falling() : 0.f;
-    if(snowing>0.001f)
+    const float snowing = settles ? falling() : 0.f;
+    if(snowing>0.001f) {
       ease(weather.cover, weather.coverTarget, weather.coverSeconds/snowing);
+      ease(weather.frost, weather.kind==Precipitation::Crystal ? 1.f : 0.f, weather.coverSeconds*0.5f/snowing);
+      }
     } else {
     ease(weather.cover, weather.coverTarget, weather.coverSeconds);
     }
@@ -89,8 +97,12 @@ void GlobalEffects::tickWeather(uint64_t dt) {
   weather.flash = std::max(0.f, weather.flash - sec*5.f);
   if(thunderIn>=0.f) {
     thunderIn -= sec;
-    if(thunderIn<0.f)
-      Gothic::inst().emitGlobalSoundWav("NEARTHUNDER.WAV");
+    if(thunderIn<0.f) {
+      if(thunderFire)
+        Gothic::inst().emitGlobalSound("MFX_FIRESTORM_COLLIDE");
+      else
+        Gothic::inst().emitGlobalSoundWav("NEARTHUNDER.WAV");
+      }
     }
   tickWeatherSound();
   if(pendingTarget>=0.f && weather.intensity<=0.01f) {
@@ -397,6 +409,7 @@ void GlobalEffects::Effect::stop() {
 void GlobalEffects::lightning(float delaySeconds) {
   weather.flash = 1.f;
   thunderIn     = std::max(delaySeconds, 0.f);
+  thunderFire   = weather.kind==Precipitation::Fire;   // a fire rain's impact: a blast, not thunder
   }
 
 void GlobalEffects::tickWeatherSound() {
@@ -418,6 +431,22 @@ void GlobalEffects::tickWeatherSound() {
     };
   keep(rainSound, "RAIN_01.WAV",       rain*0.9f);
   keep(windSound, "WIND_HEAVY01.WAV",  wind*0.7f);
+  // Magical weather sounds as the game's own spells: the fire rain's roar, the ice rain's tinkle, a faint hum.
+  const char* magic  = weather.kind==Precipitation::Fire    ? "MFX_FIRERAIN_RAIN"
+                     : weather.kind==Precipitation::Crystal ? "MFX_THUNDERSTORM_ICERAIN"
+                     : weather.kind==Precipitation::Motes   ? "MFX_TRANSFORM_INVEST" : nullptr;
+  const float magicV = magic==nullptr ? 0.f : falling()*(weather.kind==Precipitation::Motes ? 0.25f : 0.8f);
+  if(magicSoundKind!=weather.kind || magicV<0.02f) {
+    magicSound     = Tempest::SoundEffect();
+    magicSoundKind = weather.kind;
+    }
+  if(magicV>=0.02f) {
+    if(magicSound.isEmpty() || magicSound.isFinished()) {
+      magicSound = Gothic::inst().loadSoundFxEffect(magic);
+      magicSound.play();
+      }
+    magicSound.setVolume(magicV);
+    }
   for(auto& [name, l] : loops) {
     if(l.level<0.01f) {
       if(!l.snd.isEmpty())
@@ -470,7 +499,9 @@ void GlobalEffects::setHeat(float target, float seconds) {
     weather.heat = weather.heatTarget;
   }
 
-void GlobalEffects::setFog(float target, float heightMetres, float baseCm, float seconds) {
+void GlobalEffects::setFog(float target, float heightMetres, float baseCm, float seconds, Tempest::Vec3 tint) {
+  if(target>0.f)
+    weather.fogTint = Tempest::Vec3(std::clamp(tint.x, 0.f, 1.f), std::clamp(tint.y, 0.f, 1.f), std::clamp(tint.z, 0.f, 1.f));
   weather.fogTarget  = std::clamp(target, 0.f, 1.f);
   weather.fogHeight  = std::clamp(heightMetres, 2.f, 300.f);
   weather.fogBase    = baseCm;

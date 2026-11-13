@@ -457,6 +457,14 @@ Tempest::SoundEffect Gothic::loadSoundEffect(std::string_view wav) {
   return sndDev.load(Resources::loadSoundBuffer(wav));
   }
 
+Tempest::SoundEffect Gothic::loadSoundFxEffect(std::string_view sfx) {
+  auto* fx = loadSoundFx(sfx);
+  if(fx==nullptr)
+    return Tempest::SoundEffect();
+  bool loop = false;
+  return fx->load(sndDev, loop);
+  }
+
 Tempest::SoundEffect Gothic::loadSoundFile(const std::string& path) {
   return sndDev.load(Tempest::Sound(path));
   }
