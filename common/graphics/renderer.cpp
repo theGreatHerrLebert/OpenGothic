@@ -915,11 +915,9 @@ void Renderer::drawPrecipitation(Tempest::Encoder<Tempest::CommandBuffer>& cmd, 
   if(w.kind==GlobalEffects::Precipitation::None || w.intensity<0.001f)
     return;
 
-  bool inside = false;
-  if(auto* pl = Gothic::inst().player())
-    inside = !world->roomAt(pl->position()).empty();
-  weatherShelter = std::clamp(weatherShelter + (inside ? 0.05f : -0.05f), 0.f, 1.f);
-  const float amount = w.intensity*(1.f-weatherShelter);
+  // Shelter is the roof map's business (in the shader): the game's "rooms" are BSP sectors, and a cave's sector can
+  // reach out past its entrance, which hid the snow from a hero standing outside.
+  const float amount = w.intensity;
   if(amount<0.001f)
     return;
 
