@@ -78,7 +78,17 @@ void WorldView::preFrameUpdate(const Camera& camera, uint64_t tickCount, uint8_t
     if(auto* pl = Gothic::inst().player()) {
       const float snowfall = w.kind==GlobalEffects::Precipitation::Snow ? world->globalFx()->falling() : 0.f;
       const bool grounded = !pl->isInAir() && !pl->isJump() && !pl->isSwim();
-      snowTrail.tick(pl->position(), grounded, w.cover, snowfall, tickCount, fId);
+      // everyone alive near him leaves prints too (docs/plan-weather.md); only while snow lies
+      std::vector<SnowTrail::Walker> others;
+      if(w.cover>=0.02f) {
+        world->detectNpc(pl->position(), 3200.f, [&](Npc& n) {
+          if(&n==pl || n.isDead() || n.isUnconscious())
+            return;
+          const bool g = !n.isInAir() && !n.isJump() && !n.isSwim();
+          others.push_back({uint64_t(reinterpret_cast<uintptr_t>(&n)), n.position(), g, n.isHuman() ? 1.f : 0.6f});
+          });
+        }
+      snowTrail.tick(pl->position(), grounded, w.cover, snowfall, tickCount, fId, others);
       }
     }
   sGlobal.setWeatherTrail(snowTrail.buffer(fId), snowTrail.box(), snowTrail.baseY());

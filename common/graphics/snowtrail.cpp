@@ -15,7 +15,8 @@ Vec4 SnowTrail::box() const {
   return Vec4(origin.x, origin.y, 1.f/Cell, empty ? 0.f : float(Size));
   }
 
-void SnowTrail::tick(const Vec3& hero, bool onGround, float cover, float snowfall, uint64_t tickCount, uint8_t fId) {
+void SnowTrail::tick(const Vec3& hero, bool onGround, float cover, float snowfall, uint64_t tickCount, uint8_t fId,
+                     const std::vector<Walker>& others) {
   if(cover<0.02f) {
     if(!empty) {
       std::fill(cells.begin(), cells.end(), uint16_t(0));
@@ -26,23 +27,19 @@ void SnowTrail::tick(const Vec3& hero, bool onGround, float cover, float snowfal
     }
   else {
     recentre(hero);
-    // A step every 65 cm along the path, left and right of it, while he walks on the ground.
-    const float dx = hero.x-lastStep.x, dz = hero.z-lastStep.z;
-    const float d  = std::sqrt(dx*dx + dz*dz);
-    if(!placed) {
-      lastStep = hero;
-      placed   = true;
-      }
-    else if(d>65.f && d<400.f && onGround) {
-      const Vec2  dir  = Vec2(dx/d, dz/d);
-      const float side = left ? -11.f : 11.f;
-      stamp(hero.x - dir.y*side, hero.y, hero.z + dir.x*side, dir);
-      left     = !left;
-      lastStep = hero;
-      }
-    else if(d>=400.f) {
-      lastStep = hero;   // a teleport or a fall: no trail across the gap
-      }
+    // A step every 65 cm along the path, left and right of it, while one walks on the ground: the hero, and everyone
+    // inside the square with him.
+    if(!placed)
+      walkers.clear();
+    placed = true;
+    step(Walker{0, hero, onGround, 1.f}, tickCount);
+    const float half = float(Size)*Cell*0.5f;
+    for(auto& w:others)
+      if(std::abs(w.pos.x-origin.x-half)<half && std::abs(w.pos.z-origin.y-half)<half)
+        step(w, tickCount);
+    // forget who has gone: the next time they come they start a fresh trail
+    for(auto i=walkers.begin(); i!=walkers.end();)
+      i = i->second.seen==tickCount ? std::next(i) : walkers.erase(i);
     // Fresh snow fills the prints: in a full blizzard within about a minute and a half.
     if(lastFill==0)
       lastFill = tickCount;
@@ -65,6 +62,29 @@ void SnowTrail::tick(const Vec3& hero, bool onGround, float cover, float snowfal
       }
     buf.update(cells.data(), 0, bytes);
     dirty = uint8_t(dirty & ~(1u<<fId));
+    }
+  }
+
+void SnowTrail::step(const Walker& w, uint64_t tickCount) {
+  auto [it, fresh] = walkers.try_emplace(w.key);
+  auto& st = it->second;
+  st.seen = tickCount;
+  if(fresh) {
+    st.last = w.pos;
+    return;
+    }
+  const float dx = w.pos.x-st.last.x, dz = w.pos.z-st.last.z;
+  const float d  = std::sqrt(dx*dx + dz*dz);
+  const float stride = 65.f*std::max(w.size, 0.4f);
+  if(d>stride && d<400.f && w.onGround) {
+    const Vec2  dir  = Vec2(dx/d, dz/d);
+    const float side = (st.left ? -11.f : 11.f)*w.size;
+    stamp(w.pos.x - dir.y*side, w.pos.y, w.pos.z + dir.x*side, dir, w.size);
+    st.left = !st.left;
+    st.last = w.pos;
+    }
+  else if(d>=400.f) {
+    st.last = w.pos;   // a teleport or a fall: no trail across the gap
     }
   }
 
@@ -101,10 +121,10 @@ void SnowTrail::recentre(const Vec3& hero) {
     origin = Vec2(cx-half+float(sx)*Cell, cz-half+float(sz)*Cell);
   }
 
-void SnowTrail::stamp(float x, float y, float z, Vec2 dir) {
+void SnowTrail::stamp(float x, float y, float z, Vec2 dir, float size) {
   const int step = std::clamp(int(std::round((y-base)/25.f))+128, 0, 255);
-  // An oval 28 cm long along the walk and 12 cm wide.
-  const float halfLen = 14.f, halfWid = 6.f;
+  // An oval 28 cm long along the walk and 12 cm wide, for a person; an animal's smaller and rounder.
+  const float halfLen = 14.f*size, halfWid = 6.f*std::sqrt(size);
   const int   r  = int(std::ceil(halfLen/Cell))+1;
   const int   cx = int((x-origin.x)/Cell), cz = int((z-origin.y)/Cell);
   for(int j=-r; j<=r; ++j)

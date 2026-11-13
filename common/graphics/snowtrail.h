@@ -4,6 +4,7 @@
 #include <Tempest/Vec>
 
 #include <cstdint>
+#include <unordered_map>
 #include <vector>
 
 #include "resources.h"
@@ -17,8 +18,17 @@ class SnowTrail final {
     static constexpr int   Size = 512;      // cells per side
     static constexpr float Cell = 12.5f;    // cm per cell: 64 m in all
 
+    // Someone walking in the square: people leave the hero's prints, animals smaller paws set closer together.
+    struct Walker {
+      uint64_t      key      = 0;      // who: the same key from tick to tick
+      Tempest::Vec3 pos;
+      bool          onGround = true;
+      float         size     = 1;      // 1 a person; an animal's prints are smaller and its steps shorter
+      };
+
     void init();   // a buffer for every frame in flight, so the materials always have one to read
-    void tick(const Tempest::Vec3& hero, bool onGround, float cover, float snowfall, uint64_t tickCount, uint8_t fId);
+    void tick(const Tempest::Vec3& hero, bool onGround, float cover, float snowfall, uint64_t tickCount, uint8_t fId,
+              const std::vector<Walker>& others = {});
 
     const Tempest::StorageBuffer& buffer(uint8_t fId) const { return ssbo[fId]; }
     // (min x, min z, 1/Cell, Size) in world cm; Size<=0 while there is nothing
@@ -31,14 +41,19 @@ class SnowTrail final {
     Tempest::Vec2          origin;          // world x, z of cell (0,0)
     bool                   placed   = false;
     bool                   empty    = true;
-    Tempest::Vec3          lastStep;
-    bool                   left     = false;
+    struct Steps {
+      Tempest::Vec3 last;
+      bool          left = false;
+      uint64_t      seen = 0;
+      };
+    std::unordered_map<uint64_t, Steps> walkers;   // the hero and everyone near him, by key
     uint64_t               lastFill = 0;
     float                  fillDebt = 0;
     uint8_t                dirty    = 0;    // one bit per frame in flight whose buffer is out of date
     Tempest::StorageBuffer ssbo[Resources::MaxFramesInFlight];
 
     void recentre(const Tempest::Vec3& hero);
-    void stamp(float x, float y, float z, Tempest::Vec2 dir);
+    void stamp(float x, float y, float z, Tempest::Vec2 dir, float size = 1);
+    void step(const Walker& w, uint64_t tickCount);
     void fill(uint8_t amount);
   };
