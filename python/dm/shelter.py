@@ -30,7 +30,7 @@ STATES = {"ZS_STAND_ARMSCROSSED", "ZS_STAND_WP", "ZS_STAND_EATING", "ZS_STAND_DR
           "ZS_SWEEP_FP", "ZS_STAND_SWEEPING", "ZS_PRACTICE_SWORD", "ZS_PRACTICE_MAGIC", "ZS_PICK_FP", "ZS_PEE",
           "ZS_WATCHFIGHT", "ZS_STOMP_HERB", "ZS_WASH_FP", "ZS_SMOKE_JOINT"}
 
-_state = {"world": None, "dry_since": None}
+_state = {"world": None, "dry_since": None, "storm": False}
 _noticed = {}     # key -> when he goes
 _failed = {}      # key -> when he may look again
 _sheltered = {}   # key -> {"npc", "wp", "pos", "since"}
@@ -41,6 +41,7 @@ def _reset():
     _failed.clear()
     _sheltered.clear()
     _state["dry_since"] = None
+    _state["storm"] = False
 
 
 def wetness(state):
@@ -74,8 +75,14 @@ def _free(gothic, npc, cast):
     return partner is None or getattr(partner, "key", None) != npc.key
 
 
+ON_DUTY = ("MIL", "PAL")   # they leave their post only when off duty
+OFF_DUTY = {"ZS_STAND_DRINKING", "ZS_STAND_EATING", "ZS_SMALLTALK", "ZS_WATCHFIGHT", "ZS_PEE"}
+
+
 def eligible(gothic, npc, cast):
     instance = (getattr(npc, "instance", "") or "").upper()
+    if instance.split("_")[0] in ON_DUTY and getattr(npc, "state", None) not in OFF_DUTY:
+        return False
     if not instance or instance.startswith("PC_") or instance in cast:
         return False
     if getattr(npc, "guild", 0) > GIL_SEPERATOR_HUM or not getattr(npc, "alive", True):
@@ -99,12 +106,18 @@ def tick(gothic, now, rng):
     if world != _state["world"]:   # a load or a new world: what was queued there runs out by itself
         _state["world"] = world
         _reset()
-    wet = wetness(gothic.weather.state())
-    if wet > 0.0:
+    state = gothic.weather.state()
+    wet = wetness(state)
+    # it starts when it pours, and lasts until it has hardly fallen for half a minute: lighter rain keeps them in
+    still = state.get("kind") in ("rain", "fire") and state.get("falling", 0.0) > DRY_UNDER
+    if wet > 0.0 or (still and _state.get("storm")):
         _state["dry_since"] = None
+        _state["storm"] = True
     elif _state["dry_since"] is None:
         _state["dry_since"] = now
-    raining = wet > 0.0 or (_state["dry_since"] is not None and now - _state["dry_since"] < DRY_FOR)
+    raining = _state.get("storm", False) and (_state["dry_since"] is None or now - _state["dry_since"] < DRY_FOR)
+    if not raining:
+        _state["storm"] = False
     hx, hy, hz = gothic.player.position
     sent = []
 
@@ -130,7 +143,7 @@ def tick(gothic, now, rng):
             del _sheltered[nid]                 # a talk, a fight, a story took him: never hold that up
             _failed[nid] = now + 120.0
             continue
-        if wet > 0.0 and now - s["since"] < MAX_SHELTER and queue <= 1 and there:
+        if raining and now - s["since"] < MAX_SHELTER and queue <= 1 and there:
             npc.wait_more(WAIT)
         elif queue == 0:
             del _sheltered[nid]                 # done waiting: his routine has him again

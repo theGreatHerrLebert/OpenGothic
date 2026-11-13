@@ -86,10 +86,38 @@ weather.update(falling=0.1)
 smith.position, smith.ai_queue = (300.0, 0.0, 0.0), 1
 calls.clear()
 shelter.tick(fake, 204.0, Now())
+assert ("more", "VLK_SMITH") in calls, calls        # just stopped: half a minute's grace under cover
+smith.ai_queue = 1
+calls.clear()
+shelter.tick(fake, 240.0, Now())
 assert not any(c[0] == "more" for c in calls), calls
 smith.ai_queue = 0
-shelter.tick(fake, 240.0, Now())
+shelter.tick(fake, 242.0, Now())
 assert 11 not in shelter._sheltered
+# Lighter rain keeps those under cover in; only half a minute of hardly any lets them go.
+shelter._reset(); shelter._failed.clear()
+weather.update(falling=0.9)
+smith.position, smith.ai_queue = (0.0, 0.0, 0.0), 0
+shelter.tick(fake, 300.0, Now()); shelter.tick(fake, 302.0, Now())
+assert 11 in shelter._sheltered
+weather.update(falling=0.4)
+smith.position, smith.ai_queue = (300.0, 0.0, 0.0), 1
+calls.clear()
+shelter.tick(fake, 304.0, Now())
+assert ("more", "VLK_SMITH") in calls, calls
+weather.update(falling=0.05)
+smith.ai_queue = 1
+calls.clear()
+shelter.tick(fake, 306.0, Now())
+assert ("more", "VLK_SMITH") in calls, calls     # just stopped: still the grace
+smith.ai_queue = 1
+calls.clear()
+shelter.tick(fake, 340.0, Now())
+assert not any(c[0] == "more" for c in calls), calls
 # A fire rain sends them too; light rain does not.
 assert shelter.wetness({"kind": "fire", "falling": 0.5}) == 0.5 and shelter.wetness({"kind": "rain", "falling": 0.3}) == 0.0
+# A city guard standing at his waypoint keeps it; off duty, drinking, he runs in like anyone.
+watch = Npc(21, "MIL_332_STADTWACHE", "ZS_STAND_WP")
+drinker = Npc(22, "MIL_321_RANGAR", "ZS_STAND_DRINKING")
+assert not shelter.eligible(fake, watch, set()) and shelter.eligible(fake, drinker, set())
 print("shelter ok")

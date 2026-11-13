@@ -89,9 +89,12 @@ void bindNpc(py::module_& m) {
              auto* wp = requireWorld()->findPoint(waypoint, false);
              if(wp==nullptr)
                return false;
+             const WalkBit before = n->walkMode();
              if(run)
                n->aiPush(AiQueue::aiSetWalkMode(WalkBit::WM_Run));
              n->aiPush(AiQueue::aiGoToPoint(*wp));
+             if(run)
+               n->aiPush(AiQueue::aiSetWalkMode(before));   // under cover he is as he was: no running home after
              n->aiPush(AiQueue::aiAlignToWp());
              n->aiPush(AiQueue::aiWait(uint64_t(std::clamp(wait, 1.f, 300.f)*1000.f)));
              return true;
