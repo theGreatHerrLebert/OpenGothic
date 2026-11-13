@@ -67,7 +67,15 @@ void GlobalEffects::tickWeather(uint64_t dt) {
     value = value<target ? std::min(value+step, target) : std::max(value-step, target);
     };
   ease(weather.intensity, weather.target, weather.fadeSeconds);
-  ease(weather.cover, weather.coverTarget, weather.coverSeconds);
+  // Snow settles only while it falls, as fast as it falls: no white ground under a sky still closing.
+  // Melting keeps its own pace; a cover set at once (seconds 0) is snow already lying.
+  if(weather.cover<weather.coverTarget && weather.coverSeconds>0.f) {
+    const float snowing = weather.kind==Precipitation::Snow ? falling() : 0.f;
+    if(snowing>0.001f)
+      ease(weather.cover, weather.coverTarget, weather.coverSeconds/snowing);
+    } else {
+    ease(weather.cover, weather.coverTarget, weather.coverSeconds);
+    }
   ease(weather.fog, weather.fogTarget, weather.fogSeconds);
   // The ground gets wet within a couple of minutes of rain and takes a quarter of an hour to dry.
   const float wetTarget = weather.kind==Precipitation::Rain ? falling() : 0.f;
