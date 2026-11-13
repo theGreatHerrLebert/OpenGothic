@@ -46,6 +46,23 @@ snowfall._current = object()
 calls.clear()
 assert climate.tick(fake, state, 5) is None and calls == []
 snowfall._current = None
+# A story's heat and fog end with its hours, even when a load (a new world) came between: once per world.
+air = []
+fake.weather.heat = lambda *a: air.append(("heat",) + a)
+fake.weather.fog = lambda *a: air.append(("fog",) + a)
+hot = {"weather": {"kind": "clear", "intensity": 0.0, "heat": 0.8, "fog": None, "until": 14 * 24 + 8}}
+fake.world.time, fake.world.generation = (7, 0), 1
+climate.tick(fake, hot, 10)
+assert air == [], air                      # still the story's
+fake.world.time, fake.world.generation = (9, 0), 2   # loaded after the hours ran out
+climate.tick(fake, hot, 11)
+climate.tick(fake, hot, 12)
+assert air == [("heat", 0.0, 600.0), ("fog", 0.0, 25.0, None, 300.0)], air
+# Expired fog thins where it lay, at its own height.
+air.clear()
+foggy = {"weather": {"kind": "clear", "intensity": 0.0, "fog": 0.6, "fog_height": 40, "fog_base": 900.0, "until": 1}}
+climate.tick(fake, foggy, 13)
+assert ("fog", 0.0, 40, 900.0, 300.0) in air, air
 # Lightning only in heavy rain, its thunder delayed by distance.
 flashes = []
 sky = types.SimpleNamespace(state=lambda: {"kind": "rain", "intensity": 0.9}, lightning=flashes.append)

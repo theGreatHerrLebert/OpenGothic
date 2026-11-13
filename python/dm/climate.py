@@ -85,6 +85,26 @@ def enable(on=True):
 _world = None
 
 
+_air_ended = None   # (world, the story weather's end) whose heat and fog were taken away
+
+
+def _end_story_air(gothic, state, by_story, generation):
+    """A story's heat and ground fog end with its hours, however the game got here (a load, a trip's snowfall): once
+    per world and story weather, whenever the story no longer owns the weather. The climate brings none of its own."""
+    global _air_ended
+    weather = state.get("weather") or {}
+    if by_story or not (weather.get("heat") or weather.get("fog")):
+        return
+    key = (generation, weather.get("until"))
+    if _air_ended == key:
+        return
+    _air_ended = key
+    if hasattr(gothic.weather, "heat"):
+        gothic.weather.heat(0.0, 600.0)
+    if hasattr(gothic.weather, "fog"):   # it thins where it lies, it does not move first
+        gothic.weather.fog(0.0, weather.get("fog_height") or 25.0, weather.get("fog_base"), 300.0)
+
+
 def tick(gothic, state, now):
     """Sets the climate's front when it changes, ends a story's weather when its hours run out, and lets snow lie
     while it snows. A story's own weather is set by the story (with its own fade) and never set again here."""
@@ -92,15 +112,18 @@ def tick(gothic, state, now):
     if not hasattr(gothic, "weather") or not hasattr(gothic.weather, "set"):
         return None
     from dm import weather as snowfall
+    generation = getattr(gothic.world, "generation", None)
     if snowfall.active():
         _last = None   # a trip's snowfall owns the sky; afterwards everything is set again
+        day, (hour, minute) = gothic.world.day, gothic.world.time
+        _end_story_air(gothic, state, story_weather(state, day * 24 + hour + minute / 60.0) is not None, generation)
         return None
-    generation = getattr(gothic.world, "generation", None)
     if generation != _world:   # a loaded or new world: nothing set here holds any more
         _world, _last = generation, None
     day, (hour, minute) = gothic.world.day, gothic.world.time
     kind, intensity, wind, by_story, cover = wanted(state, day, hour, minute)
     current = ("story", kind, intensity, wind) if by_story else ("climate", kind, intensity, wind)
+    _end_story_air(gothic, state, by_story, generation)
     if by_story:
         _last = current
     elif enabled():

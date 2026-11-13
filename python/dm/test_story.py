@@ -969,6 +969,37 @@ def test_weather():
     calls.clear()
     s.rebind()
     assert calls[0] == ("set", "snow", 0.7, 0, (0, 0)) and calls[1] == ("cover", 0.5, 0), calls
+    # Heat and ground fog: validated, kept when a later op leaves them out, set again at once after a load.
+    rejected(s, [{"op": "weather", "kind": "clear", "heat": 2}], "heat")
+    rejected(s, [{"op": "weather", "kind": "clear", "fog": 0.5, "fog_height": 1}], "fog_height")
+    fake.weather.heat = lambda *a: calls.append(("heat",) + a)
+    fake.weather.fog = lambda *a: calls.append(("fog",) + a)
+    calls.clear()
+    s.apply_plan({"reason": "t", "ops": [{"op": "weather", "kind": "clear", "intensity": 0, "heat": 0.8,
+                                          "fog": 0.5, "fog_base": 1200}]})
+    assert ("heat", 0.8, 120) in calls and ("fog", 0.5, 25, 1200, 60) in calls, calls
+    s.apply_plan({"reason": "t", "ops": [{"op": "weather", "kind": "clear", "intensity": 0}]})
+    assert s.state["weather"]["heat"] == 0.8 and s.state["weather"]["fog_base"] == 1200, s.state["weather"]
+    calls.clear()
+    s.rebind()
+    assert ("heat", 0.8, 0) in calls and ("fog", 0.5, 25, 1200, 0) in calls, calls
+    # Fog laid without a base lies under the hero then; the log keeps that height for a load.
+    where = fake.player.position
+    fake.player.position = (0.0, 5000.0, 0.0)
+    s.apply_plan({"reason": "t", "ops": [{"op": "weather", "kind": "clear", "intensity": 0, "fog": 0.4}]})
+    assert s.state["weather"]["fog_base"] == 4700.0 and s.log[-1]["ops"][0]["fog_base"] == 4700.0, s.log[-1]
+    # Weather whose hours ran out is not set again on a load.
+    s.apply_plan({"reason": "t", "ops": [{"op": "weather", "kind": "rain", "intensity": 0.4, "hours": 1}]})
+    s.state["weather"]["until"] = 0
+    # a later op does not take over the heat of timed weather
+    s.apply_plan({"reason": "t", "ops": [{"op": "weather", "kind": "clear", "intensity": 0, "heat": 0.9, "hours": 1}]})
+    s.apply_plan({"reason": "t", "ops": [{"op": "weather", "kind": "rain", "intensity": 0.4, "hours": 1}]})
+    assert s.state["weather"]["heat"] is None, s.state["weather"]
+    s.state["weather"]["until"] = 0
+    calls.clear()
+    s.rebind()
+    assert not any(c[0] in ("set", "heat", "fog") for c in calls), calls
+    fake.player.position = where
     del fake.weather
 
 

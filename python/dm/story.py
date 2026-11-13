@@ -827,7 +827,8 @@ def _check_weather(args, state):
     if args["kind"] not in WEATHER_KINDS:
         raise PlanError("weather kind is snow, rain or clear")
     for key, low, high in (("intensity", 0, 1), ("fade", 0, 3600), ("cover", 0, 1), ("cover_seconds", 0, 86400),
-                           ("hours", 0.1, 24 * 30)):
+                           ("hours", 0.1, 24 * 30), ("heat", 0, 1), ("fog", 0, 1), ("fog_height", 2, 300),
+                           ("fog_base", -1e6, 1e6)):
         if key not in args:
             continue   # left out: its default; written out, it must be a number
         value = args[key]
@@ -840,10 +841,30 @@ def _check_weather(args, state):
 
 def _fold_weather(args, state):
     before = state.get("weather") or {}
+    # Heat and fog carry over only from weather without an end: timed weather takes its own with it when it ends.
+    air = before if before.get("until") is None else {}
     at, hours = args.get("at"), args.get("hours")
     state["weather"] = {"kind": args["kind"], "intensity": args.get("intensity", 1.0), "wind": list(args.get("wind", [0, 0])),
                         "cover": args.get("cover", before.get("cover")),   # snow already lying stays unless set
+                        # heat and ground fog stay too unless set; the fog's base is where it was laid
+                        "heat": args.get("heat", air.get("heat")),
+                        "fog": args.get("fog", air.get("fog")),
+                        "fog_height": args.get("fog_height", air.get("fog_height", 25)),
+                        "fog_base": _fog_base(args, air),
                         "until": at + hours if at is not None and hours else None}   # then the climate takes over
+
+
+def _fog_base(args, before):
+    """Where the fog lies (world cm): as written (apply_plan writes it in when the plan is applied), else under the
+    hero now, else where it lay before. Folding a loaded log always finds it written."""
+    if args.get("fog_base") is not None:
+        return args["fog_base"]
+    if args.get("fog") is not None and hasattr(gothic, "player"):
+        try:
+            return gothic.player.position[1] - 300.0
+        except (AttributeError, RuntimeError, TypeError, IndexError):
+            return None
+    return before.get("fog_base")
 
 
 def _world_weather(args, fade=None):
@@ -853,6 +874,11 @@ def _world_weather(args, fade=None):
                        tuple(args.get("wind", [0, 0])))
     if args.get("cover") is not None:
         gothic.weather.cover(args["cover"], args.get("cover_seconds", 600) if fade is None else 0)
+    if args.get("heat") is not None and hasattr(gothic.weather, "heat"):
+        gothic.weather.heat(args["heat"], max(args.get("fade", 120), 1) if fade is None else 0)
+    if args.get("fog") is not None and hasattr(gothic.weather, "fog"):
+        gothic.weather.fog(args["fog"], args.get("fog_height", 25), args.get("fog_base"),
+                           max(args.get("fade", 60), 1) if fade is None else 0)
     return None
 
 
@@ -1068,6 +1094,9 @@ class Story:
             plan["ops"] = [dict(op, at=gothic.world.day * 24 + hour + minute / 60.0) if isinstance(op, dict)
                            and op.get("op") == "weather" and op.get("hours") and op.get("at") is None else op
                            for op in plan["ops"]]
+        # Ground fog without a base lies under the hero where it is laid; the log keeps that height, so a load agrees.
+        plan["ops"] = [dict(op, fog_base=_fog_base(op, {})) if isinstance(op, dict) and op.get("op") == "weather"
+                       and op.get("fog") is not None and op.get("fog_base") is None else op for op in plan["ops"]]
         # Readiness before validation: validation also finds someone missing, but as a broken plan, and a rule that
         # waits for him to come back must wait, not fail.
         for op in plan["ops"]:
@@ -1162,7 +1191,11 @@ class Story:
             if npc is not None:
                 gothic.dialog.bind(npc)
         if self.state.get("weather"):
-            _world_weather(self.state["weather"], fade=0)   # as it was when saved, at once
+            from dm import climate
+            hour, minute = gothic.world.time
+            if climate.story_weather(self.state, gothic.world.day * 24 + hour + minute / 60.0):
+                _world_weather(self.state["weather"], fade=0)   # as it was when saved, at once
+            # weather whose hours ran out is not set again; the climate (or clear sky) has it
 
     def graphs_now(self):
         """Dialogue graphs, including the scene currently playing."""
