@@ -120,7 +120,9 @@ void SnowTrail::stamp(float x, float y, float z, Vec2 dir) {
         continue;
       auto&         c     = cells[size_t(pz*Size+px)];
       const uint8_t depth = uint8_t(255.f*(1.f-e*0.4f));
-      if(depth>=uint8_t(c & 0xFF))
+      const int     was   = int(c>>8);
+      // A print on another level (a bridge over the path, the path under a ledge) is replaced, not deepened.
+      if(depth>=uint8_t(c & 0xFF) || std::abs(was-step)>2)
         c = uint16_t((step<<8) | depth);
       }
   empty = false;
