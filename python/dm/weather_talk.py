@@ -93,7 +93,13 @@ HERO = {
     "crystal": ["Das sticht wie tausend Nadeln."],
     "magic": ["Hier hat jemand gezaubert."],
 }
-MAGIC = ("fire", "crystal", "magic")   # categories of their own: they come before any ordinary weather
+MAGIC = ("fire", "crystal", "magic")
+# Earthier lines by who says them: the rough men (not paladins, novices or mages), and the women (voices 16 and 17,
+# the only ones the game gives women).
+FEMALE_VOICES = ("16", "17")
+ROUGH = ("BAU", "SLD", "VLK", "MIL", "BDT")
+MEN = {"snow": ["Ich frier mir echt die Eier ab."]}
+WOMEN = {"snow": ["Ich glaub, heut klimpert's beim Pinkeln."]}   # categories of their own: they come before any ordinary weather
 
 _said = {}            # instance -> the spell of weather he already spoke in
 _state = {"remark_at": -1e9, "hero_at": -1e9, "flash_at": -1e9, "rain_ended_at": -1e9, "was_rain": False}
@@ -145,6 +151,10 @@ def lines_for(instance, voice, what, base_kind):
     group = instance.split("_")[0]
     # their own lines speak of weather that is falling now: not of rain that has stopped, nor in a thunderclap
     own = BY_GROUP.get(group, {}).get(base_kind, []) if what in ("rain", "snow", "storm", "fog", "heat", "night") + MAGIC else []
+    if voice in FEMALE_VOICES:
+        own = own + WOMEN.get(what, [])
+    elif group in ROUGH:
+        own = own + MEN.get(what, [])
     return GENERIC.get(what, []) + own
 
 
@@ -199,6 +209,7 @@ def graphs():
         lines = [t for group in GENERIC.values() for t in group]
         for group, by_kind in BY_GROUP.items():
             lines += [t for ts in by_kind.values() for t in ts]
+        lines += [t for ts in (WOMEN if voice in FEMALE_VOICES else MEN).values() for t in ts]
         out[f"weather__{voice}"] = {"voice": voice, "narration": sorted(set(lines))}
     out["weather__hero"] = {"voice": HERO_VOICE, "narration": sorted({t for ts in HERO.values() for t in ts})}
     return out

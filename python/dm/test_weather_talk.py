@@ -69,3 +69,15 @@ assert "Wasser! Holt Wasser!" in wt.lines_for("VLK_1", "13", "fire", "fire")
 assert wt.spell({"kind": "fire"}, 3, 14, "fire") == "fire-3-4"
 assert "Der Himmel brennt!" in wt.graphs()["weather__13"]["narration"]
 print("weather talk magic ok")
+
+# The earthy lines by who says them: rough men and women, each only in their own voices.
+assert "Ich frier mir echt die Eier ab." in wt.lines_for("SLD_1", "13", "snow", "snow")
+assert "Ich frier mir echt die Eier ab." not in wt.lines_for("KDF_1", "13", "snow", "snow")
+assert "Ich frier mir echt die Eier ab." not in wt.lines_for("VLK_414_HANNA", "17", "snow", "snow")
+assert "Ich glaub, heut klimpert's beim Pinkeln." in wt.lines_for("VLK_414_HANNA", "17", "snow", "snow")
+assert "Ich glaub, heut klimpert's beim Pinkeln." not in wt.lines_for("VLK_1", "13", "snow", "snow")
+g = wt.graphs()
+assert "Ich glaub, heut klimpert's beim Pinkeln." in g["weather__16"]["narration"]
+assert "Ich glaub, heut klimpert's beim Pinkeln." not in g["weather__13"]["narration"]
+assert "Ich frier mir echt die Eier ab." not in g["weather__17"]["narration"]
+print("weather talk earthy ok")
