@@ -40,7 +40,7 @@ class SceneGlobals final {
     void setWeatherCover(float cover, float wet) { uboGlobalCpu.weatherCover = cover; uboGlobalCpu.weatherWet = wet; }
     // magic: 0 none, 3 fire, 4 crystal, 5 motes (GlobalEffects::Precipitation), as strong as magicAmount
     void setWeatherSky(float overcast, float flash, float snowy, float heat, int magic = 0, float magicAmount = 0,
-                       float frost = 0);
+                       float frost = 0, float ash = 0);
     void setWeatherRoof(const Tempest::Texture2d& map, const Tempest::Vec4& box) { weatherRoof = &map; uboGlobalCpu.weatherBox = box; }
     void setWeatherTrail(const Tempest::StorageBuffer& buf, const Tempest::Vec4& box, float baseY) {
       weatherTrail = &buf; uboGlobalCpu.weatherTrail = box; uboGlobalCpu.weatherTrailY = baseY;
@@ -141,6 +141,8 @@ class SceneGlobals final {
       float                           weatherHeat     = 0; // a hot day, 0..1
       Tempest::Vec3                   weatherFlashCl  = {1,1,1.1f}; // the flash's colour: a fire rain's is orange
       float                           weatherFrost    = 0; // how much of the cover is glassy frost, 0..1
+      float                           weatherAsh      = 0; // how much of it is a fire rain's ash, 0..1
+      float                           weatherPad[3]   = {};
       };
 
     Tempest::UniformBuffer<UboGlobal> uboGlobalPf[Resources::MaxFramesInFlight][V_Count];

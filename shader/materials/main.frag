@@ -275,7 +275,13 @@ vec3 snowCover(vec3 albedo) {
     }
   // A crystal storm's frost: glassy and blue, the ground still showing a little through it (plan-weather.md).
   const vec3 frost = mix(vec3(0.62, 0.79, 0.95), albedo*vec3(0.75, 0.9, 1.15) + vec3(0.12, 0.16, 0.22), 0.3);
-  return mix(albedo, mix(vec3(0.86, 0.88, 0.92), frost, scene.weatherFrost), amount);   // texture space: lighting decodes it
+  // A fire rain's ash: grey soot, charred darker in its own patches, a little brown where it is thin.
+  const float char_ = snowNoise(p*2.3 + vec2(7.1, 3.3));
+  const vec3  ash   = mix(vec3(0.30, 0.28, 0.26), vec3(0.07, 0.06, 0.055), smoothstep(0.35, 0.8, char_))
+                    * mix(vec3(1.0), vec3(1.15, 0.95, 0.8), 1.0 - amount);
+  vec3 lying = mix(vec3(0.86, 0.88, 0.92), frost, scene.weatherFrost);
+  lying      = mix(lying, ash, scene.weatherAsh);
+  return mix(albedo, lying, amount);      // in texture space: lighting decodes the albedo
   }
 #endif
 

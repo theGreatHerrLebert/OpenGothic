@@ -49,6 +49,10 @@ struct SceneDesc {
   float weatherHeat;
   vec3  weatherFlashCl;
   float weatherFrost;
+  float weatherAsh;
+  float weatherPad0;
+  float weatherPad1;
+  float weatherPad2;
   };
 
 struct LightSource {

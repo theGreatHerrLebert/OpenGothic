@@ -55,8 +55,10 @@ void GlobalEffects::setCover(float target, float seconds) {
   if(weather.coverSeconds<=0.f) {
     weather.cover = weather.coverTarget;
     // laid at once (a load): it is what this weather lays, frost under a crystal storm
-    if(weather.kind==Precipitation::Snow || weather.kind==Precipitation::Crystal)
+    if(weather.kind==Precipitation::Snow || weather.kind==Precipitation::Crystal || weather.kind==Precipitation::Fire) {
       weather.frost = weather.kind==Precipitation::Crystal ? 1.f : 0.f;
+      weather.ash   = weather.kind==Precipitation::Fire    ? 1.f : 0.f;
+      }
     }
   }
 
@@ -73,16 +75,23 @@ void GlobalEffects::tickWeather(uint64_t dt) {
   ease(weather.intensity, weather.target, weather.fadeSeconds);
   // Snow settles only while it falls, as fast as it falls: no white ground under a sky still closing.
   // Melting keeps its own pace; a cover set at once (seconds 0) is snow already lying.
-  // A crystal storm lays frost the same way; what settles gives what lies its colour, as fast as it settles.
-  const bool  settles = weather.kind==Precipitation::Snow || weather.kind==Precipitation::Crystal;
+  // A crystal storm lays frost the same way, a fire rain ash; what settles gives what lies its colour, as fast as it
+  // settles.
+  const bool  settles = weather.kind==Precipitation::Snow || weather.kind==Precipitation::Crystal ||
+                        weather.kind==Precipitation::Fire;
   if(weather.cover<weather.coverTarget && weather.coverSeconds>0.f) {
     const float snowing = settles ? falling() : 0.f;
-    if(snowing>0.001f) {
+    if(snowing>0.001f)
       ease(weather.cover, weather.coverTarget, weather.coverSeconds/snowing);
-      ease(weather.frost, weather.kind==Precipitation::Crystal ? 1.f : 0.f, weather.coverSeconds*0.5f/snowing);
-      }
     } else {
     ease(weather.cover, weather.coverTarget, weather.coverSeconds);
+    }
+  // What lies takes the colour of what falls on it for as long as it falls, also once the cover has stopped growing
+  // (ash over old snow, frost over ash).
+  if(settles && falling()>0.001f) {
+    const float pace = std::max(weather.coverSeconds, 60.f)*0.5f/falling();
+    ease(weather.frost, weather.kind==Precipitation::Crystal ? 1.f : 0.f, pace);
+    ease(weather.ash,   weather.kind==Precipitation::Fire    ? 1.f : 0.f, pace);
     }
   ease(weather.fog, weather.fogTarget, weather.fogSeconds);
   ease(weather.heat, weather.heatTarget, weather.heatSeconds);

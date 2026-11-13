@@ -83,6 +83,7 @@ class GlobalEffects {
       float         windZ       = 0;
       float         cover       = 0;    // snow (or frost) lying on the ground, 0..1
       float         frost       = 0;    // how much of what lies is a crystal storm's glassy frost, 0..1
+      float         ash         = 0;    // how much of it is a fire rain's ash and soot, 0..1
       float         coverTarget = 0;
       float         coverSeconds = 600;
       float         wet         = 0;    // how wet the ground is: rises while it rains, dries slowly after

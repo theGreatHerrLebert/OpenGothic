@@ -74,7 +74,7 @@ void WorldView::preFrameUpdate(const Camera& camera, uint64_t tickCount, uint8_t
     auto& w = world->globalFx()->weatherState();
     sGlobal.setWeatherCover(w.cover, w.wet);
     sGlobal.setWeatherSky(w.overcast, w.flash, w.kind==GlobalEffects::Precipitation::Snow ? 1.f : 0.f, w.heat,
-                          world->globalFx()->isMagic() ? int(w.kind) : 0, world->globalFx()->falling(), w.frost);
+                          world->globalFx()->isMagic() ? int(w.kind) : 0, world->globalFx()->falling(), w.frost, w.ash);
     if(auto* pl = Gothic::inst().player()) {
       const float snowfall = w.kind==GlobalEffects::Precipitation::Snow ? world->globalFx()->falling() : 0.f;
       const bool grounded = !pl->isInAir() && !pl->isJump() && !pl->isSwim();

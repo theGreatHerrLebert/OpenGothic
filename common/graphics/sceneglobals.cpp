@@ -278,8 +278,9 @@ const Tempest::Matrix4x4 SceneGlobals::viewProjectLwcInv() const {
   }
 
 void SceneGlobals::setWeatherSky(float overcast, float flash, float snowy, float heat, int magic, float magicAmount,
-                                 float frost) {
+                                 float frost, float ash) {
   uboGlobalCpu.weatherFrost    = frost;
+  uboGlobalCpu.weatherAsh      = ash;
   uboGlobalCpu.weatherSnowy    = snowy;
   // What heat shows (shimmer, warm light, bleaching) comes from the sun on the ground: none at night, growing as
   // the sun climbs, full from about 25 degrees up. setSky has set the sun's direction for this frame.
@@ -317,3 +318,6 @@ void SceneGlobals::setWeatherSky(float overcast, float flash, float snowy, float
   sun.x *= 1.f + 0.25f*heat;  sun.y *= 1.f + 0.12f*heat;  sun.z *= 1.f - 0.08f*heat;
   amb.x *= 1.f + 0.10f*heat;  amb.y *= 1.f + 0.05f*heat;  amb.z *= 1.f - 0.10f*heat;
   }
+
+// The weather's vec3 must start a 16-byte row, as std430 places a vec3 in GLSL (shader/scene.glsl).
+static_assert(offsetof(SceneGlobals::UboGlobal, weatherFlashCl)%16==0, "weatherFlashCl must be 16-byte aligned");

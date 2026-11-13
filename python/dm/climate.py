@@ -137,8 +137,10 @@ def tick(gothic, state, now):
         _last = None
         return None
     if cover is None:   # a story that set its own cover keeps it; otherwise snow lies while it snows and melts after
-        if kind in ("snow", "crystal"):   # a crystal storm frosts the ground the same way
-            gothic.weather.cover(min(1.0, intensity * 0.8), 1200.0)
+        # a crystal storm frosts the ground thinly, a fire rain leaves ash; snow lies thickest
+        share = {"snow": 0.8, "crystal": 0.35, "fire": 0.6}.get(kind)
+        if share is not None:
+            gothic.weather.cover(min(1.0, intensity * share), 1200.0)
         else:
             gothic.weather.cover(0.0, 1800.0)
     return current
