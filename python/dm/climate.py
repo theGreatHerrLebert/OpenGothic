@@ -137,7 +137,7 @@ def tick(gothic, state, now):
         _last = None
         return None
     if cover is None:   # a story that set its own cover keeps it; otherwise snow lies while it snows and melts after
-        if kind == "snow":
+        if kind in ("snow", "crystal"):   # a crystal storm frosts the ground the same way
             gothic.weather.cover(min(1.0, intensity * 0.8), 1200.0)
         else:
             gothic.weather.cover(0.0, 1800.0)
@@ -148,12 +148,24 @@ STORM_FROM = 0.75        # rain at least this heavy can bring lightning
 STORM_CHANCE = 0.06      # per look (every TICK_SECONDS): about one flash in half a minute
 
 
+FIRE_FROM = 0.3          # a fire rain at least this strong has impacts
+FIRE_CHANCE = 0.12       # per look: a strike about every quarter minute
+
+
 def storm(gothic, rng):
-    """Lightning in heavy rain, whoever set it: a flash, and its thunder after the time sound needs (0.5 to 5 s)."""
+    """Lightning in heavy rain, whoever set it: a flash, and its thunder after the time sound needs (0.5 to 5 s).
+    In a fire rain, impacts instead: an orange flash and the blast close behind it (the engine picks the colour and
+    the sound by the kind)."""
     if not hasattr(gothic.weather, "lightning"):
         return False
     state = gothic.weather.state()
-    if state.get("kind") != "rain" or state.get("intensity", 0) < STORM_FROM or rng.random() > STORM_CHANCE:
+    kind, intensity = state.get("kind"), state.get("intensity", 0)
+    if kind == "fire":
+        if intensity < FIRE_FROM or rng.random() > FIRE_CHANCE:
+            return False
+        gothic.weather.lightning(round(0.3 + rng.random() * 1.5, 2))
+        return True
+    if kind != "rain" or intensity < STORM_FROM or rng.random() > STORM_CHANCE:
         return False
     gothic.weather.lightning(round(0.5 + rng.random() ** 2 * 4.5, 2))
     import time

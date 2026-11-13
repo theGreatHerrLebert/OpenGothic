@@ -94,7 +94,10 @@ OPS = {
                            "lets the old one stop first. Snow without cover lies as it falls and melts after. "
                            "heat 0..1 is a hot day (shimmer, hard sun, dry ground; use it with kind clear); fog 0..1 "
                            "is ground fog, fog_height metres deep, laid under the hero unless fog_base (world cm) "
-                           "is given. Both stay until set again.",
+                           "is given. Both stay until set again. Magical weather, never the climate's: kind fire (embers, "
+                           "meteors, a red sky, impacts), crystal (glass shards on a hard wind; it frosts the ground) or "
+                           "motes (glowing dust in the air); fog_tint [r, g, b] 0..1 colours the fog, and a coloured fog "
+                           "glows (arcane mist; the motes take its colour). People react to all of it with fear or wonder.",
                 {"op": "weather", "kind": "snow", "intensity": 0.7, "fade": 60, "wind": [2, 0], "hours": 6}),
     "trip": ("Effects", "A trip of a few minutes with its own music, picture and thoughts.",
              {"op": "trip", "profile": "kriegsgesang"}),

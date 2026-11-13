@@ -27,6 +27,13 @@ GENERIC = {
     "heat": ["Was für eine Hitze.", "Bei der Hitze krieg ich keinen Bissen runter.", "Ich brauch was zu trinken.",
              "Mir läuft der Schweiß in die Stiefel.", "Nicht mal im Schatten hält man's aus.",
              "Heut geht kein Lüftchen.", "Bei der Hitze arbeitet doch keiner.", "Das Bier wird warm, bevor man's trinkt."],
+    # Magical weather: fear and wonder, not small talk.
+    "fire": ["Der Himmel brennt!", "Innos steh uns bei!", "Das ist das Ende der Welt.", "Bleib bloß unter einem Dach!",
+             "Feuer vom Himmel. Wer hat das gerufen?", "Das ist kein Gewitter. Das ist Magie."],
+    "crystal": ["Das ist kein Schnee, das ist Glas!", "Pass auf, das schneidet!", "Alles wird zu Eis.",
+                "So einen Sturm hab ich noch nie gesehen.", "Das ist nicht natürlich."],
+    "magic": ["Was leuchtet da in der Luft?", "Das ist Magie. Ich spür's in den Knochen.", "Fass das bloß nicht an.",
+              "Die Luft summt."],
     "night": ["Was für eine Nacht.", "Schau dir die Sterne an.", "So viele Sterne hab ich lang nicht gesehen.",
               "Endlich kühlt's ein bisschen ab.", "Hörst du die Grillen?", "Bei der Wärme schläft doch keiner.",
               "In so einer Nacht möcht man draußen schlafen."],
@@ -40,29 +47,38 @@ BY_GROUP = {
             "fog": ["Bei dem Nebel find ich meine Schafe nicht wieder."],
             "heat": ["Wenn's nicht bald regnet, verdorrt uns alles.", "Der Brunnen gibt kaum noch was her.",
                      "Die Schafe liegen nur noch im Schatten."],
-            "night": ["Die Grillen singen. Morgen wird's wieder heiß."]},
+            "night": ["Die Grillen singen. Morgen wird's wieder heiß."],
+            "fire": ["Die Ernte! Die ganze Ernte brennt!"], "crystal": ["Das Vieh muss in den Stall, sofort!"],
+            "magic": ["Das bringt Unglück übers Feld."]},
     "SLD": {"rain": ["Und ich darf heut Nacht Wache stehen. Großartig."],
             "snow": ["Für so ein Wetter zahlt Onar nicht genug."],
             "fog": ["Im Nebel sieht man keinen Banditen kommen."],
             "heat": ["In der Rüstung kocht man bei der Hitze.", "Bei der Hitze schlag ich mich mit keinem."],
-            "night": ["Bei so einer Nacht steh ich gern Wache."]},
+            "night": ["Bei so einer Nacht steh ich gern Wache."],
+            "fire": ["Dafür zahlt Onar mir nicht genug."], "crystal": ["Da hilft keine Rüstung."]},
     "VLK": {"rain": ["Die ganze Gasse ist nur noch Matsch."],
             "snow": ["Wenn das so bleibt, wird das Holz teuer."],
             "fog": ["Bei dem Nebel bleiben die Leute zu Hause."],
             "heat": ["Bei der Hitze stinkt der ganze Hafen.", "Der Fisch auf dem Markt ist schon wieder hin."],
-            "night": ["Heut Nacht schlafen sie alle auf den Dächern."]},
+            "night": ["Heut Nacht schlafen sie alle auf den Dächern."],
+            "fire": ["Wasser! Holt Wasser!"], "magic": ["Das kommt bestimmt aus dem Kloster."]},
     "MIL": {"rain": ["Die Rüstung rostet mir, und keiner zahlt's."],
             "heat": ["Wache stehen bei der Hitze. Das ist doch eine Strafe."],
-            "night": ["Ruhige Nacht. Hoffentlich bleibt's so."]},
+            "night": ["Ruhige Nacht. Hoffentlich bleibt's so."],
+            "fire": ["Alle Mann in Deckung!"], "crystal": ["Rein in die Häuser, alle!"]},
     "PAL": {"rain": ["Die Rüstung rostet mir, und keiner zahlt's."],
             "heat": ["In der Rüstung kocht man bei der Hitze."],
-            "night": ["In solchen Nächten denk ich an die Heimat."]},
+            "night": ["In solchen Nächten denk ich an die Heimat."],
+            "fire": ["Innos prüft uns. Haltet stand!"], "magic": ["Das riecht nach Beliar."]},
     "NOV": {"rain": ["Auch der Regen kommt von Innos, sagen die Magier."],
             "heat": ["Innos' Sonne brennt heute besonders heilig."],
-            "night": ["Selbst die Nacht ist heut voller Licht."]},
+            "night": ["Selbst die Nacht ist heut voller Licht."],
+            "fire": ["Ist das Innos' Zorn?"], "magic": ["Die Meister sollten davon wissen."]},
     "KDF": {"rain": ["Auch der Regen kommt von Innos."],
             "heat": ["Innos prüft uns mit seiner Sonne."],
-            "night": ["Die Sterne stehen klar. Ein gutes Zeichen."]},
+            "night": ["Die Sterne stehen klar. Ein gutes Zeichen."],
+            "fire": ["Das ist kein Wetter. Das ist ein Zauber."], "crystal": ["Wer wagt es, solche Kräfte zu rufen?"],
+            "magic": ["Die Luft ist voller Magie. Jemand hat hier gewirkt."]},
 }
 HERO = {
     "snow": ["Hätt ich mal 'nen Mantel.", "Verdammt kalt hier."],
@@ -73,7 +89,11 @@ HERO = {
              "Ich such mir besser Schatten.", "Mir klebt alles am Leib."],
     "fog": ["Hier sieht man ja gar nichts.", "Nebel. Das hat mir noch gefehlt."],
     "night": ["Was für ein Himmel.", "Schöne Nacht. Fast zu schön für diese Insel."],
+    "fire": ["Feuer vom Himmel. Großartig.", "Nichts wie weg hier."],
+    "crystal": ["Das sticht wie tausend Nadeln."],
+    "magic": ["Hier hat jemand gezaubert."],
 }
+MAGIC = ("fire", "crystal", "magic")   # categories of their own: they come before any ordinary weather
 
 _said = {}            # instance -> the spell of weather he already spoke in
 _state = {"remark_at": -1e9, "hero_at": -1e9, "flash_at": -1e9, "rain_ended_at": -1e9, "was_rain": False}
@@ -91,6 +111,12 @@ def category(state, now, hour=12):
     if _state["was_rain"] and not raining:
         _state["rain_ended_at"] = now
     _state["was_rain"] = raining
+    # Magic first: a crystal storm after rain is not "the rain has stopped", a fire rain's strikes are not thunder.
+    if kind in ("fire", "crystal") and intensity > 0.15:
+        return kind
+    tint = state.get("fog_tint", (1.0, 1.0, 1.0))
+    if (kind == "motes" and intensity > 0.15) or (state.get("fog", 0.0) > 0.3 and min(tint) < 0.97):
+        return "magic"
     if raining and now - _state["flash_at"] < THUNDER_WINDOW:
         return "thunder"
     if kind in ("rain", "snow") and intensity > 0.2:
@@ -118,13 +144,13 @@ def lines_for(instance, voice, what, base_kind):
         return []
     group = instance.split("_")[0]
     # their own lines speak of weather that is falling now: not of rain that has stopped, nor in a thunderclap
-    own = BY_GROUP.get(group, {}).get(base_kind, []) if what in ("rain", "snow", "storm", "fog", "heat", "night") else []
+    own = BY_GROUP.get(group, {}).get(base_kind, []) if what in ("rain", "snow", "storm", "fog", "heat", "night") + MAGIC else []
     return GENERIC.get(what, []) + own
 
 
 def spell(state, day, hour, what=None):
     """One spell of weather: the same kind in the same three hours (fog counts as its own kind)."""
-    kind = what if what in ("fog", "heat", "night") else state.get("kind")
+    kind = what if what in ("fog", "heat", "night") + MAGIC else state.get("kind")
     return f"{kind}-{day}-{int(hour) // 3}"
 
 
@@ -141,7 +167,7 @@ def tick(gothic, now, rng):
     from dm import voices
     hour, _ = gothic.world.time
     current = spell(state, gothic.world.day, hour, what)
-    base_kind = what if what in ("fog", "heat", "night") else (state.get("kind") if state.get("kind") in ("rain", "snow") else "rain")
+    base_kind = what if what in ("fog", "heat", "night") + MAGIC else (state.get("kind") if state.get("kind") in ("rain", "snow") else "rain")
     for npc in gothic.world.npcs_near(REMARK_NEAR):
         instance = getattr(npc, "instance", "") or ""
         if _said.get(instance) == current or not getattr(npc, "alive", True) or instance.startswith("PC_"):

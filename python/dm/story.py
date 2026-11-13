@@ -818,14 +818,14 @@ def _keep_refusals(state):
         _refusal_bound.discard(name)
 
 
-WEATHER_KINDS = ("clear", "snow", "rain")
+WEATHER_KINDS = ("clear", "snow", "rain", "fire", "crystal", "motes")   # the last three are magic: a story's alone
 
 
 def _check_weather(args, state):
     """Weather in the world: what falls, how strongly, how fast it comes, the wind, and snow lying on the ground."""
     _require(args, "kind")
     if args["kind"] not in WEATHER_KINDS:
-        raise PlanError("weather kind is snow, rain or clear")
+        raise PlanError("weather kind is snow, rain, clear, fire, crystal or motes")
     for key, low, high in (("intensity", 0, 1), ("fade", 0, 3600), ("cover", 0, 1), ("cover_seconds", 0, 86400),
                            ("hours", 0.1, 24 * 30), ("heat", 0, 1), ("fog", 0, 1), ("fog_height", 2, 300),
                            ("fog_base", -1e6, 1e6)):
@@ -834,6 +834,12 @@ def _check_weather(args, state):
         value = args[key]
         if isinstance(value, bool) or not isinstance(value, (int, float)) or not low <= value <= high:
             raise PlanError(f"weather {key} is a number from {low} to {high}")
+    tint = args.get("fog_tint")
+    if tint is not None and not (isinstance(tint, list) and len(tint) == 3 and all(
+            isinstance(v, (int, float)) and not isinstance(v, bool) and 0 <= v <= 1 for v in tint)):
+        raise PlanError("weather fog_tint is [r, g, b], each from 0 to 1")
+    if tint is not None and "fog" not in args:
+        raise PlanError("weather fog_tint comes with fog: give the fog's density with its colour")
     wind = args.get("wind", [0, 0])
     if not (isinstance(wind, list) and len(wind) == 2 and all(isinstance(v, (int, float)) and abs(v) <= 30 for v in wind)):
         raise PlanError("weather wind is [x, z] in metres per second, at most 30")
@@ -851,6 +857,8 @@ def _fold_weather(args, state):
                         "fog": args.get("fog", air.get("fog")),
                         "fog_height": args.get("fog_height", air.get("fog_height", 25)),
                         "fog_base": _fog_base(args, air),
+                        # a coloured fog (arcane mist) keeps its colour with the fog; new fog without one is grey
+                        "fog_tint": args.get("fog_tint") if "fog" in args else air.get("fog_tint"),
                         "until": at + hours if at is not None and hours else None}   # then the climate takes over
 
 
@@ -878,7 +886,8 @@ def _world_weather(args, fade=None):
         gothic.weather.heat(args["heat"], max(args.get("fade", 120), 1) if fade is None else 0)
     if args.get("fog") is not None and hasattr(gothic.weather, "fog"):
         gothic.weather.fog(args["fog"], args.get("fog_height", 25), args.get("fog_base"),
-                           max(args.get("fade", 60), 1) if fade is None else 0)
+                           max(args.get("fade", 60), 1) if fade is None else 0,
+                           tuple(args.get("fog_tint") or (1.0, 1.0, 1.0)))
     return None
 
 

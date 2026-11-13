@@ -977,12 +977,28 @@ def test_weather():
     calls.clear()
     s.apply_plan({"reason": "t", "ops": [{"op": "weather", "kind": "clear", "intensity": 0, "heat": 0.8,
                                           "fog": 0.5, "fog_base": 1200}]})
-    assert ("heat", 0.8, 120) in calls and ("fog", 0.5, 25, 1200, 60) in calls, calls
+    assert ("heat", 0.8, 120) in calls and ("fog", 0.5, 25, 1200, 60, (1.0, 1.0, 1.0)) in calls, calls
     s.apply_plan({"reason": "t", "ops": [{"op": "weather", "kind": "clear", "intensity": 0}]})
     assert s.state["weather"]["heat"] == 0.8 and s.state["weather"]["fog_base"] == 1200, s.state["weather"]
     calls.clear()
     s.rebind()
-    assert ("heat", 0.8, 0) in calls and ("fog", 0.5, 25, 1200, 0) in calls, calls
+    assert ("heat", 0.8, 0) in calls and ("fog", 0.5, 25, 1200, 0, (1.0, 1.0, 1.0)) in calls, calls
+    # Magical weather: its kinds pass, a fog's colour is checked, kept with the fog and set again after a load.
+    rejected(s, [{"op": "weather", "kind": "lava"}], "kind")
+    rejected(s, [{"op": "weather", "kind": "motes", "fog": 0.5, "fog_tint": [0.7, 2, 1]}], "fog_tint")
+    rejected(s, [{"op": "weather", "kind": "motes", "fog": 0.5, "fog_tint": [0.7, 1]}], "fog_tint")
+    rejected(s, [{"op": "weather", "kind": "motes", "fog_tint": [0.7, 0.4, 1]}], "fog_tint")   # a colour needs its fog
+    calls.clear()
+    s.apply_plan({"reason": "t", "ops": [{"op": "weather", "kind": "motes", "intensity": 0.6, "fog": 0.5,
+                                          "fog_base": 1200, "fog_tint": [0.7, 0.4, 1.0]}]})
+    assert ("set", "motes", 0.6, 10, (0, 0)) in calls and ("fog", 0.5, 25, 1200, 60, (0.7, 0.4, 1.0)) in calls, calls
+    s.apply_plan({"reason": "t", "ops": [{"op": "weather", "kind": "fire", "intensity": 0.9}]})
+    assert s.state["weather"]["fog_tint"] == [0.7, 0.4, 1.0], s.state["weather"]   # the mist stays violet
+    calls.clear()
+    s.rebind()
+    assert ("set", "fire", 0.9, 0, (0, 0)) in calls and ("fog", 0.5, 25, 1200, 0, (0.7, 0.4, 1.0)) in calls, calls
+    s.apply_plan({"reason": "t", "ops": [{"op": "weather", "kind": "clear", "intensity": 0, "fog": 0.3}]})
+    assert s.state["weather"]["fog_tint"] is None, s.state["weather"]                # new fog without a colour: grey
     # Fog laid without a base lies under the hero then; the log keeps that height for a load.
     where = fake.player.position
     fake.player.position = (0.0, 5000.0, 0.0)

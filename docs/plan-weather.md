@@ -181,3 +181,60 @@ every two seconds; the engine loops our own WAVs by name (`weather.loop(name, pa
 recordings from Freesound kept with the rest of our runtime assets (`python/dm_runtime/assets/sounds/CREDITS.md`). A trip
 owns the sky while it runs; the sounds keep following the weather; a load sets everything again. Not yet: quieter
 indoors (the loops are heard everywhere, like the rain).
+
+## Magical weather (plan, 2026-11-13)
+
+Weather no front brings: a story's or a mage's. Three kinds, each built from what exists (the precipitation pass, the
+ground fog, the weather sky, lightning, named loops), never chosen by the climate.
+
+- **Fire rain** (`kind="fire"`): embers fall instead of rain: short glowing streaks, slanted, fewer than raindrops
+  (about a quarter), each flickering, emissive (orange to yellow, not lit by the sky), blended additively so they glow
+  at night. Now and then a meteor: one of a handful of reserved particles placed on a far sky direction (2–6 km), a
+  long bright trail crossing the sky in one to two seconds, a few per minute at full intensity. The sky goes a dull red
+  (overcast with a red tint in `setWeatherSky`, sun dimmed); the light on the land warm and low. An impact now and
+  then: an orange flash (the lightning flash with a colour) and a deep rumble after it. Nothing gets wet; it dries.
+- **Crystal storm** (`kind="crystal"`): shards ride a hard wind: snow's paths, faster and straighter, as small
+  flat quads that turn and catch the light: a glint where their facing lines up with the sun or the camera
+  (sparkle), cold blue-white. The ground frosts: the snow cover with a blue, glassy tint (`frost` instead of white).
+  The sky goes cold and pale, cyan-grey; wind loud.
+- **Arcane mist** (`kind="motes"`, with `fog`): the ground fog tinted (a colour parameter, violet by default), and
+  motes in it: slow, rising and drifting glowing points that pulse, emissive, few (about 2k), denser low near the
+  ground. Without fog it is motes in clear air ("magic dust").
+- **Engine:** `Precipitation` gains `Fire`, `Crystal`, `Motes`; the precipitation shaders take the kind and switch
+  shape, speed, colour and blend (emissive kinds additive: `One, One`; lit kinds as now). `falling()` and
+  `isRaining()` keep their meaning for rain and snow only (scripts asking `Wld_IsRaining` hear no for fire). Snow
+  cover grows only under snow, frost only under crystal, as one cover value with a tint that eases.
+  `setWeatherSky` takes a sky tint (vec3) and how much of it; the fog pass's colour too. `flash` gains a colour.
+- **Python:** `weather.set("fire" | "crystal" | "motes", intensity, fade, wind)`, `weather.fog(..., tint=(r,g,b))`;
+  `state()` reports kind and the tints. The story op `weather` accepts the three kinds (validated) and `fog_tint`.
+  The climate leaves story weather alone as now, and its own fronts never pick these. A fire rain's impacts come from
+  a small Python ticker like the storm's lightning.
+- **Talk:** fear and wonder, not small talk: "Innos steh uns bei!", "Der Himmel brennt!", "Das ist kein Schnee, das
+  ist Glas!"; the mages know what it is ("Das ist kein Wetter. Das ist Magie."). Voices baked as before.
+- **Sounds:** the game's own spell sounds where they fit (fire rain, ice, the magic hum), played by name; loops of our
+  own only if the game has none.
+- **Not yet:** damage, burning grass, shards that stay on the ground, the motes reacting to the hero.
+
+### Revision after Codex review, as built (2026-11-13)
+
+- **Drawn at all:** the precipitation pass maps every kind explicitly (fire 7k, crystal 18k, motes 2.5k particles at
+  full strength); `falling()` covers the magic kinds (motes need no clouds, a fire rain brings a broken sky of 0.55–0.75
+  so its meteors show), `isRaining()` and wet ground stay rain's alone, and summer is silent under any of them.
+- **Blending:** one pipeline: what glows is written premultiplied with alpha 0, which adds it; it is dimmed by the
+  fog's transmittance at its depth and not given the fog's light again. Not yet: motes dimmed by the ground fog they
+  hang in.
+- **Meteors:** a second draw of six instances in the same shaders with their own path (800 m out, inside the
+  camera's 1 km), no box, no wrap, no roof test. **Motes:** a 9 m layer from the fog's base (or under the camera
+  without fog), no roof test: they are in the air, indoors too.
+- **Frost:** one cover value; a crystal storm makes it grow like snow (the climate's automatic cover covers crystal),
+  and `frost` (0..1) follows what settles, as fast as it settles, so old snow is not recoloured at once.
+- **Tints:** only the fog's tint is stored (`fog_tint` in the op, validated as three numbers 0..1, kept with the fog
+  like its height, cleared to grey when new fog comes without one, replayed after a load); the sky's colour and the
+  flash's come from the kind. Fading fog out keeps its colour.
+- **Owners:** a story's op is the way to set magical weather; the climate never picks it and leaves story weather
+  alone. A bare `weather.set` (the console, a demo) is overwritten by the next front change, as for rain.
+- **Talk:** magic categories come first (fire, crystal, magic for motes or a coloured fog), before thunder, rain and
+  the relief after it. A fire rain's strikes come from the same ticker as lightning; the engine gives them an orange
+  flash and the game's fire-storm blast instead of thunder.
+- **Sounds:** the game's own `MFX_FIRERAIN_RAIN`, `MFX_THUNDERSTORM_ICERAIN` and (faint) `MFX_TRANSFORM_INVEST`,
+  restarted when they end.

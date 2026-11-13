@@ -57,3 +57,15 @@ assert wt.tick(fake, 900.0, first) is None
 g = wt.graphs()
 assert "Arschkalt ist das." in g["weather__07"]["narration"] and g["weather__hero"]["voice"] == "15"
 print("weather talk ok")
+
+# Magical weather comes before anything ordinary: a crystal storm after rain is not relief, fire strikes are not thunder.
+wt._state.update(was_rain=True, flash_at=4000.0)
+assert wt.category({"kind": "crystal", "intensity": 0.8, "wet": 0.9}, 4000.5) == "crystal"
+assert wt.category({"kind": "fire", "intensity": 0.8}, 4001.0) == "fire"
+assert wt.category({"kind": "motes", "intensity": 0.5}, 4002.0) == "magic"
+assert wt.category({"kind": "clear", "intensity": 0.0, "fog": 0.6, "fog_tint": (0.7, 0.4, 1.0)}, 4003.0) == "magic"
+assert wt.category({"kind": "clear", "intensity": 0.0, "fog": 0.6, "fog_tint": (1.0, 1.0, 1.0)}, 4004.0) == "fog"
+assert "Wasser! Holt Wasser!" in wt.lines_for("VLK_1", "13", "fire", "fire")
+assert wt.spell({"kind": "fire"}, 3, 14, "fire") == "fire-3-4"
+assert "Der Himmel brennt!" in wt.graphs()["weather__13"]["narration"]
+print("weather talk magic ok")
