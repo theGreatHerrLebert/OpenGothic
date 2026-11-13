@@ -1,4 +1,5 @@
 #include "worldview.h"
+#include "world/objects/npc.h"
 #include <Tempest/Pixmap>
 #include <cmath>
 #include <algorithm>
@@ -22,6 +23,7 @@ WorldView::WorldView(const PackedMesh& wmesh, std::string_view skyPreset)
   pfxGroup.resetTicks();
   buildWeatherHeight(wmesh);
   sGlobal.setWeatherRoof(weatherHeightMap, weatherHeightBox);
+  snowTrail.init();
   }
 
 WorldView::~WorldView() {
@@ -66,8 +68,15 @@ void WorldView::preFrameUpdate(const Camera& camera, uint64_t tickCount, uint8_t
   pfxGroup.tick(tickCount);
   gLights.tick(tickCount);
   sGlobal.setTime(tickCount);
-  if(auto* world = Gothic::inst().world())
-    sGlobal.setWeatherCover(world->globalFx()->weatherState().cover, world->globalFx()->weatherState().wet);
+  if(auto* world = Gothic::inst().world()) {
+    auto& w = world->globalFx()->weatherState();
+    sGlobal.setWeatherCover(w.cover, w.wet);
+    if(auto* pl = Gothic::inst().player()) {
+      const float snowfall = w.kind==GlobalEffects::Precipitation::Snow ? w.intensity : 0.f;
+      snowTrail.tick(pl->position(), !pl->isInAir() && !pl->isSwim(), w.cover, snowfall, tickCount, fId);
+      }
+    }
+  sGlobal.setWeatherTrail(snowTrail.buffer(fId), snowTrail.box());
   sGlobal.commitUbo(fId);
 
   pfxGroup.preFrameUpdate(fId);

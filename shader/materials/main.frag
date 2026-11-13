@@ -229,7 +229,17 @@ vec3 snowCover(vec3 albedo) {
     return albedo;
   const vec2  p      = pos.xz/100.0;                       // metres
   const float noise  = snowNoise(p*0.35)*0.6 + snowNoise(p*1.7)*0.4;
-  const float amount = clamp(scene.weatherCover*1.6 - (1.0-noise), 0.0, 1.0) * up;
+  float       amount = clamp(scene.weatherCover*1.6 - (1.0-noise), 0.0, 1.0) * up;
+  // Footprints: packed snow, the ground half showing through.
+  if(scene.weatherTrail.w>0.0) {
+    const ivec2 c = ivec2(floor((pos.xz - scene.weatherTrail.xy)*scene.weatherTrail.z));
+    const int   n = int(scene.weatherTrail.w);
+    if(c.x>=0 && c.y>=0 && c.x<n && c.y<n) {
+      const int   i     = c.y*n + c.x;
+      const float print = float((trailCells[i>>2] >> uint((i&3)*8)) & 0xFFu)/255.0;
+      amount *= 1.0 - print*0.75;
+      }
+    }
   return mix(albedo, vec3(0.86, 0.88, 0.92), amount);      // in texture space: lighting decodes the albedo
   }
 #endif

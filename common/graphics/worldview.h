@@ -13,6 +13,7 @@
 #include "lightsource.h"
 #include "lightgroup.h"
 #include "sceneglobals.h"
+#include "snowtrail.h"
 #include "visualobjects.h"
 
 class World;
@@ -110,4 +111,5 @@ class WorldView {
       Tempest::Texture2d   weatherHeightMap;
     Tempest::Vec4        weatherHeightBox;
     void                 buildWeatherHeight(const PackedMesh& wmesh);
+    SnowTrail            snowTrail;
 };

@@ -93,6 +93,7 @@ class DrawCommands {
       L_GDepth     = 13,
       L_CmdOffsets = 14,
       L_Weather    = 15,   // the roof map, for snow lying in the G-buffer (docs/plan-weather.md)
+      L_Trail      = 16,   // footprints in that snow
       L_VsmPages   = L_Shadow0,
       L_Lights     = L_Shadow1,
       };

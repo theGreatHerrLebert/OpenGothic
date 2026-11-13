@@ -132,6 +132,8 @@ void DrawCommands::setBindings(Tempest::Encoder<CommandBuffer>& cmd, const DrawC
 
   if(v==SceneGlobals::V_Main && !cx.isForwardShading() && cx.alpha!=Material::Ghost) {
     cmd.setBinding(L_Weather, *scene.weatherRoof, Sampler::nearest(ClampMode::ClampToEdge));
+    if(scene.weatherTrail!=nullptr)
+      cmd.setBinding(L_Trail, *scene.weatherTrail);
     }
 
   if(v==SceneGlobals::V_Main && cx.isSceneInfoRequired()) {
