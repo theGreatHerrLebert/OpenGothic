@@ -261,3 +261,18 @@ restarted), and nothing happens where the fire comes down.
   is sent (it would blame the hero for the strike and set people on him).
 - **Not yet:** scorched ground that stays, grass catching fire, animals fleeing (no AI hook for that without blaming
   someone), burning NPC animations.
+
+### Fire rain round 2 and after, as built (2026-11-13)
+
+- **Sky:** the clouds' ember glow is a few times the sky's own light on them (not `1/exposure`: the exposure is 1, the
+  night's darkness is in the sky LUT), deep red in the bellies, yellow where they thin. Seen in game by night and day.
+- **Sound:** `feuer.wav`, a CC0 recording of a large fire (craigsmith, Freesound 483318), looped by
+  `python/dm/magic_weather.py`.
+- **Strikes:** `magic_weather.py`: the firestorm's blast and spread effects with physics off down the chain,
+  `play_effect(..., seconds)` bounding the fire's life (not saved), an orange `weather.flash`, wounds (never fatal,
+  `hurt`) for the hero and animals within 4 m, not under a roof, nobody in a dialogue, people never.
+- **Ash:** the cover's third colour: a fire rain lays grey soot with charred patches (60 % at full strength), a crystal
+  storm thin frost (35 %), snow 80 %; what lies takes the colour of what falls on it while it falls. Seen in game.
+- **Shooting stars:** on summer's warm clear nights, white-blue, quick and rare (`weather.shooting_stars(rate)`, the
+  meteors' path as kind 7, none under clouds). Not yet seen in game.
+- **Arcane mist:** seen in game by day (violet fog, motes): fine as it is.
