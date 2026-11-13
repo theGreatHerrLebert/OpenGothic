@@ -306,6 +306,34 @@ void WorldView::buildWeatherHeight(const PackedMesh& wmesh) {
       }
     }
 
+  // Cells nothing was drawn into take a neighbour's height, so a filtered sample never blends a roof with "nothing"
+  // (which would read as far below ground and switch shelter off at its edge); what stays empty sits at the floor.
+  const float empty = -1.0e9f;
+  for(int pass=0; pass<8; ++pass) {
+    bool changed = false;
+    std::vector<float> next = top;
+    for(int z=0; z<h; ++z)
+      for(int x=0; x<w; ++x) {
+        if(top[size_t(z*w+x)]>empty)
+          continue;
+        float best = empty;
+        if(x>0)   best = std::max(best, top[size_t(z*w+x-1)]);
+        if(x<w-1) best = std::max(best, top[size_t(z*w+x+1)]);
+        if(z>0)   best = std::max(best, top[size_t((z-1)*w+x)]);
+        if(z<h-1) best = std::max(best, top[size_t((z+1)*w+x)]);
+        if(best>empty) {
+          next[size_t(z*w+x)] = best;
+          changed = true;
+          }
+        }
+    top = std::move(next);
+    if(!changed)
+      break;
+    }
+  for(auto& v:top)
+    if(v<=empty)
+      v = lo.y;
+
   Tempest::Pixmap pm(uint32_t(w), uint32_t(h), Tempest::TextureFormat::R32F);
   std::memcpy(pm.data(), top.data(), top.size()*sizeof(float));
   weatherHeightMap = Resources::device().texture(pm, false);
