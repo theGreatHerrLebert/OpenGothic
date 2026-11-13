@@ -27,6 +27,9 @@ GENERIC = {
     "heat": ["Was für eine Hitze.", "Bei der Hitze krieg ich keinen Bissen runter.", "Ich brauch was zu trinken.",
              "Mir läuft der Schweiß in die Stiefel.", "Nicht mal im Schatten hält man's aus.",
              "Heut geht kein Lüftchen.", "Bei der Hitze arbeitet doch keiner.", "Das Bier wird warm, bevor man's trinkt."],
+    "night": ["Was für eine Nacht.", "Schau dir die Sterne an.", "So viele Sterne hab ich lang nicht gesehen.",
+              "Endlich kühlt's ein bisschen ab.", "Hörst du die Grillen?", "Bei der Wärme schläft doch keiner.",
+              "In so einer Nacht möcht man draußen schlafen."],
     "fog": ["Man sieht ja die Hand vor Augen nicht.", "Bei dem Nebel verläuft man sich noch.",
             "Wer weiß, was da im Nebel rumschleicht."],
 }
@@ -36,23 +39,30 @@ BY_GROUP = {
             "snow": ["Bleibt das liegen, erfrieren uns die Rüben."],
             "fog": ["Bei dem Nebel find ich meine Schafe nicht wieder."],
             "heat": ["Wenn's nicht bald regnet, verdorrt uns alles.", "Der Brunnen gibt kaum noch was her.",
-                     "Die Schafe liegen nur noch im Schatten."]},
+                     "Die Schafe liegen nur noch im Schatten."],
+            "night": ["Die Grillen singen. Morgen wird's wieder heiß."]},
     "SLD": {"rain": ["Und ich darf heut Nacht Wache stehen. Großartig."],
             "snow": ["Für so ein Wetter zahlt Onar nicht genug."],
             "fog": ["Im Nebel sieht man keinen Banditen kommen."],
-            "heat": ["In der Rüstung kocht man bei der Hitze.", "Bei der Hitze schlag ich mich mit keinem."]},
+            "heat": ["In der Rüstung kocht man bei der Hitze.", "Bei der Hitze schlag ich mich mit keinem."],
+            "night": ["Bei so einer Nacht steh ich gern Wache."]},
     "VLK": {"rain": ["Die ganze Gasse ist nur noch Matsch."],
             "snow": ["Wenn das so bleibt, wird das Holz teuer."],
             "fog": ["Bei dem Nebel bleiben die Leute zu Hause."],
-            "heat": ["Bei der Hitze stinkt der ganze Hafen.", "Der Fisch auf dem Markt ist schon wieder hin."]},
+            "heat": ["Bei der Hitze stinkt der ganze Hafen.", "Der Fisch auf dem Markt ist schon wieder hin."],
+            "night": ["Heut Nacht schlafen sie alle auf den Dächern."]},
     "MIL": {"rain": ["Die Rüstung rostet mir, und keiner zahlt's."],
-            "heat": ["Wache stehen bei der Hitze. Das ist doch eine Strafe."]},
+            "heat": ["Wache stehen bei der Hitze. Das ist doch eine Strafe."],
+            "night": ["Ruhige Nacht. Hoffentlich bleibt's so."]},
     "PAL": {"rain": ["Die Rüstung rostet mir, und keiner zahlt's."],
-            "heat": ["In der Rüstung kocht man bei der Hitze."]},
+            "heat": ["In der Rüstung kocht man bei der Hitze."],
+            "night": ["In solchen Nächten denk ich an die Heimat."]},
     "NOV": {"rain": ["Auch der Regen kommt von Innos, sagen die Magier."],
-            "heat": ["Innos' Sonne brennt heute besonders heilig."]},
+            "heat": ["Innos' Sonne brennt heute besonders heilig."],
+            "night": ["Selbst die Nacht ist heut voller Licht."]},
     "KDF": {"rain": ["Auch der Regen kommt von Innos."],
-            "heat": ["Innos prüft uns mit seiner Sonne."]},
+            "heat": ["Innos prüft uns mit seiner Sonne."],
+            "night": ["Die Sterne stehen klar. Ein gutes Zeichen."]},
 }
 HERO = {
     "snow": ["Hätt ich mal 'nen Mantel.", "Verdammt kalt hier."],
@@ -62,6 +72,7 @@ HERO = {
     "heat": ["Die Sonne brennt einem das Hirn weg.", "Ein Schluck Wasser wär jetzt was.",
              "Ich such mir besser Schatten.", "Mir klebt alles am Leib."],
     "fog": ["Hier sieht man ja gar nichts.", "Nebel. Das hat mir noch gefehlt."],
+    "night": ["Was für ein Himmel.", "Schöne Nacht. Fast zu schön für diese Insel."],
 }
 
 _said = {}            # instance -> the spell of weather he already spoke in
@@ -92,6 +103,10 @@ def category(state, now, hour=12):
         return "heat"
     if state.get("fog", 0.0) > 0.3:
         return "fog"
+    # A warm clear night, as summer.py shows it: crickets and the Milky Way, well risen.
+    from dm import summer
+    if summer.levels(state, hour, 0)[1] > 0.5:
+        return "night"
     if now - _state["rain_ended_at"] < AFTER_RAIN and state.get("wet", 0) > 0.2:
         return "after"
     return None
@@ -103,13 +118,13 @@ def lines_for(instance, voice, what, base_kind):
         return []
     group = instance.split("_")[0]
     # their own lines speak of weather that is falling now: not of rain that has stopped, nor in a thunderclap
-    own = BY_GROUP.get(group, {}).get(base_kind, []) if what in ("rain", "snow", "storm", "fog", "heat") else []
+    own = BY_GROUP.get(group, {}).get(base_kind, []) if what in ("rain", "snow", "storm", "fog", "heat", "night") else []
     return GENERIC.get(what, []) + own
 
 
 def spell(state, day, hour, what=None):
     """One spell of weather: the same kind in the same three hours (fog counts as its own kind)."""
-    kind = what if what in ("fog", "heat") else state.get("kind")
+    kind = what if what in ("fog", "heat", "night") else state.get("kind")
     return f"{kind}-{day}-{int(hour) // 3}"
 
 
@@ -126,7 +141,7 @@ def tick(gothic, now, rng):
     from dm import voices
     hour, _ = gothic.world.time
     current = spell(state, gothic.world.day, hour, what)
-    base_kind = what if what in ("fog", "heat") else (state.get("kind") if state.get("kind") in ("rain", "snow") else "rain")
+    base_kind = what if what in ("fog", "heat", "night") else (state.get("kind") if state.get("kind") in ("rain", "snow") else "rain")
     for npc in gothic.world.npcs_near(REMARK_NEAR):
         instance = getattr(npc, "instance", "") or ""
         if _said.get(instance) == current or not getattr(npc, "alive", True) or instance.startswith("PC_"):
