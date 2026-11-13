@@ -34,6 +34,11 @@ assert wt.category(weather, 402.0) == "thunder"
 weather.update(kind="clear", intensity=0.0)
 assert wt.category(weather, 410.0) == "after"
 assert wt.category(weather, 410.0 + wt.AFTER_RAIN + 1) is None
+# Fog with nothing falling is fog; a farmer thinks of his sheep; rain in fog stays rain.
+assert wt.category({"kind": "clear", "intensity": 0.0, "fog": 0.6, "wet": 0.0}, 2000.0) == "fog"
+assert "Bei dem Nebel find ich meine Schafe nicht wieder." in wt.lines_for("BAU_1", "13", "fog", "fog")
+assert wt.category({"kind": "rain", "intensity": 0.5, "fog": 0.6}, 2001.0) == "rain"
+assert wt.spell({"kind": "clear"}, 3, 7, "fog") == "fog-3-2"
 # Nobody is spoken for in a voice that was never baked, nor during a conversation.
 assert wt.lines_for("BAU_1", "02", "rain", "rain") == []
 assert "Wenn's so weitergeht, säuft uns das Feld ab." not in wt.lines_for("BAU_1", "13", "after", "rain")

@@ -24,15 +24,20 @@ GENERIC = {
     "storm": ["Das wird ein Unwetter.", "Hörst du den Wind? Da kommt noch was."],
     "thunder": ["Innos zürnt heut wieder.", "Das hat irgendwo eingeschlagen."],
     "after": ["Endlich hört's auf.", "Na also. Der Regen ist durch."],
+    "fog": ["Man sieht ja die Hand vor Augen nicht.", "Bei dem Nebel verläuft man sich noch.",
+            "Wer weiß, was da im Nebel rumschleicht."],
 }
 # Who they are colours it: farmers think of the fields, mercenaries of the watch, townsfolk of the mud.
 BY_GROUP = {
     "BAU": {"rain": ["Wenn's so weitergeht, säuft uns das Feld ab."],
-            "snow": ["Bleibt das liegen, erfrieren uns die Rüben."]},
+            "snow": ["Bleibt das liegen, erfrieren uns die Rüben."],
+            "fog": ["Bei dem Nebel find ich meine Schafe nicht wieder."]},
     "SLD": {"rain": ["Und ich darf heut Nacht Wache stehen. Großartig."],
-            "snow": ["Für so ein Wetter zahlt Onar nicht genug."]},
+            "snow": ["Für so ein Wetter zahlt Onar nicht genug."],
+            "fog": ["Im Nebel sieht man keinen Banditen kommen."]},
     "VLK": {"rain": ["Die ganze Gasse ist nur noch Matsch."],
-            "snow": ["Wenn das so bleibt, wird das Holz teuer."]},
+            "snow": ["Wenn das so bleibt, wird das Holz teuer."],
+            "fog": ["Bei dem Nebel bleiben die Leute zu Hause."]},
     "MIL": {"rain": ["Die Rüstung rostet mir, und keiner zahlt's."]},
     "PAL": {"rain": ["Die Rüstung rostet mir, und keiner zahlt's."]},
     "NOV": {"rain": ["Auch der Regen kommt von Innos, sagen die Magier."]},
@@ -43,6 +48,7 @@ HERO = {
     "rain": ["Na toll. Klatschnass.", "Ich such mir besser ein Dach."],
     "storm": ["Das ist kein Wetter, das ist ein Strafgericht."],
     "thunder": ["Das war nah."],
+    "fog": ["Hier sieht man ja gar nichts.", "Nebel. Das hat mir noch gefehlt."],
 }
 
 _said = {}            # instance -> the spell of weather he already spoke in
@@ -68,6 +74,9 @@ def category(state, now):
         if intensity > 0.75 or (wx * wx + wz * wz) ** 0.5 > 4.0:
             return "storm"
         return kind
+    # Fog where nothing falls: thick enough to speak of. (Rain or snow in fog is talked about as rain or snow.)
+    if state.get("fog", 0.0) > 0.3:
+        return "fog"
     if now - _state["rain_ended_at"] < AFTER_RAIN and state.get("wet", 0) > 0.2:
         return "after"
     return None
@@ -79,13 +88,14 @@ def lines_for(instance, voice, what, base_kind):
         return []
     group = instance.split("_")[0]
     # their own lines speak of weather that is falling now: not of rain that has stopped, nor in a thunderclap
-    own = BY_GROUP.get(group, {}).get(base_kind, []) if what in ("rain", "snow", "storm") else []
+    own = BY_GROUP.get(group, {}).get(base_kind, []) if what in ("rain", "snow", "storm", "fog") else []
     return GENERIC.get(what, []) + own
 
 
-def spell(state, day, hour):
-    """One spell of weather: the same kind in the same three hours."""
-    return f"{state.get('kind')}-{day}-{int(hour) // 3}"
+def spell(state, day, hour, what=None):
+    """One spell of weather: the same kind in the same three hours (fog counts as its own kind)."""
+    kind = "fog" if what == "fog" else state.get("kind")
+    return f"{kind}-{day}-{int(hour) // 3}"
 
 
 def tick(gothic, now, rng):
@@ -100,8 +110,8 @@ def tick(gothic, now, rng):
         return None
     from dm import voices
     hour, _ = gothic.world.time
-    current = spell(state, gothic.world.day, hour)
-    base_kind = state.get("kind") if state.get("kind") in ("rain", "snow") else "rain"
+    current = spell(state, gothic.world.day, hour, what)
+    base_kind = "fog" if what == "fog" else (state.get("kind") if state.get("kind") in ("rain", "snow") else "rain")
     for npc in gothic.world.npcs_near(REMARK_NEAR):
         instance = getattr(npc, "instance", "") or ""
         if _said.get(instance) == current or not getattr(npc, "alive", True) or instance.startswith("PC_"):
