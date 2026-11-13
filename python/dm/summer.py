@@ -69,7 +69,7 @@ def tick(gothic, now):
     if not hasattr(gothic, "sky") or (trip is not None and getattr(trip, "_current", None) is not None):
         _shown["galaxy"] = None   # the trip has the sky; afterwards it is set again
         return day, night
-    if night <= 0.0:
+    if round(night * GALAXY, 2) <= 0.0:   # also a last trace too faint to round: clear it, or it stays all day
         if _shown["galaxy"]:
             gothic.sky.clear()
         _shown.update(galaxy=0.0, since=None)

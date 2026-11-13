@@ -67,3 +67,11 @@ trip._current = None
 summer.turn(fake, 101.048)
 assert len(calls) == 2, calls
 print("summer turn ok")
+
+# dawn: a last trace of night too faint to show clears the sky instead of leaving the stars up all day
+calls.clear()
+summer._shown.update(galaxy=0.02, since=100.0)
+fake.world.time = (5, 29)
+summer.tick(fake, 110.0)
+assert ("clear",) in calls and summer._shown["galaxy"] == 0.0, calls
+print("summer dawn ok")
