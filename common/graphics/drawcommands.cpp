@@ -131,7 +131,7 @@ void DrawCommands::setBindings(Tempest::Encoder<CommandBuffer>& cmd, const DrawC
     }
 
   if(v==SceneGlobals::V_Main && !cx.isForwardShading() && cx.alpha!=Material::Ghost) {
-    cmd.setBinding(L_Weather, *scene.weatherRoof, Sampler::nearest(ClampMode::ClampToEdge));
+    cmd.setBinding(L_Weather, *scene.weatherRoof, Sampler::bilinear(ClampMode::ClampToEdge));   // soft edges at eaves
     if(scene.weatherTrail!=nullptr)
       cmd.setBinding(L_Trail, *scene.weatherTrail);
     }

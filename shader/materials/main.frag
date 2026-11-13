@@ -214,34 +214,53 @@ vec3 snowCover(vec3 albedo) {
   const vec3 pos = weatherWorldPos();
   const vec3 n   = normalize(shInp.normal);
   const vec2 ruv = (pos.xz - scene.weatherBox.xy) * scene.weatherBox.zw;
+  float shelter = 0.0;
   if(all(greaterThanEqual(ruv, vec2(0))) && all(lessThanEqual(ruv, vec2(1)))) {
     // The map holds one height per cell; on a slope the surface itself rises within its cell, so the tolerance
-    // grows with the cell's width and the surface's steepness before something counts as a roof above it.
+    // grows with the cell's width and the surface's steepness before something counts as a roof above it. Five
+    // samples around the point, each eased over 80 cm, let the snow thin out towards a wall instead of ending in a
+    // hard line at a cell's edge.
     const float cell  = 1.0/(scene.weatherBox.z*float(textureSize(roofMap, 0).x));
     const float slope = sqrt(max(1.0-n.y*n.y, 0.0))/max(abs(n.y), 0.2);
-    if(textureLod(roofMap, ruv, 0).r > pos.y + 50.0 + cell*slope)
+    const float tol   = 50.0 + cell*slope;
+    const vec2  du    = vec2(0.75*cell*scene.weatherBox.z, 0.0);
+    const vec2  dv    = vec2(0.0, 0.75*cell*scene.weatherBox.w);
+    const vec2  taps[5] = vec2[](ruv, ruv+du, ruv-du, ruv+dv, ruv-dv);
+    for(int i=0; i<5; ++i)
+      shelter += smoothstep(tol, tol+80.0, textureLod(roofMap, taps[i], 0).r - pos.y);
+    shelter /= 5.0;
+    if(shelter>=0.999)
       return albedo;   // under a roof
     }
   const float up = smoothstep(0.55, 0.85, n.y);
   // Wet ground is darker; v1 has no gloss, the G-buffer has no channel for it (plan-weather.md).
-  albedo *= mix(1.0, 0.62, scene.weatherWet*mix(0.6, 1.0, up));
+  albedo *= mix(1.0, 0.62, scene.weatherWet*mix(0.6, 1.0, up)*(1.0-shelter));
   if(scene.weatherCover<=0.001)
     return albedo;
   const vec2  p      = pos.xz/100.0;                       // metres
   const float noise  = snowNoise(p*0.35)*0.6 + snowNoise(p*1.7)*0.4;
-  float       amount = clamp(scene.weatherCover*1.6 - (1.0-noise), 0.0, 1.0) * up;
+  float       amount = clamp(scene.weatherCover*1.6 - (1.0-noise), 0.0, 1.0) * up * (1.0-shelter);
   // Footprints: packed snow, the ground half showing through.
   if(scene.weatherTrail.w>0.0) {
-    const ivec2 c = ivec2(floor((pos.xz - scene.weatherTrail.xy)*scene.weatherTrail.z));
-    const int   n = int(scene.weatherTrail.w);
-    if(c.x>=0 && c.y>=0 && c.x<n && c.y<n) {
-      const int   i      = c.y*n + c.x;
-      const uint  cell   = (trailCells[i>>1] >> uint((i&1)*16)) & 0xFFFFu;
-      const float made   = scene.weatherTrailY + (float(cell>>8) - 128.0)*25.0;   // where his foot was
-      const float print  = float(cell & 0xFFu)/255.0;
-      if(abs(pos.y - made) < 150.0)   // not on a ledge above the path (the hero's position may sit at hip height)
-        amount *= 1.0 - print*0.75;
+    // Four cells blended by where the point lies between their centres, so a print has round edges, not squares.
+    const vec2  t  = (pos.xz - scene.weatherTrail.xy)*scene.weatherTrail.z - 0.5;
+    const ivec2 c0 = ivec2(floor(t));
+    const vec2  f  = t - vec2(c0);
+    const int   n  = int(scene.weatherTrail.w);
+    float print = 0.0;
+    for(int k=0; k<4; ++k) {
+      const ivec2 c = c0 + ivec2(k&1, k>>1);
+      if(c.x<0 || c.y<0 || c.x>=n || c.y>=n)
+        continue;
+      const int   i    = c.y*n + c.x;
+      const uint  cell = (trailCells[i>>1] >> uint((i&1)*16)) & 0xFFFFu;
+      const float made = scene.weatherTrailY + (float(cell>>8) - 128.0)*25.0;   // where his foot was
+      if(abs(pos.y - made) >= 150.0)   // not on a ledge above the path (the hero's position may sit at hip height)
+        continue;
+      const float w = ((k&1)!=0 ? f.x : 1.0-f.x) * ((k>>1)!=0 ? f.y : 1.0-f.y);
+      print += w * float(cell & 0xFFu)/255.0;
       }
+    amount *= 1.0 - smoothstep(0.05, 0.9, print)*0.75;
     }
   return mix(albedo, vec3(0.86, 0.88, 0.92), amount);      // in texture space: lighting decodes the albedo
   }
