@@ -964,6 +964,8 @@ void Renderer::drawPrecipitation(Tempest::Encoder<Tempest::CommandBuffer>& cmd, 
   if(world==nullptr || sky.quality==PathTrace)
     return;
   const auto& w = world->globalFx()->weatherState();
+  if(w.shootingStars>0.001f && w.overcast<0.3f)
+    drawShootingStars(cmd, wview, w.shootingStars);
   if(w.kind==GlobalEffects::Precipitation::None || w.intensity<0.001f)
     return;
 
@@ -1024,6 +1026,32 @@ void Renderer::drawPrecipitation(Tempest::Encoder<Tempest::CommandBuffer>& cmd, 
     cmd.setPushData(push);
     cmd.draw(nullptr, 0, 6, 0, 6);
     }
+  }
+
+void Renderer::drawShootingStars(Tempest::Encoder<Tempest::CommandBuffer>& cmd, const WorldView& wview, float rate) {
+  // a clear night's shooting stars (docs/plan-weather.md): the meteors' path in the precipitation shaders, kind 7
+  struct Push {
+    Tempest::Vec4 heightBox;
+    Tempest::Vec2 wind;
+    float         time      = 0;
+    float         intensity = 0;
+    uint32_t      kind      = 7;
+    uint32_t      pad[3]    = {};
+    Tempest::Vec4 tint;
+    } push;
+  auto* world = Gothic::inst().world();
+  push.heightBox = wview.weatherBox();
+  push.time      = float(world->tickCount()%(10000*1000))/1000.f;
+  push.intensity = rate;
+
+  auto& scene = wview.sceneGlobals();
+  const bool lowFog = (sky.quality==None || sky.quality==VolumetricLQ);
+  cmd.setBinding(0, scene.uboGlobal[SceneGlobals::V_Main]);
+  cmd.setBinding(1, lowFog ? sky.fogLut3D : sky.fogLut3DMs, Sampler::bilinear(ClampMode::ClampToEdge));
+  cmd.setBinding(2, wview.weatherHeight(), Sampler::nearest(ClampMode::ClampToEdge));
+  cmd.setPushData(push);
+  cmd.setPipeline(shaders.precipitation);
+  cmd.draw(nullptr, 0, 6, 0, 3);
   }
 
 void Renderer::drawGroundFog(Tempest::Encoder<Tempest::CommandBuffer>& cmd, const WorldView& wview) {

@@ -20,7 +20,7 @@ layout(push_constant, std430) uniform Push {
   vec2  wind;       // cm per second along x and z
   float time;       // seconds of game time
   float intensity;  // 0..1
-  uint  kind;       // 1 snow, 2 rain, 3 fire, 4 crystal, 5 motes, 6 meteors
+  uint  kind;       // 1 snow, 2 rain, 3 fire, 4 crystal, 5 motes, 6 meteors, 7 shooting stars
   uint  pad0, pad1, pad2;
   vec4  tint;       // motes: their colour in rgb, the height of their layer's base in w (world cm)
   } push;
@@ -36,7 +36,7 @@ const float BoxSide   = 3000.0;   // cm around the camera, x and z
 const float BoxHeight = 2000.0;
 const float MoteLayer = 900.0;    // cm: the motes' layer, from a little under its base upwards
 
-const uint KSnow = 1u, KRain = 2u, KFire = 3u, KCrystal = 4u, KMotes = 5u, KMeteor = 6u;
+const uint KSnow = 1u, KRain = 2u, KFire = 3u, KCrystal = 4u, KMotes = 5u, KMeteor = 6u, KStar = 7u;
 
 uint hashU(uint x) {
   x ^= x >> 16; x *= 0x7feb352du;
@@ -61,10 +61,11 @@ void hide(vec2 c, vec3 p) {
   }
 
 // A meteor: one of a few slots, each with its own rhythm; in each of its cycles a new path, far off over the land.
-void meteor(vec2 c) {
+// A shooting star on a clear night is the same, higher up, rarer, quicker and finer.
+void meteor(vec2 c, bool star) {
   const uint  id     = uint(gl_InstanceIndex);
-  const float period = mix(9.0, 22.0, rnd(id, 0)) / max(push.intensity, 0.25);
-  const float shown  = 1.6;   // seconds a meteor crosses the sky
+  const float period = (star ? mix(25.0, 70.0, rnd(id, 0)) : mix(9.0, 22.0, rnd(id, 0))) / max(push.intensity, 0.25);
+  const float shown  = star ? mix(0.5, 0.9, rnd(id, 2)) : 1.6;   // seconds it crosses the sky
   const float tt     = push.time + rnd(id, 1)*period;
   const uint  cycle  = uint(floor(tt/period));
   const float u      = tt - float(cycle)*period;
@@ -74,16 +75,17 @@ void meteor(vec2 c) {
     }
   const uint  h    = hashU(id*7919u + cycle);
   const float az   = rnd(h, 0)*6.2832;
-  const float el   = mix(0.4, 1.0, rnd(h, 1));               // 23 to 57 degrees up
+  const float el   = star ? mix(0.6, 1.3, rnd(h, 1)) : mix(0.4, 1.0, rnd(h, 1));   // 34 to 75, or 23 to 57 degrees up
   const vec3  dirS = vec3(cos(az)*cos(el), sin(el), sin(az)*cos(el));
   const vec3  side = normalize(vec3(-sin(az), 0.0, cos(az))) * (rnd(h, 2)<0.5 ? -1.0 : 1.0);
-  const vec3  mv   = normalize(side + vec3(0.0, -mix(0.45, 0.9, rnd(h, 3)), 0.0));
+  const vec3  mv   = normalize(side + vec3(0.0, -(star ? mix(0.15, 0.5, rnd(h, 3)) : mix(0.45, 0.9, rnd(h, 3))), 0.0));
   const float far  = 80000.0;                                // 800 m: within the camera's 1 km
-  const vec3  head = scene.camPos + dirS*far + mv*(u - shown*0.5)*30000.0;
-  const float len  = 15000.0 * smoothstep(0.0, 0.35, u);      // the trail grows behind it
+  const float speed = star ? 60000.0 : 30000.0;
+  const vec3  head = scene.camPos + dirS*far + mv*(u - shown*0.5)*speed;
+  const float len  = (star ? 9000.0 : 15000.0) * smoothstep(0.0, shown*0.22, u);   // the trail grows behind it
   const vec3  mid  = head - mv*len*0.5;
   const vec3  toCam = normalize(scene.camPos - mid);
-  const vec3  right = normalize(cross(mv, toCam)) * 260.0;
+  const vec3  right = normalize(cross(mv, toCam)) * (star ? 90.0 : 260.0);
   const vec3  wp    = mid + right*c.x + mv*(len*0.5)*c.y;
   outUv       = c;
   outAlpha    = sin(3.14159*u/shown);                          // flares up and burns out
@@ -95,8 +97,8 @@ void meteor(vec2 c) {
 void main() {
   const vec2 corners[6] = vec2[](vec2(-1,-1), vec2(1,-1), vec2(1,1), vec2(-1,-1), vec2(1,1), vec2(-1,1));
   const vec2 c    = corners[gl_VertexIndex % 6];
-  if(push.kind==KMeteor) {
-    meteor(c);
+  if(push.kind==KMeteor || push.kind==KStar) {
+    meteor(c, push.kind==KStar);
     return;
     }
   const uint id   = uint(gl_InstanceIndex);

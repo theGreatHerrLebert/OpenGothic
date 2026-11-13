@@ -131,8 +131,11 @@ void main() {
     light += scene.weatherFlashCl*0.85 * push.weather.w * d * 40.0;   // lightning from inside, in the weather's colour
     // the bellies glow over a fire rain, a few times as bright as the sky's own light on them: a fixed glow would
     // outshine a dark night sky many times over and the tonemapping would bleach it white
+    // hellish: deep red in the thick bellies, yellow where the fire shows through thinner parts
     const float skyLight = dot(ambient, vec3(0.3, 0.5, 0.2));
-    light += push.glow.rgb * (1.0-h)*(1.0-h) * skyLight * 3.0;
+    const vec3  hell     = mix(vec3(1.0, 0.16, 0.02), vec3(1.0, 0.62, 0.12),
+                               clamp(noise3(vec3(w.xz/1800.0, push.weather.z*0.03))*1.4 - 0.2 - d*0.5, 0.0, 1.0));
+    light += hell * push.glow.x * (1.0-h)*(1.0-h) * (skyLight*7.0 + 0.004);
     const float ext = exp(-d*Sigma*stepLen);
     C += T*(1.0-ext)*light*albedo;
     depthSum += T*(1.0-ext)*t;

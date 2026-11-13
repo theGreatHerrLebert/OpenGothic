@@ -32,7 +32,7 @@ layout(location = 2) in  vec3  inPos;
 layout(location = 3) in  float inGlint;
 layout(location = 0) out vec4  outColor;
 
-const uint KSnow = 1u, KRain = 2u, KFire = 3u, KCrystal = 4u, KMotes = 5u, KMeteor = 6u;
+const uint KSnow = 1u, KRain = 2u, KFire = 3u, KCrystal = 4u, KMotes = 5u, KMeteor = 6u, KStar = 7u;
 
 vec4 fogAt() {
   const vec2  uv = gl_FragCoord.xy * scene.screenResInv;   // as fog.frag reads its LUT
@@ -45,6 +45,16 @@ vec4 fogAt() {
 void main() {
   const uint kind = push.kind;
 
+  if(kind==KStar) {
+    // a shooting star: a thin white line with a faint blue, brightest at its head, gone in a moment
+    const float along = inUv.y*0.5 + 0.5;
+    const float core  = 1.0 - abs(inUv.x);
+    const float a     = core*core * pow(along, 3.0) * inAlpha;
+    if(a<=0.002)
+      discard;
+    outColor = vec4(mix(vec3(0.75, 0.85, 1.0), vec3(1.0), smoothstep(0.8, 1.0, along)) * a * 1.6, 0.0);
+    return;
+    }
   if(kind==KMeteor) {
     // a white-hot head at the leading end (uv.y 1), an orange trail burning out behind it
     const float along = inUv.y*0.5 + 0.5;            // 0 tail .. 1 head

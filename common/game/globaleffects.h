@@ -98,6 +98,7 @@ class GlobalEffects {
       float         heat        = 0;    // a hot day, 0..1: shimmer over the distance, a hard warm sun, quick drying
       float         heatTarget  = 0;
       float         heatSeconds = 120;
+      float         shootingStars = 0;  // a clear night's shooting stars, 0 none .. 1 one every half minute or so
       };
     // Ground fog (docs/plan-weather.md): density 0..1 over seconds, lying from base (world cm) and thinning upwards.
     // A tint colours it (white is ordinary fog); fading out keeps the tint it has.
@@ -111,6 +112,7 @@ class GlobalEffects {
     std::vector<std::pair<std::string, float>> loopLevels() const;
     // Lightning: a flash now, its thunder after delay seconds (sound travels about 340 m a second).
     void           lightning(float delaySeconds);
+    void           setShootingStars(float rate) { weather.shootingStars = std::clamp(rate, 0.f, 1.f); }
     void           flash(float level) { weather.flash = std::max(weather.flash, std::clamp(level, 0.f, 1.f)); }
     void           setWeather(Precipitation kind, float target, float fadeSeconds, float windX, float windZ,
                               bool openSky = false);

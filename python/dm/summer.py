@@ -43,7 +43,7 @@ def levels(state, hour, minute):
     return round(warm * day, 2), round(warm * night, 2)
 
 
-_shown = {"world": None, "cicadas": None, "crickets": None, "galaxy": None, "since": None}
+_shown = {"world": None, "cicadas": None, "crickets": None, "galaxy": None, "since": None, "stars": None}
 
 
 def _loop(gothic, name, file, level, volume):
@@ -60,11 +60,15 @@ def tick(gothic, now):
         return None
     world = getattr(gothic.world, "generation", None)
     if world != _shown["world"]:   # a load or a new world: its engine starts silent, with the game's own sky
-        _shown.update(world=world, cicadas=None, crickets=None, galaxy=None, since=None)
+        _shown.update(world=world, cicadas=None, crickets=None, galaxy=None, since=None, stars=None)
     hour, minute = gothic.world.time
     day, night = levels(gothic.weather.state(), hour, minute)
     _loop(gothic, "cicadas", "zikaden.wav", day, CICADAS)
     _loop(gothic, "crickets", "grillen.wav", night, CRICKETS)
+    stars = round(night, 1)   # shooting stars under the Milky Way, as many as the night is warm and clear
+    if stars != _shown["stars"] and hasattr(gothic.weather, "shooting_stars"):
+        gothic.weather.shooting_stars(stars)
+        _shown["stars"] = stars
     trip = sys.modules.get("dm.trip")
     if not hasattr(gothic, "sky") or (trip is not None and getattr(trip, "_current", None) is not None):
         _shown["galaxy"] = None   # the trip has the sky; afterwards it is set again

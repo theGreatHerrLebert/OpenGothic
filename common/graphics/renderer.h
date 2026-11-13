@@ -102,6 +102,7 @@ class Renderer final {
     void drawUnderwater   (Tempest::Encoder<Tempest::CommandBuffer>& cmd, const WorldView& wview);
     void drawFog          (Tempest::Encoder<Tempest::CommandBuffer>& cmd, const WorldView& wview);
     void drawPrecipitation(Tempest::Encoder<Tempest::CommandBuffer>& cmd, const WorldView& wview);
+    void drawShootingStars(Tempest::Encoder<Tempest::CommandBuffer>& cmd, const WorldView& wview, float rate);
     void drawGroundFog    (Tempest::Encoder<Tempest::CommandBuffer>& cmd, const WorldView& wview);
     void drawWeatherClouds(Tempest::Encoder<Tempest::CommandBuffer>& cmd, WorldView& wview);
     void drawSunMoon      (Tempest::Encoder<Tempest::CommandBuffer>& cmd, const WorldView& wview);
