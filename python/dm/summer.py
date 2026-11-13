@@ -78,11 +78,20 @@ def tick(gothic, now):
         _shown["since"] = now
     from dm import trip as trips
     if trips._load_sky(gothic, 0, "milkyway.jpg"):   # the image lives in dm_runtime/sky
-        amount = round(night * GALAXY, 2)
-        t = now - _shown["since"]
-        gothic.sky.galaxy(amount, 1.0, TINT, 0.2, t * SPIN, 0.0, [], 0.0, t, 0.0)
-        _shown["galaxy"] = amount
+        _shown["galaxy"] = round(night * GALAXY, 2)
+        turn(gothic, now)
     return day, night
+
+
+def turn(gothic, now):
+    """Set the Milky Way's turn for this moment; called every frame, so the stars move smoothly between looks."""
+    if not _shown["galaxy"] or _shown["since"] is None:
+        return
+    trip = sys.modules.get("dm.trip")
+    if trip is not None and getattr(trip, "_current", None) is not None:
+        return
+    t = now - _shown["since"]
+    gothic.sky.galaxy(_shown["galaxy"], 1.0, TINT, 0.2, t * SPIN, 0.0, [], 0.0, t, 0.0)
 
 
 _next_look = 0.0
@@ -94,6 +103,10 @@ def _tick(_dt):
     import gothic
     now = time.monotonic()
     if now < _next_look:
+        try:
+            turn(gothic, now)
+        except RuntimeError:   # no world
+            pass
         return
     _next_look = now + LOOK
     try:

@@ -53,3 +53,17 @@ calls.clear()
 summer.tick(fake, 108.0)
 assert ("loop", "cicadas", "zikaden.wav", 0.35, 20.0) in calls and ("clear",) in calls, calls
 print("summer ok")
+
+# between looks the stars keep turning, each frame a little further
+calls.clear()
+summer._shown.update(galaxy=0.32, since=100.0)
+summer.turn(fake, 101.0)
+summer.turn(fake, 101.016)
+assert calls == [("galaxy", 0.32), ("galaxy", 0.32)], calls
+trip._current = object()                                             # a trip's sky is not touched
+summer.turn(fake, 101.032)
+summer._shown.update(galaxy=0.0)                                     # by day: nothing to turn
+trip._current = None
+summer.turn(fake, 101.048)
+assert len(calls) == 2, calls
+print("summer turn ok")
