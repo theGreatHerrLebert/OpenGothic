@@ -298,3 +298,43 @@ restarted), and nothing happens where the fire comes down.
   indoors all along is as wet as one outside the moment he steps out); weapons and items on a character are static
   meshes and get the ground's treatment; patches can break at texture seams; a character under a tree counts as
   sheltered, as the ground does. Untested in game.
+
+## Seeking shelter (plan, 2026-11-13)
+
+In heavy rain (and under a fire rain) people near the hero leave the open for the nearest roof, wait there, and go back
+to what they did once it has passed. Guards stay at their posts; that is their job and it looks like it.
+
+- **Who:** people (not animals) within 40 m of the hero, alive, in an ordinary routine state from a whitelist (standing
+  about, small talk, eating or drinking standing, sweeping, sitting on a bench, practising, picking things up), not
+  in a dialogue, not fighting or fleeing, not already under a roof, not someone a story holds (`isRoutineHeld`), not
+  in a story's cast, not guards (`ZS_STAND_GUARDING`, militia and paladins on watch). A fifth of the hardy (farmhands,
+  mercenaries) do not bother.
+- **When:** rain falling over 0.5, or a fire rain over 0.3. Each one notices on his own: a random delay of 0–20 s.
+  Back when it has fallen under 0.15 for half a minute, each after his own 5–45 s.
+- **Where:** the engine looks for the nearest free waypoint within 20 m with a roof over it (the roof map higher than
+  the point by 2.5 m, as for snow), not locked, not already taken by another who sheltered; none found, he stays out.
+  The roof map only covers the square around the camera, which is where this happens.
+- **How:** the routine the engine already lends and gives back (`Npc::holdRoutine` / `releaseRoutine`, built for the
+  smoking series): standing arms crossed at the shelter point. New bindings: `npc.seek_shelter(radius)` -> waypoint
+  name or None, `npc.release_routine()`, `npc.routine_held`, `npc.state` (the current ZS_ name).
+- **Saves:** a held routine is not saved today (the smoking series blocks saving while it holds one). Shelter must not
+  block saving for a whole downpour, so `Npc::save` writes the NPC's own routine while one is held: a save during rain
+  loads with everyone back on their own routine, and the shelter is taken again if it still rains. Old saves load as
+  before (no layout change).
+- **Releasing:** also at once when he is more than 60 m from the hero (out of sight), on a new world or a load (state
+  reset by world generation), and when the story starts holding him.
+- **Not yet:** remarks while running for cover, hurrying (run instead of walk), sheltering in houses through doors
+  (only covered waypoints), animals.
+
+### Seeking shelter: revision after Codex review, as built (2026-11-13)
+
+Codex found the lent routine unsafe (release clears whatever state came after, a save writes the shelter's state and
+queue, a story's hold and ours cannot be told apart, routine boundaries vanish while held). Built instead without
+touching routines: `npc.shelter_at(wp, wait, run)` queues run, go to the covered waypoint, face its way, wait; more
+waiting is queued (`wait_more`) while it rains. While the queue runs his state waits (the state loop runs only on an
+empty queue); a fight, a talk or any perception starting a state clears it as always; when it runs out his own routine
+walks him back. A save keeps the queue, so a load finishes the waiting and he goes home. Only people standing still in
+a whitelisted state with an empty queue are sent (no benches, nobody walking or working at something); the search
+(`world.shelter_points`) is bounded to 20 m, skips points someone stands on or another shelterer took, and at most
+three searches run per two-second look, with a 30 s backoff after none was found; `npc.can_reach` checks the waynet.
+A quarter hour at most, then he goes back even if it still rains. Not yet: remarks, sheltering animals.

@@ -212,6 +212,48 @@ void bindWorld(py::module_& m) {
              return py::cast(std::make_tuple(p.x, p.y, p.z));
              },
            py::arg("name"), "Where a waypoint is, as (x, y, z), or None.")
+      .def("shelter_points",
+           [](const PyWorld&, float x, float y, float z, float radius, std::vector<std::string> taken) {
+             // Covered waypoints near a point, nearest first: a roof over them (the roof map, as for snow), not
+             // locked, nobody standing on them, not taken by someone else seeking shelter. Bounded to radius.
+             auto* w    = requireWorld();
+             auto* view = w->view();
+             py::list out;
+             if(view==nullptr)
+               return out;
+             const Tempest::Vec3 at(x, y, z);
+             std::vector<Tempest::Vec3> people;
+             for(uint32_t i=0; i<w->npcCount(); ++i)
+               if(auto* o = w->npcById(i); o!=nullptr && (o->position()-at).length()<radius+300.f)
+                 people.push_back(o->position());
+             std::vector<std::pair<float, const WayPoint*>> found;
+             w->findWayPoint(at, [&](const WayPoint& wp) {
+               const auto p = wp.position();
+               const float d = (p-at).length();
+               if(d>radius || wp.isLocked())
+                 return false;
+               if(view->weatherRoofAt(p.x, p.z) < p.y + 250.f)
+                 return false;
+               for(auto& o:people) {
+                 const float ox = o.x-p.x, oz = o.z-p.z;
+                 if(ox*ox + oz*oz < 120.f*120.f)
+                   return false;
+                 }
+               if(std::find(taken.begin(), taken.end(), wp.name)!=taken.end())
+                 return false;
+               found.emplace_back(d, &wp);
+               return false;   // keep looking: collect them all within the radius
+               });
+             std::sort(found.begin(), found.end(), [](auto& a, auto& b) { return a.first<b.first; });
+             for(size_t i=0; i<found.size() && i<8; ++i) {
+               auto p = found[i].second->position();
+               out.append(py::make_tuple(found[i].second->name, p.x, p.y, p.z));
+               }
+             return out;
+             },
+           py::arg("x"), py::arg("y"), py::arg("z"), py::arg("radius") = 2000.f,
+           py::arg("taken") = std::vector<std::string>{},
+           "Up to 8 covered, free waypoints within radius of a point, nearest first: (name, x, y, z).")
       .def("play_effect",
            [](const PyWorld&, const std::string& name, float x, float y, float z, float seconds) {
              // as Wld_PlayEffect, at a point: the game's own spell effects carry their light and sound

@@ -3,7 +3,7 @@
 
 def start():
     """Start observing the game and accepting story plans. Safe to repeat."""
-    from dm import climate, feedback, magic_weather, observer, overlay, story, summer, trip, weather, weather_talk
+    from dm import climate, feedback, magic_weather, observer, overlay, shelter, story, summer, trip, weather, weather_talk
     observer.start()
     story.start()
     overlay.start()
@@ -14,3 +14,4 @@ def start():
     weather_talk.start()
     summer.start()
     magic_weather.start()
+    shelter.start()

@@ -383,6 +383,8 @@ class Npc final {
     bool      checkGoToNpcdistance(const Npc& other);
 
     bool      isAiQueueEmpty() const;
+    size_t    aiQueueSize() const { return aiQueue.size(); }
+    ScriptFn  stateFunction() const { return aiState.funcIni; }   // the ZS_ state now, by symbol
     bool      isAiBusy() const;
     void      clearAiQueue();
 

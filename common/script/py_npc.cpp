@@ -64,6 +64,56 @@ void bindNpc(py::module_& m) {
              n->changeAttribute(ATR_HITPOINTS,
                                 n->attribute(ATR_HITPOINTSMAX), false);
              })
+      .def_property_readonly("state",
+           [](const PyNpc& self) -> py::object {
+             auto fn = self.fetch()->stateFunction();
+             if(!fn.isValid())
+               return py::none();
+             auto* sym = requireWorld()->script().getVm().find_symbol_by_index(uint32_t(fn.ptr));
+             return sym==nullptr ? py::object(py::none()) : py::object(py::str(sym->name()));
+             },
+           "The ZS_ state the NPC is in now, or None.")
+      .def_property_readonly("key",
+           [](const PyNpc& self) { return uint64_t(reinterpret_cast<uintptr_t>(self.fetch())); },
+           "Who he is while he lives in this world: stable, unlike id, which is his place in a list that is resorted.")
+      .def_property_readonly("ai_queue", [](const PyNpc& self) { return self.fetch()->aiQueueSize(); },
+           "How many actions are queued for the NPC: 0 while his state runs freely.")
+      .def_property_readonly("routine_held", [](const PyNpc& self) { return self.fetch()->isRoutineHeld(); },
+           "True while a story lends him a routine of its own.")
+      .def("shelter_at",
+           [](const PyNpc& self, const std::string& waypoint, float wait, bool run) {
+             // Seeking shelter (docs/plan-weather.md): a few queued actions, never his routine. While they run his
+             // state waits; a fight, a talk or any perception that starts a state clears them as it always does, and
+             // when they are done his own routine walks him back.
+             auto* n  = self.fetch();
+             auto* wp = requireWorld()->findPoint(waypoint, false);
+             if(wp==nullptr)
+               return false;
+             if(run)
+               n->aiPush(AiQueue::aiSetWalkMode(WalkBit::WM_Run));
+             n->aiPush(AiQueue::aiGoToPoint(*wp));
+             n->aiPush(AiQueue::aiAlignToWp());
+             n->aiPush(AiQueue::aiWait(uint64_t(std::clamp(wait, 1.f, 300.f)*1000.f)));
+             return true;
+             },
+           py::arg("waypoint"), py::arg("wait") = 25.f, py::arg("run") = true,
+           "Send him under cover: run to the waypoint, face its way and wait there wait seconds; then his own "
+           "routine takes him back, unless more waiting is queued with wait_more.")
+      .def("wait_more", [](const PyNpc& self, float wait) {
+             self.fetch()->aiPush(AiQueue::aiWait(uint64_t(std::clamp(wait, 1.f, 300.f)*1000.f)));
+             },
+           py::arg("wait"), "Queue more waiting where he stands.")
+      .def("can_reach",
+           [](const PyNpc& self, const std::string& waypoint) {
+             auto* w  = requireWorld();
+             auto* wp = w->findPoint(waypoint, false);
+             if(wp==nullptr)
+               return false;
+             auto* n = self.fetch();
+             const auto d = n->position() - wp->position();
+             return d.length()<300.f || w->wayTo(*n, *wp).first()!=nullptr;
+             },
+           py::arg("waypoint"), "True if the waynet leads him there (or he is nearly there).")
       .def("hurt",
            [](const PyNpc& self, int amount) {
              Npc* p = self.fetch();
