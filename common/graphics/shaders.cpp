@@ -122,6 +122,7 @@ void Shaders::compileShaders() noexcept {
   skySep             = postEffect("sky_sep");
   fog                = fogShader ("fog");
   fog3dHQ            = fogShader ("fog3d_hq");
+  groundFog          = fogShader ("ground_fog");   // docs/plan-weather.md, ground fog
 
   {
     RenderState state;

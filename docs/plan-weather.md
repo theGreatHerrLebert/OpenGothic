@@ -134,3 +134,20 @@ per world on the CPU from the static world mesh: the highest non-water surface o
 for a world wider than 2 km), uploaded as an R32F texture. A particle more than 30 cm below it is not drawn. No pass
 per frame and the same on every backend; it misses dynamic objects, trees and houses built from vobs rather than the
 world mesh, so the room rule stays as a fallback. Using it for snow cover on objects and roofs is still open.
+
+## Ground fog (plan, 2026-11-13)
+
+The engine's fog is atmospheric haze over distance; it has no fog that lies on the ground. Ground fog makes a place:
+morning fog in valleys, mist over the swamp, sea fog at the harbour.
+
+- **State:** `fog` (density 0..1, eased like the rest), `fogHeight` (metres it reaches above its base) and a base
+  height in world cm: by default a little below the hero's feet when it is set, so he stands in it; a story or the
+  climate may set it as a fixed level, so valleys fill and hills stay clear. Python `weather.fog(density, height,
+  base=None, fade)`, the weather op gains `fog`; the climate brings morning fog at dawn now and then.
+- **Pass:** after `drawFog` and before precipitation, a full-screen fragment pass reads the depth buffer and marches
+  the view ray from the camera to the surface (at most 600 m; sky pixels end there): 12 steps of an exponential height
+  profile, `exp(-(y-base)/height)`, broken into banks and wisps by world-anchored 3D noise that drifts with the wind.
+  In-scattering from the sky's ambient (view LUT) and a forward-scattering phase towards the sun (a glow when looking
+  into the light), grey-blue at night; colour and transmittance out, blended as `scene*T + light`.
+- **Cost:** full resolution first, measured; half resolution with a depth-aware upsample if it is too slow.
+- **Not yet:** shadows in the fog (light shafts), fog over water specially, path tracing.

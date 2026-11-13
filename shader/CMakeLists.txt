@@ -275,6 +275,7 @@ add_shader(sun.vert                  sky/sun.vert)
 add_shader(sun.frag                  sky/sun.frag)
 add_shader(precipitation.vert        weather/precipitation.vert)
 add_shader(precipitation.frag        weather/precipitation.frag)
+add_shader(ground_fog.frag           weather/ground_fog.frag)
 
 # copy/edit
 add_shader(triangle.vert             triangle.vert)

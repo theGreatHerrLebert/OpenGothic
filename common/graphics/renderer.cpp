@@ -768,6 +768,8 @@ void Renderer::draw(Tempest::Attachment& result, Encoder<CommandBuffer>& cmd, ui
     } else {
     cmd.setDebugMarker("Fog");
     drawFog(cmd, wview);
+    cmd.setDebugMarker("Ground fog");
+    drawGroundFog(cmd, wview);
     // Snow and rain after the fog, which only knows the surface behind a flake: each fogs itself at its own depth.
     cmd.setFramebuffer({{sceneLinear, Tempest::Preserve, Tempest::Preserve}}, {zbuffer, Tempest::Readonly});
     cmd.setDebugMarker("Precipitation");
@@ -990,6 +992,35 @@ void Renderer::drawPrecipitation(Tempest::Encoder<Tempest::CommandBuffer>& cmd, 
   cmd.setPushData(push);
   cmd.setPipeline(shaders.precipitation);
   cmd.draw(nullptr, 0, 6, 0, count);
+  }
+
+void Renderer::drawGroundFog(Tempest::Encoder<Tempest::CommandBuffer>& cmd, const WorldView& wview) {
+  // docs/plan-weather.md: fog lying on the ground, marched against the depth buffer after the atmosphere's fog.
+  auto* world = Gothic::inst().world();
+  if(world==nullptr || sky.quality==PathTrace)
+    return;
+  const auto&    w   = world->globalFx()->weatherState();
+  const uint64_t now = world->tickCount();
+  const float    dt  = sky.fogTick==0 ? 0.f : float(std::min<uint64_t>(now-sky.fogTick, 250))/1000.f;
+  sky.fogTick = now;
+  // banks drift with the wind, slowly on a still morning
+  sky.fogWind += Vec2(w.windX*0.8f + 0.25f, w.windZ*0.8f + 0.1f)*dt;
+  if(w.fog<0.001f)
+    return;
+
+  struct Push {
+    Vec4 fog;
+    Vec4 drift;
+    } push;
+  push.fog   = Vec4(w.fog, w.fogHeight, w.fogBase, float(now%(1000*1000))/1000.f);
+  push.drift = Vec4(sky.fogWind.x, sky.fogWind.y, w.kind==GlobalEffects::Precipitation::Snow ? 1.f : 0.f, 0.f);
+
+  auto& scene = wview.sceneGlobals();
+  cmd.setBinding(0, scene.uboGlobal[SceneGlobals::V_Main]);
+  cmd.setBinding(1, zbuffer, Sampler::nearest());
+  cmd.setPushData(&push, sizeof(push));
+  cmd.setPipeline(shaders.groundFog);
+  cmd.draw(nullptr, 0, 3);
   }
 
 void Renderer::drawFog(Tempest::Encoder<Tempest::CommandBuffer>& cmd, const WorldView& wview) {

@@ -102,6 +102,7 @@ class Renderer final {
     void drawUnderwater   (Tempest::Encoder<Tempest::CommandBuffer>& cmd, const WorldView& wview);
     void drawFog          (Tempest::Encoder<Tempest::CommandBuffer>& cmd, const WorldView& wview);
     void drawPrecipitation(Tempest::Encoder<Tempest::CommandBuffer>& cmd, const WorldView& wview);
+    void drawGroundFog    (Tempest::Encoder<Tempest::CommandBuffer>& cmd, const WorldView& wview);
     void drawWeatherClouds(Tempest::Encoder<Tempest::CommandBuffer>& cmd, WorldView& wview);
     void drawSunMoon      (Tempest::Encoder<Tempest::CommandBuffer>& cmd, const WorldView& wview);
     void drawSunMoon      (Tempest::Encoder<Tempest::CommandBuffer>& cmd, const WorldView& wview, bool isSun);
@@ -212,6 +213,8 @@ class Renderer final {
       Tempest::Vec2          cloudWind;              // metres the wind has carried the cloud field
       uint64_t               cloudTick = 0;
       bool                   cloudsOn  = false;
+      Tempest::Vec2          fogWind;                // metres the wind has carried the ground fog's banks
+      uint64_t               fogTick   = 0;
       Tempest::StorageImage  cloudsLut, fogLut3D, fogLut3DMs;
       Tempest::StorageImage  occlusionLut, irradianceLut;
       } sky;
