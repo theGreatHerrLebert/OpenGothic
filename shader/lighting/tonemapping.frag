@@ -77,13 +77,13 @@ float luminance(vec3 rgb) {
 
 // Heat: how far away a pixel is (cm) and how much of the shimmer and bleaching it gets, from 15 m on and
 // strongest along the ground towards the horizon, never above it.
-float heatAt(vec2 at, out float dist) {
+float heatAt(vec2 at, out float dist, out vec3 dir) {
   const float z   = textureLod(depthD, at, 0).r;
   dist            = linearDepth(z, scene.clipInfo);
+  const vec4  wp  = scene.viewProjectInv*vec4(at*2.0-vec2(1.0), z, 1.0);
+  dir             = normalize(wp.xyz/wp.w - scene.camPos);
   if(z>=1.0)
     return 0.0;   // the sky: no shimmer, no bleaching
-  const vec4  wp  = scene.viewProjectInv*vec4(at*2.0-vec2(1.0), z, 1.0);
-  const vec3  dir = normalize(wp.xyz/wp.w - scene.camPos);
   const float low = 1.0 - smoothstep(0.02, 0.12, dir.y);   // land below the eye and just above it, not hills high up
   return smoothstep(800.0, 6000.0, dist) * low;
   }
@@ -102,7 +102,8 @@ float nearestAround(vec2 at) {
   return n;
 #else
   float n;
-  heatAt(at, n);
+  vec3  d;
+  heatAt(at, n, d);
   return n;
 #endif
   }
@@ -116,12 +117,16 @@ void main() {
     // Rising waves of air, finer and faster far away; a sample that would come from something nearer is not taken,
     // so the shimmer never smears a close silhouette over the distance.
     float dist;
-    const float k   = heatAt(uv, dist) * scene.weatherHeat;
+    vec3  dir;
+    const float k   = heatAt(uv, dist, dir) * scene.weatherHeat;
     const float t   = float(scene.tickCount32 % 600000u)/1000.0;
-    const float f   = 1.0 + dist/20000.0;
-    // as the trip's Emberheart, milder: slow, broad waves rising, a second one across
-    const vec2  off = vec2(sin(uv.y*120.0*f - t*4.8 + sin(uv.x*18.0 + t*0.6)*2.0),
-                           sin(uv.y*90.0*f  - t*3.0 + uv.x*30.0)*0.7) * (0.0045*k);
+    // The waves belong to directions in the world, not to the screen: turning the head carries them with the land.
+    // Elevation and bearing in radians; slow, broad waves rising, a second one across, finer far away.
+    const float el  = asin(clamp(dir.y, -1.0, 1.0));
+    const float az  = atan(dir.z, dir.x);
+    const float f   = 1.0 + dist/30000.0;
+    const vec2  off = vec2(sin(el*110.0*f - t*3.2 + sin(az*14.0 + t*0.4)*2.0),
+                           sin(el*80.0*f  - t*2.2 + az*24.0)*0.6) * (0.0018*k);
     if(k>0.0 && nearestAround(uv + off)>dist*0.6)
       at = uv + off;
     bleach = k;
