@@ -229,7 +229,13 @@ void main() {
   lum = applyClouds(lum);
   if(scene.weatherOvercast>0.01) {
     // sky behind them times their transmittance, plus their own light; the fog pass applies the same transmittance
-    const vec4 cl = textureLod(weatherCloudImg, uv, 0);
+    // a soft filter over the small image: the per-pixel jitter of the march would otherwise show as pixel noise
+    const vec2 px = 1.0/vec2(textureSize(weatherCloudImg, 0));
+    vec4 cl = textureLod(weatherCloudImg, uv, 0)*0.36;
+    cl += textureLod(weatherCloudImg, uv + vec2( 0.9,  0.4)*px, 0)*0.16;
+    cl += textureLod(weatherCloudImg, uv + vec2(-0.4,  0.9)*px, 0)*0.16;
+    cl += textureLod(weatherCloudImg, uv + vec2(-0.9, -0.4)*px, 0)*0.16;
+    cl += textureLod(weatherCloudImg, uv + vec2( 0.4, -0.9)*px, 0)*0.16;
     lum = lum*cl.a + cl.rgb;
     }
   lum = lum * scene.GSunIntensity;

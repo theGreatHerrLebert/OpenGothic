@@ -417,7 +417,7 @@ void Renderer::resetViewport(Tempest::Size res, Tempest::Size fullRes) {
   sky.occlusionLut = StorageImage();
   {
   // the weather's volumetric clouds: a quarter of the internal resolution, at most 480x270, keeping the aspect
-  const float k  = std::min({0.25f, 480.f/float(std::max(w,1u)), 270.f/float(std::max(h,1u))});
+  const float k  = std::min({0.34f, 640.f/float(std::max(w,1u)), 360.f/float(std::max(h,1u))});
   sky.weatherClouds = device.attachment(TextureFormat::RGBA16F, std::max(1u, uint32_t(std::ceil(float(w)*k))),
                                         std::max(1u, uint32_t(std::ceil(float(h)*k))));
   }
