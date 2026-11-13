@@ -1094,6 +1094,12 @@ class Story:
             plan["ops"] = [dict(op, at=gothic.world.day * 24 + hour + minute / 60.0) if isinstance(op, dict)
                            and op.get("op") == "weather" and op.get("hours") and op.get("at") is None else op
                            for op in plan["ops"]]
+        # Timed weather takes its heat and fog with it: a weather op that replaces it without naming them ends them
+        # (written into the op, so the engine is told and a load agrees).
+        before = self.state.get("weather") or {}
+        if before.get("until") is not None:
+            plan["ops"] = [dict(op, **{k: 0.0 for k in ("heat", "fog") if before.get(k) and op.get(k) is None})
+                           if isinstance(op, dict) and op.get("op") == "weather" else op for op in plan["ops"]]
         # Ground fog without a base lies under the hero where it is laid; the log keeps that height, so a load agrees.
         plan["ops"] = [dict(op, fog_base=_fog_base(op, {})) if isinstance(op, dict) and op.get("op") == "weather"
                        and op.get("fog") is not None and op.get("fog_base") is None else op for op in plan["ops"]]

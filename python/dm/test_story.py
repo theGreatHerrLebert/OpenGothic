@@ -994,7 +994,7 @@ def test_weather():
     # a later op does not take over the heat of timed weather
     s.apply_plan({"reason": "t", "ops": [{"op": "weather", "kind": "clear", "intensity": 0, "heat": 0.9, "hours": 1}]})
     s.apply_plan({"reason": "t", "ops": [{"op": "weather", "kind": "rain", "intensity": 0.4, "hours": 1}]})
-    assert s.state["weather"]["heat"] is None, s.state["weather"]
+    assert s.state["weather"]["heat"] == 0.0 and ("heat", 0.0, 120) in calls, s.state["weather"]
     s.state["weather"]["until"] = 0
     calls.clear()
     s.rebind()
