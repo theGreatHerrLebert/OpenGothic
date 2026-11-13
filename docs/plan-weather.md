@@ -338,3 +338,26 @@ a whitelisted state with an empty queue are sent (no benches, nobody walking or 
 (`world.shelter_points`) is bounded to 20 m, skips points someone stands on or another shelterer took, and at most
 three searches run per two-second look, with a 30 s backoff after none was found; `npc.can_reach` checks the waynet.
 A quarter hour at most, then he goes back even if it still rains. Not yet: remarks, sheltering animals.
+
+## Hail (plan, 2026-11-13)
+
+Ordinary weather, a story's first (for "The Mage and the Weather Spell"); the climate may later throw a short burst
+of it into a summer storm.
+
+- **Kind:** `Precipitation::Hail`, Python `weather.set("hail", ...)`, the story op's kind `hail`. Dark rain clouds
+  (not snow clouds), the full cover any heavy weather brings; nothing falls before the clouds have half closed, as for
+  rain and snow.
+- **Look:** small ice grains, 0.8–1.8 cm, white-grey and a little glassy (lit as snow, a faint glint like the shards),
+  falling fast (about 11 m/s, slanting in the wind), about 9k at full strength. **Bounce:** each grain knows where it
+  lands: the roof map's height under it (the same that keeps snow off under roofs). Past that height its time since
+  landing gives one or two small hops (30 cm, then 8 cm, within half a second), then it is gone until its next round
+  through the box. Under a roof the roof is where it lands and bounces, so hail clatters on roofs too.
+- **Ground:** hail lies thinly and briefly: the cover's white (no frost, no ash), up to 30 % at full strength,
+  settling within a minute or two, melting within a few minutes after (the climate's automatic cover, shorter
+  seconds than snow). It wets the ground a little as it melts (wet towards 0.6 of what falls).
+- **Sound:** a CC0 recording of a hail storm (Freesound 851610, codgold2), cut to a seamless loop and played as a
+  named loop from Python while it hails; wind as for rain. `Wld_IsRaining` stays rain's: hail is not rain to scripts.
+- **Talk:** people on hail ("Hagel! Rein mit euch!", farmers on their crops, the hero on his head), before rain and
+  after magic; voices baked as before.
+- **Characters:** wet like light rain (soak towards half), a few grains on shoulders no (they bounce).
+- **Not yet:** hailstones on the ground as objects, damage, dents; the climate's own hail bursts.

@@ -14,6 +14,8 @@ import sys
 SOUNDS = pathlib.Path(__file__).resolve().parent.parent / "dm_runtime" / "assets" / "sounds"
 ROAR = "feuer.wav"
 ROAR_VOLUME = 0.7
+HAIL = "hagel.wav"         # a CC0 hail storm, looped (CREDITS.md there); hail is ordinary weather, its sound lives here
+HAIL_VOLUME = 0.8
 STRIKE_FROM = 0.3          # a fire rain at least this strong has strikes
 STRIKE_GAP = (10.0, 20.0)  # seconds between two strikes at full strength; weaker rain, longer gaps
 NEAR, FAR = 800.0, 4500.0  # cm: where strikes land around the hero
@@ -87,13 +89,18 @@ def tick(gothic, now, rng):
         return None
     world = getattr(gothic.world, "generation", None)
     if world != _state["world"]:   # a load or a new world: its engine starts silent, and no strike is due
-        _state.update(world=world, roar=None, next=None)
+        _state.update(world=world, roar=None, next=None, hail=None)
     state = gothic.weather.state()
     fire = state.get("falling", 0.0) if state.get("kind") == "fire" else 0.0
     roar = round(fire * ROAR_VOLUME, 2)
     if roar != _state["roar"] and (SOUNDS / ROAR).is_file():
         gothic.weather.loop("fire", str(SOUNDS / ROAR), roar, 8.0)
         _state["roar"] = roar
+    hail = state.get("falling", 0.0) if state.get("kind") == "hail" else 0.0
+    rattle = round(hail * HAIL_VOLUME, 2)
+    if rattle != _state.get("hail") and (SOUNDS / HAIL).is_file():
+        gothic.weather.loop("hail", str(SOUNDS / HAIL), rattle, 4.0)
+        _state["hail"] = rattle
     if fire < STRIKE_FROM:
         _state["next"] = None
         return None

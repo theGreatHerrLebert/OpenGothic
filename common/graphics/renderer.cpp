@@ -986,6 +986,7 @@ void Renderer::drawPrecipitation(Tempest::Encoder<Tempest::CommandBuffer>& cmd, 
     case P::Fire:    kind = 3; count =  7000; break;   // fewer embers than drops: each one glows
     case P::Crystal: kind = 4; count = 18000; break;
     case P::Motes:   kind = 5; count =  2500; break;
+    case P::Hail:    kind = 8; count =  9000; break;   // 6 and 7 are meteors and shooting stars
     }
   count = size_t(float(count)*amount);
   struct Push {
@@ -1020,6 +1021,12 @@ void Renderer::drawPrecipitation(Tempest::Encoder<Tempest::CommandBuffer>& cmd, 
   cmd.setPushData(push);
   cmd.setPipeline(shaders.precipitation);
   cmd.draw(nullptr, 0, 6, 0, count);
+  if(w.kind==P::Hail) {
+    // grains hopping where they land: their own draw, each on a fixed spot of a known surface (docs/plan-weather.md)
+    push.kind = 9;
+    cmd.setPushData(push);
+    cmd.draw(nullptr, 0, 6, 0, size_t(3500.f*amount));
+    }
   if(w.kind==P::Fire) {
     // a few meteors far off in the sky: their own draw, never in the box around the camera
     push.kind = 6;

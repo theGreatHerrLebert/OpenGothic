@@ -73,7 +73,8 @@ class GlobalEffects {
     // Weather in the world (docs/plan-weather.md), set from Python and eased towards its target in game time. A change
     // of kind first lets the old precipitation stop, then the new one begins.
     // Fire, Crystal and Motes are magical weather (docs/plan-weather.md, Magical weather): never the climate's.
-    enum class Precipitation : uint8_t { None, Snow, Rain, Fire, Crystal, Motes };
+    // Hail (last, so saved kinds keep their numbers) is ordinary weather: not magic, not rain to the scripts.
+    enum class Precipitation : uint8_t { None, Snow, Rain, Fire, Crystal, Motes, Hail };
     struct Weather {
       Precipitation kind        = Precipitation::None;
       float         intensity   = 0;    // what falls now, 0..1

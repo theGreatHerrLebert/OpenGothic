@@ -27,6 +27,8 @@ GENERIC = {
     "heat": ["Was für eine Hitze.", "Bei der Hitze krieg ich keinen Bissen runter.", "Ich brauch was zu trinken.",
              "Mir läuft der Schweiß in die Stiefel.", "Nicht mal im Schatten hält man's aus.",
              "Heut geht kein Lüftchen.", "Bei der Hitze arbeitet doch keiner.", "Das Bier wird warm, bevor man's trinkt."],
+    "hail": ["Hagel! Rein mit euch!", "Au! Verdammt, das tut weh.", "Hagel, mitten am Tag. Was kommt als Nächstes?",
+             "So große Körner hab ich noch nie gesehen.", "Bloß weg hier, bevor einem der Schädel platzt."],
     # Magical weather: fear and wonder, not small talk.
     "fire": ["Der Himmel brennt!", "Innos steh uns bei!", "Das ist das Ende der Welt.", "Bleib bloß unter einem Dach!",
              "Feuer vom Himmel. Wer hat das gerufen?", "Das ist kein Gewitter. Das ist Magie."],
@@ -48,6 +50,7 @@ BY_GROUP = {
             "heat": ["Wenn's nicht bald regnet, verdorrt uns alles.", "Der Brunnen gibt kaum noch was her.",
                      "Die Schafe liegen nur noch im Schatten."],
             "night": ["Die Grillen singen. Morgen wird's wieder heiß."],
+            "hail": ["Der Hagel zerschlägt uns die ganze Ernte!", "Die Rüben! Da bleibt doch nichts übrig."],
             "fire": ["Die Ernte! Die ganze Ernte brennt!"], "crystal": ["Das Vieh muss in den Stall, sofort!"],
             "magic": ["Das bringt Unglück übers Feld."]},
     "SLD": {"rain": ["Und ich darf heut Nacht Wache stehen. Großartig."],
@@ -55,12 +58,14 @@ BY_GROUP = {
             "fog": ["Im Nebel sieht man keinen Banditen kommen."],
             "heat": ["In der Rüstung kocht man bei der Hitze.", "Bei der Hitze schlag ich mich mit keinem."],
             "night": ["Bei so einer Nacht steh ich gern Wache."],
+            "hail": ["Da hilft auch kein Helm."],
             "fire": ["Dafür zahlt Onar mir nicht genug."], "crystal": ["Da hilft keine Rüstung."]},
     "VLK": {"rain": ["Die ganze Gasse ist nur noch Matsch."],
             "snow": ["Wenn das so bleibt, wird das Holz teuer."],
             "fog": ["Bei dem Nebel bleiben die Leute zu Hause."],
             "heat": ["Bei der Hitze stinkt der ganze Hafen.", "Der Fisch auf dem Markt ist schon wieder hin."],
             "night": ["Heut Nacht schlafen sie alle auf den Dächern."],
+            "hail": ["Jetzt sind die Ziegel wieder hin."],
             "fire": ["Wasser! Holt Wasser!"], "magic": ["Das kommt bestimmt aus dem Kloster."]},
     "MIL": {"rain": ["Die Rüstung rostet mir, und keiner zahlt's."],
             "heat": ["Wache stehen bei der Hitze. Das ist doch eine Strafe."],
@@ -89,6 +94,7 @@ HERO = {
              "Ich such mir besser Schatten.", "Mir klebt alles am Leib."],
     "fog": ["Hier sieht man ja gar nichts.", "Nebel. Das hat mir noch gefehlt."],
     "night": ["Was für ein Himmel.", "Schöne Nacht. Fast zu schön für diese Insel."],
+    "hail": ["Au! Mein Kopf.", "Hagel. Natürlich."],
     "fire": ["Feuer vom Himmel. Großartig.", "Nichts wie weg hier."],
     "crystal": ["Das sticht wie tausend Nadeln."],
     "magic": ["Hier hat jemand gezaubert."],
@@ -125,6 +131,8 @@ def category(state, now, hour=12):
         return "magic"
     if raining and now - _state["flash_at"] < THUNDER_WINDOW:
         return "thunder"
+    if kind == "hail" and intensity > 0.2:
+        return "hail"
     if kind in ("rain", "snow") and intensity > 0.2:
         wx, wz = state.get("wind", (0, 0))
         if intensity > 0.75 or (wx * wx + wz * wz) ** 0.5 > 4.0:
@@ -150,7 +158,7 @@ def lines_for(instance, voice, what, base_kind):
         return []
     group = instance.split("_")[0]
     # their own lines speak of weather that is falling now: not of rain that has stopped, nor in a thunderclap
-    own = BY_GROUP.get(group, {}).get(base_kind, []) if what in ("rain", "snow", "storm", "fog", "heat", "night") + MAGIC else []
+    own = BY_GROUP.get(group, {}).get(base_kind, []) if what in ("rain", "snow", "hail", "storm", "fog", "heat", "night") + MAGIC else []
     if voice in FEMALE_VOICES:
         own = own + WOMEN.get(what, [])
     elif group in ROUGH:
@@ -160,7 +168,7 @@ def lines_for(instance, voice, what, base_kind):
 
 def spell(state, day, hour, what=None):
     """One spell of weather: the same kind in the same three hours (fog counts as its own kind)."""
-    kind = what if what in ("fog", "heat", "night") + MAGIC else state.get("kind")
+    kind = what if what in ("fog", "heat", "night", "hail") + MAGIC else state.get("kind")
     return f"{kind}-{day}-{int(hour) // 3}"
 
 
@@ -177,7 +185,7 @@ def tick(gothic, now, rng):
     from dm import voices
     hour, _ = gothic.world.time
     current = spell(state, gothic.world.day, hour, what)
-    base_kind = what if what in ("fog", "heat", "night") + MAGIC else (state.get("kind") if state.get("kind") in ("rain", "snow") else "rain")
+    base_kind = what if what in ("fog", "heat", "night", "hail") + MAGIC else (state.get("kind") if state.get("kind") in ("rain", "snow") else "rain")
     for npc in gothic.world.npcs_near(REMARK_NEAR):
         instance = getattr(npc, "instance", "") or ""
         if _said.get(instance) == current or not getattr(npc, "alive", True) or instance.startswith("PC_"):

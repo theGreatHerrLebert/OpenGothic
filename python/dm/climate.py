@@ -138,14 +138,21 @@ def tick(gothic, state, now):
         return None
     if cover is None:   # a story that set its own cover keeps it; otherwise snow lies while it snows and melts after
         # a crystal storm frosts the ground thinly, a fire rain leaves ash; snow lies thickest
-        share = {"snow": 0.8, "crystal": 0.35, "fire": 0.6}.get(kind)
+        # hail lies thin and white and melts within minutes
+        share = {"snow": 0.8, "crystal": 0.35, "fire": 0.6, "hail": 0.3}.get(kind)
         if share is not None:
-            gothic.weather.cover(min(1.0, intensity * share), 1200.0)
+            gothic.weather.cover(min(1.0, intensity * share), 120.0 if kind == "hail" else 1200.0)
         else:
-            gothic.weather.cover(0.0, 1800.0)
+            gothic.weather.cover(0.0, 300.0 if _last_kind[0] == "hail" else 1800.0)
+        # what lies is hail's until it has melted, whatever falls now
+        if kind == "hail":
+            _last_kind[0] = "hail"
+        elif share is not None or gothic.weather.state().get("cover", 0.0) < 0.01:
+            _last_kind[0] = kind
     return current
 
 
+_last_kind = [None]      # what lies came from: hail melts in minutes, snow in half an hour
 STORM_FROM = 0.75        # rain at least this heavy can bring lightning
 STORM_CHANCE = 0.06      # per look (every TICK_SECONDS): about one flash in half a minute
 

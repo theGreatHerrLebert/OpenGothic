@@ -99,12 +99,13 @@ void bindTrip(py::module_& m) {
                 using P = GlobalEffects::Precipitation;
                 P k = kind=="snow" ? P::Snow : kind=="rain" ? P::Rain : kind=="clear" ? P::None
                     : kind=="fire" ? P::Fire : kind=="crystal" ? P::Crystal : kind=="motes" ? P::Motes
-                    : throw std::invalid_argument("weather kind is snow, rain, fire, crystal, motes or clear: " + kind);
+                    : kind=="hail" ? P::Hail
+                    : throw std::invalid_argument("weather kind is snow, rain, hail, fire, crystal, motes or clear: " + kind);
                 requireWorld()->globalFx()->setWeather(k, intensity, fade, std::get<0>(wind), std::get<1>(wind), openSky);
                 },
               py::arg("kind"), py::arg("intensity") = 1.f, py::arg("fade") = 10.f,
               py::arg("wind") = std::make_tuple(0.f, 0.f), py::arg("open_sky") = false,
-              "Weather in the world: snow, rain, clear, or magical: fire (a rain of embers and meteors), crystal (a "
+              "Weather in the world: snow, rain, hail, clear, or magical: fire (a rain of embers and meteors), crystal (a "
               "storm of glass shards that frosts the ground) or motes (glowing dust in the air), intensity 0..1, reached over fade seconds of game time; "
               "wind (x, z) in metres per second. A change of kind lets the old one stop first. Normally nothing falls "
               "until the clouds have half covered the sky; open_sky lets it fall from a clear sky at once.");
@@ -149,7 +150,9 @@ void bindTrip(py::module_& m) {
   weather.def("state",
               []() {
                 auto& w = requireWorld()->globalFx()->weatherState();
-                const char* kinds[] = {"clear", "snow", "rain", "fire", "crystal", "motes"};
+                const char* kinds[] = {"clear", "snow", "rain", "fire", "crystal", "motes", "hail"};
+                static_assert(sizeof(kinds)/sizeof(kinds[0])==size_t(GlobalEffects::Precipitation::Hail)+1,
+                              "a name for every kind of weather");
                 py::dict d;
                 d["kind"] = kinds[int(w.kind)]; d["intensity"] = w.intensity; d["target"] = w.target;
                 d["wind"] = std::make_tuple(w.windX, w.windZ); d["cover"] = w.cover; d["wet"] = w.wet; d["overcast"] = w.overcast;

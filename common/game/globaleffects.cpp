@@ -78,7 +78,7 @@ void GlobalEffects::tickWeather(uint64_t dt) {
   // A crystal storm lays frost the same way, a fire rain ash; what settles gives what lies its colour, as fast as it
   // settles.
   const bool  settles = weather.kind==Precipitation::Snow || weather.kind==Precipitation::Crystal ||
-                        weather.kind==Precipitation::Fire;
+                        weather.kind==Precipitation::Fire || weather.kind==Precipitation::Hail;   // hail lies white
   if(weather.cover<weather.coverTarget && weather.coverSeconds>0.f) {
     const float snowing = settles ? falling() : 0.f;
     if(snowing>0.001f) {
@@ -107,7 +107,9 @@ void GlobalEffects::tickWeather(uint64_t dt) {
   for(auto& [name, l] : loops)
     ease(l.level, l.target, l.seconds);
   // The ground gets wet within a couple of minutes of rain and takes a quarter of an hour to dry, much less in heat.
-  const float wetTarget = weather.kind==Precipitation::Rain ? falling() : 0.f;
+  // hail wets the ground lightly while it falls and melts; it dries as after rain
+  const float wetTarget = weather.kind==Precipitation::Rain ? falling()
+                        : weather.kind==Precipitation::Hail ? 0.5f*falling() : 0.f;
   ease(weather.wet, wetTarget, wetTarget>weather.wet ? 120.f : 900.f/(1.f + 4.f*weather.heat));
   // People and animals in the open: rain soaks them within half a minute and they dry in about four (faster in heat);
   // snow or a crystal storm dusts them within a minute and melts off in three (half a minute in rain); a fire rain
@@ -116,7 +118,8 @@ void GlobalEffects::tickWeather(uint64_t dt) {
   const float rain       = weather.kind==Precipitation::Rain ? falling() : 0.f;
   const float dustTarget = flakes ? falling() : 0.f;
   const float sootTarget = weather.kind==Precipitation::Fire ? falling() : 0.f;
-  ease(weather.soak, rain, rain>weather.soak ? 30.f : 240.f/(1.f + 4.f*weather.heat));
+  const float soakTarget = std::max(rain, weather.kind==Precipitation::Hail ? 0.5f*falling() : 0.f);
+  ease(weather.soak, soakTarget, soakTarget>weather.soak ? 30.f : 240.f/(1.f + 4.f*weather.heat));
   ease(weather.dust, dustTarget, dustTarget>weather.dust ? 60.f : (rain>0.f ? 30.f : 180.f/(1.f + 4.f*weather.heat)));
   ease(weather.soot, sootTarget, sootTarget>weather.soot ? 60.f : (rain>0.f ? 60.f : 300.f));
   if(flakes && falling()>0.001f)
@@ -459,7 +462,7 @@ void GlobalEffects::tickWeatherSound() {
       }
     snd.setVolume(volume);
     };
-  keep(rainSound, "RAIN_01.WAV",       rain*0.9f);
+  keep(rainSound, "RAIN_01.WAV",       rain*0.9f);   // hail's own sound is a loop of ours (python/dm/magic_weather.py)
   keep(windSound, "WIND_HEAVY01.WAV",  wind*0.7f);
   // Magical weather sounds as the game's own spells: the fire rain's roar, the ice rain's tinkle, a faint hum.
   // The fire rain's roar is a long recording of our own (python/dm/magic_weather.py): the spell's is short and repeats.

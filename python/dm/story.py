@@ -818,14 +818,14 @@ def _keep_refusals(state):
         _refusal_bound.discard(name)
 
 
-WEATHER_KINDS = ("clear", "snow", "rain", "fire", "crystal", "motes")   # the last three are magic: a story's alone
+WEATHER_KINDS = ("clear", "snow", "rain", "hail", "fire", "crystal", "motes")   # the last three are magic: a story's alone
 
 
 def _check_weather(args, state):
     """Weather in the world: what falls, how strongly, how fast it comes, the wind, and snow lying on the ground."""
     _require(args, "kind")
     if args["kind"] not in WEATHER_KINDS:
-        raise PlanError("weather kind is snow, rain, clear, fire, crystal or motes")
+        raise PlanError("weather kind is snow, rain, hail, clear, fire, crystal or motes")
     for key, low, high in (("intensity", 0, 1), ("fade", 0, 3600), ("cover", 0, 1), ("cover_seconds", 0, 86400),
                            ("hours", 0.1, 24 * 30), ("heat", 0, 1), ("fog", 0, 1), ("fog_height", 2, 300),
                            ("fog_base", -1e6, 1e6)):

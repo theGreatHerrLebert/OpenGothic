@@ -32,7 +32,8 @@ layout(location = 2) in  vec3  inPos;
 layout(location = 3) in  float inGlint;
 layout(location = 0) out vec4  outColor;
 
-const uint KSnow = 1u, KRain = 2u, KFire = 3u, KCrystal = 4u, KMotes = 5u, KMeteor = 6u, KStar = 7u;
+const uint KSnow = 1u, KRain = 2u, KFire = 3u, KCrystal = 4u, KMotes = 5u, KMeteor = 6u, KStar = 7u, KHail = 8u,
+           KHop = 9u;
 
 vec4 fogAt() {
   const vec2  uv = gl_FragCoord.xy * scene.screenResInv;   // as fog.frag reads its LUT
@@ -86,18 +87,22 @@ void main() {
     }
 
   const bool rain = kind==KRain;
+  const bool ice  = kind==KHail || kind==KHop;
   float shape;
-  if(rain)
+  if(ice)
+    shape = 1.0 - smoothstep(0.55, 1.0, length(inUv));   // a round grain
+  else if(rain)
     shape = (1.0 - abs(inUv.x)) * (1.0 - abs(inUv.y)*0.6);
   else if(kind==KCrystal)
     shape = 1.0 - smoothstep(0.75, 1.0, abs(inUv.x) + abs(inUv.y));   // a sharp lozenge
   else
     shape = 1.0 - smoothstep(0.35, 1.0, length(inUv));
-  float alpha = shape * inAlpha * (rain ? 0.35 : kind==KCrystal ? 0.6 : 0.85);
+  float alpha = shape * inAlpha * (rain ? 0.35 : kind==KCrystal ? 0.6 : ice ? 0.9 : 0.85);
   if(alpha<=0.002)
     discard;
 
-  const vec3 albedo = rain ? vec3(0.55, 0.6, 0.65) : kind==KCrystal ? vec3(0.72, 0.86, 1.0) : vec3(0.9, 0.92, 0.95);
+  const vec3 albedo = rain ? vec3(0.55, 0.6, 0.65) : kind==KCrystal ? vec3(0.72, 0.86, 1.0)
+                    : ice ? vec3(0.86, 0.9, 0.95) : vec3(0.9, 0.92, 0.95);
   const vec3 light  = scene.sunColor * max(scene.sunDir.y, 0.0) * 0.6 + scene.ambient * 2.0
                     + NightAmbient * Fd_Lambert;
   vec3 color = albedo * light;

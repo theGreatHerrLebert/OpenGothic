@@ -20,7 +20,7 @@ layout(push_constant, std430) uniform Push {
   vec2  wind;       // cm per second along x and z
   float time;       // seconds of game time
   float intensity;  // 0..1
-  uint  kind;       // 1 snow, 2 rain, 3 fire, 4 crystal, 5 motes, 6 meteors, 7 shooting stars
+  uint  kind;       // 1 snow, 2 rain, 3 fire, 4 crystal, 5 motes, 6 meteors, 7 shooting stars, 8 hail, 9 its hops
   uint  pad0, pad1, pad2;
   vec4  tint;       // motes: their colour in rgb, the height of their layer's base in w (world cm)
   } push;
@@ -36,7 +36,8 @@ const float BoxSide   = 3000.0;   // cm around the camera, x and z
 const float BoxHeight = 2000.0;
 const float MoteLayer = 900.0;    // cm: the motes' layer, from a little under its base upwards
 
-const uint KSnow = 1u, KRain = 2u, KFire = 3u, KCrystal = 4u, KMotes = 5u, KMeteor = 6u, KStar = 7u;
+const uint KSnow = 1u, KRain = 2u, KFire = 3u, KCrystal = 4u, KMotes = 5u, KMeteor = 6u, KStar = 7u, KHail = 8u,
+           KHop = 9u;
 
 uint hashU(uint x) {
   x ^= x >> 16; x *= 0x7feb352du;
@@ -94,6 +95,55 @@ void meteor(vec2 c, bool star) {
   gl_Position = scene.viewProject * vec4(wp, 1.0);
   }
 
+// A hailstone hopping where it landed: a spot of its own in each round, on the surface the roof map knows there (never
+// outside the map), one hop of 30 cm and a small one of 8, then lying a moment and gone (docs/plan-weather.md, Hail).
+void hop(vec2 c) {
+  const uint  id     = uint(gl_InstanceIndex);
+  const float period = mix(0.6, 1.0, rnd(id, 0));
+  const float tt     = push.time + rnd(id, 1)*period;
+  const uint  cycle  = uint(floor(tt/period));
+  const float u      = tt - float(cycle)*period;
+  const uint  h      = hashU(id*6271u + cycle);
+  // a spot fixed in the world, wrapped into the square around the camera: it moves only when it leaves the square
+  vec3 p = vec3(rnd(h, 0)*BoxSide, 0.0, rnd(h, 1)*BoxSide);
+  p.xz = scene.camPos.xz + mod(p.xz - scene.camPos.xz + BoxSide*0.5, BoxSide) - BoxSide*0.5;
+  const vec2 roofUv = (p.xz - push.heightBox.xy) * push.heightBox.zw;
+  if(any(lessThan(roofUv, vec2(0))) || any(greaterThan(roofUv, vec2(1)))) {
+    hide(c, p);
+    return;
+    }
+  p.y = textureLod(roofMap, roofUv, 0).r;
+  if(abs(p.y - scene.camPos.y) > BoxHeight*0.5) {
+    hide(c, p);   // far above or below: not where one sees it land
+    return;
+    }
+  float y = 0.0;
+  if(u < 0.28) {
+    const float t = u/0.28;
+    y = 30.0*4.0*t*(1.0-t);
+    } else if(u < 0.42) {
+    const float t = (u-0.28)/0.14;
+    y = 8.0*4.0*t*(1.0-t);
+    }
+  const vec2 away = normalize(vec2(rnd(h, 2)-0.5, rnd(h, 3)-0.5) + vec2(1e-3)) * 18.0 * min(u/0.42, 1.0);
+  p += vec3(away.x, y + 1.0, away.y);
+  const vec3  d    = p - scene.camPos;
+  float a = 1.0 - smoothstep(0.7, 1.0, max(abs(d.x), abs(d.z))/(BoxSide*0.5));
+  a      *= 1.0 - smoothstep(0.75, 1.0, u/period);              // lies a moment, then melts away
+  a      *= smoothstep(40.0, 120.0, length(d));
+  if(a<=0.0) {
+    hide(c, p);
+    return;
+    }
+  const float size = mix(0.8, 1.5, rnd(h, 4));
+  const vec3  wp   = p + scene.pfxLeft*size*c.x + scene.pfxTop*size*c.y;
+  outUv       = c;
+  outAlpha    = a;
+  outPos      = wp;
+  outGlint    = 0.0;
+  gl_Position = scene.viewProject * vec4(wp, 1.0);
+  }
+
 void main() {
   const vec2 corners[6] = vec2[](vec2(-1,-1), vec2(1,-1), vec2(1,1), vec2(-1,-1), vec2(1,1), vec2(-1,1));
   const vec2 c    = corners[gl_VertexIndex % 6];
@@ -101,14 +151,19 @@ void main() {
     meteor(c, push.kind==KStar);
     return;
     }
+  if(push.kind==KHop) {
+    hop(c);
+    return;
+    }
   const uint id   = uint(gl_InstanceIndex);
   const uint kind = push.kind;
-  const bool streak = kind==KRain || kind==KFire;
+  const bool streak = kind==KRain || kind==KFire || kind==KHail;
 
   float fall = 110.0;
   if(kind==KRain)    fall = 900.0;
   if(kind==KFire)    fall = 520.0;
   if(kind==KCrystal) fall = 240.0;
+  if(kind==KHail)    fall = 1100.0;
   if(kind==KMotes)   fall = -22.0;                    // they rise, slowly
   fall *= mix(0.8, 1.25, rnd(id,3));
 
@@ -163,8 +218,10 @@ void main() {
   float glint = 0.0;
   if(streak) {
     const vec3 vel = normalize(vec3(drift.x, -fall, drift.y));
-    right = normalize(cross(vel, d)) * (kind==KFire ? 1.4 : 0.7);
-    up    = vel * (kind==KFire ? 13.0 : 32.0);
+    // a hailstone: a small grain, drawn a little long by its speed
+    const float grain = kind==KHail ? mix(0.8, 1.8, rnd(id,7)) : 0.0;
+    right = normalize(cross(vel, d)) * (kind==KFire ? 1.4 : kind==KHail ? grain : 0.7);
+    up    = vel * (kind==KFire ? 13.0 : kind==KHail ? grain*2.2 : 32.0);
     glint = kind==KFire ? 0.55 + 0.45*sin(push.time*mix(9.0, 17.0, rnd(id,4)) + rnd(id,5)*6.2832) : 0.0;
     } else if(kind==KCrystal) {
     // a flat shard turning about itself: it catches the light when it faces just so

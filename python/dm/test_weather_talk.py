@@ -81,3 +81,10 @@ assert "Ich glaub, heut klimpert's beim Pinkeln." in g["weather__16"]["narration
 assert "Ich glaub, heut klimpert's beim Pinkeln." not in g["weather__13"]["narration"]
 assert "Ich frier mir echt die Eier ab." not in g["weather__17"]["narration"]
 print("weather talk earthy ok")
+
+# Hail: its own category, after magic and thunder, with the farmers' own lines.
+wt._state.update(was_rain=False, flash_at=-1e9)
+assert wt.category({"kind": "hail", "intensity": 0.8}, 5000.0) == "hail"
+assert "Der Hagel zerschlägt uns die ganze Ernte!" in wt.lines_for("BAU_1", "13", "hail", "hail")
+assert wt.spell({"kind": "hail"}, 3, 14, "hail") == "hail-3-4"
+print("weather talk hail ok")

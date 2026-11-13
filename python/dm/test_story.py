@@ -950,7 +950,7 @@ def test_weather():
     # Weather a story sets, kept in the log and set again at once after a load.
     s = st.Story()
     s.validate([{"op": "weather", "kind": "snow", "intensity": 0.7, "wind": [2, 0], "cover": 0.5}])
-    rejected(s, [{"op": "weather", "kind": "hail"}], "kind")
+    rejected(s, [{"op": "weather", "kind": "sleet"}], "kind")
     rejected(s, [{"op": "weather", "kind": "rain", "intensity": 2}], "intensity")
     rejected(s, [{"op": "weather", "kind": "rain", "wind": [99, 0]}], "wind")
     calls = []
