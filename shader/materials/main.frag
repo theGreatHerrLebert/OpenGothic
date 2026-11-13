@@ -222,7 +222,11 @@ vec3 snowCover(vec3 albedo) {
     // hard line at a cell's edge.
     const float cell  = 1.0/(scene.weatherBox.z*float(textureSize(roofMap, 0).x));
     const float slope = sqrt(max(1.0-n.y*n.y, 0.0))/max(abs(n.y), 0.2);
+#if defined(ATEST)
+    const float tol   = 150.0 + cell*slope;   // foliage: the outer layer of a crown, not only its very top
+#else
     const float tol   = 50.0 + cell*slope;
+#endif
     const vec2  du    = vec2(0.75*cell*scene.weatherBox.z, 0.0);
     const vec2  dv    = vec2(0.0, 0.75*cell*scene.weatherBox.w);
     const vec2  taps[5] = vec2[](ruv, ruv+du, ruv-du, ruv+dv, ruv-dv);
@@ -232,7 +236,12 @@ vec3 snowCover(vec3 albedo) {
     if(shelter>=0.999)
       return albedo;   // under a roof
     }
+#if defined(ATEST)
+  // Leaves are thin and mostly steep: snow catches on them well before they face up.
+  const float up = smoothstep(0.0, 0.5, abs(n.y)) * 0.85;
+#else
   const float up = smoothstep(0.55, 0.85, n.y);
+#endif
   // Wet ground is darker; v1 has no gloss, the G-buffer has no channel for it (plan-weather.md).
   albedo *= mix(1.0, 0.62, scene.weatherWet*mix(0.6, 1.0, up)*(1.0-shelter));
   if(scene.weatherCover<=0.001)
