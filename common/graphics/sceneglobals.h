@@ -38,6 +38,7 @@ class SceneGlobals final {
 
     void setTime(uint64_t time);
     void setWeatherCover(float cover, float wet) { uboGlobalCpu.weatherCover = cover; uboGlobalCpu.weatherWet = wet; }
+    void setWeatherRoof(const Tempest::Texture2d& map, const Tempest::Vec4& box) { weatherRoof = &map; uboGlobalCpu.weatherBox = box; }
     void commitUbo(uint8_t fId);
     void prepareGlobals(Tempest::Encoder<Tempest::CommandBuffer> &cmd, uint8_t frameId);
 
@@ -69,6 +70,7 @@ class SceneGlobals final {
 
     const Tempest::Texture2d*         sceneColor   = &Resources::fallbackBlack();
     const Tempest::Texture2d*         sceneDepth   = &Resources::fallbackBlack();
+    const Tempest::Texture2d*         weatherRoof  = &Resources::fallbackBlack();
     const Tempest::Texture2d*         zbuffer      = &Resources::fallbackBlack();
 
     const Tempest::Texture2d*         gbufDiffuse  = &Resources::fallbackBlack();
@@ -123,6 +125,8 @@ class SceneGlobals final {
       float                           probeGridBias = 3;
       float                           weatherCover  = 0;   // snow lying on the landscape, 0..1 (plan-weather.md)
       float                           weatherWet    = 0;   // how wet the landscape is, 0..1
+      float                           weatherPad    = 0;
+      Tempest::Vec4                   weatherBox    = {};  // the roof map's (min x, min z, 1/width, 1/depth), cm
       };
 
     Tempest::UniformBuffer<UboGlobal> uboGlobalPf[Resources::MaxFramesInFlight][V_Count];

@@ -21,6 +21,7 @@ WorldView::WorldView(const PackedMesh& wmesh, std::string_view skyPreset)
     objGroup(visuals), pfxGroup(*this,sGlobal,visuals), land(visuals,wmesh) {
   pfxGroup.resetTicks();
   buildWeatherHeight(wmesh);
+  sGlobal.setWeatherRoof(weatherHeightMap, weatherHeightBox);
   }
 
 WorldView::~WorldView() {

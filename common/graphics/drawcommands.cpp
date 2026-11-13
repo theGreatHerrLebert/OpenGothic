@@ -130,6 +130,10 @@ void DrawCommands::setBindings(Tempest::Encoder<CommandBuffer>& cmd, const DrawC
     cmd.setBinding(L_Morph,    *bx.staticMesh->morph.samples);
     }
 
+  if(v==SceneGlobals::V_Main && !cx.isForwardShading() && cx.alpha!=Material::Ghost) {
+    cmd.setBinding(L_Weather, *scene.weatherRoof, Sampler::nearest(ClampMode::ClampToEdge));
+    }
+
   if(v==SceneGlobals::V_Main && cx.isSceneInfoRequired()) {
     cmd.setBinding(L_SceneClr, *scene.sceneColor, Sampler::bilinear(ClampMode::MirroredRepeat));
     cmd.setBinding(L_GDepth,   *scene.sceneDepth, Sampler::nearest (ClampMode::MirroredRepeat));

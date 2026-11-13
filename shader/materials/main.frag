@@ -180,8 +180,9 @@ vec4 diffuseTex() {
   }
 #endif
 
-#if defined(GBUFFER) && defined(FLAT_NORMAL)
-// Snow lying on the landscape (docs/plan-weather.md): on ground that faces up, in patches that grow with the cover.
+#if defined(GBUFFER) && (MESH_TYPE!=T_PFX)
+// Snow lying on what faces up, and wet ground (docs/plan-weather.md): landscape, roofs, rocks, the tops of trees, but
+// no characters, and nothing under a static roof (the roof map). Patches grow with the cover.
 float snowHash(vec2 p) {
   return fract(sin(dot(p, vec2(127.1, 311.7)))*43758.5453);
   }
@@ -193,25 +194,44 @@ float snowNoise(vec2 p) {
   return mix(mix(snowHash(i), snowHash(i+vec2(1,0)), f.x), mix(snowHash(i+vec2(0,1)), snowHash(i+vec2(1,1)), f.x), f.y);
   }
 
+vec3 weatherWorldPos() {
+#if defined(MAT_POSITION)
+  return shInp.pos;
+#else
+  // objects carry no position: from the fragment's depth, as fog.frag does
+  vec4 p = scene.viewProjectInv * vec4(gl_FragCoord.xy*scene.screenResInv*2.0-1.0, gl_FragCoord.z, 1.0);
+  return p.xyz/p.w;
+#endif
+  }
+
 vec3 snowCover(vec3 albedo) {
   if(scene.weatherCover<=0.001 && scene.weatherWet<=0.001)
     return albedo;
-  const vec3  n      = normalize(shInp.normal);
-  const float up     = smoothstep(0.55, 0.85, n.y);
+#if !defined(SIMPLE_MAT)
+  if((bucket[bucketId].flags & (BK_SKIN|BK_MORPH))!=0)
+    return albedo;   // people and animals stay as they are
+#endif
+  const vec3 pos = weatherWorldPos();
+  const vec2 ruv = (pos.xz - scene.weatherBox.xy) * scene.weatherBox.zw;
+  if(all(greaterThanEqual(ruv, vec2(0))) && all(lessThanEqual(ruv, vec2(1))) &&
+     textureLod(roofMap, ruv, 0).r > pos.y + 50.0)
+    return albedo;   // under a roof
+  const vec3  n  = normalize(shInp.normal);
+  const float up = smoothstep(0.55, 0.85, n.y);
   // Wet ground is darker; v1 has no gloss, the G-buffer has no channel for it (plan-weather.md).
   albedo *= mix(1.0, 0.62, scene.weatherWet*mix(0.6, 1.0, up));
   if(scene.weatherCover<=0.001)
     return albedo;
-  const vec2  p      = shInp.pos.xz/100.0;                       // metres
+  const vec2  p      = pos.xz/100.0;                       // metres
   const float noise  = snowNoise(p*0.35)*0.6 + snowNoise(p*1.7)*0.4;
   const float amount = clamp(scene.weatherCover*1.6 - (1.0-noise), 0.0, 1.0) * up;
-  return mix(albedo, vec3(0.86, 0.88, 0.92), amount);            // in texture space: lighting decodes the albedo
+  return mix(albedo, vec3(0.86, 0.88, 0.92), amount);      // in texture space: lighting decodes the albedo
   }
 #endif
 
 #if defined(GBUFFER)
 void mainGBuffer(vec4 t) {
-#if defined(FLAT_NORMAL)
+#if (MESH_TYPE!=T_PFX)
   t.rgb = snowCover(t.rgb);
 #endif
   outDiffuse.rgb = t.rgb;

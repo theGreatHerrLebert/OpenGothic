@@ -47,6 +47,7 @@ const uint L_Morph      = 11;
 const uint L_SceneClr   = 12;
 const uint L_GDepth     = 13;
 const uint L_CmdOffsets = 14;
+const uint L_Weather    = 15;
 const uint L_VsmPages   = L_Shadow0;
 const uint L_VsmLights  = L_Shadow1;
 
@@ -137,6 +138,10 @@ layout(binding = L_Morph,    std430) readonly buffer MSmp { vec4    samples[];  
 #if defined(GL_FRAGMENT_SHADER) && defined(FORWARD) && !defined(DEPTH_ONLY)
 layout(binding = L_Shadow0)          uniform sampler2D textureSm0;
 layout(binding = L_Shadow1)          uniform sampler2D textureSm1;
+#endif
+
+#if defined(GL_FRAGMENT_SHADER) && defined(GBUFFER) && (MESH_TYPE!=T_PFX)
+layout(binding = L_Weather)          uniform sampler2D roofMap;
 #endif
 
 #if defined(GL_FRAGMENT_SHADER) && (defined(WATER) || defined(GHOST))
