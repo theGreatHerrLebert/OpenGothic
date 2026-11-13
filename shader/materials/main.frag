@@ -212,11 +212,16 @@ vec3 snowCover(vec3 albedo) {
     return albedo;   // people and animals stay as they are
 #endif
   const vec3 pos = weatherWorldPos();
+  const vec3 n   = normalize(shInp.normal);
   const vec2 ruv = (pos.xz - scene.weatherBox.xy) * scene.weatherBox.zw;
-  if(all(greaterThanEqual(ruv, vec2(0))) && all(lessThanEqual(ruv, vec2(1))) &&
-     textureLod(roofMap, ruv, 0).r > pos.y + 50.0)
-    return albedo;   // under a roof
-  const vec3  n  = normalize(shInp.normal);
+  if(all(greaterThanEqual(ruv, vec2(0))) && all(lessThanEqual(ruv, vec2(1)))) {
+    // The map holds one height per cell; on a slope the surface itself rises within its cell, so the tolerance
+    // grows with the cell's width and the surface's steepness before something counts as a roof above it.
+    const float cell  = 1.0/(scene.weatherBox.z*float(textureSize(roofMap, 0).x));
+    const float slope = sqrt(max(1.0-n.y*n.y, 0.0))/max(abs(n.y), 0.2);
+    if(textureLod(roofMap, ruv, 0).r > pos.y + 50.0 + cell*slope)
+      return albedo;   // under a roof
+    }
   const float up = smoothstep(0.55, 0.85, n.y);
   // Wet ground is darker; v1 has no gloss, the G-buffer has no channel for it (plan-weather.md).
   albedo *= mix(1.0, 0.62, scene.weatherWet*mix(0.6, 1.0, up));
