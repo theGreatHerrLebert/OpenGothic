@@ -67,6 +67,10 @@ consequence, nothing underneath. What they remembered instead:
 - **Depth where it belongs.** Keep the simple way open (send the runaway novice home, get paid) and let one more
   question find why he acts tough. Not everyone needs a hidden layer; a plain, readable person is worth as much,
   because the player can use him. Keep characters consistent enough to be played on.
+- **A reason to help.** Being able to help someone is not yet a reason to. Let someone promise something early that
+  is worth more than gold to the hero: the lute player at the tavern will make a song about him and sing it to the
+  whole room when it is done; a farmer will tell the others; a mercenary will remember. Then keep the promise, in
+  front of the people who matter.
 - **Decisions with a cost.** Keeping something is no decision when keeping costs nothing. Weigh two claims, loyalty
   against gain, a sure thing against something whose worth is only hinted at. Pitch stakes at this hero: 25 gold is
   nothing to one with hundreds and too little to one with 35 to betray anybody for.
