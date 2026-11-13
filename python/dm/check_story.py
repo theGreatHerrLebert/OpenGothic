@@ -169,6 +169,26 @@ def duplicate_choice_warnings(data):
     return out
 
 
+def repeated_hero_lines(data, most=3):
+    """A short line the hero says in many places is heard as the same take again and again ("Aha." five times)."""
+    import collections
+    graphs = list((data.get("conversations") or {}).values())
+    graphs += [op["graph"] for op in _all_ops(data.get("plan")) if isinstance(op.get("graph"), dict)]
+    seen, counts = set(), collections.Counter()
+    for graph_data in graphs:
+        key = json.dumps(graph_data, sort_keys=True)
+        if key in seen:
+            continue   # a conversation listed and attached is one conversation
+        seen.add(key)
+        for node in (graph_data.get("nodes") or {}).values():
+            for choice in node.get("choices") or []:
+                text = choice.get("text", "")
+                if text and len(text.split()) <= 3 and text.rstrip(".") != "Zurück":
+                    counts[text] += 1
+    return [f"the hero says \"{text}\" {n} times: the same take each time; vary it, or let him react to what was said"
+            for text, n in counts.most_common() if n > most]
+
+
 def ending_warnings(data):
     """Technical weak spots of a story's endings and key items, as the brief's 'Good to play' describes. Warnings only:
     whether a story is good is for the player to say."""
@@ -327,6 +347,7 @@ def check(path, names_path):
     warnings += ending_warnings(data)
     warnings += value_warnings(data)
     warnings += duplicate_choice_warnings(data)
+    warnings += repeated_hero_lines(data)
     errors += softlock_errors(data)
     closures = data.get("closures")
     if closures is not None and (not isinstance(closures, list) or not all(isinstance(c, dict) for c in closures)):

@@ -113,6 +113,8 @@ two sentences at a time.
 - Every line answers what was just said, and keeps in mind who speaks to whom, where, and what has happened.
 - A line that judges the hero by what others see (his robe, his rank) needs a check behind it.
 - Every choice says what it does and what it implies; two choices that show together say different things.
+- The hero's short replies are voiced takes: "Aha." said five times is heard five times. Let him react to what was
+  said instead (the checker warns past three).
 - Let the player postpone or refuse, unless the situation truly forces a decision.
 
 ## Let the story finish, and life continue

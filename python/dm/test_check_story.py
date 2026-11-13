@@ -90,6 +90,13 @@ found = check_story.duplicate_choice_warnings(twins)
 assert len(found) == 1 and "Gleicher Wurf." in found[0], found
 print("duplicate choices ok")
 
+parrot = {"conversations": {f"c{i}": {"nodes": {"a": {"line": f"Erklärung {i}.",
+                                                     "choices": [{"text": "Aha.", "goto": "a"}, {"text": "Zurück.", "goto": "a"}]}}}
+                            for i in range(5)}}
+found = check_story.repeated_hero_lines(parrot)
+assert len(found) == 1 and "Aha." in found[0] and "5 times" in found[0], found
+print("repeated hero lines ok")
+
 # Discoverability: a topic nobody points to, a night-only topic nobody says is at night, a deed nothing hints at.
 from dm import discoverability  # noqa: E402
 G = lambda *lines: {"start": "a", "nodes": {"a": {"line": lines[0], "choices": [{"text": l, "ends": True} for l in lines[1:]] or [{"text": "Gut.", "ends": True}]}}}
