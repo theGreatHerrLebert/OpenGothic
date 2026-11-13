@@ -415,6 +415,12 @@ void Renderer::resetViewport(Tempest::Size res, Tempest::Size fullRes) {
 
   // volumetric sky
   sky.occlusionLut = StorageImage();
+  {
+  // the weather's volumetric clouds: a quarter of the internal resolution, at most 480x270, keeping the aspect
+  const float k  = std::min({0.25f, 480.f/float(std::max(w,1u)), 270.f/float(std::max(h,1u))});
+  sky.weatherClouds = device.attachment(TextureFormat::RGBA16F, std::max(1u, uint32_t(std::ceil(float(w)*k))),
+                                        std::max(1u, uint32_t(std::ceil(float(h)*k))));
+  }
 
   // software renderer
   swr.outputImage = StorageImage();
@@ -490,6 +496,41 @@ void Renderer::resetSkyFog() {
     }
   }
 
+void Renderer::drawWeatherClouds(Tempest::Encoder<Tempest::CommandBuffer>& cmd, WorldView& wview) {
+  // docs/plan-clouds.md: ray-marched into a small image while the sky is closing or closed; off otherwise, and the
+  // sky, fog and sun shaders then do not read it (the same overcast threshold).
+  auto* world = Gothic::inst().world();
+  sky.cloudsOn = false;
+  if(world==nullptr || sky.quality==PathTrace || sky.weatherClouds.isEmpty())
+    return;
+  const auto& w = world->globalFx()->weatherState();
+  const uint64_t now = world->tickCount();
+  const float    dt  = sky.cloudTick==0 ? 0.f : float(std::min<uint64_t>(now-sky.cloudTick, 250))/1000.f;
+  sky.cloudTick = now;
+  // the wind carries the field, with a steady drift of its own so a windless sky still moves
+  sky.cloudWind += Vec2(w.windX*6.f + 4.f, w.windZ*6.f + 1.5f)*dt;
+  if(w.overcast<=0.01f)
+    return;
+  sky.cloudsOn = true;
+
+  struct Push {
+    Vec4 target;
+    Vec4 weather;
+    } push;
+  push.target  = Vec4(float(sky.weatherClouds.w()), float(sky.weatherClouds.h()), sky.cloudWind.x, sky.cloudWind.y);
+  push.weather = Vec4(w.overcast, w.kind==GlobalEffects::Precipitation::Snow ? 1.f : 0.f,
+                      float(now%(1000*1000))/1000.f, w.flash);
+
+  auto& scene = wview.sceneGlobals();
+  cmd.setFramebuffer({{sky.weatherClouds, Tempest::Discard, Tempest::Preserve}});
+  cmd.setBinding(0, scene.uboGlobal[SceneGlobals::V_Main]);
+  cmd.setBinding(1, sky.transLut, sky.sampler);
+  cmd.setBinding(2, sky.viewLut,  sky.sampler);
+  cmd.setPushData(&push, sizeof(push));
+  cmd.setPipeline(shaders.weatherClouds);
+  cmd.draw(nullptr, 0, 3);
+  }
+
 void Renderer::prepareSky(Tempest::Encoder<Tempest::CommandBuffer>& cmd, WorldView& wview) {
   auto& scene   = wview.sceneGlobals();
 
@@ -533,6 +574,8 @@ void Renderer::prepareSky(Tempest::Encoder<Tempest::CommandBuffer>& cmd, WorldVi
   cmd.setPushData(&sz, sizeof(sz));
   cmd.setPipeline(shaders.skyViewLut);
   cmd.draw(nullptr, 0, 3);
+
+  drawWeatherClouds(cmd, wview);
 
   sz = Vec2(float(sky.viewCldLut.w()), float(sky.viewCldLut.h()));
   cmd.setFramebuffer({{sky.viewCldLut, Tempest::Discard, Tempest::Preserve}});
@@ -958,6 +1001,7 @@ void Renderer::drawFog(Tempest::Encoder<Tempest::CommandBuffer>& cmd, const Worl
       cmd.setBinding(1, sky.fogLut3D, Sampler::bilinear(ClampMode::ClampToEdge));
       cmd.setBinding(2, zbuffer, Sampler::nearest()); // NOTE: wanna here depthFetch from gles2
       cmd.setBinding(3, scene.uboGlobal[SceneGlobals::V_Main]);
+      cmd.setBinding(7, sky.weatherClouds, Sampler::bilinear(ClampMode::ClampToEdge));
       cmd.setPipeline(shaders.fog);
       break;
       }
@@ -967,6 +1011,7 @@ void Renderer::drawFog(Tempest::Encoder<Tempest::CommandBuffer>& cmd, const Worl
       cmd.setBinding(2, zbuffer,        Sampler::nearest());
       cmd.setBinding(3, scene.uboGlobal[SceneGlobals::V_Main]);
       cmd.setBinding(4, sky.occlusionLut);
+      cmd.setBinding(7, sky.weatherClouds, Sampler::bilinear(ClampMode::ClampToEdge));
       cmd.setPipeline(shaders.fog3dHQ);
       break;
       }
@@ -1035,10 +1080,6 @@ void Renderer::drawSunMoon(Tempest::Encoder<Tempest::CommandBuffer>& cmd, const 
   push.sunDir         = d;
   push.viewProjectInv = scene.viewProjectLwcInv();
 
-  // Behind the weather's clouds the sun and moon disappear (docs/plan-weather.md).
-  if(auto* world = Gothic::inst().world())
-    push.GSunIntensity *= std::max(0.f, 1.f - 1.25f*world->globalFx()->weatherState().overcast);
-
   // HACK
   if(isSun) {
     float day = sun.dir().y;
@@ -1052,6 +1093,7 @@ void Renderer::drawSunMoon(Tempest::Encoder<Tempest::CommandBuffer>& cmd, const 
   cmd.setBinding(0, scene.uboGlobal[SceneGlobals::V_Main]);
   cmd.setBinding(1, isSun ? wview.sky().sunImage() : wview.sky().moonImage());
   cmd.setBinding(2, sky.transLut, sky.sampler);
+  cmd.setBinding(3, sky.weatherClouds, Sampler::bilinear(ClampMode::ClampToEdge));
   cmd.setPushData(push);
   cmd.setPipeline(shaders.sun);
   cmd.draw(nullptr, 0, 6);
@@ -2025,6 +2067,7 @@ void Renderer::drawSky(Encoder<CommandBuffer>& cmd, const WorldView& wview) {
   cmd.setBinding(10, gx.texture(0), Sampler::bilinear(ClampMode::Repeat));
   cmd.setBinding(11, gx.texture(1), Sampler::trillinear(ClampMode::ClampToEdge));
   cmd.setBinding(12, gx.texture(2), Sampler::trillinear(ClampMode::ClampToEdge));
+  cmd.setBinding(13, sky.weatherClouds, Sampler::bilinear(ClampMode::ClampToEdge));
   struct PushGalaxy {
     Vec4 main, tint, neb0, neb1, aurora;
     } gp;

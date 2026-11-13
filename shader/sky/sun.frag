@@ -12,6 +12,7 @@ layout(binding = 0, std140) uniform UboScene {
   };
 layout(binding = 1) uniform sampler2D sunSprite;
 layout(binding = 2) uniform sampler2D tLUT;
+layout(binding = 3) uniform sampler2D weatherCloudImg;   // a cloud in front hides the disc (plan-clouds.md)
 
 layout(push_constant, std430) uniform UboPush {
   vec2  sunPos;
@@ -63,6 +64,8 @@ void main() {
 
   lum *= push.GSunIntensity;
   lum *= scene.exposure;
+  if(scene.weatherOvercast>0.01)
+    lum *= textureLod(weatherCloudImg, gl_FragCoord.xy*scene.screenResInv, 0).a;
 
   if(rayIntersect(pos, view, RPlanet)>=0.0) {
     lum = vec3(0.0);

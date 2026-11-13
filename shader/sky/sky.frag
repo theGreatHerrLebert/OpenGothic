@@ -28,6 +28,8 @@ layout(binding = 9) uniform sampler2D textureNightL1;
 layout(binding = 10) uniform sampler2D galaxyPanorama;
 layout(binding = 11) uniform sampler2D galaxyNebula0;
 layout(binding = 12) uniform sampler2D galaxyNebula1;
+// The weather's volumetric clouds (docs/plan-clouds.md): light in rgb, the sky's transmittance through them in a.
+layout(binding = 13) uniform sampler2D weatherCloudImg;
 layout(push_constant, std140) uniform PushGalaxy {
   vec4 main;   // amount (0 the game's sky .. 1 the galaxy), gain, grade, spin
   vec4 tint;   // rgb the grading colour, w a glow from the music
@@ -105,7 +107,7 @@ vec3 applyClouds(vec3 skyColor) {
   return applyClouds(skyColor, skyLUT, plPos, scene.sunDir, viewDir, night,
                      scene.cloudsDir.xy, scene.cloudsDir.zw,
                      textureDayL1,textureDayL0, textureNightL1,textureNightL0,
-                     scene.weatherOvercast, scene.weatherSnowy);
+                     0.0, 0.0);   // weather clouds are volumetric here (weatherCloudImg), not the flat layer
   }
 
 vec3 galaxyLinear(vec3 c) {
@@ -225,7 +227,11 @@ void main() {
   float tr  = 1.0;
   // Clouds
   lum = applyClouds(lum);
-  // A closed sky: grey and dark, the clouds pulled together (docs/plan-weather.md); a flash lights it up.
+  if(scene.weatherOvercast>0.01) {
+    // sky behind them times their transmittance, plus their own light; the fog pass applies the same transmittance
+    const vec4 cl = textureLod(weatherCloudImg, uv, 0);
+    lum = lum*cl.a + cl.rgb;
+    }
   lum = lum * scene.GSunIntensity;
 
   lum *= scene.exposure;

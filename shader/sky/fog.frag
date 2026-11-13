@@ -27,6 +27,9 @@ layout(binding = 1) uniform sampler3D fogLutMs;
 #endif
 
 layout(binding = 2) uniform sampler2D depth;
+#if !defined(GL_COMPUTE_SHADER)
+layout(binding = 7) uniform sampler2D weatherCloudImg;   // the weather's clouds: transmittance in a (plan-clouds.md)
+#endif
 
 layout(binding = 3, std140) uniform UboScene {
   SceneDesc scene;
@@ -200,8 +203,8 @@ void main_frag() {
   lum *= scene.exposure;
   // A closed sky (docs/plan-weather.md): the atmosphere the fog adds over the sky is mostly the blue sky and the sun's
   // glow, which the weather's clouds cover; over the ground it stays, so distance still hazes.
-  if(isSky)
-    lum *= 1.0 - 0.85*scene.weatherOvercast;
+  if(isSky && scene.weatherOvercast>0.01)
+    lum *= textureLod(weatherCloudImg, uv, 0).a;   // the clouds cover the sky's own glow, as sky.frag covers the sky
 
   outColor = vec4(lum, 1.0-tr);
   }

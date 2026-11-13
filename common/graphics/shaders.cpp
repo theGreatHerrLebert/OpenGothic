@@ -108,6 +108,7 @@ void Shaders::compileShaders() noexcept {
   irradiance         = computeShader("irradiance.comp.sprv");
   cloudsLut          = computeShader("clouds_lut.comp.sprv");
   skyTransmittance   = postEffect("sky_transmittance");
+  weatherClouds      = postEffect("weather_clouds");   // docs/plan-clouds.md
   skyMultiScattering = postEffect("sky_multi_scattering");
   skyViewLut         = postEffect("sky_view_lut");
   skyViewCldLut      = postEffect("sky_view_clouds_lut");
