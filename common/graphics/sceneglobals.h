@@ -38,6 +38,11 @@ class SceneGlobals final {
 
     void setTime(uint64_t time);
     void setWeatherCover(float cover, float wet) { uboGlobalCpu.weatherCover = cover; uboGlobalCpu.weatherWet = wet; }
+    // People and animals (docs/plan-weather.md, Characters): wet, snow or frost dusting, soot.
+    void setWeatherCharacters(float soak, float dust, float dustFrost, float soot) {
+      uboGlobalCpu.weatherSoak = soak; uboGlobalCpu.weatherDust = dust;
+      uboGlobalCpu.weatherDustFrost = dustFrost; uboGlobalCpu.weatherSoot = soot;
+      }
     // magic: 0 none, 3 fire, 4 crystal, 5 motes (GlobalEffects::Precipitation), as strong as magicAmount
     void setWeatherSky(float overcast, float flash, float snowy, float heat, int magic = 0, float magicAmount = 0,
                        float frost = 0, float ash = 0);
@@ -142,6 +147,10 @@ class SceneGlobals final {
       Tempest::Vec3                   weatherFlashCl  = {1,1,1.1f}; // the flash's colour: a fire rain's is orange
       float                           weatherFrost    = 0; // how much of the cover is glassy frost, 0..1
       float                           weatherAsh      = 0; // how much of it is a fire rain's ash, 0..1
+      float                           weatherSoak     = 0; // people and animals: how wet, 0..1
+      float                           weatherDust     = 0; // their dusting of snow (or frost), 0..1
+      float                           weatherDustFrost= 0; // how much of that dusting is glassy frost, 0..1
+      float                           weatherSoot     = 0; // a fire rain's soot on them, 0..1
       float                           weatherPad[3]   = {};
       };
 

@@ -276,3 +276,25 @@ restarted), and nothing happens where the fire comes down.
 - **Shooting stars:** on summer's warm clear nights, white-blue, quick and rare (`weather.shooting_stars(rate)`, the
   meteors' path as kind 7, none under clouds). Not yet seen in game.
 - **Arcane mist:** seen in game by day (violet fog, motes): fine as it is.
+
+## Characters: wet clothes and a dusting of snow (2026-11-13)
+
+- **What drives it:** four values of their own in `GlobalEffects::Weather`, eased in `tickWeather` and passed to the
+  shaders beside the ground's (`weatherSoak`, `weatherDust`, `weatherDustFrost`, `weatherSoot` in `SceneDesc`).
+  `soak` follows the rain that falls: soaked within half a minute, dry in about four minutes (faster in heat). `dust`
+  follows snow or a crystal storm: within a minute, melting in three (half a minute once it rains). `dustFrost` is how
+  much of the dusting is frost; it turns towards what falls within 20 s. `soot` follows a fire rain: a minute to
+  settle, five to fade (one in rain). They do not wait for the ground: a man is wet before the road is.
+- **Shading:** `weatherOnCharacter` in `main.frag`, for buckets with `BK_SKIN` or `BK_MORPH` (people, animals, heads).
+  Wet is darker and deeper in colour (the ground's formula, a little gentler); faces (the morph heads) only 30 % of it.
+  The dusting is snow white, or the ground's glassy blue frost under a crystal storm, on what faces up (shoulders, the
+  top of the head or hat, an animal's back), patchy and at most about 40 % of it; noise on the mesh's texture
+  coordinates keeps the patches on him as he moves. A face looking forward does not face up and gets none. Soot is a
+  faint grey-brown darkening, most on top. Motes leave nothing.
+- **Shelter:** the roof map, as for the ground, with the tolerance of a moderate slope (50 cm plus one cell), per
+  fragment. There is no per-character memory: stepping under a roof dries him and clears the snow at once, and
+  stepping out wets him at once to however wet the weather has made everyone in the open.
+- **Not done:** no gloss or drips (the G-buffer has no channel for it); no per-character state (an NPC who has been
+  indoors all along is as wet as one outside the moment he steps out); weapons and items on a character are static
+  meshes and get the ground's treatment; patches can break at texture seams; a character under a tree counts as
+  sheltered, as the ground does. Untested in game.

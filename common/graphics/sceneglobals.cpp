@@ -321,3 +321,6 @@ void SceneGlobals::setWeatherSky(float overcast, float flash, float snowy, float
 
 // The weather's vec3 must start a 16-byte row, as std430 places a vec3 in GLSL (shader/scene.glsl).
 static_assert(offsetof(SceneGlobals::UboGlobal, weatherFlashCl)%16==0, "weatherFlashCl must be 16-byte aligned");
+// The characters' weather fills the row after it; the struct ends on a whole row (shader/scene.glsl).
+static_assert(offsetof(SceneGlobals::UboGlobal, weatherSoot)%16==0, "weatherSoot must start a 16-byte row");
+static_assert(sizeof(SceneGlobals::UboGlobal)%16==0, "UboGlobal must end on a 16-byte row");
