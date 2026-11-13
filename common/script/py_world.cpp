@@ -5,6 +5,8 @@
 
 #include "script/pythonvm.h"
 #include "world/aiqueue.h"
+#include "graphics/effect.h"
+#include "graphics/visualfx.h"
 #include "world/objects/interactive.h"
 
 namespace py = pybind11;
@@ -210,6 +212,30 @@ void bindWorld(py::module_& m) {
              return py::cast(std::make_tuple(p.x, p.y, p.z));
              },
            py::arg("name"), "Where a waypoint is, as (x, y, z), or None.")
+      .def("play_effect",
+           [](const PyWorld&, const std::string& name, float x, float y, float z, float seconds) {
+             // as Wld_PlayEffect, at a point: the game's own spell effects carry their light and sound
+             auto* w   = requireWorld();
+             auto* vfx = Gothic::inst().loadVisualFx(name);
+             if(vfx==nullptr)
+               return false;
+             Effect e(*vfx, *w, Tempest::Vec3(x, y, z));
+             e.setPhysicsDisable();   // only its light, look and sound: a spell's collision would deal damage and
+             e.setActive(true);       // blame someone (docs/plan-weather.md, Fire rain round 2)
+             w->runEffect(std::move(e), uint64_t(std::clamp(seconds, 0.f, 600.f)*1000.f));
+             return true;
+             },
+           py::arg("name"), py::arg("x"), py::arg("y"), py::arg("z"), py::arg("seconds") = 0.f,
+           "Play one of the game's visual effects (a VFX instance such as SPELLFX_FIRESTORM_COLLIDE) at a point (cm). "
+           "seconds bounds how long it runs (0: as long as the effect lasts by itself); it is not saved. "
+           "False if there is no such effect.")
+      .def("stop_effect",
+           [](const PyWorld&, const std::string& name) {
+             auto* vfx = Gothic::inst().loadVisualFx(name);
+             if(vfx!=nullptr)
+               requireWorld()->stopEffect(*vfx);
+             },
+           py::arg("name"), "Stop every running instance of a visual effect, as Wld_StopEffect.")
       .def("objects_near",
            [](const PyWorld&, float radius) {
              auto* w  = requireWorld();

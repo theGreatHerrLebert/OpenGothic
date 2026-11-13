@@ -154,6 +154,19 @@ void bindPlayer(py::module_& m) {
              },
            py::arg("hp"),
            "Set HP directly (clamped by the engine).")
+      .def("hurt",
+           [](const PyPlayer&, int amount) {
+             auto* p = requirePlayer();
+             // a wound, never death: at least 1 hp stays; god mode, a cutscene and the immortal take none (the engine)
+             const int32_t cur  = p->attribute(ATR_HITPOINTS);
+             const int32_t loss = std::min(std::max(amount, 0), cur - 1);
+             if(loss<=0 || p->isDead() || p->isUnconscious())
+               return 0;
+             p->changeAttribute(ATR_HITPOINTS, -loss, false);
+             return cur - p->attribute(ATR_HITPOINTS);
+             },
+           py::arg("amount"),
+           "Wound by up to amount hp, never below 1 (weather, not combat: nobody is blamed). Returns the hp taken.")
       .def("__repr__", &PyPlayer::repr);
   }
 

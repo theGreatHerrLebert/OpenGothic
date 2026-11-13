@@ -135,6 +135,8 @@ void bindTrip(py::module_& m) {
               "seconds; 0 stops it.");
   weather.def("lightning", [](float delay) { requireWorld()->globalFx()->lightning(delay); }, py::arg("delay") = 2.f,
               "A lightning flash now and its thunder after delay seconds (3 s is about a kilometre away).");
+  weather.def("flash", [](float level) { requireWorld()->globalFx()->flash(level); }, py::arg("level") = 1.f,
+              "A flash of light without thunder, in the weather's colour (orange in a fire rain), 0..1.");
   weather.def("roof_at",
               [](float x, float z) {
                 auto* view = requireWorld()->view();

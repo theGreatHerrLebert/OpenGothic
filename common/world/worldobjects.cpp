@@ -575,12 +575,12 @@ void WorldObjects::disableCollizionZone(CollisionZone& z) {
       }
   }
 
-void WorldObjects::runEffect(Effect&& ex) {
+void WorldObjects::runEffect(Effect&& ex, uint64_t lifetimeMs) {
   ex.setBullet(nullptr,owner);
 
   EffectState e;
   e.eff       = std::move(ex);
-  e.timeUntil = owner.tickCount()+e.eff.effectPrefferedTime();
+  e.timeUntil = owner.tickCount()+(lifetimeMs>0 ? lifetimeMs : e.eff.effectPrefferedTime());
   effects.push_back(std::move(e));
   }
 

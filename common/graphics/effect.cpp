@@ -279,6 +279,9 @@ bool Effect::isAlive() const {
   }
 
 void Effect::setPhysicsDisable() {
+  // the whole chain: a child effect could otherwise still collide, deal damage and send perceptions
+  if(next!=nullptr)
+    next->setPhysicsDisable();
   noPhysics = true;
   pfx.setPhysicsDisable();
   }

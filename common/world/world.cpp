@@ -233,8 +233,8 @@ Item *World::itmById(uint32_t id) {
   return nullptr;
   }
 
-void World::runEffect(Effect&& e) {
-  wobj.runEffect(std::move(e));
+void World::runEffect(Effect&& e, uint64_t lifetimeMs) {
+  wobj.runEffect(std::move(e), lifetimeMs);
   }
 
 void World::stopEffect(const VisualFx& root) {

@@ -89,7 +89,7 @@ class World final {
     int32_t              guildOfRoom(const Tempest::Vec3& pos);
     int32_t              guildOfRoom(std::string_view portalName);
 
-    void                 runEffect(Effect&& e);
+    void                 runEffect(Effect&& e, uint64_t lifetimeMs = 0);   // 0: as long as the effect itself lasts
     void                 stopEffect(const VisualFx& vfx);
 
     GlobalFx             addGlobalEffect(std::string_view what, uint64_t len, const std::string* argv, size_t argc);

@@ -432,8 +432,8 @@ void GlobalEffects::tickWeatherSound() {
   keep(rainSound, "RAIN_01.WAV",       rain*0.9f);
   keep(windSound, "WIND_HEAVY01.WAV",  wind*0.7f);
   // Magical weather sounds as the game's own spells: the fire rain's roar, the ice rain's tinkle, a faint hum.
-  const char* magic  = weather.kind==Precipitation::Fire    ? "MFX_FIRERAIN_RAIN"
-                     : weather.kind==Precipitation::Crystal ? "MFX_THUNDERSTORM_ICERAIN"
+  // The fire rain's roar is a long recording of our own (python/dm/magic_weather.py): the spell's is short and repeats.
+  const char* magic  = weather.kind==Precipitation::Crystal ? "MFX_THUNDERSTORM_ICERAIN"
                      : weather.kind==Precipitation::Motes   ? "MFX_TRANSFORM_INVEST" : nullptr;
   const float magicV = magic==nullptr ? 0.f : falling()*(weather.kind==Precipitation::Motes ? 0.25f : 0.8f);
   if(magicSoundKind!=weather.kind || magicV<0.02f) {

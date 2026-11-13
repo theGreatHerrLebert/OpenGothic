@@ -129,7 +129,9 @@ void main() {
     const float navy = clamp(d*0.8 + (1.0-h)*0.4 + (noise3(vec3(w.xz/4000.0, 2.7))-0.5)*0.8, 0.0, 1.0);
     light *= mix(vec3(1.0), vec3(0.62, 0.70, 0.92), navy*(1.0-push.weather.y*0.7));
     light += scene.weatherFlashCl*0.85 * push.weather.w * d * 40.0;   // lightning from inside, in the weather's colour
-    light += push.glow.rgb * (1.0-h)*(1.0-h);                         // the bellies glow over a fire rain
+    // the bellies glow over a fire rain: a dull ember-light on screen whatever the exposure (by night it is high,
+    // and a glow in sky radiance would blow out to white)
+    light += push.glow.rgb * (1.0-h)*(1.0-h) * (0.35/max(scene.exposure, 1e-6));
     const float ext = exp(-d*Sigma*stepLen);
     C += T*(1.0-ext)*light*albedo;
     depthSum += T*(1.0-ext)*t;

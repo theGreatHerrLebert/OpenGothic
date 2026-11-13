@@ -238,3 +238,26 @@ ground fog, the weather sky, lightning, named loops), never chosen by the climat
   flash and the game's fire-storm blast instead of thunder.
 - **Sounds:** the game's own `MFX_FIRERAIN_RAIN`, `MFX_THUNDERSTORM_ICERAIN` and (faint) `MFX_TRANSFORM_INVEST`,
   restarted when they end.
+
+### Fire rain, round 2 (plan, 2026-11-13)
+
+After the first look in game: the night sky was grey-white, the game's fire-rain sound repeats audibly (it is short and
+restarted), and nothing happens where the fire comes down.
+
+- **Sky:** the bellies' glow is added in the cloud pass in sky radiance, which the night's high exposure blows out to
+  white. Scale it by `1/exposure`, so it is a dull red ember-light by night as by day.
+- **Sound:** a long CC0 recording of a big fire (Freesound, like the cicadas), cut to a seamless loop and played as a
+  named loop from Python while the fire rain falls; the game's short spell sound is no longer looped. The impacts keep
+  the game's own sounds, now where they land (the spell effect carries its sound).
+- **Impacts in the world:** Python picks a point now and then (a strike about every 10–20 s at full strength): 8–45 m
+  from the hero in a random direction, rarely nearer, never right on him; its height from the roof map (the highest
+  static surface there: ground, a roof or a tree's crown, so trees and roofs are hit too). There the game's own spell
+  effect plays (`SPELLFX_FIRESTORM_COLLIDE`: explosion, light, sound) through a new `gothic.world.play_effect(name,
+  x, y, z)` (as `Wld_PlayEffect` at a point), followed by a lingering fire there for half a minute (the firestorm's
+  spread effect, or whichever of the game's burning effects looks right), with an orange flash
+  (`weather.flash(level)`, a flash without thunder).
+- **Creatures:** anyone within 4 m of a strike, hero, people and animals, takes fire damage that falls off with
+  distance (up to about 40), never below 1 hp: the fire rain wounds, it does not kill or break a story. No perception
+  is sent (it would blame the hero for the strike and set people on him).
+- **Not yet:** scorched ground that stays, grass catching fire, animals fleeing (no AI hook for that without blaming
+  someone), burning NPC animations.

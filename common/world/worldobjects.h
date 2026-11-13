@@ -96,7 +96,7 @@ class WorldObjects final {
     void           enableCollizionZone (CollisionZone& z);
     void           disableCollizionZone(CollisionZone& z);
 
-    void           runEffect(Effect&& e);
+    void           runEffect(Effect&& e, uint64_t lifetimeMs = 0);
     void           stopEffect(const VisualFx& vfx);
 
     Item*          addItem   (size_t itemInstance, std::string_view at);
