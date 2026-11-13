@@ -8,7 +8,7 @@ using namespace Tempest;
 
 void SnowTrail::init() {
   for(auto& buf:ssbo)
-    buf = Resources::device().ssbo(BufferHeap::Upload, cells.data(), cells.size());
+    buf = Resources::device().ssbo(BufferHeap::Upload, cells.data(), cells.size()*sizeof(cells[0]));
   }
 
 Vec4 SnowTrail::box() const {
@@ -18,7 +18,7 @@ Vec4 SnowTrail::box() const {
 void SnowTrail::tick(const Vec3& hero, bool onGround, float cover, float snowfall, uint64_t tickCount, uint8_t fId) {
   if(cover<0.02f) {
     if(!empty) {
-      std::fill(cells.begin(), cells.end(), uint8_t(0));
+      std::fill(cells.begin(), cells.end(), uint16_t(0));
       empty = true;
       dirty = 0xFF;
       }
@@ -36,7 +36,7 @@ void SnowTrail::tick(const Vec3& hero, bool onGround, float cover, float snowfal
     else if(d>65.f && d<400.f && onGround) {
       const Vec2  dir  = Vec2(dx/d, dz/d);
       const float side = left ? -11.f : 11.f;
-      stamp(hero.x - dir.y*side, hero.z + dir.x*side, dir);
+      stamp(hero.x - dir.y*side, hero.y, hero.z + dir.x*side, dir);
       left     = !left;
       lastStep = hero;
       }
@@ -58,7 +58,7 @@ void SnowTrail::tick(const Vec3& hero, bool onGround, float cover, float snowfal
 
   if((dirty>>fId)&1) {
     auto& buf = ssbo[fId];
-    const size_t bytes = cells.size();
+    const size_t bytes = cells.size()*sizeof(cells[0]);
     if(buf.byteSize()<bytes) {
       Resources::recycle(std::move(buf));
       buf = Resources::device().ssbo(BufferHeap::Upload, Uninitialized, bytes);
@@ -71,13 +71,22 @@ void SnowTrail::tick(const Vec3& hero, bool onGround, float cover, float snowfal
 void SnowTrail::recentre(const Vec3& hero) {
   const float half = float(Size)*Cell*0.5f;
   const float cx = origin.x+half, cz = origin.y+half;
-  if(!empty && std::abs(hero.x-cx)<half*0.5f && std::abs(hero.z-cz)<half*0.5f)
+  if(empty)
+    base = hero.y;
+  if(!empty && std::abs(hero.x-cx)<half*0.5f && std::abs(hero.z-cz)<half*0.5f && std::abs(hero.y-base)<2500.f)
     return;
+  if(!empty && std::abs(hero.y-base)>=2500.f) {
+    // far up or down from where the prints were made: start a fresh square there
+    std::fill(cells.begin(), cells.end(), uint16_t(0));
+    empty = true;
+    base  = hero.y;
+    dirty = 0xFF;
+    }
   // Move the square so he stands in its middle again, keeping the prints that are still inside.
   const int sx = empty ? 0 : int(std::round((hero.x-cx)/Cell));
   const int sz = empty ? 0 : int(std::round((hero.z-cz)/Cell));
   if(!empty && (sx!=0 || sz!=0)) {
-    std::vector<uint8_t> moved(cells.size(), 0);
+    std::vector<uint16_t> moved(cells.size(), 0);
     for(int z=0; z<Size; ++z)
       for(int x=0; x<Size; ++x) {
         const int ox = x+sx, oz = z+sz;
@@ -92,7 +101,8 @@ void SnowTrail::recentre(const Vec3& hero) {
     origin = Vec2(cx-half+float(sx)*Cell, cz-half+float(sz)*Cell);
   }
 
-void SnowTrail::stamp(float x, float z, Vec2 dir) {
+void SnowTrail::stamp(float x, float y, float z, Vec2 dir) {
+  const int step = std::clamp(int(std::round((y-base)/25.f))+128, 0, 255);
   // An oval 28 cm long along the walk and 12 cm wide.
   const float halfLen = 14.f, halfWid = 6.f;
   const int   r  = int(std::ceil(halfLen/Cell))+1;
@@ -108,8 +118,10 @@ void SnowTrail::stamp(float x, float z, Vec2 dir) {
       const float e = along*along + across*across;
       if(e>1.f)
         continue;
-      auto& c = cells[size_t(pz*Size+px)];
-      c = std::max(c, uint8_t(255.f*(1.f-e*0.4f)));
+      auto&         c     = cells[size_t(pz*Size+px)];
+      const uint8_t depth = uint8_t(255.f*(1.f-e*0.4f));
+      if(depth>=uint8_t(c & 0xFF))
+        c = uint16_t((step<<8) | depth);
       }
   empty = false;
   dirty = 0xFF;
@@ -120,7 +132,8 @@ void SnowTrail::fill(uint8_t amount) {
     return;
   bool any = false;
   for(auto& c:cells) {
-    c   = c>amount ? uint8_t(c-amount) : uint8_t(0);
+    const uint8_t depth = uint8_t(c & 0xFF);
+    c   = depth>amount ? uint16_t((c & 0xFF00) | (depth-amount)) : uint16_t(0);
     any = any || c!=0;
     }
   empty = !any;

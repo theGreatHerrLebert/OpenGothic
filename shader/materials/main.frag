@@ -235,9 +235,12 @@ vec3 snowCover(vec3 albedo) {
     const ivec2 c = ivec2(floor((pos.xz - scene.weatherTrail.xy)*scene.weatherTrail.z));
     const int   n = int(scene.weatherTrail.w);
     if(c.x>=0 && c.y>=0 && c.x<n && c.y<n) {
-      const int   i     = c.y*n + c.x;
-      const float print = float((trailCells[i>>2] >> uint((i&3)*8)) & 0xFFu)/255.0;
-      amount *= 1.0 - print*0.75;
+      const int   i      = c.y*n + c.x;
+      const uint  cell   = (trailCells[i>>1] >> uint((i&1)*16)) & 0xFFFFu;
+      const float made   = scene.weatherTrailY + (float(cell>>8) - 128.0)*25.0;   // where his foot was
+      const float print  = float(cell & 0xFFu)/255.0;
+      if(abs(pos.y - made) < 150.0)   // not on a ledge above the path (the hero's position may sit at hip height)
+        amount *= 1.0 - print*0.75;
       }
     }
   return mix(albedo, vec3(0.86, 0.88, 0.92), amount);      // in texture space: lighting decodes the albedo

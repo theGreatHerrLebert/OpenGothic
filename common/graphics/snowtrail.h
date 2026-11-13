@@ -8,8 +8,9 @@
 
 #include "resources.h"
 
-// Footprints in lying snow (docs/plan-weather.md): a square of ground around the hero, one byte per 12.5 cm cell, into
-// which every step presses an oval; fresh snow fills them again. Kept on the CPU, uploaded to one buffer per frame in
+// Footprints in lying snow (docs/plan-weather.md): a square of ground around the hero, one cell per 12.5 cm, into which
+// every step presses an oval; fresh snow fills them again. A cell holds how deep the print is (low byte) and at which
+// height it was made (high byte, 25 cm steps around baseY), so a ledge above the path stays untouched. Kept on the CPU, uploaded to one buffer per frame in
 // flight, and read by the G-buffer materials where they draw snow cover.
 class SnowTrail final {
   public:
@@ -22,9 +23,11 @@ class SnowTrail final {
     const Tempest::StorageBuffer& buffer(uint8_t fId) const { return ssbo[fId]; }
     // (min x, min z, 1/Cell, Size) in world cm; Size<=0 while there is nothing
     Tempest::Vec4 box() const;
+    float         baseY() const { return base; }
 
   private:
-    std::vector<uint8_t>   cells = std::vector<uint8_t>(size_t(Size*Size), 0);
+    std::vector<uint16_t>  cells = std::vector<uint16_t>(size_t(Size*Size), 0);
+    float                  base  = 0;       // world y the height steps count from
     Tempest::Vec2          origin;          // world x, z of cell (0,0)
     bool                   placed   = false;
     bool                   empty    = true;
@@ -36,6 +39,6 @@ class SnowTrail final {
     Tempest::StorageBuffer ssbo[Resources::MaxFramesInFlight];
 
     void recentre(const Tempest::Vec3& hero);
-    void stamp(float x, float z, Tempest::Vec2 dir);
+    void stamp(float x, float y, float z, Tempest::Vec2 dir);
     void fill(uint8_t amount);
   };

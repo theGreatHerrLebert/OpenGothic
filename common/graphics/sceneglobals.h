@@ -39,7 +39,9 @@ class SceneGlobals final {
     void setTime(uint64_t time);
     void setWeatherCover(float cover, float wet) { uboGlobalCpu.weatherCover = cover; uboGlobalCpu.weatherWet = wet; }
     void setWeatherRoof(const Tempest::Texture2d& map, const Tempest::Vec4& box) { weatherRoof = &map; uboGlobalCpu.weatherBox = box; }
-    void setWeatherTrail(const Tempest::StorageBuffer& buf, const Tempest::Vec4& box) { weatherTrail = &buf; uboGlobalCpu.weatherTrail = box; }
+    void setWeatherTrail(const Tempest::StorageBuffer& buf, const Tempest::Vec4& box, float baseY) {
+      weatherTrail = &buf; uboGlobalCpu.weatherTrail = box; uboGlobalCpu.weatherTrailY = baseY;
+      }
     void commitUbo(uint8_t fId);
     void prepareGlobals(Tempest::Encoder<Tempest::CommandBuffer> &cmd, uint8_t frameId);
 
@@ -127,7 +129,7 @@ class SceneGlobals final {
       float                           probeGridBias = 3;
       float                           weatherCover  = 0;   // snow lying on the landscape, 0..1 (plan-weather.md)
       float                           weatherWet    = 0;   // how wet the landscape is, 0..1
-      float                           weatherPad    = 0;
+      float                           weatherTrailY = 0;   // the footprints' base height (snowtrail.h)
       Tempest::Vec4                   weatherBox    = {};  // the roof map's (min x, min z, 1/width, 1/depth), cm
       Tempest::Vec4                   weatherTrail  = {};  // footprints: (min x, min z, 1/cell, cells; 0 = none)
       };

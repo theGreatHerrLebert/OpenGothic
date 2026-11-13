@@ -40,7 +40,7 @@ struct SceneDesc {
   float probeGridBias;
   float weatherCover;
   float weatherWet;
-  float weatherPad;
+  float weatherTrailY;
   vec4  weatherBox;
   vec4  weatherTrail;
   };
