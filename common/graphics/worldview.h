@@ -78,6 +78,10 @@ class WorldView {
     void                dbgClusters(Tempest::Painter& p, Tempest::Vec2 wsz);
 
     const SceneGlobals& sceneGlobals() const { return sGlobal; }
+    // The highest static surface over each square of the world, seen from above (docs/plan-weather.md): what falls
+    // below it is under a roof. weatherBox is (min x, min z, 1/width, 1/depth) in world cm.
+    const Tempest::Texture2d& weatherHeight() const { return weatherHeightMap; }
+    const Tempest::Vec4&      weatherBox()    const { return weatherHeightBox; }
     const Sky&          sky() const { return gSky; }
     const Landscape&    landscape() const { return land; }
     const LightGroup&   lights() const { return gLights; }
@@ -103,4 +107,7 @@ class WorldView {
   friend class LightGroup::Light;
   friend class PfxEmitter;
   friend class TrlObjects;
-  };
+      Tempest::Texture2d   weatherHeightMap;
+    Tempest::Vec4        weatherHeightBox;
+    void                 buildWeatherHeight(const PackedMesh& wmesh);
+};

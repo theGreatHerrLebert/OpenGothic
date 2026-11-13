@@ -15,10 +15,11 @@ layout(binding = 0, std140) uniform UboScene {
 layout(binding = 1) uniform sampler3D fogLut;
 
 layout(push_constant, std430) uniform Push {
-  vec2  wind;
-  float time;
-  float intensity;
-  uint  kind;
+  vec4  heightBox;  // the roof map's (min x, min z, 1/width, 1/depth) in world cm
+  vec2  wind;       // cm per second along x and z
+  float time;       // seconds of game time
+  float intensity;  // 0..1
+  uint  kind;       // 1 snow, 2 rain
   } push;
 
 layout(location = 0) in  vec2  inUv;

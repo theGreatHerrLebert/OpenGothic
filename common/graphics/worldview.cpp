@@ -1,4 +1,8 @@
 #include "worldview.h"
+#include <Tempest/Pixmap>
+#include <cmath>
+#include <algorithm>
+#include <cstring>
 #include "game/globaleffects.h"
 #include "world/world.h"
 #include "gothic.h"
@@ -16,6 +20,7 @@ WorldView::WorldView(const PackedMesh& wmesh, std::string_view skyPreset)
     : aabb(wmesh.bbox()), gSky(skyPreset), gLights(sGlobal), visuals(sGlobal,wmesh.bbox()),
     objGroup(visuals), pfxGroup(*this,sGlobal,visuals), land(visuals,wmesh) {
   pfxGroup.resetTicks();
+  buildWeatherHeight(wmesh);
   }
 
 WorldView::~WorldView() {
@@ -249,4 +254,49 @@ bool WorldView::updateRtScene() {
 
 void WorldView::postFrameupdate() {
   visuals.postFrameupdate();
+  }
+
+void WorldView::buildWeatherHeight(const PackedMesh& wmesh) {
+  // One float per cell: the highest static surface's height, rasterised from above once per world. Water does not
+  // shelter anything. Cells are a metre wide, coarser for a very large world.
+  auto [lo, hi] = wmesh.bbox();
+  const float width = std::max(hi.x-lo.x, 1.f), depth = std::max(hi.z-lo.z, 1.f);
+  const float cell  = std::max(100.f, std::max(width, depth)/2048.f);
+  const int   w     = std::max(1, int(std::ceil(width/cell)));
+  const int   h     = std::max(1, int(std::ceil(depth/cell)));
+  std::vector<float> top(size_t(w*h), -1.0e9f);
+
+  for(auto& sub:wmesh.subMeshes) {
+    if(sub.material.group==zenkit::MaterialGroup::WATER)
+      continue;
+    for(size_t i=sub.iboOffset; i+2<sub.iboOffset+sub.iboLength && i+2<wmesh.indices.size(); i+=3) {
+      const auto& a = wmesh.vertices[wmesh.indices[i+0]].pos;
+      const auto& b = wmesh.vertices[wmesh.indices[i+1]].pos;
+      const auto& c = wmesh.vertices[wmesh.indices[i+2]].pos;
+      const float area = (b[0]-a[0])*(c[2]-a[2]) - (c[0]-a[0])*(b[2]-a[2]);
+      if(std::abs(area)<1e-3f)
+        continue;   // degenerate, or a wall seen edge-on from above
+      const int x0 = std::clamp(int((std::min({a[0],b[0],c[0]})-lo.x)/cell), 0, w-1);
+      const int x1 = std::clamp(int((std::max({a[0],b[0],c[0]})-lo.x)/cell), 0, w-1);
+      const int z0 = std::clamp(int((std::min({a[2],b[2],c[2]})-lo.z)/cell), 0, h-1);
+      const int z1 = std::clamp(int((std::max({a[2],b[2],c[2]})-lo.z)/cell), 0, h-1);
+      for(int z=z0; z<=z1; ++z)
+        for(int x=x0; x<=x1; ++x) {
+          const float px = lo.x + (float(x)+0.5f)*cell, pz = lo.z + (float(z)+0.5f)*cell;
+          const float u  = ((b[0]-px)*(c[2]-pz) - (c[0]-px)*(b[2]-pz))/area;
+          const float v  = ((c[0]-px)*(a[2]-pz) - (a[0]-px)*(c[2]-pz))/area;
+          const float t  = 1.f-u-v;
+          if(u<-0.01f || v<-0.01f || t<-0.01f)
+            continue;
+          const float y = u*a[1] + v*b[1] + t*c[1];
+          auto& dst = top[size_t(z*w+x)];
+          dst = std::max(dst, y);
+          }
+      }
+    }
+
+  Tempest::Pixmap pm(uint32_t(w), uint32_t(h), Tempest::TextureFormat::R32F);
+  std::memcpy(pm.data(), top.data(), top.size()*sizeof(float));
+  weatherHeightMap = Resources::device().texture(pm, false);
+  weatherHeightBox = Tempest::Vec4(lo.x, lo.z, 1.f/(float(w)*cell), 1.f/(float(h)*cell));
   }

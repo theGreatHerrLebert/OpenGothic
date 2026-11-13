@@ -14,11 +14,14 @@ layout(binding = 0, std140) uniform UboScene {
   };
 
 layout(push_constant, std430) uniform Push {
+  vec4  heightBox;  // the roof map's (min x, min z, 1/width, 1/depth) in world cm
   vec2  wind;       // cm per second along x and z
   float time;       // seconds of game time
   float intensity;  // 0..1
   uint  kind;       // 1 snow, 2 rain
   } push;
+
+layout(binding = 2) uniform sampler2D roofMap;   // highest static surface over each square, seen from above
 
 layout(location = 0) out vec2  outUv;
 layout(location = 1) out float outAlpha;
@@ -68,6 +71,13 @@ void main() {
   float a = 1.0 - smoothstep(0.7, 1.0, max(abs(d.x), abs(d.z))/(BoxSide*0.5));   // no popping at the box's sides
   a      *= 1.0 - smoothstep(0.8, 1.0, abs(d.y)/(BoxHeight*0.5));
   a      *= smoothstep(40.0, 120.0, dist);                                       // nothing right in the eye
+  // Under a roof: something static above this point, higher than the particle, keeps it dry.
+  const vec2  roofUv = (p.xz - push.heightBox.xy) * push.heightBox.zw;
+  if(all(greaterThanEqual(roofUv, vec2(0))) && all(lessThanEqual(roofUv, vec2(1)))) {
+    const float roof = textureLod(roofMap, roofUv, 0).r;
+    if(roof > p.y + 30.0)
+      a = 0.0;
+    }
 
   vec3 right, up;
   if(rain) {
@@ -81,6 +91,11 @@ void main() {
     }
   const vec3 wp = p + right*c.x + up*c.y;
 
+  if(a<=0.0) {
+    gl_Position = vec4(0.0, 0.0, -2.0, 1.0);   // outside the clip volume: nothing drawn
+    outUv = c; outAlpha = 0.0; outPos = p;
+    return;
+    }
   outUv       = c;
   outAlpha    = a;
   outPos      = wp;

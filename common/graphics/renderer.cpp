@@ -926,11 +926,13 @@ void Renderer::drawPrecipitation(Tempest::Encoder<Tempest::CommandBuffer>& cmd, 
   const bool   rain  = w.kind==GlobalEffects::Precipitation::Rain;
   const size_t count = size_t(float(rain ? 30000 : 24000)*amount);
   struct Push {
+    Tempest::Vec4 heightBox;
     Tempest::Vec2 wind;
     float         time      = 0;
     float         intensity = 0;
     uint32_t      kind      = 0;
     } push;
+  push.heightBox = wview.weatherBox();
   push.wind      = Tempest::Vec2(w.windX*100.f, w.windZ*100.f);   // m/s to cm/s
   push.time      = float(world->tickCount()%(10000*1000))/1000.f;  // kept small for float precision
   push.intensity = amount;
@@ -942,6 +944,7 @@ void Renderer::drawPrecipitation(Tempest::Encoder<Tempest::CommandBuffer>& cmd, 
   // multiple-scattering LUT (fog.frag), which is the one with transmittance in alpha there.
   const bool lowFog = (sky.quality==None || sky.quality==VolumetricLQ);
   cmd.setBinding(1, lowFog ? sky.fogLut3D : sky.fogLut3DMs, Sampler::bilinear(ClampMode::ClampToEdge));
+  cmd.setBinding(2, wview.weatherHeight(), Sampler::nearest(ClampMode::ClampToEdge));
   cmd.setPushData(push);
   cmd.setPipeline(shaders.precipitation);
   cmd.draw(nullptr, 0, 6, 0, count);

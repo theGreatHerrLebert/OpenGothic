@@ -126,3 +126,11 @@ Codex checked the plan against the engine. Changes, which override the design ab
 
 Revised order: state + Python API + `Wld_IsRaining` → snow particles (after fog) → landscape cover → rain and dark
 wet → roof map (objects, roofs, shelter) → story op and controller.
+
+## Step 5 as built (2026-11-13)
+
+Instead of a top-down render view with its own visibility (the review's suggestion), the roof map is computed once
+per world on the CPU from the static world mesh: the highest non-water surface over each square metre (coarser cells
+for a world wider than 2 km), uploaded as an R32F texture. A particle more than 30 cm below it is not drawn. No pass
+per frame and the same on every backend; it misses dynamic objects, trees and houses built from vobs rather than the
+world mesh, so the room rule stays as a fallback. Using it for snow cover on objects and roofs is still open.
