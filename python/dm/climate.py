@@ -147,7 +147,8 @@ def tick(gothic, state, now):
         # what lies is hail's until it has melted, whatever falls now
         if kind == "hail":
             _last_kind[0] = "hail"
-        elif share is not None or gothic.weather.state().get("cover", 0.0) < 0.01:
+        elif share is not None or not hasattr(gothic.weather, "state") or \
+                gothic.weather.state().get("cover", 0.0) < 0.01:
             _last_kind[0] = kind
     return current
 
