@@ -72,8 +72,10 @@ def validate(check):
         if check.get("kind") not in (None, "rain", "snow", "storm", "clear"):
             return "check weather kind is rain, snow, storm or clear"
         for key in ("min", "cover", "wet"):
-            value = check.get(key)
-            if value is not None and (isinstance(value, bool) or not isinstance(value, (int, float)) or not 0 <= value <= 1):
+            if key not in check:
+                continue   # left out: its default; written out, it must be a number
+            value = check[key]
+            if isinstance(value, bool) or not isinstance(value, (int, float)) or not 0 <= value <= 1:
                 return f"check weather {key} is a number from 0 to 1"
         if not any(k in check for k in ("kind", "cover", "wet")):
             return "check weather needs a kind, a cover or a wet"

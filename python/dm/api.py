@@ -66,7 +66,10 @@ def weather(hours=24):
         if owned and (owned.get("until") is None or at < owned["until"]):
             kind, intensity, wind = owned["kind"], owned.get("intensity", 1.0), tuple(owned.get("wind", (0, 0)))
         elif not climate.enabled():
-            kind, intensity, wind = state.get("kind", "clear"), state.get("target", 0.0), state.get("wind", (0, 0))
+            if owned:   # the story's weather has run out by then, and nobody brings any: it clears up
+                kind, intensity, wind = "clear", 0.0, (0, 0)
+            else:
+                kind, intensity, wind = state.get("kind", "clear"), state.get("target", 0.0), state.get("wind", (0, 0))
         forecast.append({"day": d, "hour": h, "kind": kind, "intensity": round(intensity, 2), "wind": wind})
     _reply({"now": {k: (round(v, 2) if isinstance(v, float) else v) for k, v in state.items()},
             "decided_by": owner, "climate_on": climate.enabled(), "forecast": forecast})

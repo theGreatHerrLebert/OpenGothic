@@ -221,6 +221,7 @@ assert checks.failing([{"type": "weather", "wet": 0.5}]) is None and checks.fail
 sky.update(falling=0.0)   # planned but the clouds are not there yet
 assert checks.failing([{"type": "weather", "kind": "rain"}]) is not None and checks.failing([{"type": "weather", "kind": "clear"}]) is None
 assert checks.validate({"type": "weather"}) is not None and checks.validate({"type": "weather", "kind": "hail"}) is not None
+assert checks.validate({"type": "weather", "wet": None}) is not None
 assert checks.validate({"type": "weather", "kind": "storm", "min": 0.8}) is None
 del fake.weather
 print("checks ok")
