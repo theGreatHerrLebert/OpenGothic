@@ -81,8 +81,17 @@ void GlobalEffects::tickWeather(uint64_t dt) {
                         weather.kind==Precipitation::Fire;
   if(weather.cover<weather.coverTarget && weather.coverSeconds>0.f) {
     const float snowing = settles ? falling() : 0.f;
-    if(snowing>0.001f)
+    if(snowing>0.001f) {
+      // what settles mixes with what lies by amount: fresh snow on bare ground is white at once, on old ash greyish
+      const float before = weather.cover;
       ease(weather.cover, weather.coverTarget, weather.coverSeconds/snowing);
+      const float added = weather.cover - before;
+      if(added>0.f) {
+        const float total = std::max(weather.cover, 1e-4f);
+        weather.frost = (weather.frost*before + (weather.kind==Precipitation::Crystal ? added : 0.f))/total;
+        weather.ash   = (weather.ash  *before + (weather.kind==Precipitation::Fire    ? added : 0.f))/total;
+        }
+      }
     } else {
     ease(weather.cover, weather.coverTarget, weather.coverSeconds);
     }
