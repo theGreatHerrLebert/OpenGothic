@@ -72,6 +72,11 @@ def snow(rise=60.0, hold=90.0, fall=40.0, peak=1.0):
     _current = Snowfall(rise, hold, fall, peak)
 
 
+def active():
+    """Whether a snowfall is falling now (it owns the sky while it does)."""
+    return _current is not None
+
+
 def stop():
     if _current is not None and _current.started is not None:
         now = time.monotonic()
@@ -98,13 +103,17 @@ def _restore(gothic):
     if not hasattr(gothic.weather, "set"):
         return
     from dm import climate, story
-    gothic.weather.cover(0.0, 900.0)
     owned = story.state().get("weather")
     hour, minute = gothic.world.time
     if owned and climate.story_weather(story.state(), gothic.world.day * 24 + hour + minute / 60.0):
         gothic.weather.set(owned["kind"], owned.get("intensity", 1.0), 20.0, tuple(owned.get("wind", (0, 0))))
+        if owned.get("cover") is not None:
+            gothic.weather.cover(owned["cover"], 120.0)   # the story's own snow lying, as it set it
+        else:
+            gothic.weather.cover(0.0, 900.0)
     else:
         gothic.weather.set("clear", 0.0, 20.0, (0, 0))
+        gothic.weather.cover(0.0, 900.0)
     climate.forget()   # the climate sets its front again on its next look
 
 

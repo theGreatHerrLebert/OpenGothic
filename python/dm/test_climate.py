@@ -40,4 +40,10 @@ assert calls == [("cover", 0.0, 1800.0)], calls   # the same front is not set ag
 fake.world.generation = 7      # a loaded world: set again
 climate.tick(fake, state, 4)
 assert calls[-2][0] == "set", calls
+# While a trip's snowfall falls, the climate keeps out of it entirely.
+from dm import weather as snowfall
+snowfall._current = object()
+calls.clear()
+assert climate.tick(fake, state, 5) is None and calls == []
+snowfall._current = None
 print("climate ok")

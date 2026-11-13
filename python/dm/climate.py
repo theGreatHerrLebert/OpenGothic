@@ -91,6 +91,10 @@ def tick(gothic, state, now):
     global _last, _world
     if not hasattr(gothic, "weather") or not hasattr(gothic.weather, "set"):
         return None
+    from dm import weather as snowfall
+    if snowfall.active():
+        _last = None   # a trip's snowfall owns the sky; afterwards everything is set again
+        return None
     generation = getattr(gothic.world, "generation", None)
     if generation != _world:   # a loaded or new world: nothing set here holds any more
         _world, _last = generation, None
