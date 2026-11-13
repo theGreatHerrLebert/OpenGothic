@@ -3,6 +3,9 @@
 #include <algorithm>
 
 #include <Tempest/SoundEffect>
+#include <Tempest/Sound>
+#include <map>
+#include <string>
 
 #include <Tempest/Matrix4x4>
 #include <Tempest/Painter>
@@ -97,6 +100,10 @@ class GlobalEffects {
     void           setFog(float target, float heightMetres, float baseCm, float seconds);
     // A hot day (docs/plan-weather.md): 0..1 over seconds. It does not clear the sky; the caller does.
     void           setHeat(float target, float seconds);
+    // A sound of our own looped over everything (cicadas, crickets: python/dm/summer.py), by name; volume 0..1 over
+    // seconds. A new path for a name takes over at once; at 0 the loop stops.
+    void           setLoop(const std::string& name, const std::string& path, float volume, float seconds);
+    std::vector<std::pair<std::string, float>> loopLevels() const;
     // Lightning: a flash now, its thunder after delay seconds (sound travels about 340 m a second).
     void           lightning(float delaySeconds);
     void           setWeather(Precipitation kind, float target, float fadeSeconds, float windX, float windZ,
@@ -188,6 +195,13 @@ class GlobalEffects {
     void tickWeather(uint64_t dt);
     void tickWeatherSound();
     Tempest::SoundEffect                      rainSound, windSound;
+    struct Loop {
+      std::string          path;
+      float                level = 0, target = 0, seconds = 20;
+      bool                 broken = false;   // the file could not be played; tried again only for a new path
+      Tempest::SoundEffect snd;
+      };
+    std::map<std::string, Loop>               loops;
     float                                     thunderIn = -1;   // seconds until the thunder; below zero: none due
     Galaxy                                    galaxy;
     float                                     tripTimeRem = 0;

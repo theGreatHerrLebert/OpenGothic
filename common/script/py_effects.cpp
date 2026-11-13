@@ -121,6 +121,13 @@ void bindTrip(py::module_& m) {
               py::arg("level"), py::arg("fade") = 120.f,
               "A hot day, 0..1 reached over fade seconds: the air shimmers over the distance, the sun is hard and warm, "
               "the far land bleaches and wet ground dries fast. It leaves the sky to weather.set: clear it for heat.");
+  weather.def("loop",
+              [](const std::string& name, const std::string& path, float volume, float fade) {
+                requireWorld()->globalFx()->setLoop(name, path, volume, fade);
+                },
+              py::arg("name"), py::arg("path"), py::arg("volume"), py::arg("fade") = 20.f,
+              "A WAV of our own looped over everything under a name (cicadas, crickets), volume 0..1 reached over fade "
+              "seconds; 0 stops it.");
   weather.def("lightning", [](float delay) { requireWorld()->globalFx()->lightning(delay); }, py::arg("delay") = 2.f,
               "A lightning flash now and its thunder after delay seconds (3 s is about a kilometre away).");
   weather.def("roof_at",
@@ -139,6 +146,10 @@ void bindTrip(py::module_& m) {
                 d["raining"] = requireWorld()->globalFx()->isRaining();
                 d["fog"] = w.fog; d["fog_height"] = w.fogHeight; d["fog_base"] = w.fogBase;
                 d["heat"] = w.heat;
+                py::dict loops;
+                for(auto& [name, level] : requireWorld()->globalFx()->loopLevels())
+                  loops[py::str(name)] = level;
+                d["loops"] = loops;
                 d["falling"] = requireWorld()->globalFx()->falling();
                 return d;
                 },

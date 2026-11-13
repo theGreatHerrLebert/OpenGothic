@@ -78,6 +78,8 @@ void GlobalEffects::tickWeather(uint64_t dt) {
     }
   ease(weather.fog, weather.fogTarget, weather.fogSeconds);
   ease(weather.heat, weather.heatTarget, weather.heatSeconds);
+  for(auto& [name, l] : loops)
+    ease(l.level, l.target, l.seconds);
   // The ground gets wet within a couple of minutes of rain and takes a quarter of an hour to dry, much less in heat.
   const float wetTarget = weather.kind==Precipitation::Rain ? falling() : 0.f;
   ease(weather.wet, wetTarget, wetTarget>weather.wet ? 120.f : 900.f/(1.f + 4.f*weather.heat));
@@ -416,6 +418,49 @@ void GlobalEffects::tickWeatherSound() {
     };
   keep(rainSound, "RAIN_01.WAV",       rain*0.9f);
   keep(windSound, "WIND_HEAVY01.WAV",  wind*0.7f);
+  for(auto& [name, l] : loops) {
+    if(l.level<0.01f) {
+      if(!l.snd.isEmpty())
+        l.snd = Tempest::SoundEffect();
+      continue;
+      }
+    if(l.broken)
+      continue;
+    if(l.snd.isEmpty() || l.snd.isFinished()) {
+      // an optional sound of ours: a missing or broken file leaves it silent, it never stops the game
+      try {
+        l.snd = Gothic::inst().loadSoundFile(l.path);
+        }
+      catch(...) {
+        Log::e("weather loop: cannot play \"", l.path, "\"");
+        l.broken = true;
+        l.snd    = Tempest::SoundEffect();
+        continue;
+        }
+      l.snd.play();
+      }
+    l.snd.setVolume(l.level);
+    }
+  }
+
+void GlobalEffects::setLoop(const std::string& name, const std::string& path, float volume, float seconds) {
+  auto& l = loops[name];
+  if(l.path!=path) {
+    l.path   = path;
+    l.broken = false;
+    l.snd  = Tempest::SoundEffect();   // the next tick starts the new one
+    }
+  l.target  = std::clamp(volume, 0.f, 1.f);
+  l.seconds = std::max(seconds, 0.f);
+  if(l.seconds<=0.f)
+    l.level = l.target;
+  }
+
+std::vector<std::pair<std::string, float>> GlobalEffects::loopLevels() const {
+  std::vector<std::pair<std::string, float>> ret;
+  for(auto& [name, l] : loops)
+    ret.emplace_back(name, l.level);
+  return ret;
   }
 
 void GlobalEffects::setHeat(float target, float seconds) {

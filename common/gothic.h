@@ -124,7 +124,8 @@ class Gothic final {
 
     void         emitGlobalSoundWav(std::string_view wav);
 
-    Tempest::SoundEffect loadSoundEffect(std::string_view wav);   // a sound whose volume one sets, for weather
+    Tempest::SoundEffect loadSoundEffect(std::string_view wav);
+    Tempest::SoundEffect loadSoundFile(const std::string& path);   // a WAV of our own from disk, its volume one sets   // a sound whose volume one sets, for weather
 
     static auto  invCatOrder()  -> const std::vector<ItmFlags>&;
 
