@@ -25,12 +25,19 @@ fake = types.SimpleNamespace(world=types.SimpleNamespace(day=14, time=(6, 0)),
 climate.enable(False)
 assert climate.tick(fake, {}, 0) is None and calls == []
 climate.tick(fake, state, 0)
-assert calls[0] == ("set", "snow", 0.7, climate.FADE, (1, 0)) and calls[1] == ("cover", 0.7 * 0.8, 1200.0), calls
+assert calls == [("cover", 0.7 * 0.8, 1200.0)], calls   # the story set its own snow, with its own fade: only cover here
 calls.clear()
-climate.tick(fake, state, 1)
-assert calls == [("cover", 0.7 * 0.8, 1200.0)], calls   # nothing set again while it stays the same
 fake.world.time = (9, 0)
+climate.tick(fake, state, 1)   # its hours are over and the climate is off: clear up and melt
+assert calls == [("set", "clear", 0.0, climate.FADE, (0, 0)), ("cover", 0.0, 1800.0)], calls
+calls.clear()
 climate.enable(True)
-climate.tick(fake, state, 2)
-assert calls[-2][0] == "set" and calls[-1] == ("cover", 0.0, 1800.0), calls   # the story's snow is over: melt
+climate.tick(fake, state, 2)   # with the climate on, its front takes over
+assert calls[0][0] == "set" and calls[-1] == ("cover", 0.0, 1800.0), calls
+calls.clear()
+climate.tick(fake, state, 3)
+assert calls == [("cover", 0.0, 1800.0)], calls   # the same front is not set again
+fake.world.generation = 7      # a loaded world: set again
+climate.tick(fake, state, 4)
+assert calls[-2][0] == "set", calls
 print("climate ok")

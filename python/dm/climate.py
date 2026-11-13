@@ -76,19 +76,33 @@ def enable(on=True):
     _enabled, _last = on, None
 
 
+_world = None
+
+
 def tick(gothic, state, now):
-    """Sets the weather when what should fall has changed; snow cover follows snowfall. Returns what was set."""
-    global _last
+    """Sets the climate's front when it changes, ends a story's weather when its hours run out, and lets snow lie
+    while it snows. A story's own weather is set by the story (with its own fade) and never set again here."""
+    global _last, _world
     if not hasattr(gothic, "weather") or not hasattr(gothic.weather, "set"):
         return None
+    generation = getattr(gothic.world, "generation", None)
+    if generation != _world:   # a loaded or new world: nothing set here holds any more
+        _world, _last = generation, None
     day, (hour, minute) = gothic.world.day, gothic.world.time
     kind, intensity, wind, by_story, cover = wanted(state, day, hour, minute)
-    if not by_story and not enabled():
-        return None
-    current = (kind, intensity, wind)
-    if current != _last:
-        gothic.weather.set(kind, intensity, FADE, wind)
+    current = ("story", kind, intensity, wind) if by_story else ("climate", kind, intensity, wind)
+    if by_story:
         _last = current
+    elif enabled():
+        if current != _last:
+            gothic.weather.set(kind, intensity, FADE, wind)
+            _last = current
+    else:
+        if _last is not None and _last[0] == "story":   # the story's hours ran out and nothing takes over: clear up
+            gothic.weather.set("clear", 0.0, FADE, (0, 0))
+            gothic.weather.cover(0.0, 1800.0)
+        _last = None
+        return None
     if cover is None:   # a story that set its own cover keeps it; otherwise snow lies while it snows and melts after
         if kind == "snow":
             gothic.weather.cover(min(1.0, intensity * 0.8), 1200.0)
