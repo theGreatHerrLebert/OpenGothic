@@ -75,7 +75,7 @@ void WorldView::preFrameUpdate(const Camera& camera, uint64_t tickCount, uint8_t
     sGlobal.setWeatherCover(w.cover, w.wet);
     sGlobal.setWeatherSky(w.overcast, w.flash, w.kind==GlobalEffects::Precipitation::Snow ? 1.f : 0.f);
     if(auto* pl = Gothic::inst().player()) {
-      const float snowfall = w.kind==GlobalEffects::Precipitation::Snow ? w.intensity : 0.f;
+      const float snowfall = w.kind==GlobalEffects::Precipitation::Snow ? world->globalFx()->falling() : 0.f;
       const bool grounded = !pl->isInAir() && !pl->isJump() && !pl->isSwim();
       snowTrail.tick(pl->position(), grounded, w.cover, snowfall, tickCount, fId);
       }

@@ -51,7 +51,7 @@ class Snowfall:
         if hasattr(gothic.weather, "set"):
             level = round(planned, 2)
             if level != getattr(self, "set_level", None):   # only when it changes, with a short ease
-                gothic.weather.set("snow", level, 1.0, WIND)
+                gothic.weather.set("snow", level, 1.0, WIND, open_sky=True)   # snow under the trip's open sky
                 gothic.weather.cover(min(1.0, level * 0.7), 90.0)
                 self.set_level = level
         else:

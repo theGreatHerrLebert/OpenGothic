@@ -95,16 +95,17 @@ void bindTrip(py::module_& m) {
   weather.def("snow", [](float density) { requireWorld()->globalFx()->setSnow(std::clamp(density, 0.f, 1.f)); },
               py::arg("density"), "Falling snow over the frame (the trip lens), 0 none .. 1 a blizzard.");
   weather.def("set",
-              [](const std::string& kind, float intensity, float fade, std::tuple<float,float> wind) {
+              [](const std::string& kind, float intensity, float fade, std::tuple<float,float> wind, bool openSky) {
                 using P = GlobalEffects::Precipitation;
                 P k = kind=="snow" ? P::Snow : kind=="rain" ? P::Rain : kind=="clear" ? P::None
                     : throw std::invalid_argument("weather kind is snow, rain or clear: " + kind);
-                requireWorld()->globalFx()->setWeather(k, intensity, fade, std::get<0>(wind), std::get<1>(wind));
+                requireWorld()->globalFx()->setWeather(k, intensity, fade, std::get<0>(wind), std::get<1>(wind), openSky);
                 },
               py::arg("kind"), py::arg("intensity") = 1.f, py::arg("fade") = 10.f,
-              py::arg("wind") = std::make_tuple(0.f, 0.f),
+              py::arg("wind") = std::make_tuple(0.f, 0.f), py::arg("open_sky") = false,
               "Weather in the world: snow, rain or clear, intensity 0..1, reached over fade seconds of game time; "
-              "wind (x, z) in metres per second. A change of kind lets the old one stop first.");
+              "wind (x, z) in metres per second. A change of kind lets the old one stop first. Normally nothing falls "
+              "until the clouds have half covered the sky; open_sky lets it fall from a clear sky at once.");
   weather.def("cover", [](float target, float seconds) { requireWorld()->globalFx()->setCover(target, seconds); },
               py::arg("target"), py::arg("seconds") = 600.f, "Snow lying on the ground, 0..1, reached over seconds.");
   weather.def("lightning", [](float delay) { requireWorld()->globalFx()->lightning(delay); }, py::arg("delay") = 2.f,
@@ -123,6 +124,7 @@ void bindTrip(py::module_& m) {
                 d["kind"] = kinds[int(w.kind)]; d["intensity"] = w.intensity; d["target"] = w.target;
                 d["wind"] = std::make_tuple(w.windX, w.windZ); d["cover"] = w.cover; d["wet"] = w.wet; d["overcast"] = w.overcast;
                 d["raining"] = requireWorld()->globalFx()->isRaining();
+                d["falling"] = requireWorld()->globalFx()->falling();
                 return d;
                 },
               "What the weather is now.");

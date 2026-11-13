@@ -1,5 +1,7 @@
 #pragma once
 
+#include <algorithm>
+
 #include <Tempest/SoundEffect>
 
 #include <Tempest/Matrix4x4>
@@ -81,13 +83,24 @@ class GlobalEffects {
       float         wet         = 0;    // how wet the ground is: rises while it rains, dries slowly after
       float         overcast    = 0;    // how closed the sky is: follows what falls, slower
       float         flash       = 0;    // a lightning flash, fading within a fraction of a second
+      bool          openSky     = false; // falls from a clear sky (a trip's snow under the stars): no clouds
       };
     // Lightning: a flash now, its thunder after delay seconds (sound travels about 340 m a second).
     void           lightning(float delaySeconds);
-    void           setWeather(Precipitation kind, float target, float fadeSeconds, float windX, float windZ);
+    void           setWeather(Precipitation kind, float target, float fadeSeconds, float windX, float windZ,
+                              bool openSky = false);
     void           setCover(float target, float seconds);
     const Weather& weatherState() const { return weather; }
-    bool           isRaining() const { return weather.kind==Precipitation::Rain && weather.intensity>0.1f; }
+    // What actually falls: nothing until the clouds have half covered the sky, all of it once they have closed.
+    float          falling() const {
+      if(weather.kind==Precipitation::None)
+        return 0.f;
+      if(weather.openSky)
+        return weather.intensity;
+      const float t = std::clamp((weather.overcast-0.5f)/0.4f, 0.f, 1.f);
+      return weather.intensity*t*t*(3.f-2.f*t);
+      }
+    bool           isRaining() const { return weather.kind==Precipitation::Rain && falling()>0.1f; }
 
   private:
     struct Effect {

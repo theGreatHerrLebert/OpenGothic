@@ -29,7 +29,9 @@ void GlobalEffects::tick(uint64_t dt) {
   tickWeather(dt);
   }
 
-void GlobalEffects::setWeather(Precipitation kind, float target, float fadeSeconds, float windX, float windZ) {
+void GlobalEffects::setWeather(Precipitation kind, float target, float fadeSeconds, float windX, float windZ,
+                               bool openSky) {
+  weather.openSky = openSky;
   target            = std::clamp(target, 0.f, 1.f);
   weather.fadeSeconds = std::max(fadeSeconds, 0.f);
   weather.windX     = windX;
@@ -67,10 +69,10 @@ void GlobalEffects::tickWeather(uint64_t dt) {
   ease(weather.intensity, weather.target, weather.fadeSeconds);
   ease(weather.cover, weather.coverTarget, weather.coverSeconds);
   // The ground gets wet within a couple of minutes of rain and takes a quarter of an hour to dry.
-  const float wetTarget = weather.kind==Precipitation::Rain ? weather.intensity : 0.f;
+  const float wetTarget = weather.kind==Precipitation::Rain ? falling() : 0.f;
   ease(weather.wet, wetTarget, wetTarget>weather.wet ? 120.f : 900.f);
   // The sky closes as the weather comes (a minute and a half) and opens again slower (three minutes).
-  const float closed = weather.kind==Precipitation::None ? 0.f : weather.intensity;
+  const float closed = (weather.kind==Precipitation::None || weather.openSky) ? 0.f : weather.intensity;
   ease(weather.overcast, closed, closed>weather.overcast ? 90.f : 180.f);
   weather.flash = std::max(0.f, weather.flash - sec*5.f);
   if(thunderIn>=0.f) {
@@ -387,7 +389,7 @@ void GlobalEffects::lightning(float delaySeconds) {
 
 void GlobalEffects::tickWeatherSound() {
   // The game's own rain and storm sounds, kept going while they are wanted, as loud as the weather is.
-  const float rain = weather.kind==Precipitation::Rain ? weather.intensity : 0.f;
+  const float rain = weather.kind==Precipitation::Rain ? falling() : 0.f;
   const float wind = std::min(std::sqrt(weather.windX*weather.windX + weather.windZ*weather.windZ)/8.f, 1.f) *
                      (weather.kind==Precipitation::None ? 0.3f : 1.f);
   auto keep = [](Tempest::SoundEffect& snd, const char* wav, float volume) {
