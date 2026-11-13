@@ -81,11 +81,20 @@ void WorldView::preFrameUpdate(const Camera& camera, uint64_t tickCount, uint8_t
       // everyone alive near him leaves prints too (docs/plan-weather.md); only while snow lies
       std::vector<SnowTrail::Walker> others;
       if(w.cover>=0.02f) {
+        // an animal's prints by its height against the hero's: a meatbug's tiny, a wolf's half, a troll's huge
+        auto height = [](const Npc& n) {
+          auto* b = n.bBox();
+          return b==nullptr ? 0.f : b[1].y-b[0].y;
+          };
+        const float hero = height(*pl);
         world->detectNpc(pl->position(), 3200.f, [&](Npc& n) {
           if(&n==pl || n.isDead() || n.isUnconscious())
             return;
           const bool g = !n.isInAir() && !n.isJump() && !n.isSwim();
-          others.push_back({uint64_t(reinterpret_cast<uintptr_t>(&n)), n.position(), g, n.isHuman() ? 1.f : 0.6f});
+          float size = 1.f;
+          if(!n.isHuman())
+            size = hero>1.f ? std::clamp(height(n)/hero, 0.25f, 3.f) : 0.6f;
+          others.push_back({uint64_t(reinterpret_cast<uintptr_t>(&n)), n.position(), g, size});
           });
         }
       snowTrail.tick(pl->position(), grounded, w.cover, snowfall, tickCount, fId, others);
