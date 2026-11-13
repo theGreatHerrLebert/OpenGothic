@@ -5,6 +5,7 @@
 #include <Tempest/SoundEffect>
 #include <Tempest/Sound>
 #include <map>
+#include <unordered_map>
 #include <string>
 
 #include <Tempest/Matrix4x4>
@@ -113,6 +114,13 @@ class GlobalEffects {
     std::vector<std::pair<std::string, float>> loopLevels() const;
     // Lightning: a flash now, its thunder after delay seconds (sound travels about 340 m a second).
     void           lightning(float delaySeconds);
+    // Breath in the cold (docs/plan-weather.md): everyone near the hero breathes out now and then, the game's BREATH
+    // particles at the head; level 0..1 (python/dm/climate.py sets it from the weather), every period seconds, each
+    // breath puff seconds long.
+    void           setBreath(float level, float period, float puff) {
+      breath = std::clamp(level, 0.f, 1.f); breathPeriod = std::max(period, 0.5f); breathPuff = std::clamp(puff, 0.05f, 10.f);
+      }
+    float          breathLevel() const { return breath; }
     void           setShootingStars(float rate) { weather.shootingStars = std::clamp(rate, 0.f, 1.f); }
     void           flash(float level) { weather.flash = std::max(weather.flash, std::clamp(level, 0.f, 1.f)); }
     void           setWeather(Precipitation kind, float target, float fadeSeconds, float windX, float windZ,
@@ -223,6 +231,10 @@ class GlobalEffects {
     std::map<std::string, Loop>               loops;
     float                                     thunderIn = -1;   // seconds until the thunder; below zero: none due
     bool                                      thunderFire = false;
+    float                                     breath = 0, breathPeriod = 3.5f, breathPuff = 1.2f;
+    uint64_t                                  breathLook = 0;
+    std::unordered_map<const void*, uint64_t> breathNext;   // whose next breath is when (keys only, never followed)
+    void tickBreath();
     Galaxy                                    galaxy;
     float                                     tripTimeRem = 0;
   friend class GlobalFx;

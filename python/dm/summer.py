@@ -19,6 +19,14 @@ CICADAS, CRICKETS = 0.35, 0.35   # loudest volume of each
 LOOK = 2.0         # seconds between looks
 
 
+def cold(state):
+    """How cold the air is, 0..1, for the breath people show: snow falling or lying, a crystal storm; never in heat."""
+    if state.get("heat", 0.0) > 0.3:
+        return 0.0
+    falling = state.get("falling", 0.0) if state.get("kind") in ("snow", "crystal") else 0.0
+    return round(min(1.0, max(falling, state.get("cover", 0.0) * 1.2 - 0.1)), 1)
+
+
 def ramp(h, up_from, up_to, down_from, down_to):
     """0..1 over a day: rising from up_from to up_to, full until down_from, gone at down_to (hours, may wrap)."""
     def inside(a, b):
@@ -43,7 +51,8 @@ def levels(state, hour, minute):
     return round(warm * day, 2), round(warm * night, 2)
 
 
-_shown = {"world": None, "cicadas": None, "crickets": None, "galaxy": None, "since": None, "stars": None}
+_shown = {"world": None, "cicadas": None, "crickets": None, "galaxy": None, "since": None, "stars": None,
+          "breath": None}
 
 
 def _loop(gothic, name, file, level, volume):
@@ -60,9 +69,14 @@ def tick(gothic, now):
         return None
     world = getattr(gothic.world, "generation", None)
     if world != _shown["world"]:   # a load or a new world: its engine starts silent, with the game's own sky
-        _shown.update(world=world, cicadas=None, crickets=None, galaxy=None, since=None, stars=None)
+        _shown.update(world=world, cicadas=None, crickets=None, galaxy=None, since=None, stars=None, breath=None)
     hour, minute = gothic.world.time
-    day, night = levels(gothic.weather.state(), hour, minute)
+    state = gothic.weather.state()
+    breath = cold(state)
+    if breath != _shown["breath"] and hasattr(gothic.weather, "breath"):
+        gothic.weather.breath(breath)
+        _shown["breath"] = breath
+    day, night = levels(state, hour, minute)
     _loop(gothic, "cicadas", "zikaden.wav", day, CICADAS)
     _loop(gothic, "crickets", "grillen.wav", night, CRICKETS)
     stars = round(night, 1)   # shooting stars under the Milky Way, as many as the night is warm and clear

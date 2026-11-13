@@ -61,7 +61,8 @@ class MdlVisual final {
     void                           setMagicWeapon(Effect&& spell, World& owner);
     void                           setMagicWeaponKey(World& owner, SpellFxKey key, int32_t keyLvl=0);
 
-    void                           startEffect (World& owner, Effect&& pfx, int32_t slot, bool noSlot);
+    void                           startEffect (World& owner, Effect&& pfx, int32_t slot, bool noSlot,
+                                                uint64_t lifetimeMs = 0);   // 0: as long as the effect lasts
     void                           stopEffect  (const VisualFx& vfx);
     void                           stopEffect  (int32_t slot);
     void                           setNpcEffect(World& owner, Npc& npc, std::string_view s, zenkit::NpcFlag flags);

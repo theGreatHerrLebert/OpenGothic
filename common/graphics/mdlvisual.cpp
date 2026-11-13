@@ -321,8 +321,8 @@ void MdlVisual::dropShield(Npc& npc) {
   npc.delItem(itm->clsId(),1);
   }
 
-void MdlVisual::startEffect(World& owner, Effect&& vfx, int32_t slot, bool noSlot) {
-  uint64_t timeUntil = vfx.effectPrefferedTime();
+void MdlVisual::startEffect(World& owner, Effect&& vfx, int32_t slot, bool noSlot, uint64_t lifetimeMs) {
+  uint64_t timeUntil = lifetimeMs>0 ? lifetimeMs : vfx.effectPrefferedTime();
   if(timeUntil!=0)
     timeUntil+=owner.tickCount();
 

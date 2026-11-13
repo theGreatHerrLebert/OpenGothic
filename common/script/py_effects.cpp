@@ -135,6 +135,10 @@ void bindTrip(py::module_& m) {
               "seconds; 0 stops it.");
   weather.def("lightning", [](float delay) { requireWorld()->globalFx()->lightning(delay); }, py::arg("delay") = 2.f,
               "A lightning flash now and its thunder after delay seconds (3 s is about a kilometre away).");
+  weather.def("breath", [](float level, float period, float puff) { requireWorld()->globalFx()->setBreath(level, period, puff); },
+              py::arg("level"), py::arg("period") = 3.5f, py::arg("puff") = 1.2f,
+              "Breath in the cold: everyone near the hero breathes out every period seconds (each at his own pace), "
+              "puff seconds long; level 0..1, 0 none.");
   weather.def("shooting_stars", [](float rate) { requireWorld()->globalFx()->setShootingStars(rate); },
               py::arg("rate"), "Shooting stars on a clear night, 0 none .. 1 one every half minute or so (none under "
               "clouds).");

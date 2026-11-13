@@ -1,4 +1,5 @@
 #include <cmath>
+#include "world/objects/npc.h"
 #include "gothic.h"
 #include <algorithm>
 #include "globaleffects.h"
@@ -27,6 +28,40 @@ void GlobalEffects::tick(uint64_t dt) {
   tick(dt,morphEff);
   tick(dt,quakeEff);
   tickWeather(dt);
+  tickBreath();
+  }
+
+void GlobalEffects::tickBreath() {
+  const uint64_t now = owner.tickCount();
+  if(breath<=0.001f) {
+    breathNext.clear();
+    return;
+    }
+  if(now<breathLook)
+    return;
+  breathLook = now + 100;
+  auto* pl = Gothic::inst().player();
+  if(pl==nullptr)
+    return;
+  std::unordered_map<const void*, uint64_t> seen;
+  const uint64_t period = uint64_t(breathPeriod*1000.f);
+  owner.detectNpc(pl->position(), 2500.f, [&](Npc& n) {
+    if(!n.isHuman() || n.isDead() || n.isUnconscious() || n.isSwim())
+      return;
+    // each one at his own pace: a hash of who he is spreads the breaths, so a crowd does not puff in step
+    const auto     key  = static_cast<const void*>(&n);
+    const uint64_t own  = (reinterpret_cast<uintptr_t>(key) >> 4) * 2654435761u;
+    auto           it   = breathNext.find(key);
+    uint64_t       next = it!=breathNext.end() ? it->second : now + own % period;
+    if(now>=next) {
+      // the colder, the more often it shows
+      if(float((own >> 8) % 1000)/1000.f < breath + 0.3f)
+        n.breathe(uint64_t(breathPuff*1000.f));
+      next = now + period*(85 + own % 30)/100;
+      }
+    seen[key] = next;
+    });
+  breathNext = std::move(seen);
   }
 
 void GlobalEffects::setWeather(Precipitation kind, float target, float fadeSeconds, float windX, float windZ,
