@@ -36,6 +36,7 @@ assert wt.category(weather, 410.0) == "after"
 assert wt.category(weather, 410.0 + wt.AFTER_RAIN + 1) is None
 # Nobody is spoken for in a voice that was never baked, nor during a conversation.
 assert wt.lines_for("BAU_1", "02", "rain", "rain") == []
+assert "Wenn's so weitergeht, säuft uns das Feld ab." not in wt.lines_for("BAU_1", "13", "after", "rain")
 dialog.partner = lambda: farmer
 weather.update(kind="snow", intensity=0.5)
 assert wt.tick(fake, 900.0, first) is None

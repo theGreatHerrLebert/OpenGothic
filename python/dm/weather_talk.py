@@ -78,7 +78,8 @@ def lines_for(instance, voice, what, base_kind):
     if voice not in VOICES:
         return []
     group = instance.split("_")[0]
-    own = BY_GROUP.get(group, {}).get(base_kind, [])
+    # their own lines speak of weather that is falling now: not of rain that has stopped, nor in a thunderclap
+    own = BY_GROUP.get(group, {}).get(base_kind, []) if what in ("rain", "snow", "storm") else []
     return GENERIC.get(what, []) + own
 
 
