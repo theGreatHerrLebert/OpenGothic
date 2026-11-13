@@ -10,7 +10,9 @@
 A node with "returns" has no choices of its own: after its line, the conversation
 goes straight back to that earlier node's menu.
 
-A node's "variants" replace its line when a flag is set: [{"when": flag, "line": text}].
+A node's "variants" replace its line when a flag is set: [{"when": flag, "line": text}], the first that holds; a
+variant with "unless" (a flag or a list) is skipped while any of them is set, so a line that says what the hero did
+not do can check it.
 
 A choice can carry "requires" (flags, any one is enough) and "unless" (a flag),
 so the hero can only say what the player has actually learned. Once asked, a question
@@ -177,7 +179,10 @@ class Player:
         already = bool(flags) and known.get(flags[0])
         self.line = self.node["again"] if self.node.get("again") and already else self.node["line"]
         for variant in self.node.get("variants", []):
-            if known.get(variant["when"]):
+            unless = variant.get("unless") or []
+            if isinstance(unless, str):
+                unless = [unless]
+            if known.get(variant["when"]) and not any(known.get(u) for u in unless):
                 self.line = variant["line"]
                 break
         for flag in flags:

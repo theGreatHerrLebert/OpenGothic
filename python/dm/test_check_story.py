@@ -96,6 +96,10 @@ parrot = {"conversations": {f"c{i}": {"nodes": {"a": {"line": f"Erklärung {i}."
 found = check_story.repeated_hero_lines(parrot)
 assert len(found) == 1 and "Aha." in found[0] and "5 times" in found[0], found
 print("repeated hero lines ok")
+denies = {"conversations": {"c": {"nodes": {"a": {"variants": [{"when": "paid", "line": "Du hast Jost nichts gesagt."}]}}}}}
+assert check_story.denial_warnings(denies) and not check_story.denial_warnings(
+    {"conversations": {"c": {"nodes": {"a": {"variants": [{"when": "paid", "unless": "told", "line": "Du hast Jost nichts gesagt."}]}}}}})
+print("denials ok")
 
 # Discoverability: a topic nobody points to, a night-only topic nobody says is at night, a deed nothing hints at.
 from dm import discoverability  # noqa: E402

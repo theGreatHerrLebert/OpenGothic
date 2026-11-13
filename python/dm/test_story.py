@@ -375,6 +375,21 @@ def test_variant_line():
     assert d.lines == ["Meister!"], d.lines
 
 
+def test_variant_unless():
+    # A variant that says what did not happen is skipped while a flag that makes it false is set.
+    graph = {"start": "a", "nodes": {"a": {"line": "Hallo.", "variants": [
+        {"when": "paid", "unless": "told", "line": "Und Jost weiß nichts."}, {"when": "paid", "line": "Bezahlt."}],
+        "choices": [{"text": "Tschüss", "ends": True}]}}}
+    for flags, heard in (({"paid": True}, "Und Jost weiß nichts."), ({"paid": True, "told": True}, "Bezahlt.")):
+        d = fake.dialog
+        d.reset()
+        player = graphs.Player(lambda: {"NOV_B": graph}, lambda n: None, lambda: flags)
+        d.who, d.opened, d.open = Npc("NOV_B"), True, True
+        for _ in range(3):
+            player.on_tick()
+        assert d.lines[0] == heard, (flags, d.lines)
+
+
 def test_again_line():
     graph = {"start": "a", "nodes": {"a": {"line": "Erstes Mal.", "again": "Du schon wieder.",
              "sets": "met", "choices": [{"text": "Tschüss", "ends": True}]}}}
@@ -1146,7 +1161,7 @@ def test_plans_are_all_or_nothing_where_the_game_allows():
         del fake.daedalus.call, fake.journal
 
 
-for test in (test_plans_are_all_or_nothing_where_the_game_allows, test_owed_aftercare_survives_a_save, test_topic_while_he_smokes, test_return_to_a_split_menu, test_items_of_our_own, test_item_with_a_model_of_its_own, test_give_xp, test_attack, test_npc_item, test_weather, test_refuse_talk, test_waited_for_pipe_is_reserved, test_handed_over_but_nothing_to_play, test_topics_extend_an_npc, test_trip_operation, test_rule_contents_are_checked_when_submitted, test_graph_validation, test_validation, test_apply_and_rollback, test_return_npc, test_conditional_choices, test_gamble, test_returns_to_menu, test_questions_are_asked_once, test_variant_line, test_again_line, test_scene_and_rule, test_rule_fires_on_perception, test_narration_waits_for_quiet, test_drawing_a_weapon_is_perceived,
+for test in (test_plans_are_all_or_nothing_where_the_game_allows, test_owed_aftercare_survives_a_save, test_topic_while_he_smokes, test_return_to_a_split_menu, test_items_of_our_own, test_item_with_a_model_of_its_own, test_give_xp, test_attack, test_npc_item, test_weather, test_refuse_talk, test_waited_for_pipe_is_reserved, test_handed_over_but_nothing_to_play, test_topics_extend_an_npc, test_trip_operation, test_rule_contents_are_checked_when_submitted, test_graph_validation, test_validation, test_apply_and_rollback, test_return_npc, test_conditional_choices, test_gamble, test_returns_to_menu, test_questions_are_asked_once, test_variant_line, test_variant_unless, test_again_line, test_scene_and_rule, test_rule_fires_on_perception, test_narration_waits_for_quiet, test_drawing_a_weapon_is_perceived,
              test_queue_waits_for_safe_point, test_save_load_does_not_reapply_world,
              test_player):
     test()

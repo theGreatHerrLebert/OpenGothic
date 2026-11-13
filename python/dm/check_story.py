@@ -189,6 +189,23 @@ def repeated_hero_lines(data, most=3):
             for text, n in counts.most_common() if n > most]
 
 
+DENIAL = re.compile(r"\b(nicht|nichts|kein|keine|keinen|keinem|keiner|nie|niemals|niemand|niemandem)\b", re.IGNORECASE)
+
+
+def denial_warnings(data):
+    """A variant line that says something did not happen ("und Jost nichts gesagt") is shown on one flag; without an
+    unless it also shows when the hero did exactly that."""
+    out = []
+    for name, graph_data in (data.get("conversations") or {}).items():
+        for key, node in (graph_data.get("nodes") or {}).items():
+            for variant in node.get("variants") or []:
+                line = variant.get("line", "")
+                if DENIAL.search(line) and not variant.get("unless"):
+                    out.append(f"{name}.{key}: variant on {variant.get('when')} says what did not happen "
+                               f"(\"{line[:60]}\"); give it an unless for every flag that would make it false")
+    return out
+
+
 def ending_warnings(data):
     """Technical weak spots of a story's endings and key items, as the brief's 'Good to play' describes. Warnings only:
     whether a story is good is for the player to say."""
@@ -348,6 +365,7 @@ def check(path, names_path):
     warnings += value_warnings(data)
     warnings += duplicate_choice_warnings(data)
     warnings += repeated_hero_lines(data)
+    warnings += denial_warnings(data)
     errors += softlock_errors(data)
     closures = data.get("closures")
     if closures is not None and (not isinstance(closures, list) or not all(isinstance(c, dict) for c in closures)):

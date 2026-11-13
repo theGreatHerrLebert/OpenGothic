@@ -86,7 +86,9 @@ One or two sentences per node; a longer speech is a chain of nodes. Choices carr
 enough), `unless`, `checks`, `takes`/`gives` (`{"item": ..., "count": ...}`; a choice with `takes` appears only while the hero has the item),
 `repeat` (asked again), and are otherwise asked once per story. A checked choice never counts as the way out of a node;
 every node needs an unconditional one. Nodes and choices declare the facts they `uses` and `teaches`; the hero may only
-say what the player knows. A first meeting needs an `again` line, and `variants` replace a line once a flag is set.
+say what the player knows. A first meeting needs an `again` line, and `variants` replace a line once a flag is set
+(the first that holds); a variant's `unless` keeps it away while the flags that would make it false are set, which a
+line saying what the hero did not do always needs (the checker warns).
 Conversations can only be left from the main menu, though a story may end one deliberately; offer "Zurück" only where
 more can be asked.
 
