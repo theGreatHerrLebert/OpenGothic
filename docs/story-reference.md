@@ -33,7 +33,8 @@ around them, twin choices, and refusals that lock the story.
 ## Deeds and what the story notices
 
 A rule with `on` fires when the game sees the player do something: `took_item`, `hit`, `knocked_down`, `killed`,
-`cast_spell`, `entered_room`, `read_item`, `drew_weapon`, `used_object`. Narrow it with `target` (may be `PLAYER`, for
+`cast_spell`, `entered_room`, `read_item`, `drew_weapon`, `used_object`, `used_item` (a story item with a `use`,
+see `define_item`; `near` is where it was used). Narrow it with `target` (may be `PLAYER`, for
 what is done to the hero), `item`, `spell`, `creature`, and `seen_by` (that person saw it) or `unseen` (nobody did).
 
     {"op": "add_rule", "id": "found_letter", "when": [], "on": {"event": "read_item", "item": "ITWR_..."},
