@@ -144,27 +144,116 @@ vec3 galaxyNebula(sampler2D tex, vec4 p, vec3 d) {
   return galaxyLinear(texture(tex, uv).rgb)*mask*p.w;
   }
 
-// Northern lights: curtains of light hanging over the sky. Each layer is the same ribbon seen at a slightly
-// different height, so the curtain gets depth and hangs down; fine vertical rays run through it. Green at the lower
-// edge, turquoise and violet above; the music's glow lets it flare, gently, like a breath.
+// Northern lights (aurora): thin sheets of light hanging in a slab of the upper atmosphere, marched along the view
+// ray. Every curtain is a folded line in the horizontal plane; sampling the same line at every height extrudes it into
+// a hanging wall, so curtains get real perspective: overhead they are seen from below as thin bright bands, toward the
+// horizon they fold, thin and converge. Lengths are in units of the curtains' lower edge (about 100 km).
+const int   AURORA_STEPS  = 32;
+const float AURORA_BASE   = 1.0;     // lower edge of the curtains
+const float AURORA_TOP    = 2.6;     // where the red tail has faded
+const float AURORA_TILT   = 0.22;    // curtains lean along the magnetic field, so rays converge south of the zenith
+const float AURORA_WIDTH  = 0.035;   // thickness of a sheet in the plane
+const float AURORA_RAYS   = 14.0;    // rays per unit along a curtain (a second octave runs 2.4 times finer)
+const float AURORA_RED    = 0.10;    // how much of the high red tail shows
+const float AURORA_GAIN   = 6.0;     // overall brightness
+
+float auroraHash(float n) {
+  n = fract(n*0.1031);
+  n *= n + 33.33;
+  n *= n + n;
+  return fract(n);
+  }
+
+float auroraNoise(float x) {
+  float i = floor(x), f = fract(x);
+  f = f*f*(3.0 - 2.0*f);
+  return mix(auroraHash(i), auroraHash(i + 1.0), f);
+  }
+
+// The plane folded slowly by a few incommensurate waves; the curtains are level lines of its y, and x runs along them.
+vec2 auroraWarp(vec2 p, float t) {
+  p.y += 0.80*sin(p.x*0.43 + t*0.019) + 0.22*sin(p.x*1.17 - t*0.031 + 1.7);
+  p.x += 0.45*sin(p.y*1.85 + t*0.023 + 0.4);   // shifting x by y makes a line curl back on itself: folds
+  p.y += 0.10*sin(p.x*2.90 + t*0.043 + 2.3);
+  return p;
+  }
+
 vec3 aurora(vec3 view, float strength, float t, float glow) {
-  if(strength<=0.001 || view.y<=0.02)
+  if(strength<=0.001)
     return vec3(0.0);
+  // where the view ray meets the plane at unit height, and how far that moves per pixel: rays finer than a pixel fade
+  // to their mean instead of aliasing (taken before the horizon test below, so the derivative is well defined)
+  vec2  dir  = view.xz/max(view.y, 0.005);
+  float foot = length(fwidth(dir));
+  if(view.y<=0.005)
+    return vec3(0.0);
+  // Seen low, the light crosses a lot of air: faint and slightly reddened near the horizon, without a hard edge.
+  float horizon = smoothstep(0.005, 0.16, view.y);
+  float airmass = exp(-0.06/(view.y + 0.02));
+
+  const vec3 green  = vec3(0.10, 1.00, 0.32);   // 557.7 nm atomic oxygen: the bright lower curtain
+  const vec3 red    = vec3(0.80, 0.10, 0.35);   // 630 nm oxygen high up: a diffuse tail
+  const vec3 fringe = vec3(0.75, 0.15, 0.65);   // nitrogen pink at the lower edge of a strong display
+
+  float dh     = (AURORA_TOP - AURORA_BASE + 0.12)/float(AURORA_STEPS);
+  float ds     = dh/max(view.y, 0.12);          // emission integrates along the ray, the path bounded near the horizon
+  float dither = fract(52.9829189*fract(dot(gl_FragCoord.xy, vec2(0.06711056, 0.00583715))));
+  float pulse  = 1.0 + 0.6*glow;
+
   vec3 col = vec3(0.0);
-  for(int i=0; i<6; ++i) {
-    float h    = 1.0 + float(i)*0.09;
-    vec2  q    = view.xz/(view.y + 0.12)*h;
-    float drift = t*0.05;
-    float band = q.y*0.55 + sin(q.x*0.55 + drift*2.0 + float(i)*0.15)*0.9 + sin(q.x*1.7 - drift*3.1)*0.3 - 0.6;
-    float ribbon = exp(-band*band*3.0);
-    float rays = 0.55 + 0.45*sin(q.x*22.0 + sin(q.x*2.3 + t*0.4)*3.0 + float(i)*0.6);
-    float fade = 1.0 - float(i)/6.0;
-    vec3  tone = mix(vec3(0.15, 1.00, 0.45), mix(vec3(0.10, 0.85, 0.90), vec3(0.60, 0.30, 1.00), fade < 0.5 ? 1.0 - fade*2.0 : 0.0),
-                     1.0 - fade);
-    col += tone*ribbon*rays*fade;
+  for(int i=0; i<AURORA_STEPS; ++i) {
+    float h = AURORA_BASE - 0.12 + (float(i) + dither)*dh;
+    vec2  p = dir*h;
+    p.y -= AURORA_TILT*(h - AURORA_BASE);
+    vec2  q = auroraWarp(p, t);
+    // three curtains at fixed levels: the main arc, a fainter one further north, a faint one overhead
+    vec3  off = q.y - vec3(1.3, 3.1, -0.5);
+    if(min(min(abs(off.x), abs(off.y)), abs(off.z))>0.9)
+      continue;
+    // the distance to a line is the level difference over the gradient, so folds don't smear a sheet's thickness
+    const float e  = 0.02;
+    float gx   = (auroraWarp(p + vec2(e, 0.0), t).y - q.y)/e;
+    float gy   = (auroraWarp(p + vec2(0.0, e), t).y - q.y)/e;
+    float grad = max(length(vec2(gx, gy)), 0.2);
+    // how far the ray moves across the sheet per step: a sheet thinner than that is widened, keeping its light
+    float rate = abs(dot(dir, vec2(gx, gy)) - AURORA_TILT*gy)/grad*dh;
+    float far  = length(p);
+    float w    = AURORA_WIDTH*(1.0 + 0.15*far);
+    float W    = max(w, 0.7*rate);
+    vec3  d    = off/grad;
+
+    // its lower edge waves a little; above it the green falls off fast, the red takes over higher up
+    float base = AURORA_BASE + 0.06*sin(q.x*0.9 + t*0.03) + 0.04*auroraNoise(q.x*3.0 + 11.0);
+    float u    = (h - base)/(AURORA_TOP - AURORA_BASE);
+    float edge = smoothstep(-0.02, 0.015, u);
+    float gpro = edge*(0.7*exp(-max(u, 0.0)*2.6) + 0.6*exp(-max(u, 0.0)*16.0));
+    float rpro = smoothstep(0.15, 0.55, u)*exp(-max(u - 0.45, 0.0)*2.5);
+    float fpro = edge*(1.0 - smoothstep(0.0, 0.05, u));
+
+    // fine rays along the sheet, drifting slowly sideways; they fade out where they would alias
+    float f1   = foot*h*AURORA_RAYS;
+    float r1   = mix(0.5, auroraNoise(q.x*AURORA_RAYS + t*0.12), 1.0 - smoothstep(0.3, 0.7, f1));
+    float r2   = mix(0.5, auroraNoise(q.x*AURORA_RAYS*2.4 - t*0.3 + 5.0), 1.0 - smoothstep(0.3, 0.7, f1*2.4));
+    float r    = 0.65*r1 + 0.35*r2;
+    float rays = 0.15 + 1.7*r*r;
+
+    // each curtain has its own length and brightness knots, so they don't repeat
+    vec3 len   = vec3(1.0 - smoothstep(4.0, 9.0, abs(q.x - 0.5)),
+                      1.0 - smoothstep(2.0, 6.0, abs(q.x + 2.5)),
+                      1.0 - smoothstep(1.0, 3.5, abs(q.x - 1.5)));
+    vec3 knots = vec3(auroraNoise(q.x*0.6 + t*0.012),
+                      auroraNoise(q.x*0.6 - t*0.010 + 17.0),
+                      auroraNoise(q.x*0.8 + t*0.015 + 41.0));
+    vec3 amp   = len*(0.35 + 0.65*knots)*vec3(1.0, 0.55, 0.35);
+    float sharp = dot(amp, exp(-d*d/(W*W)))*(w/W);
+    float broad = dot(amp, exp(-d*d/(9.0*W*W)))*(w/W);
+
+    col += (green*gpro*sharp*rays + red*rpro*broad*AURORA_RED + fringe*fpro*sharp*rays*glow*0.8)*ds;
     }
-  float sky = smoothstep(0.02, 0.25, view.y)*(1.0 - smoothstep(0.85, 1.0, view.y)*0.5);
-  return col*sky*strength*0.45*(1.0 + glow*0.8);
+  col *= horizon*airmass*mix(vec3(1.0), vec3(1.0, 0.85, 0.8), 1.0 - airmass);
+  col  = col*AURORA_GAIN*strength*pulse;
+  // looking along a curtain piles up a lot of light: roll it off softly instead of blowing out
+  return col/(1.0 + dot(col, vec3(0.2126, 0.7152, 0.0722))*0.6);
   }
 
 float moonHash(vec2 p) {
@@ -207,9 +296,9 @@ vec3 galaxySky(vec3 view) {
   vec3  graded = galaxy.tint.rgb*L*2.2 + vec3(pow(L, 2.0))*1.5;
   c = mix(c, graded, galaxy.main.z);
   c = c*galaxy.main.y*(1.0 + galaxy.tint.w*0.6);
-  c += aurora(view, galaxy.aurora.x, galaxy.aurora.y, galaxy.tint.w);
   float m = galaxy.aurora.z;
-  return mix(c, c*vec3(1.0, 0.55, 0.5), m*0.5) + bloodMoon(view, m);   // under a blood moon the sky reddens too
+  c = mix(c, c*vec3(1.0, 0.55, 0.5), m*0.5);   // under a blood moon the sky reddens too, but not the aurora's own light
+  return c + aurora(view, galaxy.aurora.x, galaxy.aurora.y, galaxy.tint.w) + bloodMoon(view, m);
   }
 
 void main() {
