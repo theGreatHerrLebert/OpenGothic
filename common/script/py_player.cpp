@@ -28,7 +28,7 @@ void bindPlayer(py::module_& m) {
                 !sym->is_const() || sym->count()!=1 || max==nullptr)
                throw std::invalid_argument("not a guild: " + guild);
              const int32_t id = sym->get_int();
-             if(id<=0 || id>=max->get_int() || upper(guild)=="GIL_MAX" || upper(guild).starts_with("GIL_SEPERATOR"))
+             if(id<0 || id>=max->get_int() || upper(guild)=="GIL_MAX" || upper(guild).starts_with("GIL_SEPERATOR"))
                throw std::invalid_argument("not a guild: " + guild);
              auto* p = requirePlayer();
              p->handle().guild = id;
