@@ -38,6 +38,14 @@ void bindOverlay(py::module_& m) {
         py::arg("seconds") = 2,
         "Show a line on screen like the PrintScreen extern: x and y in percent of the screen, -1 centres.");
 
+  m.def("save_game",
+        [](int slot, const std::string& name) {
+          if(slot<1 || slot>20)
+            throw std::invalid_argument("slot is 1 to 20");
+          Gothic::inst().save("save_slot_" + std::to_string(slot) + ".sav", toEngine(name));
+          },
+        py::arg("slot"), py::arg("name"),
+        "Save the game into slot 1..20 under a name, as the menu does (it happens on the next frame).");
   m.def("play_sound",
         [](const std::string& name) { Gothic::inst().emitGlobalSound(upper(name)); },
         py::arg("name"), "Play one of the game's sound effects (an SFX instance or WAV name), as Snd_Play does.");

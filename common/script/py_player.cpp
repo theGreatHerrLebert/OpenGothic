@@ -18,6 +18,22 @@ void bindPlayer(py::module_& m) {
       .def_property_readonly("guild",
            [](const PyPlayer&) { return int(requirePlayer()->guild()); },
            "Guild id, comparable with Daedalus constants such as GIL_KDF.")
+      .def("set_guild",
+           [](const PyPlayer&, const std::string& guild) {
+             // as the game does when one joins: the guild and the true guild (a test save, or a story's own path)
+             auto* w   = requireWorld();
+             auto* sym = w->script().getVm().find_symbol_by_name(upper(guild));
+             if(sym==nullptr || !upper(guild).starts_with("GIL_"))
+               throw std::invalid_argument("not a guild: " + guild);
+             auto* p = requirePlayer();
+             p->handle().guild = sym->get_int();
+             p->setTrueGuild(sym->get_int());
+             },
+           py::arg("guild"), "Join a guild by its constant (GIL_KDF): the guild and the true guild, nothing else.")
+      .def_property("learn_points",
+           [](const PyPlayer&) { return int(requirePlayer()->handle().lp); },
+           [](const PyPlayer&, int v) { requirePlayer()->handle().lp = std::max(v, 0); },
+           "Learning points the hero has to spend with teachers.")
       .def_property_readonly("weapon",
            [](const PyPlayer&) {
              switch(requirePlayer()->weaponState()) {
