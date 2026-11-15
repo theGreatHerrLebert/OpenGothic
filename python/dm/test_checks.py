@@ -98,6 +98,19 @@ assert perc.validate({"event": "used_object", "near": [9000, 6000, 2]}) is None
 for bad in ([9000, 6000], [9000, 6000, 0], [9000, 6000, 99], ["9000", 6000, 2], [True, 6000, 2]):
     assert "near" in perc.validate({"event": "used_object", "near": bad}), bad
 assert "name" in perc.validate({"event": "took_item", "name": "X"})
+# A story item used from the inventory: by its item, and by where it was used; nobody's sight is measured.
+rune = {"kind": "used_item", "actor": "PLAYER", "target": "", "item": "ITMI_PACKET", "spell": -1, "seen_by": [],
+        "object": "", "position": (9000.0, 300.0, 6000.0)}
+assert perc.matches({"event": "used_item"}, rune) and perc.matches({"event": "used_item", "item": "itmi_packet"}, rune)
+assert not perc.matches({"event": "used_item", "item": "ITMI_GOLD"}, rune)
+assert not perc.matches({"event": "read_item", "item": "ITMI_PACKET"}, rune)
+assert perc.matches({"event": "used_item", "near": [9000, 7500, 20]}, rune)              # 15 m away
+assert not perc.matches({"event": "used_item", "near": [9000, 9000, 20]}, rune)          # 30 m away
+assert perc.validate({"event": "used_item", "item": "ITMI_PACKET", "near": [9000, 6000, 20]}) is None
+assert "near" in perc.validate({"event": "took_item", "near": [9000, 6000, 20]})
+for bad in ({"event": "used_item", "seen_by": "BURNER"}, {"event": "used_item", "unseen": True},
+            {"event": "used_item", "unseen": False}):
+    assert "witnesses" in perc.validate(bad), bad
 for bad, word in [({"event": "nope"}, "unknown"), ({"event": "took_item", "item": "BURNER"}, "not an item"), ({"event": "hit", "target": "ITX"}, "not an NPC"),
                   ({"event": "cast_spell", "spell": "FIRE"}, "not a spell"), ({"event": "hit", "seen_by": "BURNER", "unseen": True}, "exclude")]:
     assert word in perc.validate(bad), bad

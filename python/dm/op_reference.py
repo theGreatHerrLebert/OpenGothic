@@ -57,6 +57,9 @@ OPS = {
     "retire": ("runtime", "Retires one rule, scene, topic or refusal by its id, as if its story had ended (for tests and repairs).",
                {"op": "retire", "id": "test_dice"}),
     "retry_rule": ("runtime", "Lets a broken rule try again, after the cause was fixed.", {"op": "retry_rule", "id": "slain"}),
+    "item_used": ("runtime", "A use of a story item that took effect (its carrier, the game time in hours): its "
+                             "cooldown counts from here, and its weather lies over the sky until its hours run out.",
+                  {"op": "item_used", "item": "ITSC_PALLIGHTHEAL", "at": 105.5}),
     # People and creatures
     "spawn_npc": ("People", "Brings an existing character into the world at a waypoint.",
                   {"op": "spawn_npc", "instance": "BAU_901_BAUER", "waypoint": "NW_BIGFARM_SHEEP2_04"}),
@@ -80,9 +83,19 @@ OPS = {
     # Items and rewards
     "define_item": ("Items", "An item of the story's own, on an unused carrier: name, rows, value, damage, look or model. "
                     "With pages (1 to 16 of our own text, each fitting a book page) it is read: style book (the mage "
-                    "book, turned two pages at a time) or letter; give it after defining it, so the copy is the story's.",
-                    {"op": "define_item", "item": "MONDALOE", "like": "ITPL_HEALTH_HERB_01", "name": "Mondaloe",
-                     "look": {"model": "mondaloe.obj"}}),
+                    "book, turned two pages at a time) or letter; give it after defining it, so the copy is the story's. "
+                    "With use it does something when the hero uses it, and nothing of its base acts any more (no "
+                    "spell, no script, never equipped, traders do not buy it; `like` is only its look): consume "
+                    "(true: one is used up), effect (a SPELLFX_ or MFX_ visual effect the game has, at the hero), "
+                    "animation (T_PRACTICEMAGIC to T_PRACTICEMAGIC5, T_PLUNDER or T_SEARCH), weather (a weather op's "
+                    "arguments with hours: it lies over any story weather until its hours run out, then the story's "
+                    "or the climate's comes back) and every_hours (1 to 240 game hours before it works again). Each "
+                    "use that takes effect is the deed used_item, which a rule can wait for (on, with near). use "
+                    "excludes pages, and cannot be added to or taken from an item once defined. Say in description "
+                    "or rows what it does.",
+                    {"op": "define_item", "item": "EISSTURM_ROLLE", "like": "ITSC_ICECUBE", "name": "Spruchrolle Eissturm",
+                     "use": {"consume": True, "effect": "SPELLFX_ICECUBE",
+                             "weather": {"kind": "crystal", "intensity": 0.8, "fade": 10, "wind": [6, 2], "hours": 1.2}}}),
     "place_item": ("Items", "Lays an item at a waypoint.", {"op": "place_item", "instance": "MONDALOE", "waypoint": "NW_BIGFARM_SHEEP2_04"}),
     "npc_item": ("Items", "Puts an item into someone's pockets for real: he can be robbed of it, it can be looted from "
                           "him when he lies down, a trader may sell it. Check where it is with npc_has and has_item.",

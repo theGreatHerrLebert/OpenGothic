@@ -604,7 +604,7 @@ class _Reach:
             if not ok:
                 reasons.append(why)
         on = c.get("on") or {}
-        if on.get("event") in ("took_item", "read_item") and on.get("item"):
+        if on.get("event") in ("took_item", "read_item", "used_item") and on.get("item"):
             item = on["item"].upper()
             placed = any(name == item for name, _, _ in self.story.placed)
             ok = placed or item in self.items or bool(self.audit.sources(item))

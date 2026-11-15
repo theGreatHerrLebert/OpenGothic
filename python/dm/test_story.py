@@ -823,6 +823,186 @@ def test_story_books():
         fake.world.define_item = saved_define
 
 
+class Hero:
+    """The hero's pockets, for items that are used up."""
+    def __init__(self, **pockets):
+        self.pockets, self.animations = dict(pockets), []
+        self.position, self.busy, self.guild = (100.0, 500.0, 200.0), False, 0
+
+    @property
+    def items(self):
+        return [{"instance": k, "count": v, "equipped": False} for k, v in self.pockets.items() if v]
+
+    def give_item(self, instance, count=1):
+        self.pockets[instance.upper()] = self.pockets.get(instance.upper(), 0) + count
+
+    def remove_item(self, instance, count=1):
+        self.pockets[instance.upper()] = max(0, self.pockets.get(instance.upper(), 0) - count)
+
+    def play_animation(self, name):
+        self.animations.append(name)
+
+
+def test_items_with_a_use():
+    # A story item that does something when used: validated, made inert in the engine, its use taken by the story.
+    saved = {k: getattr(fake.world, k, None) for k in ("define_item", "set_use", "has_effect", "play_effect")}
+    saved_player, saved_time = fake.player, (fake.world.day, fake.world.time)
+    defined, uses, effects, calls = [], [], [], []
+    fake.world.define_item = lambda *a: defined.append(a)
+    fake.world.set_use = lambda carrier, on: uses.append((carrier, on))
+    fake.world.has_effect = lambda name: name.upper() in ("SPELLFX_ICECUBE", "SPELLFX_LIGHT")
+    fake.world.play_effect = lambda *a: effects.append(a) or True
+    fake.weather = types.SimpleNamespace(set=lambda *a: calls.append(("set",) + a),
+                                         cover=lambda *a: calls.append(("cover",) + a),
+                                         heat=lambda *a: calls.append(("heat",) + a),
+                                         fog=lambda *a: calls.append(("fog",) + a))
+    fake.world.day, fake.world.time = 3, (10, 0)
+    scroll = {"op": "define_item", "item": "Eissturm", "like": "ITSC_ICECUBE", "name": "Spruchrolle Eissturm",
+              "use": {"consume": True, "effect": "SPELLFX_ICECUBE", "animation": "T_PRACTICEMAGIC2",
+                      "weather": {"kind": "crystal", "intensity": 0.8, "fade": 10, "wind": [6, 2], "hours": 1.2}}}
+    s = st.Story()
+    s.validate([scroll])
+    s.validate([dict(scroll, item="X", use={"consume": True, "every_hours": 2})])   # a stack, rate-limited
+    s.validate([dict(scroll, item="X", use={})])                                      # a ritual tool: only a deed
+    for use, fragment in (({"consume": "yes"}, "consume"), ({"effect": "SPELLFX_NOPE"}, "no visual effect"),
+                          ({"effect": "LIGHT"}, "SPELLFX_"), ({"animation": "T_DANCE"}, "animation"),
+                          ({"weather": {"kind": "crystal"}}, "hours"), ({"weather": {"kind": "lava", "hours": 1}}, "kind"),
+                          ({"weather": {"kind": "rain", "intensity": 3, "hours": 1}}, "intensity"),
+                          ({"every_hours": 0}, "every_hours"), ({"every_hours": 241}, "every_hours"),
+                          ({"every_hours": True}, "every_hours"), ({"explode": True}, "has no"), ("yes", "object")):
+        rejected(s, [dict(scroll, item="Y", use=use)], fragment)
+    rejected(s, [dict(scroll, item="Y", pages=["Seite."])], "exclude")
+    s.apply_plan({"reason": "r", "ops": [scroll]})
+    carrier = s.state["items"]["EISSTURM"]["carrier"]
+    assert defined[-1][0] == carrier and defined[-1][-1] is True and len(defined[-1]) == 9, defined   # made inert
+    assert uses == [(carrier, True)], uses
+    # fixed once defined: a redefinition may not take its use away, nor give a plain item one
+    rejected(s, [{k: v for k, v in scroll.items() if k != "use"}], "cannot be added")
+    s.apply_plan({"reason": "r", "ops": [{"op": "define_item", "item": "Stein", "like": "ITMI_A", "name": "Stein"}]})
+    assert uses[-1] == (s.state["items"]["STEIN"]["carrier"], False) and len(defined[-1]) == 8, (uses, defined)
+    rejected(s, [dict(scroll, item="Stein")], "cannot be added")
+    s.validate([dict(scroll, name="Eissturmrolle")])   # renamed, still with a use: fine
+    # after a load the engine has forgotten its use: set again
+    uses.clear()
+    s.rebind()
+    assert (carrier, True) in uses, uses
+    # a rule waits for the use where it happens
+    s.apply_plan({"reason": "r", "ops": [{"op": "add_rule", "id": "storm", "when": [],
+                                          "on": {"event": "used_item", "item": "Eissturm", "near": [100, 200, 5]},
+                                          "ops": [{"op": "set_flag", "name": "stormed", "value": True}]}]})
+    used = {"kind": "used_item", "actor": "PLAYER", "target": "", "item": carrier, "spell": -1, "seen_by": [],
+            "object": "", "position": (100.0, 500.0, 200.0)}
+    # Lost: the hero no longer has one. Nothing happens, it costs nothing, and no rule hears of it.
+    hero = fake.player = Hero()
+    st.recent.clear()
+    entries = len(s.log)
+    fake.world.perceived = [dict(used)]
+    s._take_perceptions()
+    assert len(s.log) == entries and not s.state.get("item_uses") and not st.recent and not calls and not effects
+    assert not s.state["rules"]["storm"]["perceived"]
+    # Used: one taken, logged, the weather laid over the sky, the look of it at the hero, then the rule hears it.
+    hero.give_item(carrier, 2)
+    fake.world.perceived = [dict(used)]
+    s._take_perceptions()
+    assert hero.pockets[carrier] == 1, hero.pockets
+    op = s.log[-2]["ops"][0]
+    assert op == {"op": "item_used", "item": carrier, "at": 3 * 24 + 10}, s.log[-2:]
+    overlay = s.state["item_weather"]
+    assert overlay["kind"] == "crystal" and overlay["until"] == 3 * 24 + 10 + 1.2 and overlay["wind"] == [6, 2], overlay
+    assert ("set", "crystal", 0.8, 10, (6, 2)) in calls, calls
+    assert effects == [("SPELLFX_ICECUBE", 100.0, 500.0, 200.0, st.USE_EFFECT_SECONDS)], effects
+    assert hero.animations == ["T_PRACTICEMAGIC2"] and len(st.recent) == 1
+    assert s.state["rules"]["storm"]["perceived"]
+    s._tick_rules()
+    assert s.state["flags"].get("stormed")
+    # A story's own weather set while the overlay lasts stays underneath: kept, not shown.
+    calls.clear()
+    s.apply_plan({"reason": "r", "ops": [{"op": "weather", "kind": "rain", "intensity": 0.5, "hours": 6}]})
+    assert not calls and s.state["weather"]["kind"] == "rain" and s.state["item_weather"]["kind"] == "crystal"
+    # A load restores both: the story's weather, and the overlay over it.
+    s.save("uses.sav")
+    other = st.Story()
+    other.load("uses.sav")
+    assert other.state["item_uses"] == s.state["item_uses"] and other.state["item_weather"] == overlay
+    calls.clear()
+    other.rebind()
+    sets = [c for c in calls if c[0] == "set"]
+    assert sets == [("set", "rain", 0.5, 0, (0, 0)), ("set", "crystal", 0.8, 0, (6, 2))], calls
+    # ... and once the overlay's hours ran out, a load sets only the story's.
+    fake.world.time = (11, 30)
+    calls.clear()
+    other.rebind()
+    assert [c for c in calls if c[0] == "set"] == [("set", "rain", 0.5, 0, (0, 0))], calls
+    fake.world.time = (10, 0)
+
+    # A keepsake with a cooldown: kept, works once a game day.
+    calls.clear()
+    effects.clear()
+    drum = {"op": "define_item", "item": "Trommel", "like": "ITMI_A", "name": "Orktrommel",
+            "use": {"every_hours": 24, "weather": {"kind": "rain", "intensity": 1.0, "hours": 0.5, "fog": 0.4}}}
+    s.apply_plan({"reason": "r", "ops": [drum]})
+    drum_carrier = s.state["items"]["TROMMEL"]["carrier"]
+    hero.give_item(drum_carrier)
+    beat = dict(used, item=drum_carrier, position=(0.0, 1000.0, 0.0))
+    fake.world.perceived = [dict(beat)]
+    s._take_perceptions()
+    assert hero.pockets[drum_carrier] == 1 and s.state["item_uses"][drum_carrier] == 3 * 24 + 10
+    assert s.log[-1]["ops"][0]["fog_base"] == 700.0 and s.state["item_weather"]["fog_base"] == 700.0, s.log[-1]
+    entries, heard = len(s.log), len(st.recent)
+    fake.world.time = (22, 0)
+    fake.world.perceived = [dict(beat)]
+    s._take_perceptions()                         # on cooldown: nothing, and nobody hears of it
+    assert len(s.log) == entries and len(st.recent) == heard
+    # Another item's weather over the drum's fog, without fog of its own: the drum's fog thins away.
+    calls.clear()
+    fake.world.time = (10, 15)
+    hero.give_item(carrier)
+    fake.world.perceived = [dict(used)]
+    s._take_perceptions()
+    assert ("fog", 0.0, 25, 700.0, 300.0) in calls and s.state["item_weather"]["kind"] == "crystal", calls
+    entries = len(s.log)
+    fake.world.day, fake.world.time = 4, (10, 0)
+    fake.world.perceived = [dict(beat)]
+    s._take_perceptions()                         # a day later it works again
+    assert len(s.log) == entries + 1 and s.state["item_uses"][drum_carrier] == 4 * 24 + 10
+
+    # Used up and rate-limited: a use on cooldown takes nothing.
+    stack = {"op": "define_item", "item": "Funken", "like": "ITSC_ICECUBE", "name": "Funkenrolle",
+             "use": {"consume": True, "every_hours": 2, "effect": "SPELLFX_LIGHT"}}
+    s.apply_plan({"reason": "r", "ops": [stack]})
+    stack_carrier = s.state["items"]["FUNKEN"]["carrier"]
+    hero.give_item(stack_carrier, 3)
+    spark = dict(used, item=stack_carrier)
+    fake.world.perceived = [dict(spark)]
+    s._take_perceptions()
+    assert hero.pockets[stack_carrier] == 2
+    fake.world.time = (11, 0)
+    fake.world.perceived = [dict(spark)]
+    s._take_perceptions()
+    assert hero.pockets[stack_carrier] == 2       # on cooldown: kept
+    fake.world.time = (12, 0)
+    fake.world.perceived = [dict(spark)]
+    s._take_perceptions()
+    assert hero.pockets[stack_carrier] == 1
+    # the cosmetic part may fail: the use has taken effect all the same
+    fake.world.play_effect = lambda *a: (_ for _ in ()).throw(RuntimeError("no world"))
+    fake.world.time = (14, 0)
+    fake.world.perceived = [dict(spark)]
+    s._take_perceptions()
+    assert hero.pockets[stack_carrier] == 0 and s.state["item_uses"][stack_carrier] == 4 * 24 + 14
+    # item_used is the game master's own: an author cannot use it for an item without a use
+    rejected(s, [{"op": "item_used", "item": "ITMI_A", "at": 1}], "not a story item")
+
+    del fake.weather
+    fake.player = saved_player
+    fake.world.day, fake.world.time = saved_time
+    for k, v in saved.items():
+        if v is None:
+            delattr(fake.world, k)
+        else:
+            setattr(fake.world, k, v)
+
+
 def test_items_of_our_own():
     # An item of the story's own gets a carrier nothing in the game uses, and every mention of it becomes that carrier.
     s = st.Story()
@@ -1237,7 +1417,7 @@ def test_plans_are_all_or_nothing_where_the_game_allows():
         del fake.daedalus.call, fake.journal
 
 
-for test in (test_story_books, test_plans_are_all_or_nothing_where_the_game_allows, test_owed_aftercare_survives_a_save, test_topic_while_he_smokes, test_return_to_a_split_menu, test_items_of_our_own, test_item_with_a_model_of_its_own, test_give_xp, test_attack, test_npc_item, test_weather, test_refuse_talk, test_waited_for_pipe_is_reserved, test_handed_over_but_nothing_to_play, test_topics_extend_an_npc, test_trip_operation, test_rule_contents_are_checked_when_submitted, test_graph_validation, test_validation, test_apply_and_rollback, test_return_npc, test_conditional_choices, test_gamble, test_returns_to_menu, test_questions_are_asked_once, test_variant_line, test_variant_unless, test_again_line, test_scene_and_rule, test_rule_fires_on_perception, test_narration_waits_for_quiet, test_drawing_a_weapon_is_perceived,
+for test in (test_items_with_a_use, test_story_books, test_plans_are_all_or_nothing_where_the_game_allows, test_owed_aftercare_survives_a_save, test_topic_while_he_smokes, test_return_to_a_split_menu, test_items_of_our_own, test_item_with_a_model_of_its_own, test_give_xp, test_attack, test_npc_item, test_weather, test_refuse_talk, test_waited_for_pipe_is_reserved, test_handed_over_but_nothing_to_play, test_topics_extend_an_npc, test_trip_operation, test_rule_contents_are_checked_when_submitted, test_graph_validation, test_validation, test_apply_and_rollback, test_return_npc, test_conditional_choices, test_gamble, test_returns_to_menu, test_questions_are_asked_once, test_variant_line, test_variant_unless, test_again_line, test_scene_and_rule, test_rule_fires_on_perception, test_narration_waits_for_quiet, test_drawing_a_weapon_is_perceived,
              test_queue_waits_for_safe_point, test_save_load_does_not_reapply_world,
              test_player):
     test()

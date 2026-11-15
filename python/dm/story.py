@@ -489,6 +489,55 @@ def _check_define_item(args, state):
             isinstance(r, list) and len(r) == 2 and isinstance(r[0], str) and isinstance(r[1], int) for r in rows):
         raise PlanError("define_item rows are up to five [label, number] pairs")
     _check_pages(args)
+    _check_use(args, state)
+
+
+# The hero's own animations a use may play: a mage's practice gestures, stooping to the ground, looking around.
+# Cosmetic and best effort; an allowlist, so a story cannot name one the game does not have.
+USE_ANIMATIONS = ("T_PRACTICEMAGIC", "T_PRACTICEMAGIC2", "T_PRACTICEMAGIC3", "T_PRACTICEMAGIC4", "T_PRACTICEMAGIC5",
+                  "T_PLUNDER", "T_SEARCH")
+USE_KEYS = {"consume", "effect", "animation", "weather", "every_hours"}
+USE_EFFECT_SECONDS = 8   # how long a use's visual effect may run at most
+
+
+def _check_use(args, state):
+    """An item that does something when the hero uses it (docs/plan-story-items.md): used up or kept, a visual effect
+    and an animation at the hero, a magical weather for some hours, a cooldown. A rule can wait for the use."""
+    existing = state.get("items", {}).get(args["item"].upper())
+    if existing is not None and (existing.get("use") is not None) != (args.get("use") is not None):
+        # copies already made keep their fields in the save: an item is inert or plain for good
+        raise PlanError("define_item use cannot be added to or taken from an item already defined")
+    if "use" not in args:
+        return
+    use = args["use"]
+    if not isinstance(use, dict):
+        raise PlanError("define_item use is an object: consume, effect, animation, weather, every_hours")
+    unknown = set(use) - USE_KEYS
+    if unknown:
+        raise PlanError(f"define_item use has no {', '.join(sorted(unknown))}; it knows {', '.join(sorted(USE_KEYS))}")
+    if "pages" in args:
+        raise PlanError("define_item use and pages exclude each other: a book is read, not used")
+    if not isinstance(use.get("consume", False), bool):
+        raise PlanError("define_item use consume is true or false")
+    effect = use.get("effect")
+    if effect is not None:
+        if not isinstance(effect, str) or not effect.upper().startswith(("SPELLFX_", "MFX_")):
+            raise PlanError("define_item use effect is one of the game's visual effects, SPELLFX_ or MFX_")
+        if hasattr(gothic.world, "has_effect") and not gothic.world.has_effect(effect):
+            raise PlanError(f"define_item use effect: the game has no visual effect {effect}")
+    animation = use.get("animation")
+    if animation is not None and (not isinstance(animation, str) or animation.upper() not in USE_ANIMATIONS):
+        raise PlanError(f"define_item use animation is one of {', '.join(USE_ANIMATIONS)}")
+    weather = use.get("weather")
+    if weather is not None:
+        if not isinstance(weather, dict):
+            raise PlanError("define_item use weather is the arguments of a weather op")
+        if "hours" not in weather:
+            raise PlanError("define_item use weather needs hours: it ends by itself")
+        _check_weather(weather, state)
+    every = use.get("every_hours")
+    if every is not None and (isinstance(every, bool) or not isinstance(every, (int, float)) or not 1 <= every <= 240):
+        raise PlanError("define_item use every_hours is a number of game hours from 1 to 240")
 
 
 PAGE_CHARS, PAGE_LINES, BOOK_PAGES = 600, 14, 16   # what fits a page of the mage book (docs/plan-story-books.md)
@@ -518,7 +567,7 @@ def _fold_define_item(args, state):
         "carrier": args["carrier"], "like": args["like"], "name": args["name"],
         "description": args.get("description", ""), "rows": args.get("rows", []), "value": args.get("value", -1),
         "look": args.get("look"), "damage": args.get("damage", 0),
-        "pages": args.get("pages"), "style": args.get("style", "book")}
+        "pages": args.get("pages"), "style": args.get("style", "book"), "use": args.get("use")}
 
 
 def _define_in_world(entry):
@@ -538,8 +587,13 @@ def _define_in_world(entry):
             visual = looks.variant(gothic, gothic.world.item_visual(entry["like"]), look)
         except (OSError, RuntimeError, ValueError):
             visual = ""             # no look of its own, then: the base item's
+    usable = entry.get("use") is not None
     gothic.world.define_item(entry["carrier"], entry["like"], entry["name"], entry["description"],
-                             [tuple(r) for r in entry["rows"]], entry["value"], visual, entry.get("damage", 0))
+                             [tuple(r) for r in entry["rows"]], entry["value"], visual, entry.get("damage", 0),
+                             *((True,) if usable else ()))   # made inert: its use is the story's alone
+    if hasattr(gothic.world, "set_use"):
+        # using it only records the request (used_item); set again after every load, as the engine forgets it
+        gothic.world.set_use(entry["carrier"], usable)
     if hasattr(gothic.world, "set_document"):
         # a book or letter of the story's own: read instead of the carrier's script; set again after every load.
         # Redefined without pages, it is an ordinary item again (no pages clears it).
@@ -550,7 +604,7 @@ def _world_define_item(args):
     _define_in_world({"carrier": args["carrier"], "like": args["like"], "name": args["name"],
                       "description": args.get("description", ""), "rows": args.get("rows", []),
                       "value": args.get("value", -1), "look": args.get("look"), "damage": args.get("damage", 0),
-                      "pages": args.get("pages"), "style": args.get("style", "book")})
+                      "pages": args.get("pages"), "style": args.get("style", "book"), "use": args.get("use")})
     _renew_carried(args["carrier"])
     return None
 
@@ -920,6 +974,65 @@ def _world_weather(args, fade=None):
     return None
 
 
+def _use_of(state, carrier):
+    """The story item a carrier carries, if it has a use, else None."""
+    carrier = str(carrier or "").upper()
+    for entry in state.get("items", {}).values():
+        if entry["carrier"].upper() == carrier and entry.get("use") is not None:
+            return entry
+    return None
+
+
+def _check_item_used(args, state):
+    _require(args, "item", "at")
+    if _use_of(state, args["item"]) is None:
+        raise PlanError(f"not a story item with a use: {args['item']}")
+    if isinstance(args["at"], bool) or not isinstance(args["at"], (int, float)):
+        raise PlanError("item_used at is the game time in hours")
+
+
+def _fold_item_used(args, state):
+    """A use that took effect: when (its cooldown counts from here), and its weather as an overlay over whatever
+    weather a story set, with its own end; the story's weather stays underneath."""
+    carrier = args["item"].upper()
+    state.setdefault("item_uses", {})[carrier] = args["at"]
+    weather = _use_of(state, carrier)["use"].get("weather")
+    if weather:
+        overlay = {k: v for k, v in weather.items() if k != "at"}
+        overlay["wind"] = list(weather.get("wind", [0, 0]))
+        if args.get("fog_base") is not None:
+            overlay["fog_base"] = args["fog_base"]
+        overlay["until"] = args["at"] + weather["hours"]
+        overlay["item"] = carrier
+        state["item_weather"] = overlay
+
+
+def item_weather(state, now_hours):
+    """The weather of a story item's use while it lasts, or None."""
+    overlay = state.get("item_weather")
+    return overlay if overlay and overlay.get("until") is not None and now_hours < overlay["until"] else None
+
+
+def _thin_air(old, new, owned):
+    """One used item's weather replaces another's that still runs: the heat and fog the old one brought and the new
+    one does not set go back to the story's own (if it owns the sky), else they thin away."""
+    if not hasattr(gothic, "weather"):
+        return
+    if old.get("heat") and new.get("heat") is None and hasattr(gothic.weather, "heat"):
+        gothic.weather.heat((owned or {}).get("heat") or 0.0, 600.0)
+    if old.get("fog") and new.get("fog") is None and hasattr(gothic.weather, "fog"):
+        if owned and owned.get("fog"):
+            gothic.weather.fog(owned["fog"], owned.get("fog_height", 25), owned.get("fog_base"), 300.0,
+                               tuple(owned.get("fog_tint") or (1.0, 1.0, 1.0)))
+        else:
+            gothic.weather.fog(0.0, old.get("fog_height") or 25.0, old.get("fog_base"), 300.0)
+
+
+def _now_hours():
+    hour, minute = gothic.world.time
+    return gothic.world.day * 24 + hour + minute / 60.0
+
+
 def _check_npc_item(args, state):
     """An item someone really carries: it can be traded, stolen or looted from him when he is down, and the story
     sees where it is with the npc_has check."""
@@ -1014,6 +1127,7 @@ OPS = {
     "refuse_talk": (_check_refuse, _fold_refuse, None),
     "retire": (_check_retire, _fold_retire, None),
     "weather": (_check_weather, _fold_weather, _world_weather),
+    "item_used": (_check_item_used, _fold_item_used, None),
 }
 
 def _ready_live(args, plan):
@@ -1151,9 +1265,12 @@ class Story:
         # Definitions first, so an item the plan gives or places is made as the story's own; then what can be undone,
         # then what cannot, removals last. The sort is stable, so the plan's own order holds within each phase.
         ordered = sorted(plan["ops"], key=_phase)
+        # A story's weather set while a used item's weather lasts stays underneath: kept in the state, shown when the
+        # overlay ends (climate.tick).
+        overlaid = item_weather(self.state, _now_hours()) is not None
         undo, done, failed = [], [], None
         for op in ordered:
-            effect = OPS[op["op"]][2]
+            effect = None if overlaid and op["op"] == "weather" else OPS[op["op"]][2]
             try:
                 revert = effect(op) if effect is not None else None
             except Exception as err:
@@ -1234,12 +1351,17 @@ class Story:
             npc = gothic.world.find_npc(instance)
             if npc is not None:
                 gothic.dialog.bind(npc)
+        now = _now_hours()
         if self.state.get("weather"):
             from dm import climate
-            hour, minute = gothic.world.time
-            if climate.story_weather(self.state, gothic.world.day * 24 + hour + minute / 60.0):
+            if climate.story_weather(self.state, now):
                 _world_weather(self.state["weather"], fade=0)   # as it was when saved, at once
             # weather whose hours ran out is not set again; the climate (or clear sky) has it
+        overlay = item_weather(self.state, now)
+        if overlay is not None:
+            _world_weather(overlay, fade=0)   # a used item's weather over it, until its own end
+            from dm import climate
+            climate.overlay_shown(getattr(gothic.world, "generation", None), overlay["until"])
 
     def graphs_now(self):
         """Dialogue graphs, including the scene currently playing."""
@@ -1416,12 +1538,62 @@ class Story:
     def _take_perceptions(self):
         """A rule hears only what happens while its own conditions hold, and hears it once."""
         for event in gothic.world.take_perceptions() + self._weapon_events():
+            if event.get("kind") == "used_item" and not self._accept_use(event):
+                continue   # on cooldown, or used up meanwhile: nothing happened, and no rule hears of it
             recent.append(event)
             for rule_id, rule in self.state.get("rules", {}).items():
                 if (rule.get("on") and not rule["fired"] and not rule.get("perceived") and not ended(self.state, rule_id)
                         and self._conditions(rule)
                         and perceptions.matches(rule["on"], event)):
                     self.apply_plan({"reason": f"Wahrgenommen: {rule_id}", "ops": [{"op": "perceive", "id": rule_id}]})
+
+    def _accept_use(self, event):
+        """The hero used a story item with a use. The engine only recorded the request; here it takes effect, as one
+        step: the cooldown checked, one taken if it is used up, the use logged (so cooldown and weather survive a
+        save), the weather set; then the effect and the animation, cosmetic and best effort. False if it does not
+        take effect: then nothing has happened. A request that is lost costs the hero nothing."""
+        entry = _use_of(self.state, event.get("item"))
+        if entry is None:
+            return False
+        use, carrier = entry["use"], entry["carrier"].upper()
+        now = _now_hours()
+        last = self.state.get("item_uses", {}).get(carrier)
+        if use.get("every_hours") and last is not None and now - last < use["every_hours"]:
+            return False
+        if use.get("consume"):
+            try:
+                have = sum(i["count"] for i in gothic.player.items if i["instance"].upper() == carrier)
+                if have < 1:
+                    return False
+                gothic.player.remove_item(carrier, 1)
+            except (AttributeError, RuntimeError, ValueError, KeyError, TypeError):
+                return False
+        op = {"op": "item_used", "item": carrier, "at": now}
+        weather = use.get("weather")
+        if weather and weather.get("fog") is not None and weather.get("fog_base") is None:
+            at = event.get("position")
+            # the fog lies under where it was used; the log keeps that height, so a load agrees
+            op["fog_base"] = at[1] - 300.0 if at else _fog_base(weather, {})
+        before = item_weather(self.state, now)
+        self._record(f"Benutzt: {entry['name']}", [op])
+        if weather:
+            from dm import climate
+            try:
+                if before is not None:
+                    _thin_air(before, self.state["item_weather"], climate.story_weather(self.state, now))
+                _world_weather(self.state["item_weather"])
+            except (AttributeError, RuntimeError, ValueError, TypeError):
+                pass   # kept in the state: a load sets it again
+            climate.overlay_shown(getattr(gothic.world, "generation", None), self.state["item_weather"]["until"])
+        try:
+            if use.get("effect") and hasattr(gothic.world, "play_effect"):
+                x, y, z = gothic.player.position
+                gothic.world.play_effect(use["effect"].upper(), x, y, z, USE_EFFECT_SECONDS)
+            if use.get("animation") and hasattr(gothic.player, "play_animation"):
+                gothic.player.play_animation(use["animation"].upper())
+        except (AttributeError, RuntimeError, ValueError, TypeError):
+            pass   # only the look of it: the use has taken effect all the same
+        return True
 
     def _tick_rules(self):
         for rule_id, rule in self.state.get("rules", {}).items():

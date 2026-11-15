@@ -3,7 +3,9 @@
 Each block of BLOCK_HOURS in-game hours has its own weather, drawn from a hash of the block's number, so the same
 moment always has the same weather: a load agrees without saving anything. Khorinis is mostly clear, sometimes rains,
 and never snows by itself; snow comes only from a story (the weather op). A story's weather outranks this until its
-`hours` run out. Snow lying on the ground follows the snowfall and melts after it.
+`hours` run out. The weather of a story item's use (a scroll's storm) is an overlay over both: it wins while it lasts,
+then the story's own weather, if it still owns the sky, is set again, else this. Snow lying on the ground follows
+the snowfall and melts after it.
 
 Off unless dm_runtime/settings.json has "climate": true, or climate.enable() is called (docs/plan-weather.md).
 """
@@ -51,10 +53,17 @@ def story_weather(state, now_hours):
     return weather if until is None or now_hours < until else None
 
 
+def item_weather(state, now_hours):
+    """The weather of a story item's use while it lasts (an overlay, with its own end), or None."""
+    overlay = state.get("item_weather")
+    return overlay if overlay and overlay.get("until") is not None and now_hours < overlay["until"] else None
+
+
 def wanted(state, day, hour, minute):
-    """What should be falling now, and who decided it: (kind, intensity, wind, by_story, cover)."""
+    """What should be falling now, and who decided it: (kind, intensity, wind, by_story, cover). A used item's
+    weather first, then the story's, then the climate's."""
     now = day * 24 + hour + minute / 60.0
-    owned = story_weather(state, now)
+    owned = item_weather(state, now) or story_weather(state, now)
     if owned is not None:
         return owned["kind"], owned.get("intensity", 1.0), tuple(owned.get("wind", (0, 0))), True, owned.get("cover")
     kind, intensity, wind = front(day, hour)
@@ -88,9 +97,10 @@ _world = None
 _air_ended = None   # (world, the story weather's end) whose heat and fog were taken away
 
 
-def _end_story_air(gothic, state, by_story, generation):
+def _end_story_air(gothic, state, by_story, generation, overlay=None):
     """A story's heat and ground fog end with its hours, however the game got here (a load, a trip's snowfall): once
-    per world and story weather, whenever the story no longer owns the weather. The climate brings none of its own."""
+    per world and story weather, whenever the story no longer owns the weather. The climate brings none of its own.
+    What a used item's weather sets right now is its own and stays."""
     global _air_ended
     weather = state.get("weather") or {}
     if by_story or not (weather.get("heat") or weather.get("fog")):
@@ -99,10 +109,47 @@ def _end_story_air(gothic, state, by_story, generation):
     if _air_ended == key:
         return
     _air_ended = key
-    if hasattr(gothic.weather, "heat"):
+    overlay = overlay or {}
+    if hasattr(gothic.weather, "heat") and overlay.get("heat") is None:
         gothic.weather.heat(0.0, 600.0)
-    if hasattr(gothic.weather, "fog"):   # it thins where it lies, it does not move first
+    if hasattr(gothic.weather, "fog") and overlay.get("fog") is None:   # it thins where it lies, it does not move
         gothic.weather.fog(0.0, weather.get("fog_height") or 25.0, weather.get("fog_base"), 300.0)
+
+
+_overlay_seen = None   # (world, end) of the used item's weather last set or seen running
+
+
+def overlay_shown(generation, until):
+    """The story set a used item's weather on the sky (a use, or a load while it lasts): its end is this module's to
+    handle, even when it runs out before the next look (the hero sleeps right after using it)."""
+    global _overlay_seen
+    _overlay_seen = (generation, until)
+
+
+def _end_overlay(gothic, state, overlay, owned, generation):
+    """A used item's weather ran out: the story's own weather, if it still owns the sky, is set again with its heat
+    and fog; what the overlay brought and the story does not set again thins away. Without the story's weather the
+    climate's front takes over (tick). Only for an overlay set or seen running in this world: a load sets the sky
+    itself. True if it ended one now."""
+    global _overlay_seen
+    last = state.get("item_weather")
+    if overlay is not None:
+        _overlay_seen = (generation, overlay.get("until"))
+        return False
+    if not last or _overlay_seen != (generation, last.get("until")):
+        return False
+    _overlay_seen = None
+    if owned is not None:
+        from dm import story
+        story._world_weather(owned)   # with its own fades
+    if last.get("heat") and (owned is None or owned.get("heat") is None) and hasattr(gothic.weather, "heat"):
+        gothic.weather.heat(0.0, 600.0)
+    if last.get("fog") and (owned is None or owned.get("fog") is None) and hasattr(gothic.weather, "fog"):
+        gothic.weather.fog(0.0, last.get("fog_height") or 25.0, last.get("fog_base"), 300.0)
+    if owned is None and not enabled():   # nobody brings weather: it clears up, whatever was seen before
+        gothic.weather.set("clear", 0.0, FADE, (0, 0))
+        gothic.weather.cover(0.0, 1800.0)
+    return True
 
 
 def tick(gothic, state, now):
@@ -113,17 +160,20 @@ def tick(gothic, state, now):
         return None
     from dm import weather as snowfall
     generation = getattr(gothic.world, "generation", None)
+    day, (hour, minute) = gothic.world.day, gothic.world.time
+    now = day * 24 + hour + minute / 60.0
+    owned, overlay = story_weather(state, now), item_weather(state, now)
     if snowfall.active():
         _last = None   # a trip's snowfall owns the sky; afterwards everything is set again
-        day, (hour, minute) = gothic.world.day, gothic.world.time
-        _end_story_air(gothic, state, story_weather(state, day * 24 + hour + minute / 60.0) is not None, generation)
+        _end_story_air(gothic, state, owned is not None, generation, overlay)
         return None
     if generation != _world:   # a loaded or new world: nothing set here holds any more
         _world, _last = generation, None
-    day, (hour, minute) = gothic.world.day, gothic.world.time
     kind, intensity, wind, by_story, cover = wanted(state, day, hour, minute)
     current = ("story", kind, intensity, wind) if by_story else ("climate", kind, intensity, wind)
-    _end_story_air(gothic, state, by_story, generation)
+    _end_story_air(gothic, state, owned is not None, generation, overlay)
+    if _end_overlay(gothic, state, overlay, owned, generation):
+        _last = None   # the overlay was never this module's to set: the climate's front is set again
     if by_story:
         _last = current
     elif enabled():

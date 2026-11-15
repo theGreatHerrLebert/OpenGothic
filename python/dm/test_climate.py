@@ -63,6 +63,62 @@ air.clear()
 foggy = {"weather": {"kind": "clear", "intensity": 0.0, "fog": 0.6, "fog_height": 40, "fog_base": 900.0, "until": 1}}
 climate.tick(fake, foggy, 13)
 assert ("fog", 0.0, 40, 900.0, 300.0) in air, air
+# A used item's weather lies over everything while it lasts, then the story's own comes back with its heat and fog.
+sys.modules["gothic"] = fake     # story._world_weather sets the sky through the game module
+day = 20 * 24
+storm = {"kind": "crystal", "intensity": 0.8, "wind": [6, 2], "fog": 0.5, "fog_base": 900.0, "fog_height": 30,
+         "until": day + 11.2, "item": "ITMI_PACKET"}
+underneath = {"kind": "rain", "intensity": 0.5, "wind": [1, 0], "fade": 40, "heat": None, "fog": None, "until": day + 15}
+layered = {"weather": underneath, "item_weather": storm}
+assert climate.wanted(layered, 20, 10, 0)[:2] == ("crystal", 0.8) and climate.wanted(layered, 20, 10, 0)[3]
+assert climate.wanted(layered, 20, 11, 30)[:2] == ("rain", 0.5)
+assert climate.wanted({"item_weather": storm}, 20, 12, 0)[3] is False   # nothing under it: the climate's
+calls.clear()
+air.clear()
+fake.world.day, fake.world.time, fake.world.generation = 20, (10, 0), 3
+climate.enable(False)
+climate.tick(fake, layered, 20)
+assert not [c for c in calls if c[0] == "set"] and air == [], (calls, air)   # the story set it; nothing here
+fake.world.time = (11, 30)
+climate.tick(fake, layered, 21)
+assert ("set", "rain", 0.5, 40, (1, 0)) in calls, calls                   # the story's own again, with its fade
+assert air == [("fog", 0.0, 30, 900.0, 300.0)], air                      # the storm's fog thins where it lay
+calls.clear()
+air.clear()
+climate.tick(fake, layered, 22)
+assert not [c for c in calls if c[0] == "set"] and air == [], (calls, air)   # once only
+# Without a story's weather under it, the climate (here off: clear sky) takes over when it ends.
+alone = {"item_weather": dict(storm, until=day + 13.2)}
+fake.world.time = (13, 0)
+climate.tick(fake, alone, 23)
+calls.clear()
+air.clear()
+fake.world.time = (13, 30)
+climate.tick(fake, alone, 24)
+assert ("set", "clear", 0.0, climate.FADE, (0, 0)) in calls and ("fog", 0.0, 30, 900.0, 300.0) in air, (calls, air)
+# A load after the overlay ran out sets nothing: the story set the sky itself on rebind.
+expired = {"weather": dict(underneath, until=day + 20), "item_weather": dict(storm, until=day + 14)}
+fake.world.time, fake.world.generation = (14, 30), 4
+calls.clear()
+air.clear()
+climate.tick(fake, expired, 25)
+assert not [c for c in calls if c[0] == "set"] and air == [], (calls, air)
+# A story's fog ending under a used item's fog leaves the item's alone.
+foggy_story = {"weather": {"kind": "clear", "intensity": 0.0, "fog": 0.6, "heat": 0.5, "until": day + 15},
+               "item_weather": dict(storm, until=day + 17)}
+fake.world.time = (16, 0)
+air.clear()
+climate.tick(fake, foggy_story, 26)
+assert air == [("heat", 0.0, 600.0)], air
+# Used and run out before the next look (the hero slept right after): the story told us, so its end is handled.
+slept = {"item_weather": dict(storm, until=day + 17.2)}
+climate.overlay_shown(fake.world.generation, day + 17.2)
+fake.world.time = (23, 0)
+calls.clear()
+air.clear()
+climate.tick(fake, slept, 27)
+assert ("set", "clear", 0.0, climate.FADE, (0, 0)) in calls and ("fog", 0.0, 30, 900.0, 300.0) in air, (calls, air)
+del sys.modules["gothic"]
 # Lightning only in heavy rain, its thunder delayed by distance.
 flashes = []
 sky = types.SimpleNamespace(state=lambda: {"kind": "rain", "intensity": 0.9}, lightning=flashes.append)

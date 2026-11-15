@@ -103,9 +103,11 @@ def _restore(gothic):
     if not hasattr(gothic.weather, "set"):
         return
     from dm import climate, story
-    owned = story.state().get("weather")
     hour, minute = gothic.world.time
-    if owned and climate.story_weather(story.state(), gothic.world.day * 24 + hour + minute / 60.0):
+    now = gothic.world.day * 24 + hour + minute / 60.0
+    # a used story item's weather over the story's, while it lasts
+    owned = climate.item_weather(story.state(), now) or climate.story_weather(story.state(), now)
+    if owned:
         gothic.weather.set(owned["kind"], owned.get("intensity", 1.0), 20.0, tuple(owned.get("wind", (0, 0))))
         if owned.get("cover") is not None:
             gothic.weather.cover(owned["cover"], 120.0)   # the story's own snow lying, as it set it

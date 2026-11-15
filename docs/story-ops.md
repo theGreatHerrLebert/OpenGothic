@@ -176,10 +176,10 @@ One of the story's people goes for the hero (or, with target, for another of the
 
 ### `define_item`
 
-An item of the story's own, on an unused carrier: name, rows, value, damage, look or model. With pages (1 to 16 of our own text, each fitting a book page) it is read: style book (the mage book, turned two pages at a time) or letter; give it after defining it, so the copy is the story's.
+An item of the story's own, on an unused carrier: name, rows, value, damage, look or model. With pages (1 to 16 of our own text, each fitting a book page) it is read: style book (the mage book, turned two pages at a time) or letter; give it after defining it, so the copy is the story's. With use it does something when the hero uses it, and nothing of its base acts any more (no spell, no script, never equipped, traders do not buy it; `like` is only its look): consume (true: one is used up), effect (a SPELLFX_ or MFX_ visual effect the game has, at the hero), animation (T_PRACTICEMAGIC to T_PRACTICEMAGIC5, T_PLUNDER or T_SEARCH), weather (a weather op's arguments with hours: it lies over any story weather until its hours run out, then the story's or the climate's comes back) and every_hours (1 to 240 game hours before it works again). Each use that takes effect is the deed used_item, which a rule can wait for (on, with near). use excludes pages, and cannot be added to or taken from an item once defined. Say in description or rows what it does.
 
 ```json
-{"op": "define_item", "item": "MONDALOE", "like": "ITPL_HEALTH_HERB_01", "name": "Mondaloe", "look": {"model": "mondaloe.obj"}}
+{"op": "define_item", "item": "EISSTURM_ROLLE", "like": "ITSC_ICECUBE", "name": "Spruchrolle Eissturm", "use": {"consume": true, "effect": "SPELLFX_ICECUBE", "weather": {"kind": "crystal", "intensity": 0.8, "fade": 10, "wind": [6, 2], "hours": 1.2}}}
 ```
 
 ### `place_item`
@@ -282,6 +282,14 @@ Lets a broken rule try again, after the cause was fixed.
 
 ```json
 {"op": "retry_rule", "id": "slain"}
+```
+
+### `item_used`
+
+A use of a story item that took effect (its carrier, the game time in hours): its cooldown counts from here, and its weather lies over the sky until its hours run out.
+
+```json
+{"op": "item_used", "item": "ITSC_PALLIGHTHEAL", "at": 105.5}
 ```
 
 ### `begin_story`

@@ -6,9 +6,12 @@
     {"event": "used_object", "object": "SMOKE_WATERPIPE"}     the hero got up from an object of this scheme
     {"event": "used_object", "near": [9061, 5911, 2]}        ... from the one standing within 2 m of x, z
     {"event": "used_object", "name": "NW_CITY_PIPE_01"}      ... from the one with this name in the world
+    {"event": "used_item", "item": "WETTERRUNE", "near": [9061, 5911, 20]}   used a story item within 20 m of x, z
 
 Events: took_item (picked up from the ground), hit, knocked_down, killed, cast_spell, entered_room, read_item (a letter
-opened from the inventory), drew_weapon (fists, blade, bow or spell readied). The player is the
+opened from the inventory), drew_weapon (fists, blade, bow or spell readied), used_object, used_item (a story item
+with a use, define_item's `use`, used from the inventory; only a use that took effect, never one on its cooldown;
+`near` is where it was used, and nobody's sight is measured, so seen_by and unseen do not apply). The player is the
 actor. All fields other than "event" are optional. "seen_by" needs that NPC among those who could see it happen; "unseen"
 needs nobody to have seen it. `target` may be "PLAYER", for what is done to the hero. `creature` names a story's own
 creature (spawn_creature) by its id instead of a target: {"event": "killed", "creature": "white_wolf"}.
@@ -17,7 +20,8 @@ creature (spawn_creature) by its id instead of a target: {"event": "killed", "cr
 import gothic
 
 EVENTS = {"took_item", "hit", "knocked_down", "killed", "cast_spell", "entered_room", "read_item", "drew_weapon",
-          "used_object"}
+          "used_object", "used_item"}
+NEAR_EVENTS = ("used_object", "used_item")   # events that know where they happened
 PLAYER = "PLAYER"
 
 
@@ -37,6 +41,8 @@ def validate(on):
         return f"not a spell: {on['spell']}"
     if on.get("seen_by") and on.get("unseen"):
         return "seen_by and unseen exclude each other"
+    if on["event"] == "used_item" and (on.get("seen_by") or "unseen" in on):
+        return "used_item knows no witnesses: seen_by and unseen do not apply"
     if "creature" in on and (not isinstance(on["creature"], str) or on.get("target")):
         return "creature names a story's own creature by id, instead of a target"
     if "object" in on and (on["event"] != "used_object" or not isinstance(on["object"], str) or not on["object"].strip()):
@@ -45,9 +51,9 @@ def validate(on):
         return "name is a used object's own name in the world"
     if "near" in on:
         near = on["near"]
-        if (on["event"] != "used_object" or not isinstance(near, list) or len(near) != 3
+        if (on["event"] not in NEAR_EVENTS or not isinstance(near, list) or len(near) != 3
                 or any(isinstance(v, bool) or not isinstance(v, (int, float)) for v in near) or not 0 < near[2] <= 50):
-            return "near is [x, z, metres up to 50] where a used object stands"
+            return "near is [x, z, metres up to 50] where a used object stands or an item was used"
     return None
 
 

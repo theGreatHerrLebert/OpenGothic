@@ -57,13 +57,17 @@ def weather(hours=24):
     day, (hour, minute) = gothic.world.day, gothic.world.time
     now = day * 24 + hour + minute / 60.0
     owned = climate.story_weather(story.state(), now)
-    owner = ("trip" if snowfall.active() else "story" if owned else "climate" if climate.enabled() else "nobody")
+    overlay = climate.item_weather(story.state(), now)   # a used story item's weather, over the story's
+    owner = ("trip" if snowfall.active() else "item" if overlay else "story" if owned else
+             "climate" if climate.enabled() else "nobody")
     forecast = []
     for step in range(0, max(0, min(int(hours), 72)) + 1, climate.BLOCK_HOURS):
         at = now + step
         d, h = int(at // 24), int(at % 24)
         kind, intensity, wind = climate.front(d, h)
-        if owned and (owned.get("until") is None or at < owned["until"]):
+        if overlay and at < overlay["until"]:
+            kind, intensity, wind = overlay["kind"], overlay.get("intensity", 1.0), tuple(overlay.get("wind", (0, 0)))
+        elif owned and (owned.get("until") is None or at < owned["until"]):
             kind, intensity, wind = owned["kind"], owned.get("intensity", 1.0), tuple(owned.get("wind", (0, 0)))
         elif not climate.enabled():
             if owned:   # the story's weather has run out by then, and nobody brings any: it clears up
