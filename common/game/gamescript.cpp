@@ -600,7 +600,9 @@ void GameScript::initializeInstanceItem(const std::shared_ptr<zenkit::IItem>& it
     // Its use is the story's (World::setStoryUse): nothing of the base may act. No category that equips it, no
     // script on equipping or in a state (an NPC's state use), no spell; a mission item, so traders do not buy it.
     d.main_flag  = int32_t(ITM_CAT_NONE);
-    d.flags      = zenkit::ItemFlag(uint32_t(d.flags) | ITM_MISSION);
+    // and none of the flags that wear or light it (shield, ring, amulet, belt, torch)
+    d.flags      = zenkit::ItemFlag((uint32_t(d.flags) & ~uint32_t(ITM_SHIELD | ITM_RING | ITM_AMULET | ITM_BELT | ITM_TORCH))
+                                    | ITM_MISSION);
     d.on_equip   = 0;
     d.on_unequip = 0;
     std::fill(std::begin(d.on_state), std::end(d.on_state), 0);

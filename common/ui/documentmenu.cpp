@@ -58,11 +58,7 @@ void DocumentMenu::keyDownEvent(KeyEvent &e) {
       return;
       }
     }
-  if(e.key!=Event::K_ESCAPE && keycodec.tr(e)!=KeyCodec::Inventory){
-    e.ignore();
-    return;
-    }
-  close();
+  e.ignore();
   }
 
 void DocumentMenu::keyUpEvent(KeyEvent&) {
@@ -150,7 +146,7 @@ void DocumentMenu::paintEvent(PaintEvent &e) {
     auto& fnt = Resources::font(scale);
     const size_t total = (document.pages.size()+document.spread-1)/document.spread;
     const std::string at = std::to_string(first/document.spread+1) + " / " + std::to_string(total) +
-                           (first+document.spread<document.pages.size() ? "  >" : "") + (first>0 ? "" : "");
+                           (first+document.spread<document.pages.size() ? "  >" : "");
     const std::string txt = (first>0 ? "<  " : "") + at;
     fnt.drawText(p, x0 + (x-x0)/2 - fnt.textSize(txt).w/2, y + int(mh) + fnt.pixelSize() + 4, txt);
     }

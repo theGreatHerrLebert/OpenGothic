@@ -23,11 +23,16 @@ void bindPlayer(py::module_& m) {
              // as the game does when one joins: the guild and the true guild (a test save, or a story's own path)
              auto* w   = requireWorld();
              auto* sym = w->script().getVm().find_symbol_by_name(upper(guild));
-             if(sym==nullptr || !upper(guild).starts_with("GIL_"))
+             auto* max = w->script().getVm().find_symbol_by_name("GIL_MAX");
+             if(sym==nullptr || !upper(guild).starts_with("GIL_") || sym->type()!=zenkit::DaedalusDataType::INT ||
+                !sym->is_const() || sym->count()!=1 || max==nullptr)
+               throw std::invalid_argument("not a guild: " + guild);
+             const int32_t id = sym->get_int();
+             if(id<=0 || id>=max->get_int() || upper(guild)=="GIL_MAX" || upper(guild).starts_with("GIL_SEPERATOR"))
                throw std::invalid_argument("not a guild: " + guild);
              auto* p = requirePlayer();
-             p->handle().guild = sym->get_int();
-             p->setTrueGuild(sym->get_int());
+             p->handle().guild = id;
+             p->setTrueGuild(id);
              },
            py::arg("guild"), "Join a guild by its constant (GIL_KDF): the guild and the true guild, nothing else.")
       .def_property("learn_points",

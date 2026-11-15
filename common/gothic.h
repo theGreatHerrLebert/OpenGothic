@@ -227,6 +227,10 @@ class Gothic final {
     uint32_t    dmEscapeRefused = 0;
     uint64_t    dmEscapeAt      = 0;
 
+    // A save Python asked for (slot file, name): taken by the main window after the frame's world tick, never inside
+    // it (the save thread takes the session while the tick still runs in it).
+    std::string dmSaveSlot, dmSaveName;
+
     // DM hotkeys pressed since Python last asked, oldest first. Filled on the UI thread, drained from a world tick.
     void                     pushDmKey(std::string key) { std::lock_guard<std::mutex> g(dmKeysSync); dmKeys.push_back(std::move(key)); }
     std::vector<std::string> takeDmKeys() { std::lock_guard<std::mutex> g(dmKeysSync); return std::exchange(dmKeys,{}); }

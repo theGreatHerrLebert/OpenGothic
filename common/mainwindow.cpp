@@ -1163,6 +1163,11 @@ uint64_t MainWindow::tick() {
   dialogs.tick(dt);
   inventory.tick(dt);
   Gothic::inst().tick(dt);
+  if(!Gothic::inst().dmSaveSlot.empty()) {
+    auto slot = std::exchange(Gothic::inst().dmSaveSlot,{});
+    auto name = std::exchange(Gothic::inst().dmSaveName,{});
+    saveGame(slot,name);
+    }
   player.tickFocus();
 
   if(dialogs.isActive())

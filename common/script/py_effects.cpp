@@ -42,10 +42,13 @@ void bindOverlay(py::module_& m) {
         [](int slot, const std::string& name) {
           if(slot<1 || slot>20)
             throw std::invalid_argument("slot is 1 to 20");
-          Gothic::inst().save("save_slot_" + std::to_string(slot) + ".sav", toEngine(name));
+          // after this frame's world tick (this runs inside it), as the menu does
+          Gothic::inst().dmSaveSlot = "save_slot_" + std::to_string(slot) + ".sav";
+          Gothic::inst().dmSaveName = toEngine(name);
           },
         py::arg("slot"), py::arg("name"),
-        "Save the game into slot 1..20 under a name, as the menu does (it happens on the next frame).");
+        "Save the game into slot 1..20 under a name, as the menu does, once this frame's tick is over. Like the menu "
+        "it does not save during a conversation, a cutscene or a trip: check the save file to be sure.");
   m.def("play_sound",
         [](const std::string& name) { Gothic::inst().emitGlobalSound(upper(name)); },
         py::arg("name"), "Play one of the game's sound effects (an SFX instance or WAV name), as Snd_Play does.");

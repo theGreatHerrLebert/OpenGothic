@@ -55,7 +55,8 @@ void GlobalEffects::setCover(float target, float seconds) {
   if(weather.coverSeconds<=0.f) {
     weather.cover = weather.coverTarget;
     // laid at once (a load): it is what this weather lays, frost under a crystal storm
-    if(weather.kind==Precipitation::Snow || weather.kind==Precipitation::Crystal || weather.kind==Precipitation::Fire) {
+    if(weather.kind==Precipitation::Snow || weather.kind==Precipitation::Crystal || weather.kind==Precipitation::Fire ||
+       weather.kind==Precipitation::Hail) {
       weather.frost = weather.kind==Precipitation::Crystal ? 1.f : 0.f;
       weather.ash   = weather.kind==Precipitation::Fire    ? 1.f : 0.f;
       }
