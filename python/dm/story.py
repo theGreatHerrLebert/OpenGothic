@@ -439,13 +439,25 @@ def _world_xp(args):
     return None
 
 
-# Items of a story's own: each is carried by a game item instance nothing in the game uses (no script, dialogue,
-# world placement or trader names them), so it stacks and counts apart from every real item. A carrier, once given,
-# stays with its item for the rest of the game.
+# Items of a story's own: each is carried by a game item instance the game never makes on its own, so it stacks and
+# counts apart from every real item. A carrier qualifies when no script creates, gives, sells or checks it outside
+# debug code (ITEMHOSHI, PC_ITEMFELLER, PC_ROCKEFELLER, PC_BANDIT), no world places it, no chest holds it, the engine
+# does not name it and no lock in a world names it (searched with depmap.parse and the world dump,
+# docs/plan-story-items.md). Its own type does not matter: every field comes from the definition's `like`.
+# A carrier, once given, stays with its item for the rest of the game (the state records it), so the order is kept
+# and new carriers only ever go at the end.
 ITEM_CARRIERS = ["ITKE_KEY_01", "ITKE_KEY_02", "ITKE_KEY_03", "ITMI_IECELLOBOW", "ITMI_IEDRUMSTICK",
                  "ITWR_ADDON_BOOKLP2", "ITWR_ADDON_BOOKLP3", "ITWR_ADDON_BOOKLP5", "ITWR_ADDON_BOOKLP8",
-                 "ITWR_ADDON_BOOKXP250", "ITWR_ADDON_BOOKXP500", "ITWR_ADDON_BOOKXP1000", "ITRI_ADDON_STR_01",
-                 "ITFO_ADDON_FIRESTEW", "ITFO_XPSTEW", "ITFO_CORAGONSBEER", "ITMI_PANFULL", "ITWR_ADDON_PIRATES_01"]
+                 "ITWR_ADDON_BOOKXP250", "ITWR_ADDON_BOOKXP500", "ITWR_ADDON_BOOKXP1000",
+                 "ITMI_PANFULL", "ITWR_ADDON_PIRATES_01",
+                 "ITMI_PACKET", "ITMI_GOLDPLATE_MIS", "ITMI_STONEOFKNOWLEGDE_MIS", "ITFO_ADDON_KROKOFLEISCH_MISSION",
+                 "ITWR_ADDON_AXTANLEITUNG", "ITWR_ADDON_PIRATENTOD", "ITWR_ADDON_RUNEMAKING_KDW_CIRC2",
+                 "ITWR_ADDON_RUNEMAKING_KDW_CIRC3", "ITWR_ADDON_RUNEMAKING_KDW_CIRC4", "ITWR_ADDON_RUNEMAKING_KDW_CIRC5",
+                 "ITWR_ADDON_RUNEMAKING_KDW_CIRC6", "ITWR_VATRAS_KDFEMPFEHLUNG_ADDON", "STANDARDBRIEF", "STANDARDBUCH",
+                 "ITSC_PALLIGHTHEAL", "ITSC_SUMMONMUD", "ITRU_TELEPORT_3", "ITPO_STORY"]
+# Taken out of the pool, as the game hands them out (Thekla's stew, Snaf's fire stew, Coragon's beer, Greg's ring) and
+# a story item on them would turn into the real one and back: ITFO_XPSTEW, ITFO_ADDON_FIRESTEW, ITFO_CORAGONSBEER,
+# ITRI_ADDON_STR_01. No saved story used them.
 
 
 def _check_look(look):

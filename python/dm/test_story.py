@@ -1003,6 +1003,22 @@ def test_items_with_a_use():
             setattr(fake.world, k, v)
 
 
+def test_carrier_pool():
+    # Carriers the game hands out itself are out; the new ones are at the end, the old order kept.
+    gone = {"ITFO_XPSTEW", "ITFO_ADDON_FIRESTEW", "ITFO_CORAGONSBEER", "ITRI_ADDON_STR_01"}
+    pool = st.ITEM_CARRIERS
+    assert not gone & set(pool) and len(set(pool)) == len(pool) == 32, pool
+    assert pool[:14] == ["ITKE_KEY_01", "ITKE_KEY_02", "ITKE_KEY_03", "ITMI_IECELLOBOW", "ITMI_IEDRUMSTICK",
+                         "ITWR_ADDON_BOOKLP2", "ITWR_ADDON_BOOKLP3", "ITWR_ADDON_BOOKLP5", "ITWR_ADDON_BOOKLP8",
+                         "ITWR_ADDON_BOOKXP250", "ITWR_ADDON_BOOKXP500", "ITWR_ADDON_BOOKXP1000", "ITMI_PANFULL",
+                         "ITWR_ADDON_PIRATES_01"]
+    added = {"ITMI_PACKET", "ITMI_GOLDPLATE_MIS", "ITMI_STONEOFKNOWLEGDE_MIS", "ITFO_ADDON_KROKOFLEISCH_MISSION",
+             "ITWR_ADDON_AXTANLEITUNG", "ITWR_ADDON_PIRATENTOD", "ITWR_VATRAS_KDFEMPFEHLUNG_ADDON", "STANDARDBRIEF",
+             "STANDARDBUCH", "ITSC_PALLIGHTHEAL", "ITSC_SUMMONMUD", "ITRU_TELEPORT_3", "ITPO_STORY"} | {
+             f"ITWR_ADDON_RUNEMAKING_KDW_CIRC{n}" for n in range(2, 7)}
+    assert len(added) == 18 and set(pool[14:]) == added, set(pool[14:]) ^ added
+
+
 def test_items_of_our_own():
     # An item of the story's own gets a carrier nothing in the game uses, and every mention of it becomes that carrier.
     s = st.Story()
@@ -1417,7 +1433,7 @@ def test_plans_are_all_or_nothing_where_the_game_allows():
         del fake.daedalus.call, fake.journal
 
 
-for test in (test_items_with_a_use, test_story_books, test_plans_are_all_or_nothing_where_the_game_allows, test_owed_aftercare_survives_a_save, test_topic_while_he_smokes, test_return_to_a_split_menu, test_items_of_our_own, test_item_with_a_model_of_its_own, test_give_xp, test_attack, test_npc_item, test_weather, test_refuse_talk, test_waited_for_pipe_is_reserved, test_handed_over_but_nothing_to_play, test_topics_extend_an_npc, test_trip_operation, test_rule_contents_are_checked_when_submitted, test_graph_validation, test_validation, test_apply_and_rollback, test_return_npc, test_conditional_choices, test_gamble, test_returns_to_menu, test_questions_are_asked_once, test_variant_line, test_variant_unless, test_again_line, test_scene_and_rule, test_rule_fires_on_perception, test_narration_waits_for_quiet, test_drawing_a_weapon_is_perceived,
+for test in (test_items_with_a_use, test_carrier_pool, test_story_books, test_plans_are_all_or_nothing_where_the_game_allows, test_owed_aftercare_survives_a_save, test_topic_while_he_smokes, test_return_to_a_split_menu, test_items_of_our_own, test_item_with_a_model_of_its_own, test_give_xp, test_attack, test_npc_item, test_weather, test_refuse_talk, test_waited_for_pipe_is_reserved, test_handed_over_but_nothing_to_play, test_topics_extend_an_npc, test_trip_operation, test_rule_contents_are_checked_when_submitted, test_graph_validation, test_validation, test_apply_and_rollback, test_return_npc, test_conditional_choices, test_gamble, test_returns_to_menu, test_questions_are_asked_once, test_variant_line, test_variant_unless, test_again_line, test_scene_and_rule, test_rule_fires_on_perception, test_narration_waits_for_quiet, test_drawing_a_weapon_is_perceived,
              test_queue_waits_for_safe_point, test_save_load_does_not_reapply_world,
              test_player):
     test()
