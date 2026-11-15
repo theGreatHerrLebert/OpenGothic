@@ -179,6 +179,13 @@ class World final {
     void                 sendImmediatePerc(Npc& self, Npc& other, Npc& victim, Item& item, int32_t perc);
     void                 recordSpellCast(Npc& caster, Npc* target, int32_t spell) { wobj.recordSpellCast(caster,target,spell); }
     void                 recordDocumentRead(Npc& reader, size_t item) { wobj.recordDocumentRead(reader,item); }
+    // A story's own book or letter for an item class (docs/plan-story-books.md): not saved, the story sets it again.
+    struct StoryDocument {
+      std::vector<std::string> pages;
+      bool                     book = true;   // the mage book's spread; else one letter sheet per page
+      };
+    void                 setStoryDocument(size_t cls, StoryDocument doc);
+    const StoryDocument* storyDocument(size_t cls) const;
     void                 recordObjectUsed(Npc& user, std::string_view scheme, std::string_view name, const Tempest::Vec3& at) {
       wobj.recordObjectUsed(user,scheme,name,at);
       }
@@ -207,6 +214,7 @@ class World final {
     GameSession&                          game;
 
     std::unique_ptr<WayMatrix>            wmatrix;
+    std::unordered_map<size_t, StoryDocument> storyDocs;
 
     struct BspSector final {
       int32_t guild=GIL_NONE;

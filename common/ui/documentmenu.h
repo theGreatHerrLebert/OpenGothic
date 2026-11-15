@@ -33,6 +33,9 @@ class DocumentMenu : public Tempest::Widget {
       std::string       img;
       // map
       bool              showPlayer=false;
+      // pages shown at once: 0 all (the game's own documents), 2 a story book's spread, 1 a letter's sheet; with
+      // more pages than that, Left/Right turn them (docs/plan-story-books.md)
+      uint8_t           spread=0;
       Tempest::Rect     wbounds;
       };
 
@@ -52,5 +55,6 @@ class DocumentMenu : public Tempest::Widget {
     const KeyCodec&           keycodec;
     const Tempest::Texture2d* cursor = nullptr;
     bool                      active = false;
+    size_t                    first  = 0;    // the first page shown, when the document turns
   };
 

@@ -794,6 +794,35 @@ def test_item_with_a_model_of_its_own():
     del fake.resources
 
 
+def test_story_books():
+    # A book of the story's own: read from its pages, never the carrier's script; set again after a load.
+    saved_define = getattr(fake.world, "define_item", None)
+    docs = []
+    fake.world.define_item = lambda *a: None
+    fake.world.set_document = lambda carrier, pages, style: docs.append((carrier, list(pages), style))
+    s = st.Story()
+    op = {"op": "define_item", "item": "Wetterbuch", "like": "ITPL_A", "name": "Vom Himmel",
+          "pages": ["Erste Seite.", "Zweite Seite."]}
+    s.validate([op])
+    s.apply_plan({"reason": "r", "ops": [op]})
+    assert docs and docs[-1][1] == ["Erste Seite.", "Zweite Seite."] and docs[-1][2] == "book", docs
+    docs.clear()
+    s.rebind()
+    assert docs and docs[-1][1][0] == "Erste Seite.", docs
+    rejected(s, [dict(op, item="B2", pages=[])], "pages")
+    rejected(s, [dict(op, item="B3", pages=["x" * 700])], "too long")
+    rejected(s, [dict(op, item="B4", pages=["\n".join(["Zeile"] * 20)])], "too long")
+    rejected(s, [dict(op, item="B5", pages=["a"] * 17)], "pages")
+    rejected(s, [dict(op, item="B6", style="scroll")], "style")
+    rejected(s, [{"op": "define_item", "item": "B7", "like": "ITPL_A", "name": "x", "style": "book"}], "style")
+    s.validate([dict(op, item="B8", style="letter")])
+    del fake.world.set_document
+    if saved_define is None:
+        del fake.world.define_item
+    else:
+        fake.world.define_item = saved_define
+
+
 def test_items_of_our_own():
     # An item of the story's own gets a carrier nothing in the game uses, and every mention of it becomes that carrier.
     s = st.Story()
@@ -1208,7 +1237,7 @@ def test_plans_are_all_or_nothing_where_the_game_allows():
         del fake.daedalus.call, fake.journal
 
 
-for test in (test_plans_are_all_or_nothing_where_the_game_allows, test_owed_aftercare_survives_a_save, test_topic_while_he_smokes, test_return_to_a_split_menu, test_items_of_our_own, test_item_with_a_model_of_its_own, test_give_xp, test_attack, test_npc_item, test_weather, test_refuse_talk, test_waited_for_pipe_is_reserved, test_handed_over_but_nothing_to_play, test_topics_extend_an_npc, test_trip_operation, test_rule_contents_are_checked_when_submitted, test_graph_validation, test_validation, test_apply_and_rollback, test_return_npc, test_conditional_choices, test_gamble, test_returns_to_menu, test_questions_are_asked_once, test_variant_line, test_variant_unless, test_again_line, test_scene_and_rule, test_rule_fires_on_perception, test_narration_waits_for_quiet, test_drawing_a_weapon_is_perceived,
+for test in (test_story_books, test_plans_are_all_or_nothing_where_the_game_allows, test_owed_aftercare_survives_a_save, test_topic_while_he_smokes, test_return_to_a_split_menu, test_items_of_our_own, test_item_with_a_model_of_its_own, test_give_xp, test_attack, test_npc_item, test_weather, test_refuse_talk, test_waited_for_pipe_is_reserved, test_handed_over_but_nothing_to_play, test_topics_extend_an_npc, test_trip_operation, test_rule_contents_are_checked_when_submitted, test_graph_validation, test_validation, test_apply_and_rollback, test_return_npc, test_conditional_choices, test_gamble, test_returns_to_menu, test_questions_are_asked_once, test_variant_line, test_variant_unless, test_again_line, test_scene_and_rule, test_rule_fires_on_perception, test_narration_waits_for_quiet, test_drawing_a_weapon_is_perceived,
              test_queue_waits_for_safe_point, test_save_load_does_not_reapply_world,
              test_player):
     test()

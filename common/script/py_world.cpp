@@ -212,6 +212,21 @@ void bindWorld(py::module_& m) {
              return py::cast(std::make_tuple(p.x, p.y, p.z));
              },
            py::arg("name"), "Where a waypoint is, as (x, y, z), or None.")
+      .def("set_document",
+           [](const PyWorld&, const std::string& carrier, std::vector<std::string> pages, const std::string& style) {
+             auto*  w  = requireWorld();
+             size_t id = 0;
+             if(instanceClass(*w, upper(carrier), id)!="C_ITEM")
+               throw std::invalid_argument("not an item instance: " + carrier);
+             World::StoryDocument doc;
+             doc.book = style!="letter";
+             for(auto& p:pages)
+               doc.pages.push_back(toEngine(p));
+             w->setStoryDocument(id, std::move(doc));
+             },
+           py::arg("carrier"), py::arg("pages"), py::arg("style") = "book",
+           "A story's own book (style book: the mage book, turned two pages at a time) or letter (one sheet per "
+           "page) for an item: using it reads this instead of its own script. No pages clears it. Not saved.")
       .def("shelter_points",
            [](const PyWorld&, float x, float y, float z, float radius, std::vector<std::string> taken) {
              // Covered waypoints near a point, nearest first: a roof over them (the roof map, as for snow), not

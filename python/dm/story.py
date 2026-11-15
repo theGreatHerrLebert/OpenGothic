@@ -488,13 +488,37 @@ def _check_define_item(args, state):
     if not isinstance(rows, list) or len(rows) > 5 or not all(
             isinstance(r, list) and len(r) == 2 and isinstance(r[0], str) and isinstance(r[1], int) for r in rows):
         raise PlanError("define_item rows are up to five [label, number] pairs")
+    _check_pages(args)
+
+
+PAGE_CHARS, PAGE_LINES, BOOK_PAGES = 600, 14, 16   # what fits a page of the mage book (docs/plan-story-books.md)
+
+
+def _check_pages(args):
+    """A story's own book or letter: up to 16 pages of our own text that fit a page (no scrolling in the book)."""
+    if "pages" not in args:
+        if "style" in args:
+            raise PlanError("define_item style comes with pages")
+        return
+    pages = args["pages"]
+    if not isinstance(pages, list) or not 1 <= len(pages) <= BOOK_PAGES or not all(isinstance(p, str) for p in pages):
+        raise PlanError(f"define_item pages are 1 to {BOOK_PAGES} strings")
+    for n, page in enumerate(pages, 1):
+        # a long line wraps: count it as the lines it takes at about 34 characters a line
+        lines = sum(max(1, -(-len(line) // 34)) for line in page.split("\n"))
+        if len(page) > PAGE_CHARS or lines > PAGE_LINES:
+            raise PlanError(f"define_item page {n} is too long for a book page "
+                            f"(at most {PAGE_CHARS} characters and about {PAGE_LINES} lines)")
+    if args.get("style", "book") not in ("book", "letter"):
+        raise PlanError("define_item style is book or letter")
 
 
 def _fold_define_item(args, state):
     state.setdefault("items", {})[args["item"].upper()] = {
         "carrier": args["carrier"], "like": args["like"], "name": args["name"],
         "description": args.get("description", ""), "rows": args.get("rows", []), "value": args.get("value", -1),
-        "look": args.get("look"), "damage": args.get("damage", 0)}
+        "look": args.get("look"), "damage": args.get("damage", 0),
+        "pages": args.get("pages"), "style": args.get("style", "book")}
 
 
 def _define_in_world(entry):
@@ -516,12 +540,17 @@ def _define_in_world(entry):
             visual = ""             # no look of its own, then: the base item's
     gothic.world.define_item(entry["carrier"], entry["like"], entry["name"], entry["description"],
                              [tuple(r) for r in entry["rows"]], entry["value"], visual, entry.get("damage", 0))
+    if hasattr(gothic.world, "set_document"):
+        # a book or letter of the story's own: read instead of the carrier's script; set again after every load.
+        # Redefined without pages, it is an ordinary item again (no pages clears it).
+        gothic.world.set_document(entry["carrier"], entry.get("pages") or [], entry.get("style", "book"))
 
 
 def _world_define_item(args):
     _define_in_world({"carrier": args["carrier"], "like": args["like"], "name": args["name"],
                       "description": args.get("description", ""), "rows": args.get("rows", []),
-                      "value": args.get("value", -1), "look": args.get("look"), "damage": args.get("damage", 0)})
+                      "value": args.get("value", -1), "look": args.get("look"), "damage": args.get("damage", 0),
+                      "pages": args.get("pages"), "style": args.get("style", "book")})
     _renew_carried(args["carrier"])
     return None
 

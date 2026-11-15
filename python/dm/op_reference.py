@@ -78,7 +78,9 @@ OPS = {
                          "conversation runs; give the rule a check that the hero is close.",
                {"op": "attack", "npc": "SLD_819_SOELDNER", "target": "BAU_904_BAUER"}),
     # Items and rewards
-    "define_item": ("Items", "An item of the story's own, on an unused carrier: name, rows, value, damage, look or model.",
+    "define_item": ("Items", "An item of the story's own, on an unused carrier: name, rows, value, damage, look or model. "
+                    "With pages (1 to 16 of our own text, each fitting a book page) it is read: style book (the mage "
+                    "book, turned two pages at a time) or letter; give it after defining it, so the copy is the story's.",
                     {"op": "define_item", "item": "MONDALOE", "like": "ITPL_HEALTH_HERB_01", "name": "Mondaloe",
                      "look": {"model": "mondaloe.obj"}}),
     "place_item": ("Items", "Lays an item at a waypoint.", {"op": "place_item", "instance": "MONDALOE", "waypoint": "NW_BIGFARM_SHEEP2_04"}),

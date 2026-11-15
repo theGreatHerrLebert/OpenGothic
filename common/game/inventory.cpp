@@ -886,10 +886,46 @@ static void showStoryLetter(const Item& it, Npc& owner) {
   owner.world().recordDocumentRead(owner,it.clsId());
   }
 
+static void showStoryDocument(const World::StoryDocument& sd) {
+  DocumentMenu::Show doc;
+  doc.font = "FONT_10_BOOK.TGA";
+  if(sd.book) {
+    // as the game's own books: the mage book's two halves, a wide outer margin on each
+    doc.spread = 2;
+    for(size_t i=0; i<sd.pages.size(); ++i) {
+      DocumentMenu::Page page;
+      page.img     = (i%2==0) ? "BOOK_MAGE_L.TGA" : "BOOK_MAGE_R.TGA";
+      page.text    = sd.pages[i];
+      page.margins = (i%2==0) ? Tempest::Margin(275,30,20,20) : Tempest::Margin(30,275,20,20);
+      page.flg     = DocumentMenu::Flags(DocumentMenu::F_Backgr | DocumentMenu::F_Margin);
+      doc.pages.push_back(std::move(page));
+      }
+    } else {
+    doc.spread  = 1;
+    doc.img     = "letters.TGA";
+    doc.margins = Tempest::Margin(50);
+    for(auto& t:sd.pages) {
+      DocumentMenu::Page page;
+      page.text = t;
+      doc.pages.push_back(std::move(page));
+      }
+    }
+  Gothic::inst().onShowDocument(doc);
+  }
+
 bool Inventory::use(size_t cls, Npc &owner, uint8_t slotHint, bool force) {
   Item* it=findByClass(cls);
   if(it==nullptr)
     return false;
+
+  // a story's own book or letter: read, never the carrier's script (its original text must not show), not used up
+  if(auto* sd = owner.world().storyDocument(cls); sd!=nullptr) {
+    if(owner.isPlayer()) {
+      showStoryDocument(*sd);
+      owner.world().recordDocumentRead(owner,cls);
+      }
+    return false;
+    }
 
   // quest evidence stays in the inventory: it cannot be worn or used, but a letter can be read
   if(it->isStoryItem() && it->isMission()) {

@@ -176,7 +176,7 @@ One of the story's people goes for the hero (or, with target, for another of the
 
 ### `define_item`
 
-An item of the story's own, on an unused carrier: name, rows, value, damage, look or model.
+An item of the story's own, on an unused carrier: name, rows, value, damage, look or model. With pages (1 to 16 of our own text, each fitting a book page) it is read: style book (the mage book, turned two pages at a time) or letter; give it after defining it, so the copy is the story's.
 
 ```json
 {"op": "define_item", "item": "MONDALOE", "like": "ITPL_HEALTH_HERB_01", "name": "Mondaloe", "look": {"model": "mondaloe.obj"}}

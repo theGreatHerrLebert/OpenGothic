@@ -18,6 +18,7 @@ DocumentMenu::DocumentMenu(const KeyCodec& key)
 void DocumentMenu::show(const DocumentMenu::Show &doc) {
   document = doc;
   active   = true;
+  first    = 0;
   update();
   }
 
@@ -36,6 +37,27 @@ void DocumentMenu::keyDownEvent(KeyEvent &e) {
     return;
     }
 
+  // closing comes first, whatever else a key is bound to
+  if(e.key==Event::K_ESCAPE || keycodec.tr(e)==KeyCodec::Inventory) {
+    close();
+    return;
+    }
+  // a story book turns: Left/Right (arrows, or the strafe and turn keys), two pages at a time; at its first or last
+  // spread the key is still taken, so it never moves the hero or the inventory behind the book
+  if(document.spread>0 && document.pages.size()>document.spread) {
+    const auto act  = keycodec.tr(e);
+    const bool back = e.key==Event::K_Left  || act==KeyCodec::Left  || act==KeyCodec::RotateL;
+    const bool next = e.key==Event::K_Right || act==KeyCodec::Right || act==KeyCodec::RotateR;
+    if(back || next) {
+      const size_t step = document.spread;
+      if(next && first+step<document.pages.size())
+        first += step;
+      if(back && first>=step)
+        first -= step;
+      update();
+      return;
+      }
+    }
   if(e.key!=Event::K_ESCAPE && keycodec.tr(e)!=KeyCodec::Inventory){
     e.ignore();
     return;
@@ -51,8 +73,13 @@ void DocumentMenu::paintEvent(PaintEvent &e) {
     return;
 
   const float scale = Gothic::interfaceScale(this);
+  // the pages shown now: all of them, or the spread a story book is open at
+  const size_t pBegin = document.spread>0 ? std::min(first, document.pages.size()) : 0;
+  const size_t pEnd   = document.spread>0 ? std::min(first+document.spread, document.pages.size())
+                                          : document.pages.size();
   float mw = 0, mh = 0;
-  for(auto& i:document.pages){
+  for(size_t pi=pBegin; pi<pEnd; ++pi){
+    auto& i = document.pages[pi];
     auto back = Resources::loadTexture((i.flg&F_Backgr) ? i.img : document.img);
     if(!back)
       continue;
@@ -67,7 +94,9 @@ void DocumentMenu::paintEvent(PaintEvent &e) {
   auto  pl = Gothic::inst().player();
 
   Painter p(e);
-  for(auto& i:document.pages) {
+  const int x0 = x;
+  for(size_t pi=pBegin; pi<pEnd; ++pi) {
+    auto& i = document.pages[pi];
     const GthFont* fnt = nullptr;
     if(i.flg&F_Font)
       fnt = &Resources::font(i.font, Resources::FontType::Normal, scale); else
@@ -115,5 +144,14 @@ void DocumentMenu::paintEvent(PaintEvent &e) {
       p.popState();
       }
     x+=w;
+    }
+  if(document.spread>0 && document.pages.size()>document.spread) {
+    // where one is in the book, at its foot
+    auto& fnt = Resources::font(scale);
+    const size_t total = (document.pages.size()+document.spread-1)/document.spread;
+    const std::string at = std::to_string(first/document.spread+1) + " / " + std::to_string(total) +
+                           (first+document.spread<document.pages.size() ? "  >" : "") + (first>0 ? "" : "");
+    const std::string txt = (first>0 ? "<  " : "") + at;
+    fnt.drawText(p, x0 + (x-x0)/2 - fnt.textSize(txt).w/2, y + int(mh) + fnt.pixelSize() + 4, txt);
     }
   }
