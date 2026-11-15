@@ -69,8 +69,8 @@ def validate(check):
     if kind == "hour" and not (0 <= check["from"] <= 23 and 0 <= check["to"] <= 23):
         return "hour out of range"
     if kind == "weather":
-        if check.get("kind") not in (None, "rain", "snow", "storm", "clear"):
-            return "check weather kind is rain, snow, storm or clear"
+        if check.get("kind") not in (None, "rain", "snow", "hail", "fire", "crystal", "motes", "storm", "clear"):
+            return "check weather kind is rain, snow, hail, fire, crystal, motes, storm or clear"
         for key in ("min", "cover", "wet"):
             if key not in check:
                 continue   # left out: its default; written out, it must be a number
@@ -258,9 +258,10 @@ def _weather_holds(check):
     want = check.get("kind")
     if want == "clear" and falling > 0.05:
         return False
-    if want in ("rain", "snow") and (state.get("kind") != want or falling < check.get("min", 0.2)):
+    if want in ("rain", "snow", "hail", "fire", "crystal", "motes") and (
+            state.get("kind") != want or falling < check.get("min", 0.2)):
         return False
-    if want == "storm" and (state.get("kind") not in ("rain", "snow") or falling < check.get("min", 0.75)):
+    if want == "storm" and (state.get("kind") not in ("rain", "snow", "hail") or falling < check.get("min", 0.75)):
         return False
     if "cover" in check and state.get("cover", 0.0) < check["cover"]:
         return False

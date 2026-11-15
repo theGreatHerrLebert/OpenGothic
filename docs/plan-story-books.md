@@ -13,7 +13,7 @@ the weather-magic book the monastery's scholar hands a fire mage (a co-written s
 
 ## Design
 
-- **Story op:** `define_item` gains `pages` (1 to 16 strings of our own text, each at most 900 characters, no stage
+- **Story op:** `define_item` gains `pages` (1 to 16 strings of our own text, each at most 480 characters and about 14 lines of 34 characters, no stage
   directions) and `style` (`book`: the mage book's two-page spread, turned two pages at a time; `letter`: one sheet per
   page). Validated when submitted, like every op. Kept in the story's state with the item; set again after a load
   (the same path `define_item` already takes on rebind).

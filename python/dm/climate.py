@@ -148,8 +148,13 @@ def _end_overlay(gothic, state, overlay, owned, generation):
         gothic.weather.fog(0.0, last.get("fog_height") or 25.0, last.get("fog_base"), 300.0)
     if owned is None and not enabled():   # nobody brings weather: it clears up, whatever was seen before
         gothic.weather.set("clear", 0.0, FADE, (0, 0))
-        gothic.weather.cover(0.0, 1800.0)
+        gothic.weather.cover(0.0, _melt_seconds(last.get("kind")))
     return True
+
+
+def _melt_seconds(kind):
+    """How long what lies takes to go once nothing falls: hail's thin cover within minutes, snow in half an hour."""
+    return 300.0 if kind == "hail" or _last_kind[0] == "hail" else 1800.0
 
 
 def tick(gothic, state, now):
@@ -183,7 +188,7 @@ def tick(gothic, state, now):
     else:
         if _last is not None and _last[0] == "story":   # the story's hours ran out and nothing takes over: clear up
             gothic.weather.set("clear", 0.0, FADE, (0, 0))
-            gothic.weather.cover(0.0, 1800.0)
+            gothic.weather.cover(0.0, _melt_seconds(_last[1]))
         _last = None
         return None
     if cover is None:   # a story that set its own cover keeps it; otherwise snow lies while it snows and melts after

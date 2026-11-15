@@ -552,7 +552,7 @@ def _check_use(args, state):
         raise PlanError("define_item use every_hours is a number of game hours from 1 to 240")
 
 
-PAGE_CHARS, PAGE_LINES, BOOK_PAGES = 600, 14, 16   # what fits a page of the mage book (docs/plan-story-books.md)
+PAGE_CHARS, PAGE_LINES, BOOK_PAGES = 480, 14, 16   # what fits a page of the mage book (docs/plan-story-books.md)
 
 
 def _check_pages(args):
@@ -1020,9 +1020,9 @@ def _fold_item_used(args, state):
 
 
 def item_weather(state, now_hours):
-    """The weather of a story item's use while it lasts, or None."""
-    overlay = state.get("item_weather")
-    return overlay if overlay and overlay.get("until") is not None and now_hours < overlay["until"] else None
+    """The weather of a story item's use while it lasts, or None (the climate's rule, kept in one place)."""
+    from dm import climate
+    return climate.item_weather(state, now_hours)
 
 
 def _thin_air(old, new, owned):
