@@ -927,6 +927,14 @@ bool Inventory::use(size_t cls, Npc &owner, uint8_t slotHint, bool force) {
     return false;
     }
 
+  // a story's own item with a use (a scroll, a ritual tool): only the request is recorded, for the story layer to
+  // accept; never a script, never equipped, nothing taken here. An NPC cannot use it.
+  if(owner.world().isStoryUse(cls)) {
+    if(owner.isPlayer())
+      owner.world().recordItemUsed(owner,cls);
+    return false;
+    }
+
   // quest evidence stays in the inventory: it cannot be worn or used, but a letter can be read
   if(it->isStoryItem() && it->isMission()) {
     if(owner.isPlayer())

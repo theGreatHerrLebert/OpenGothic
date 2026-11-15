@@ -1059,6 +1059,22 @@ void WorldObjects::recordDocumentRead(Npc& reader, size_t item) {
   pushPerception(std::move(record));
   }
 
+void WorldObjects::recordItemUsed(Npc& user, size_t item) {
+  auto* pl = owner.player();
+  if(pl==nullptr || &user!=pl)
+    return;
+  // Only the request: the story layer decides whether it takes effect (a cooldown) and takes a used-up one itself.
+  // Where it was used travels with it, so a rule can ask where, not where the hero stands when it is handled.
+  PerceptionRecord record;
+  record.kind        = "used_item";
+  record.actor       = perceptionName(user,*pl);
+  if(auto* sym = owner.script().findSymbol(item))
+    record.item = sym->name();
+  record.hasPosition = true;
+  record.position    = user.position();
+  pushPerception(std::move(record));
+  }
+
 auto WorldObjects::takePerceptions() -> std::vector<PerceptionRecord> {
   return std::exchange(perceptionLog,{});
   }

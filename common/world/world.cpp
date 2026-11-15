@@ -240,6 +240,13 @@ void World::setStoryDocument(size_t cls, StoryDocument doc) {
     storyDocs[cls] = std::move(doc);
   }
 
+void World::setStoryUse(size_t cls, bool on) {
+  if(on)
+    storyUses.insert(cls);
+  else
+    storyUses.erase(cls);
+  }
+
 const World::StoryDocument* World::storyDocument(size_t cls) const {
   auto it = storyDocs.find(cls);
   return it==storyDocs.end() ? nullptr : &it->second;

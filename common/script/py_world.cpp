@@ -326,7 +326,7 @@ void bindWorld(py::module_& m) {
       .def("define_item",
            [](const PyWorld&, const std::string& carrier, const std::string& like, const std::string& name,
               const std::string& description, std::vector<std::tuple<std::string,int32_t>> rows, int32_t value,
-              const std::string& visual, int32_t damage) {
+              const std::string& visual, int32_t damage, bool usable) {
              auto* w = requireWorld();
              auto& vm = w->script().getVm();
              auto* c  = vm.find_symbol_by_name(upper(carrier));
@@ -344,14 +344,33 @@ void bindWorld(py::module_& m) {
              def.value  = value;
              def.visual = visual;
              def.damage = damage;
+             def.usable = usable;
              w->script().defineItem(c->index(), std::move(def));
              return true;
              },
            py::arg("carrier"), py::arg("like"), py::arg("name"), py::arg("description") = "",
            py::arg("rows") = std::vector<std::tuple<std::string,int32_t>>{}, py::arg("value") = -1,
-           py::arg("visual") = "", py::arg("damage") = 0,
+           py::arg("visual") = "", py::arg("damage") = 0, py::arg("usable") = false,
            "Make every new item of the carrier instance like the item 'like', with its own name, description and "
-           "inventory rows (label, number). The story defines it again after a load.")
+           "inventory rows (label, number). usable: the story gives it a use of its own (set_use), so it is made "
+           "inert: no category that equips it, no script, no spell, a mission item; only its look is the base's. "
+           "The story defines it again after a load.")
+      .def("set_use",
+           [](const PyWorld&, const std::string& carrier, bool on) {
+             auto*  w  = requireWorld();
+             size_t id = 0;
+             if(instanceClass(*w, upper(carrier), id)!="C_ITEM")
+               throw std::invalid_argument("not an item instance: " + carrier);
+             w->setStoryUse(id, on);
+             },
+           py::arg("carrier"), py::arg("on"),
+           "A story's own use for an item: the hero using it only records the perception used_item (the item, "
+           "where he stands); no script runs, nothing is equipped or taken. NPCs cannot use it. Not saved.")
+      .def("has_effect",
+           [](const PyWorld&, const std::string& name) {
+             return Gothic::inst().loadVisualFx(upper(name))!=nullptr;
+             },
+           py::arg("name"), "Whether the game has this visual effect (a VFX instance such as SPELLFX_ICECUBE).")
       .def("reserve_object",
            [](const PyWorld&, const std::string& scheme, float x, float z, float radius, bool on) -> py::object {
              // The object of this scheme nearest (x, z) within radius, kept for the hero or given back. An NPC

@@ -5,6 +5,7 @@
 #include <Tempest/Matrix4x4>
 #include <string>
 #include <functional>
+#include <unordered_set>
 
 #include <zenkit/World.hh>
 
@@ -186,6 +187,11 @@ class World final {
       };
     void                 setStoryDocument(size_t cls, StoryDocument doc);
     const StoryDocument* storyDocument(size_t cls) const;
+    // A story's own item with a use (docs/plan-story-items.md): using it only records the request, the story
+    // layer does the rest. Not saved, the story sets it again.
+    void                 setStoryUse(size_t cls, bool on);
+    bool                 isStoryUse(size_t cls) const { return storyUses.find(cls)!=storyUses.end(); }
+    void                 recordItemUsed(Npc& user, size_t item) { wobj.recordItemUsed(user,item); }
     void                 recordObjectUsed(Npc& user, std::string_view scheme, std::string_view name, const Tempest::Vec3& at) {
       wobj.recordObjectUsed(user,scheme,name,at);
       }
@@ -215,6 +221,7 @@ class World final {
 
     std::unique_ptr<WayMatrix>            wmatrix;
     std::unordered_map<size_t, StoryDocument> storyDocs;
+    std::unordered_set<size_t>            storyUses;
 
     struct BspSector final {
       int32_t guild=GIL_NONE;

@@ -94,6 +94,12 @@ void bindPlayer(py::module_& m) {
            "Use the nearest free object of this scheme at once, placed on its spot (state 1 to use, -1 to leave). "
            "quiet skips the object's script routine, such as a bed's sleep menu, until the hero leaves it. True only "
            "if he is really using it.")
+      .def("play_animation",
+           [](const PyPlayer&, const std::string& name) {
+             // as AI_PlayAni: queued, so it waits for what the hero is doing; a missing animation is skipped
+             requirePlayer()->aiPush(AiQueue::aiPlayAnim(upper(name)));
+             },
+           py::arg("name"), "Play one of the hero's own animations once, such as T_PRACTICEMAGIC.")
       .def("mark_heard",
            [](const PyPlayer&, const std::string& info) {
              auto* w = requireWorld();

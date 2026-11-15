@@ -80,6 +80,7 @@ class GameScript final {
       int32_t                    value = -1;   // -1: the base item's
       std::string                visual;       // a mesh of its own (a variant of the base's), empty: the base's
       int32_t                    damage = 0;   // added to the base's damage (a weapon a little better than its base)
+      bool                       usable = false; // a use of the story's own: inert, only its look is the base's
       };
     void         defineItem(size_t carrier, ItemDefinition def) { itemDefinitions[carrier] = std::move(def); }
     void         clearItemDefinitions() { itemDefinitions.clear(); }

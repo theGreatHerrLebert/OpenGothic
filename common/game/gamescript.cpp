@@ -596,6 +596,18 @@ void GameScript::initializeInstanceItem(const std::shared_ptr<zenkit::IItem>& it
     d.value = def->second.value;
   if(!def->second.visual.empty())
     d.visual = def->second.visual;
+  if(def->second.usable) {
+    // Its use is the story's (World::setStoryUse): nothing of the base may act. No category that equips it, no
+    // script on equipping or in a state (an NPC's state use), no spell; a mission item, so traders do not buy it.
+    d.main_flag  = int32_t(ITM_CAT_NONE);
+    d.flags      = zenkit::ItemFlag(uint32_t(d.flags) | ITM_MISSION);
+    d.on_equip   = 0;
+    d.on_unequip = 0;
+    std::fill(std::begin(d.on_state), std::end(d.on_state), 0);
+    d.magic      = 0;
+    d.spell      = 0;
+    d.mag_circle = 0;
+    }
   }
 
 void GameScript::saveQuests(Serialize &fout) {
