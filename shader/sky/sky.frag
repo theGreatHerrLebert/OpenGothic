@@ -155,7 +155,8 @@ const float AURORA_TILT   = 0.22;    // curtains lean along the magnetic field, 
 const float AURORA_WIDTH  = 0.035;   // thickness of a sheet in the plane
 const float AURORA_RAYS   = 14.0;    // rays per unit along a curtain (a second octave runs 2.4 times finer)
 const float AURORA_RED    = 0.10;    // how much of the high red tail shows
-const float AURORA_GAIN   = 6.0;     // overall brightness
+const float AURORA_GAIN   = 3.0;     // overall brightness (halved in game: a quieter sky)
+const float AURORA_SPEED  = 2.0;     // how fast it all drifts, folds and shimmers (doubled in game)
 
 float auroraHash(float n) {
   n = fract(n*0.1031);
@@ -181,6 +182,7 @@ vec2 auroraWarp(vec2 p, float t) {
 vec3 aurora(vec3 view, float strength, float t, float glow) {
   if(strength<=0.001)
     return vec3(0.0);
+  t *= AURORA_SPEED;
   // where the view ray meets the plane at unit height, and how far that moves per pixel: rays finer than a pixel fade
   // to their mean instead of aliasing (taken before the horizon test below, so the derivative is well defined)
   vec2  dir  = view.xz/max(view.y, 0.005);
